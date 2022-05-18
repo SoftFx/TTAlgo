@@ -1,153 +1,148 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<OutputType>WinExe</OutputType>
+		<AssemblyName>TickTrader.AlgoTerminal</AssemblyName>
+		<RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
+		<PlatformTarget>x64</PlatformTarget>
+		<MapFileExtensions>true</MapFileExtensions>
+		<UseApplicationTrust>false</UseApplicationTrust>
+		<UseWPF>true</UseWPF>
+		<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+		<Deterministic>false</Deterministic>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0.0</FileVersion>
+		<EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
+		<ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
+		<SatelliteResourceLanguages>en-gb,ru-ru</SatelliteResourceLanguages>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <OutputType>WinExe</OutputType>
-    <AssemblyName>TickTrader.AlgoTerminal</AssemblyName>
-    <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
-    <PlatformTarget>x64</PlatformTarget>
-    <MapFileExtensions>true</MapFileExtensions>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <UseWPF>true</UseWPF>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <Deterministic>false</Deterministic>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
-    <ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
-	<SatelliteResourceLanguages>en-gb,ru-ru</SatelliteResourceLanguages>
-  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Caliburn.Micro" Version="4.0.209" />
+		<PackageReference Include="Dirkster.AvalonDock" Version="4.70.1" />
+		<PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
+		<PackageReference Include="FontAwesome.Sharp" Version="5.15.4" />
+		<PackageReference Include="Grpc.Core" Version="2.36.1" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+		<PackageReference Include="NLog" Version="4.7.15" />
+		<PackageReference Include="System.Management" Version="6.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Caliburn.Micro" Version="4.0.209" />
-    <PackageReference Include="Dirkster.AvalonDock" Version="4.70.1" />
-    <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
-    <PackageReference Include="FontAwesome.Sharp" Version="5.15.4" />
-    <PackageReference Include="Grpc.Core" Version="2.36.1" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
-    <PackageReference Include="NLog" Version="4.7.15" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
-    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
-    <ProjectReference Include="..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\TickTrader.Algo.BacktesterV1Host.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
-    <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj" />
-    <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
-    <ProjectReference Include="..\TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
+		<ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
+		<ProjectReference Include="..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\TickTrader.Algo.BacktesterV1Host.csproj" />
+		<ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
+		<ProjectReference Include="..\src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj" />
+		<ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
+		<ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
+		<ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
+		<ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj" />
+		<ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
+		<ProjectReference Include="..\TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="System.Management" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="Resx\Sounds\Negative1.wav" />
+		<Resource Include="Resx\Logo\algoLogoDark128.ico" />
+		<Resource Include="Resx\Logo\algoLogoDark.ico" />
+		<Resource Include="Resx\Fonts\password.ttf">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Resx\Logo\algoLogoLight.ico" />
+		<Resource Include="Resx\Logo\algoLogoLight128.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="Resx\Sounds\Negative1.wav" />
-    <Resource Include="Resx\Logo\algoLogoDark128.ico" />
-    <Resource Include="Resx\Logo\algoLogoDark.ico" />
-    <Resource Include="Resx\Fonts\password.ttf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Resx\Logo\algoLogoLight.ico" />
-    <Resource Include="Resx\Logo\algoLogoLight128.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
+		<None Include="Model.Profiles\Version1\PluginStorageEntry.cs" />
+		<None Include="Model.Profiles\Version1\ProfileResolver.cs" />
+		<None Include="Model.Profiles\Version1\ProfileStorageModel.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
-    <None Include="Model.Profiles\Version1\PluginStorageEntry.cs" />
-    <None Include="Model.Profiles\Version1\ProfileResolver.cs" />
-    <None Include="Model.Profiles\Version1\ProfileStorageModel.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Model.Profiles\Version1\ChartStorageEntry.cs" />
+		<Compile Remove="Model.Profiles\Version1\PluginStorageEntry.cs" />
+		<Compile Remove="Model.Profiles\Version1\ProfileResolver.cs" />
+		<Compile Remove="Model.Profiles\Version1\ProfileStorageModel.cs" />
+		<Compile Remove="Model\BotAggregator.cs" />
+		<Compile Remove="Views.Chart\PluginSetupViewModel.cs" />
+		<None Remove="Resx\Logo\algoLogoDark.ico" />
+		<None Remove="Resx\Logo\algoLogoDark128.ico" />
+		<None Remove="Resx\Logo\algoLogoLight.ico" />
+		<None Remove="Resx\Logo\algoLogoLight128.ico" />
+		<Page Remove="Resx\Styles.SystemDefault\ComboBox.Msdn.xaml" />
+		<Page Remove="Resx\Styles.SystemDefault\ComboBox.xaml" />
+		<Page Remove="Resx\Styles.SystemDefault\ComboBoxItem.xaml" />
+		<Page Remove="Resx\Styles.SystemDefault\DataGrid.xaml" />
+		<Page Remove="Resx\Styles.SystemDefault\DataGridCell.xaml" />
+		<Page Remove="Resx\Styles.SystemDefault\DataGridColumnHeader.xaml" />
+		<Page Remove="Resx\Styles.SystemDefault\DataGridColumnHeadersPresenter.xaml" />
+		<Page Remove="Resx\Styles.SystemDefault\DataGridRow.xaml" />
+		<Page Remove="Resx\Styles.SystemDefault\TextBox.xaml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Model.Profiles\Version1\ChartStorageEntry.cs" />
-    <Compile Remove="Model.Profiles\Version1\PluginStorageEntry.cs" />
-    <Compile Remove="Model.Profiles\Version1\ProfileResolver.cs" />
-    <Compile Remove="Model.Profiles\Version1\ProfileStorageModel.cs" />
-    <Compile Remove="Model\BotAggregator.cs" />
-    <Compile Remove="Views.Chart\PluginSetupViewModel.cs" />
-    <None Remove="Resx\Logo\algoLogoDark.ico" />
-    <None Remove="Resx\Logo\algoLogoDark128.ico" />
-    <None Remove="Resx\Logo\algoLogoLight.ico" />
-    <None Remove="Resx\Logo\algoLogoLight128.ico" />
-    <Page Remove="Resx\Styles.SystemDefault\ComboBox.Msdn.xaml" />
-    <Page Remove="Resx\Styles.SystemDefault\ComboBox.xaml" />
-    <Page Remove="Resx\Styles.SystemDefault\ComboBoxItem.xaml" />
-    <Page Remove="Resx\Styles.SystemDefault\DataGrid.xaml" />
-    <Page Remove="Resx\Styles.SystemDefault\DataGridCell.xaml" />
-    <Page Remove="Resx\Styles.SystemDefault\DataGridColumnHeader.xaml" />
-    <Page Remove="Resx\Styles.SystemDefault\DataGridColumnHeadersPresenter.xaml" />
-    <Page Remove="Resx\Styles.SystemDefault\DataGridRow.xaml" />
-    <Page Remove="Resx\Styles.SystemDefault\TextBox.xaml" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="Properties\Settings.Designer.cs">
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
+		<Compile Update="Resx\Locales\gui.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>gui.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-    <Compile Update="Resx\Locales\gui.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>gui.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Resx\Locales\gui.en-GB.resx">
+			<Generator></Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resx\Locales\gui.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>gui.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resx\Locales\gui.ru-ru.resx">
+			<Generator></Generator>
+		</EmbeddedResource>
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="Properties\Settings.settings">
+			<Generator>SettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-	  <EmbeddedResource Update="Resx\Locales\gui.en-GB.resx">
-	    <Generator></Generator>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resx\Locales\gui.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>gui.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resx\Locales\gui.ru-ru.resx">
-	    <Generator></Generator>
-	  </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
+	<Target Name="MoveResources" AfterTargets="Build">
+		<ItemGroup>
+			<EnGbLocale Include="$(TargetDir)en-gb\*.resources.dll" />
+			<RuRuLocale Include="$(TargetDir)ru-ru\*.resources.dll" />
+			<RuLocale Include="$(TargetDir)ru\*.resources.dll" />
+		</ItemGroup>
+		<Copy SourceFiles="@(EnGbLocale)" DestinationFolder="$(TargetDir)Resources\en-gb" />
+		<Copy SourceFiles="@(RuRuLocale)" DestinationFolder="$(TargetDir)Resources\ru-ru" />
+		<Copy SourceFiles="@(RuLocale)" DestinationFolder="$(TargetDir)Resources\ru" />
+		<!--<RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
+		<RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />-->
+	</Target>
 
-  <Target Name="MoveResources" AfterTargets="Build">
-    <ItemGroup>
-      <EnGbLocale Include="$(TargetDir)en-gb\*.resources.dll" />
-      <RuRuLocale Include="$(TargetDir)ru-ru\*.resources.dll" />
-      <RuLocale Include="$(TargetDir)ru\*.resources.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(EnGbLocale)" DestinationFolder="$(TargetDir)Resources\en-gb" />
-    <Copy SourceFiles="@(RuRuLocale)" DestinationFolder="$(TargetDir)Resources\ru-ru" />
-    <Copy SourceFiles="@(RuLocale)" DestinationFolder="$(TargetDir)Resources\ru" />
-    <!--<RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
-    <RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />-->
-  </Target>
+	<Target Name="RemoveLinuxLibs" AfterTargets="Build">
+		<Delete Files="$(TargetDir)\libgrpc_csharp_ext.x64.dylib;$(TargetDir)\libgrpc_csharp_ext.x64.so" />
+	</Target>
 
-  <Target Name="RemoveLinuxLibs" AfterTargets="Build">
-    <Delete Files="$(TargetDir)\libgrpc_csharp_ext.x64.dylib;$(TargetDir)\libgrpc_csharp_ext.x64.so" />
-  </Target>
+	<Target Name="CopyBinaries" AfterTargets="Build">
+		<ItemGroup>
+			<RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
+			<BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net472\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\" SkipUnchangedFiles="true" />
+	</Target>
 
-  <Target Name="CopyBinaries" AfterTargets="Build">
-    <ItemGroup>
-      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
-      <BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net472\*.*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\" SkipUnchangedFiles="true" />
-  </Target>
-
-  <Target Name="CleanGeneratedFiles" AfterTargets="Clean">
-    <RemoveDir Directories="$(TargetDir)AlgoRuntime\" />
-    <RemoveDir Directories="$(TargetDir)bin\" />
-    <RemoveDir Directories="$(TargetDir)Resources\" />
-  </Target>
-
+	<Target Name="CleanGeneratedFiles" AfterTargets="Clean">
+		<RemoveDir Directories="$(TargetDir)AlgoRuntime\" />
+		<RemoveDir Directories="$(TargetDir)bin\" />
+		<RemoveDir Directories="$(TargetDir)Resources\" />
+	</Target>
 </Project>
