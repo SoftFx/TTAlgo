@@ -7,7 +7,7 @@ namespace TickTrader.BotTerminal
 {
     public class ResxExtension : MarkupExtension, IValueConverter
     {
-        private string _key;
+        private readonly string _key;
 
         public ResxExtension(string key)
         {

@@ -102,7 +102,7 @@ namespace TickTrader.BotTerminal
             {
                 profileStorage.SelectedChart = (SelectedChartProxy as ChartViewModel)?.Symbol;
                 profileStorage.Charts = new List<ChartStorageEntry>();
-                Items.ForEach(i => profileStorage.Charts.Add(i.GetSnapshot()));
+                //Items.ForEach(i => profileStorage.Charts.Add(i.GetSnapshot()));
             }
             catch (Exception ex)
             {

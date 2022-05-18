@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using SciChart.Charting.Model.ChartSeries;
+//using SciChart.Charting.Model.ChartSeries;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Domain;
 using Google.Protobuf.WellKnownTypes;
@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        private readonly ChartBarVector _barVector = new ChartBarVector(Feed.Types.Timeframe.M1);
+        //private readonly ChartBarVector _barVector = new ChartBarVector(Feed.Types.Timeframe.M1);
 
         public BarChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv)
             : base(symbol, algoEnv)
@@ -22,7 +22,7 @@ namespace TickTrader.BotTerminal
             Support(SelectableChartTypes.Line);
             Support(SelectableChartTypes.Mountain);
 
-            Navigator = new UniformChartNavigator();
+            //Navigator = new UniformChartNavigator();
 
             SelectedChartType = SelectableChartTypes.Candle;
         }
@@ -33,11 +33,11 @@ namespace TickTrader.BotTerminal
             base.Activate();
         }
 
-        public override ITimeVectorRef TimeSyncRef => _barVector.Ref;
+        public override ITimeVectorRef TimeSyncRef => null; //_barVector.Ref;
 
         protected override void ClearData()
         {
-            _barVector.Clear();
+          //  _barVector.Clear();
         }
 
         protected async override Task LoadData(CancellationToken cToken)
@@ -47,9 +47,9 @@ namespace TickTrader.BotTerminal
 
             cToken.ThrowIfCancellationRequested();
 
-            _barVector.Clear();
-            _barVector.TimeFrame = TimeFrame;
-            _barVector.AppendRange(barArray);
+            //_barVector.Clear();
+            //_barVector.TimeFrame = TimeFrame;
+            //_barVector.AppendRange(barArray);
 
             if (barArray.Length > 0)
                 InitBoundaries(barArray.Length, barArray.First().OpenTime.ToUtcDateTime(), barArray.Last().OpenTime.ToUtcDateTime());
@@ -65,43 +65,43 @@ namespace TickTrader.BotTerminal
             base.InitializePlugin(config);
 
             config.InitBarStrategy(Feed.Types.MarketSide.Bid);
-            config.SetMainSeries(_barVector);
+            //config.SetMainSeries(_barVector);
         }
 
         protected override void ApplyUpdate(QuoteInfo quote)
         {
             if (quote.HasBid)
             {
-                _barVector.TryAppendQuote(quote.Time, quote.Bid, 1);
-                ExtendBoundaries(_barVector.Count, quote.TimeUtc);
+                //_barVector.TryAppendQuote(quote.Time, quote.Bid, 1);
+                //ExtendBoundaries(_barVector.Count, quote.TimeUtc);
             }
         }
 
         protected override void UpdateSeries()
         {
-            var seriesModel = CreateSeriesModel();
+            //var seriesModel = CreateSeriesModel();
 
-            if (SeriesCollection.Count == 0)
-                SeriesCollection.Add(seriesModel);
-            else
-                SeriesCollection[0] = seriesModel;
+            //if (SeriesCollection.Count == 0)
+            //    SeriesCollection.Add(seriesModel);
+            //else
+            //    SeriesCollection[0] = seriesModel;
         }
 
-        private IRenderableSeriesViewModel CreateSeriesModel()
-        {
-            switch (SelectedChartType)
-            {
-                case SelectableChartTypes.OHLC:
-                    return new OhlcRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_OhlcStyle" };
-                case SelectableChartTypes.Candle:
-                    return new CandlestickRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_CandlestickStyle" };
-                case SelectableChartTypes.Line:
-                    return new LineRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_LineStyle" };
-                case SelectableChartTypes.Mountain:
-                    return new MountainRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_MountainStyle" };
-            }
+        //private IRenderableSeriesViewModel CreateSeriesModel()
+        //{
+        //    switch (SelectedChartType)
+        //    {
+        //        case SelectableChartTypes.OHLC:
+        //            return new OhlcRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_OhlcStyle" };
+        //        case SelectableChartTypes.Candle:
+        //            return new CandlestickRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_CandlestickStyle" };
+        //        case SelectableChartTypes.Line:
+        //            return new LineRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_LineStyle" };
+        //        case SelectableChartTypes.Mountain:
+        //            return new MountainRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_MountainStyle" };
+        //    }
 
-            throw new InvalidOperationException("Unsupported chart type: " + SelectedChartType);
-        }
+        //    throw new InvalidOperationException("Unsupported chart type: " + SelectedChartType);
+        //}
     }
 }

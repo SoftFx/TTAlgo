@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ActionOverlayViewModel : ObservableObject
+    internal class ActionOverlayViewModel : PropertyChangedBase
     {
         private CancellationTokenSource _cancelSrc;
         private TaskCompletionSource<object> _closeTask;

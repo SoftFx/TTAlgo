@@ -2,7 +2,7 @@
 using Machinarium.Var;
 using Microsoft.Win32;
 using NLog;
-using SciChart.Charting.Model.DataSeries;
+//using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
             TradesPage = new BacktesterCurrentTradesViewModel(profile);
             TradeHistoryPage = new BacktesterTradeGridViewModel(profile);
             OptimizationPage = new BacktesterOptimizerViewModel(_localWnd, IsRunning);
-            ChartPage = new BacktesterChartPageViewModel();
+            //ChartPage = new BacktesterChartPageViewModel();
             ResultsPage = new BacktesterReportViewModel();
 
             CanStart = !IsRunning & client.IsConnected & SetupPage.IsSetupValid;
@@ -73,8 +73,8 @@ namespace TickTrader.BotTerminal
             {
                 ResultsPage.Clear();
                 ResultsPage.ShowReport(r.Stats, _descriptorCache, r.Config.Id);
-                ResultsPage.AddEquityChart(Convert(r.Equity));
-                ResultsPage.AddMarginChart(Convert(r.Margin));
+                //ResultsPage.AddEquityChart(Convert(r.Equity));
+                //ResultsPage.AddMarginChart(Convert(r.Margin));
                 await ActivateItemAsync(ResultsPage);
                 //ActivateItem(ResultsPage);
             };
@@ -91,7 +91,7 @@ namespace TickTrader.BotTerminal
             Items.Add(JournalPage);
             Items.Add(TradesPage);
             Items.Add(TradeHistoryPage);
-            Items.Add(ChartPage);
+            //Items.Add(ChartPage);
             Items.Add(OptimizationResultsPage);
             Items.Add(ResultsPage);
         }
@@ -114,7 +114,7 @@ namespace TickTrader.BotTerminal
         public BacktesterSetupPageViewModel SetupPage { get; }
         public BacktesterJournalViewModel JournalPage { get; } = new BacktesterJournalViewModel();
         public BacktesterReportViewModel ResultsPage { get; }
-        public BacktesterChartPageViewModel ChartPage { get; }
+        //public BacktesterChartPageViewModel ChartPage { get; }
         public BacktesterTradeGridViewModel TradeHistoryPage { get; }
         public BacktesterCurrentTradesViewModel TradesPage { get; private set; }
         public BacktesterOptimizerViewModel OptimizationPage { get; }
@@ -124,7 +124,7 @@ namespace TickTrader.BotTerminal
         private void ResetResultsView()
         {
             _isVisualizing.Clear();
-            ChartPage.Clear();
+            //ChartPage.Clear();
             ResultsPage.Clear();
             JournalPage.Clear();
             TradeHistoryPage.Clear();
@@ -255,14 +255,14 @@ namespace TickTrader.BotTerminal
             if (config.Core.Mode == BacktesterMode.Visualization)
             {
                 JournalPage.IsVisible = true;
-                ChartPage.IsVisible = true;
+                //ChartPage.IsVisible = true;
                 TradeHistoryPage.IsVisible = true;
                 ResultsPage.IsVisible = true;
                 TradesPage.IsVisible = true;
 
                 OptimizationResultsPage.IsVisible = false;
 
-                ChartPage.OnStart(config);
+                //ChartPage.OnStart(config);
                 TradeHistoryPage.OnStart(config);
                 TradesPage.Start(config);
             }
@@ -291,21 +291,21 @@ namespace TickTrader.BotTerminal
         private void OnLoadingBacktestingResults(BacktesterConfig config)
         {
             JournalPage.IsVisible = true;
-            ChartPage.IsVisible = true;
+            //ChartPage.IsVisible = true;
             TradeHistoryPage.IsVisible = true;
             ResultsPage.IsVisible = true;
 
             TradesPage.IsVisible = false;
             OptimizationResultsPage.IsVisible = false;
 
-            ChartPage.Init(config);
+            //ChartPage.Init(config);
             TradeHistoryPage.Init(config);
         }
 
         private void OnLoadingOptimizationResults()
         {
             JournalPage.IsVisible = false;
-            ChartPage.IsVisible = false;
+            //ChartPage.IsVisible = false;
             TradeHistoryPage.IsVisible = false;
             ResultsPage.IsVisible = false;
             TradesPage.IsVisible = false;
@@ -360,21 +360,21 @@ namespace TickTrader.BotTerminal
             if (results.Feed.TryGetValue(mainSymbol, out var mainBars))
             {
                 observer.SetMessage("Loading feed chart data ...");
-                await ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
-                await ChartPage.LoadOutputs(config, results);
+                //await ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
+                //await ChartPage.LoadOutputs(config, results);
             }
 
             if (results.PluginInfo.IsTradeBot)
             {
                 observer.SetMessage("Loading equity chart data...");
-                var equityChartData = await LoadBarSeriesAsync(results.Equity);
+                //var equityChartData = await LoadBarSeriesAsync(results.Equity);
 
-                ResultsPage.AddEquityChart(equityChartData);
+                //ResultsPage.AddEquityChart(equityChartData);
 
-                observer.SetMessage("Loading margin chart data...");
-                var marginChartData = await LoadBarSeriesAsync(results.Margin);
+                //observer.SetMessage("Loading margin chart data...");
+                //var marginChartData = await LoadBarSeriesAsync(results.Margin);
 
-                ResultsPage.AddMarginChart(marginChartData);
+                //ResultsPage.AddMarginChart(marginChartData);
             }
 
             //ChartPage.SetFeedSeries(feedChartData);
@@ -382,34 +382,34 @@ namespace TickTrader.BotTerminal
             //ChartPage.SetMarginSeries(marginChartData);
         }
 
-        private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IEnumerable<BarData> src)
-        {
-            return Task.Run(() =>
-            {
-                var chartData = new OhlcDataSeries<DateTime, double>();
+        //private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IEnumerable<BarData> src)
+        //{
+        //    return Task.Run(() =>
+        //    {
+        //        var chartData = new OhlcDataSeries<DateTime, double>();
 
-                foreach (var bar in src)
-                {
-                    if (!double.IsNaN(bar.Open))
-                        chartData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
-                }
+        //        foreach (var bar in src)
+        //        {
+        //            if (!double.IsNaN(bar.Open))
+        //                chartData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
+        //        }
 
-                return chartData;
-            });
-        }
+        //        return chartData;
+        //    });
+        //}
 
-        private OhlcDataSeries<DateTime, double> Convert(IEnumerable<BarData> bars)
-        {
-            var chartData = new OhlcDataSeries<DateTime, double>();
+        //private OhlcDataSeries<DateTime, double> Convert(IEnumerable<BarData> bars)
+        //{
+        //    var chartData = new OhlcDataSeries<DateTime, double>();
 
-            foreach (var bar in bars)
-            {
-                if (!double.IsNaN(bar.Open))
-                    chartData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
-            }
+        //    foreach (var bar in bars)
+        //    {
+        //        if (!double.IsNaN(bar.Open))
+        //            chartData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
+        //    }
 
-            return chartData;
-        }
+        //    return chartData;
+        //}
 
         public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {

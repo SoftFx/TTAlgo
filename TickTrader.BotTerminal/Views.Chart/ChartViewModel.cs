@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private ChartModelBase activeChart;
         private readonly BarChartModel barChart;
-        private readonly TickChartModel tickChart;
+        //private readonly TickChartModel tickChart;
         private readonly IShell _shell;
         private readonly AlgoEnvironment _algoEnv;
         private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             smb = _algoEnv.LocalAgent.ClientModel.Symbols.GetOrDefault(symbol);
 
             this.barChart = new BarChartModel(smb, _algoEnv);
-            this.tickChart = new TickChartModel(smb, _algoEnv);
+            //this.tickChart = new TickChartModel(smb, _algoEnv);
             this.UiLock = new UiLock();
 
             var allIndicators = charts.SelectMany(c => c.Indicators);
@@ -48,11 +48,11 @@ namespace TickTrader.BotTerminal
             Indicators = allIndicators.Select(i => new IndicatorViewModel(Chart, i)).AsObservable();
             Bots = allBots.AsObservable();
 
-            var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
+            //var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
 
-            ChartControl = new AlgoChartViewModel(dataSeries);
-            ChartControl.SymbolInfo.Value = smb;
-            ChartControl.ChartWindowId.Value = ChartWindowId;
+            //ChartControl = new AlgoChartViewModel(dataSeries);
+            //ChartControl.SymbolInfo.Value = smb;
+            //ChartControl.ChartWindowId.Value = ChartWindowId;
 
             // index from VarCollection.CombineChained doesn't work properly when first collection changes size
             //_indicatorOutputs = new VarList<OutputGroupViewModel>();
@@ -83,7 +83,7 @@ namespace TickTrader.BotTerminal
 
             CloseCommand = new GenericCommand(o => TryCloseAsync());
 
-            ChartControl.Overlay = new BotListOverlayViewModel(Bots);
+            //ChartControl.Overlay = new BotListOverlayViewModel(Bots);
         }
 
         #region Bindable Properties
@@ -148,9 +148,9 @@ namespace TickTrader.BotTerminal
 
             _shell.ToolWndManager.CloseWindowByKey(this);
 
-            ChartControl.Dispose();
+            //ChartControl.Dispose();
             barChart.Dispose();
-            tickChart.Dispose();
+            //tickChart.Dispose();
 
             return task;
         }
@@ -289,8 +289,8 @@ namespace TickTrader.BotTerminal
 
         private void ActivateTickChart()
         {
-            this.Chart = tickChart;
-            tickChart.Activate();
+            //this.Chart = tickChart;
+            //tickChart.Activate();
             //barChart.Deactivate();
             FilterChartBots();
         }
@@ -309,14 +309,14 @@ namespace TickTrader.BotTerminal
 
         private void Chart_TimeframeChanged()
         {
-            ChartControl.SetTimeframe(Chart.TimeFrame);
+            //ChartControl.SetTimeframe(Chart.TimeFrame);
             NotifyOfPropertyChange(nameof(CanAddBot));
             NotifyOfPropertyChange(nameof(CanAddIndicator));
         }
 
         private void TimeAxis_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            ChartControl.TimeAxis.Value = Chart.TimeAxis.Value;
+            //ChartControl.TimeAxis.Value = Chart.TimeAxis.Value;
         }
 
         private void Indicators_Updated(ListUpdateArgs<IndicatorModel> args)
@@ -375,12 +375,12 @@ namespace TickTrader.BotTerminal
             charts.Add(Chart);
 
             //ChartControl.TimeAxis.Value = Chart.TimeAxis.Value;
-            ChartControl.BindAxis(Chart.TimeAxis);
-            ChartControl.BindCurrentRate(Chart.CurrentRate);
+            //ChartControl.BindAxis(Chart.TimeAxis);
+            //ChartControl.BindCurrentRate(Chart.CurrentRate);
             Chart_TimeframeChanged();
 
             Chart.TimeframeChanged += Chart_TimeframeChanged;
-            Chart.TimeAxis.PropertyChanged += TimeAxis_PropertyChanged;
+            //Chart.TimeAxis.PropertyChanged += TimeAxis_PropertyChanged;
             Chart.ParamsLocked += Chart_ParamsLocked;
             Chart.ParamsUnlocked += Chart_ParamsUnlocked;
             Chart.Indicators.Updated += Indicators_Updated;

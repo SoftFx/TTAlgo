@@ -1,4 +1,5 @@
-﻿using Machinarium.Qnil;
+﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
@@ -529,7 +530,7 @@ namespace TickTrader.BotTerminal
         #endregion IAlgoSetupContext
     }
 
-    public class OptionalItem<T> : ObservableObject
+    public class OptionalItem<T> : PropertyChangedBase
     {
         private bool _enabled;
 

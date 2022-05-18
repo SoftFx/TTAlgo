@@ -3,8 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cal="http://www.caliburnproject.org"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-    xmlns:dk="http://schemas.xceed.com/wpf/xaml/avalondock"
-    xmlns:dkctrl="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
+    xmlns:dk="clr-namespace:AvalonDock.Layout;assembly=AvalonDock"
+    xmlns:dkc="clr-namespace:AvalonDock.Controls;assembly=AvalonDock"
     xmlns:acc="clr-namespace:TickTrader.Algo.Account;assembly=TickTrader.Algo.Account"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
@@ -100,11 +100,11 @@
 
     <!--Docking panes styles/templates (Classic)-->
 
-    <Style x:Key="LayoutItemDefaultStyle" TargetType="{x:Type dkctrl:LayoutItem}">
+    <Style x:Key="LayoutItemDefaultStyle" TargetType="{x:Type dkc:LayoutItem}">
         <Setter Property="Title" Value="{Binding Model.DisplayName}" />
     </Style>
 
-    <Style x:Key="LayoutItemChartStyle" TargetType="{x:Type dkctrl:LayoutItem}">
+    <Style x:Key="LayoutItemChartStyle" TargetType="{x:Type dkc:LayoutItem}">
         <Setter Property="Title" Value="{Binding Model.DisplayName}" />
         <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
         <Setter Property="ContentId" Value="{Binding Model.ChartWindowId}"/>

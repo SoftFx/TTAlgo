@@ -10,20 +10,22 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
     <Deterministic>false</Deterministic>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
+    <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
+    <ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
+	<SatelliteResourceLanguages>en-gb,ru-ru</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AvalonDock" Version="2.0.2000" />
-    <PackageReference Include="Caliburn.Micro" Version="4.0.173" />
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="3.8.1" />
-    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
+    <PackageReference Include="Caliburn.Micro" Version="4.0.209" />
+    <PackageReference Include="Dirkster.AvalonDock" Version="4.70.1" />
+    <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
+    <PackageReference Include="FontAwesome.Sharp" Version="5.15.4" />
     <PackageReference Include="Grpc.Core" Version="2.36.1" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
-    <PackageReference Include="NLog" Version="4.7.7" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+    <PackageReference Include="NLog" Version="4.7.15" />
   </ItemGroup>
   
   <ItemGroup>
@@ -41,29 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="SciChart.Charting">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Charting.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Core">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Data">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Drawing">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Drawing.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Drawing.DirectX">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Drawing.DirectX.dll</HintPath>
-    </Reference>
     <Reference Include="System.Management" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Windows" />
   </ItemGroup>
 
   <ItemGroup>
@@ -112,8 +92,25 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Update="Resx\Locales\gui.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>gui.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+	  <EmbeddedResource Update="Resx\Locales\gui.en-GB.resx">
+	    <Generator></Generator>
+	  </EmbeddedResource>
+	  <EmbeddedResource Update="Resx\Locales\gui.resx">
+	    <Generator>ResXFileCodeGenerator</Generator>
+	    <LastGenOutput>gui.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
+	  <EmbeddedResource Update="Resx\Locales\gui.ru-ru.resx">
+	    <Generator></Generator>
+	  </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -130,8 +127,8 @@
     <Copy SourceFiles="@(EnGbLocale)" DestinationFolder="$(TargetDir)Resources\en-gb" />
     <Copy SourceFiles="@(RuRuLocale)" DestinationFolder="$(TargetDir)Resources\ru-ru" />
     <Copy SourceFiles="@(RuLocale)" DestinationFolder="$(TargetDir)Resources\ru" />
-    <RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
-    <RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />
+    <!--<RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
+    <RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />-->
   </Target>
 
   <Target Name="RemoveLinuxLibs" AfterTargets="Build">

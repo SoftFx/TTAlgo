@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
                 Notify(AppSounds.Save);
             else
                 if (oldState == ConnectionModel.States.Disconnecting && (newState == ConnectionModel.States.Offline || newState == ConnectionModel.States.OfflineRetry))
-                Notify(AppSounds.NegativeLong);
+                    Notify(AppSounds.NegativeLong);
         }
 
         private void Notify(IPlayable sound)

@@ -1,14 +1,14 @@
-﻿using System;
-using System.Windows;
-using Xceed.Wpf.AvalonDock;
-using Xceed.Wpf.AvalonDock.Layout.Serialization;
-using System.IO;
-using NLog;
-using System.Linq;
-using System.Collections.Generic;
-using Xceed.Wpf.AvalonDock.Layout;
-using System.ComponentModel;
+﻿using AvalonDock;
+using AvalonDock.Layout;
+using AvalonDock.Layout.Serialization;
 using Caliburn.Micro;
+using NLog;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Windows;
 
 namespace TickTrader.BotTerminal
 {
@@ -113,7 +113,7 @@ namespace TickTrader.BotTerminal
 
         private void OnLayoutAnchorablePropertyChanged(object sender, PropertyChangedEventArgs args)
         {
-            if (sender is LayoutAnchorable && 
+            if (sender is LayoutAnchorable &&
                 (args.PropertyName == nameof(LayoutAnchorable.IsHidden)
                 || args.PropertyName == nameof(LayoutAnchorable.IsAutoHidden)))
             {

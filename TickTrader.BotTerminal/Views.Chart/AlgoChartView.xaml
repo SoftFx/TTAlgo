@@ -13,13 +13,13 @@
         <Rectangle Fill="Red" Width="5" Height="5"/>
     </ControlTemplate>
 
-    <Style TargetType="s:FastLineRenderableSeries">
+    <!--<Style TargetType="s:FastLineRenderableSeries">
         <Setter Property="RolloverMarkerTemplate" Value="{StaticResource IndicatorOutputRolloverTooltipTemplate}"/>
-    </Style>
+    </Style>-->
 
     <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
 
-    <Style x:Key="AskBidLineStyle" TargetType="s:HorizontalLineAnnotation">
+    <!--<Style x:Key="AskBidLineStyle" TargetType="s:HorizontalLineAnnotation">
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="ShowLabel" Value="False"/>
         <Setter Property="StrokeThickness" Value="0.6"/>
@@ -42,15 +42,15 @@
         <Setter Property="IsEditable" Value="True"/>
         <Setter Property="Background" Value="Gray"/>
         <Setter Property="Y1" Value="50"/>
-    </Style>
+    </Style>-->
 
     <DataTemplate DataType="{x:Type UIElement}">
         <ContentControl Content="{Binding}" />
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type l:OutputPaneViewModel}">
+    <!--<DataTemplate DataType="{x:Type l:OutputPaneViewModel}">
         <ContentControl cal:View.Model="{Binding}" />
-    </DataTemplate>
+    </DataTemplate>-->
 
     <Style x:Key="BotPanelStyle" TargetType="ItemsControl">
         <Setter Property="Margin" Value="5 5 5 25"/>
@@ -112,7 +112,7 @@
         </Setter>
     </Style>-->
 
-    <l:BindingProxy x:Key="GridLinesColorProxy" Data="{DynamicResource ChartGridLinesColor}" />
+    <!--<l:BindingProxy x:Key="GridLinesColorProxy" Data="{DynamicResource ChartGridLinesColor}" />-->
 
     <!-- ControlTemplate -->
 
@@ -129,7 +129,7 @@
                 <ItemsControl.ItemsSource>
                     <CompositeCollection>
                         <Grid>
-                            <s:SciChartSurface x:Name="MainChartControl"
+                            <!--<s:SciChartSurface x:Name="MainChartControl"
                                                RenderableSeries="{s:SeriesBinding Series}"
                                                Background="{TemplateBinding Background}"
                                                Style="{DynamicResource MainChartStyle}"
@@ -139,7 +139,7 @@
 
                                 <s:SciChartSurface.ChartModifier>
                                     <s:ModifierGroup s:MouseManager.MouseEventGroup="{Binding ChartWindowId.Value}">
-                                        <!--<s:YAxisDragModifier IsEnabled="False"/>-->
+                                        --><!--<s:YAxisDragModifier IsEnabled="False"/>--><!--
                                         <l:XDragModifier/>
                                         <l:ZoomControl MinZoomScale="{Binding MinZoom}" MaxZoomScale="{Binding MaxZoom}"
                                                    ZoomScale="{Binding Zoom.Value, Mode=TwoWay}" />
@@ -185,17 +185,17 @@
                                     <ResourceDictionary Source="SeriesView.xaml"/>  
                                 </s:SciChartSurface.Resources>
 
-                            </s:SciChartSurface>
+                            </s:SciChartSurface>-->
                             <ContentControl cal:View.Model="{Binding Overlay}"/>
                         </Grid>
                         <CollectionContainer Collection="{Binding Source={StaticResource outputPanesViewSrc}}"/>
                     </CompositeCollection>
                 </ItemsControl.ItemsSource>
-                <ItemsControl.ItemsPanel>
+                <!--<ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <l:SplitterPanel NewElementSizeRatio="0.2" />
                     </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
+                </ItemsControl.ItemsPanel>-->
             </ItemsControl>
 
             <ScrollBar Name="ChartScrollBar" Grid.Row="1" Orientation="Horizontal" IsEnabled="True" Visibility="Collapsed"
@@ -233,7 +233,7 @@
     <Style x:Key="AlgoChartViewStyle" TargetType="UserControl" >
         <Setter Property="Template" Value="{StaticResource AlgoChartControl}"/>
         <Setter Property="Background" Value="{DynamicResource ChartBackground}"/>
-        <Setter Property="l:SciChartBehavior.XAxisStyle">
+        <!--<Setter Property="l:SciChartBehavior.XAxisStyle">
             <Setter.Value>
                 <Style TargetType="s:AxisBase" BasedOn="{StaticResource AxisBaseStyle}">
                     <Setter Property="MajorGridLineStyle">
@@ -246,7 +246,7 @@
                     </Setter>
                 </Style>
             </Setter.Value>
-        </Setter>
+        </Setter>-->
     </Style>
 
     <Style x:Key="AlgoChartViewStyle.Classic" BasedOn="{StaticResource AlgoChartViewStyle}" TargetType="UserControl" >

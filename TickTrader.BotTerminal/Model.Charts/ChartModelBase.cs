@@ -1,7 +1,7 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using NLog;
-using SciChart.Charting.Visuals.Axes;
+//using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Core;
-using SciChart.Charting.Model.ChartSeries;
+//using SciChart.Charting.Model.ChartSeries;
 using System.Collections.Specialized;
 using Machinarium.Var;
 using SM = Machinarium.State;
@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
         private enum Events { Loaded, LoadFailed, Stopped }
 
         private SM.StateMachine<States> stateController = new SM.StateMachine<States>(new DispatcherStateMachineSync());
-        private VarList<IRenderableSeriesViewModel> seriesCollection = new VarList<IRenderableSeriesViewModel>();
+        //private VarList<IRenderableSeriesViewModel> seriesCollection = new VarList<IRenderableSeriesViewModel>();
         private VarList<IndicatorModel> indicators = new VarList<IndicatorModel>();
         private SelectableChartTypes chartType;
         private bool isIndicatorsOnline;
@@ -42,9 +42,9 @@ namespace TickTrader.BotTerminal
         private bool isConnected;
         private bool _isDisposed;
         private readonly List<SelectableChartTypes> supportedChartTypes = new List<SelectableChartTypes>();
-        private ChartNavigator navigator;
+        //private ChartNavigator navigator;
         private long indicatorNextId = 1;
-        private Property<AxisBase> _timeAxis = new Property<AxisBase>();
+        //private Property<AxisBase> _timeAxis = new Property<AxisBase>();
         private string dateAxisLabelFormat;
         private List<QuoteInfo> updateQueue;
         private IFeedSubscription subscription;
@@ -97,7 +97,7 @@ namespace TickTrader.BotTerminal
         protected TraderClientModel ClientModel => Agent.ClientModel;
         protected AlgoEnvironment AlgoEnv { get; }
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
-        protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
+        //protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
         public Feed.Types.Timeframe TimeFrame
         {
@@ -113,7 +113,7 @@ namespace TickTrader.BotTerminal
         }
 
         public abstract ITimeVectorRef TimeSyncRef { get; }
-        public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
+        //public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableList<AlgoPluginViewModel> AvailableIndicators { get; private set; }
         public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
         public IObservableList<AlgoPluginViewModel> AvailableBotTraders { get; private set; }
@@ -156,26 +156,26 @@ namespace TickTrader.BotTerminal
 
         public bool IsReady { get { return !IsLoading; } }
 
-        public ChartNavigator Navigator
-        {
-            get { return navigator; }
-            protected set
-            {
-                navigator = value;
-                _timeAxis.Value = value.CreateAxis();
-                CreateXAxisBinging(TimeAxis.Value);
-            }
-        }
+        //public ChartNavigator Navigator
+        //{
+        //    get { return navigator; }
+        //    protected set
+        //    {
+        //        navigator = value;
+        //        //_timeAxis.Value = value.CreateAxis();
+        //        //CreateXAxisBinging(TimeAxis.Value);
+        //    }
+        //}
 
-        public void CreateXAxisBinging(AxisBase timeAxis)
-        {
-            Binding cursorTextFormatBinding = new Binding(nameof(DateAxisLabelFormat));
-            cursorTextFormatBinding.Source = this;
-            cursorTextFormatBinding.Mode = BindingMode.TwoWay;
-            timeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
-        }
+        //public void CreateXAxisBinging(AxisBase timeAxis)
+        //{
+        //    Binding cursorTextFormatBinding = new Binding(nameof(DateAxisLabelFormat));
+        //    cursorTextFormatBinding.Source = this;
+        //    cursorTextFormatBinding.Mode = BindingMode.TwoWay;
+        //    timeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
+        //}
 
-        public Var<AxisBase> TimeAxis => _timeAxis.Var;
+        //public Var<AxisBase> TimeAxis => _timeAxis.Var;
 
         public SelectableChartTypes SelectedChartType
         {
@@ -272,7 +272,7 @@ namespace TickTrader.BotTerminal
             TimelineStart = startDate;
             TimelineEnd = endDate;
             //Navigator.Init(count, startDate, endDate);
-            Navigator.OnDataLoaded(count, startDate, endDate);
+            //Navigator.OnDataLoaded(count, startDate, endDate);
         }
 
         protected void ExtendBoundaries(int count, DateTime endDate)
@@ -361,12 +361,12 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoPluginHost
 
-        AxisBase IPluginDataChartModel.CreateXAxis()
-        {
-            var axis =  Navigator.CreateAxis();
-            CreateXAxisBinging(axis);
-            return axis;
-        }
+        //AxisBase IPluginDataChartModel.CreateXAxis()
+        //{
+        //    var axis =  Navigator.CreateAxis();
+        //    CreateXAxisBinging(axis);
+        //    return axis;
+        //}
 
         void IAlgoPluginHost.Lock()
         {

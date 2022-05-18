@@ -3,24 +3,24 @@
                     xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <Style x:Key="AxisBaseStyle" TargetType="s:AxisBase">
+    <!--<Style x:Key="AxisBaseStyle" TargetType="s:AxisBase">
         <Setter Property="FontSize" Value="11"/>
         <Setter Property="MajorGridLineStyle">
             <Setter.Value>
                 <Style TargetType="Line">
                     <Setter Property="Stroke" Value="LightGray"/>
                     <Setter Property="StrokeThickness" Value="0.4"/>
-                    <!--<Setter Property="X2" Value="4"/>
-                    <Setter Property="Y2" Value="4"/>-->
+                    --><!--<Setter Property="X2" Value="4"/>
+                    <Setter Property="Y2" Value="4"/>--><!--
                 </Style>
             </Setter.Value>
         </Setter>
         <Setter Property="TickLabelStyle">
-            <Setter.Value>
+            --><!--<Setter.Value>
                 <Style TargetType="s:DefaultTickLabel">
                     <Setter Property="Foreground" Value="Black"/>
                 </Style>
-            </Setter.Value>
+            </Setter.Value>--><!--
         </Setter>
         <Setter Property="GrowBy" Value="0, 0"/>
         <Setter Property="DrawMinorGridLines" Value="False"/>
@@ -28,41 +28,41 @@
         <Setter Property="DrawMajorTicks" Value="False"/>
         <Setter Property="DrawMinorTicks" Value="False"/>
         <Setter Property="DrawMajorBands" Value="False"/>
-        <!--<Setter Property="MaxAutoTicks" Value="25"/>-->
-    </Style>
+        --><!--<Setter Property="MaxAutoTicks" Value="25"/>--><!--
+    </Style>-->
 
-    <Style x:Key="BaseColumnsStyle" TargetType="s:StackedColumnRenderableSeries">
+    <!--<Style x:Key="BaseColumnsStyle" TargetType="s:StackedColumnRenderableSeries">
         <Setter Property="SpacingMode" Value="Relative"/>
         <Setter Property="DataPointWidth" Value="0.6"/>
         <Setter Property="StrokeThickness" Value="0"/>
         <Setter Property="Stroke" Value="Black"/>
         <Setter Property="ZeroLineY" Value="-1"/>
-    </Style>
+    </Style>-->
 
-    <Style x:Key="ProfitColumnsStyle" TargetType="s:StackedColumnRenderableSeries" BasedOn="{StaticResource BaseColumnsStyle}">
+    <!--<Style x:Key="ProfitColumnsStyle" TargetType="s:StackedColumnRenderableSeries" BasedOn="{StaticResource BaseColumnsStyle}">
         <Setter Property="Fill" Value="#009344"/>
     </Style>
 
     <Style x:Key="LossColumnsStyle" TargetType="s:StackedColumnRenderableSeries" BasedOn="{StaticResource BaseColumnsStyle}">
         <Setter Property="Fill" Value="#F15923"/>
-    </Style>
+    </Style>-->
 
-    <Style x:Key="BaseOhlcStyle" TargetType="s:FastOhlcRenderableSeries">
-        <!--<Setter Property="DataPointWidth" Value="0.6"/>
+    <!--<Style x:Key="BaseOhlcStyle" TargetType="s:FastOhlcRenderableSeries">
+        --><!--<Setter Property="DataPointWidth" Value="0.6"/>
         <Setter Property="StrokeThickness" Value="0"/>
         <Setter Property="Stroke" Value="Black"/>
-        <Setter Property="ZeroLineY" Value="-1"/>-->
-    </Style>
+        <Setter Property="ZeroLineY" Value="-1"/>--><!--
+    </Style>-->
 
-    <Style x:Key="EquityStyle" TargetType="s:FastOhlcRenderableSeries" BasedOn="{StaticResource BaseOhlcStyle}">
+    <!--<Style x:Key="EquityStyle" TargetType="s:FastOhlcRenderableSeries" BasedOn="{StaticResource BaseOhlcStyle}">
         <Setter Property="StrokeUp" Value="#4d40f9"/>
         <Setter Property="StrokeDown" Value="#352baf"/>
-    </Style>
+    </Style>-->
 
-    <Style x:Key="MarginStyle" TargetType="s:FastOhlcRenderableSeries" BasedOn="{StaticResource BaseOhlcStyle}">
+    <!--<Style x:Key="MarginStyle" TargetType="s:FastOhlcRenderableSeries" BasedOn="{StaticResource BaseOhlcStyle}">
         <Setter Property="StrokeUp" Value="#c23afc"/>
         <Setter Property="StrokeDown" Value="#7d23a3"/>
-    </Style>
+    </Style>-->
 
     <!-- CategoryHistogram -->
 
@@ -72,7 +72,7 @@
               Background="{TemplateBinding Background}"
               Height="{TemplateBinding Height}" >
 
-            <s:SciChartSurface RenderableSeries="{s:SeriesBinding SeriesList}" ChartTitle="{Binding Title}"
+            <!--<s:SciChartSurface RenderableSeries="{s:SeriesBinding SeriesList}" ChartTitle="{Binding Title}"
                                FontSize="12" Margin="4"
                                Background="{TemplateBinding Background}"
                                Foreground="Black">
@@ -89,24 +89,24 @@
                                    MinorDelta="1" MajorDelta="1" AutoTicks="False"/>
                 </s:SciChartSurface.XAxis>
 
-                <!--<s:SciChartSurface.ChartModifier>
+                --><!--<s:SciChartSurface.ChartModifier>
                 <s:ModifierGroup>
                     <s:RubberBandXyZoomModifier/>
                     <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick"/>
                 </s:ModifierGroup>
-            </s:SciChartSurface.ChartModifier>-->
+            </s:SciChartSurface.ChartModifier>--><!--
 
-            </s:SciChartSurface>
+            </s:SciChartSurface>-->
             
         </Grid>
 
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding XAxisDayNames}" Value="True">
-                <Setter TargetName="xAxis" Property="LabelProvider">
+                <!--<Setter TargetName="xAxis" Property="LabelProvider">
                     <Setter.Value>
                         <l:DayNameLabelProvider/>
                     </Setter.Value>
-                </Setter>
+                </Setter>-->
             </DataTrigger>
         </ControlTemplate.Triggers>
 
@@ -120,7 +120,7 @@
               Background="{TemplateBinding Background}"
               Height="{TemplateBinding Height}" >
 
-            <s:SciChartSurface RenderableSeries="{s:SeriesBinding SeriesList}" ChartTitle="{Binding Title}"
+            <!--<s:SciChartSurface RenderableSeries="{s:SeriesBinding SeriesList}" ChartTitle="{Binding Title}"
                                FontSize="12" Margin="4"
                                Background="{TemplateBinding Background}"
                                Foreground="Black">
@@ -136,14 +136,14 @@
                                    MinorDelta="1" MajorDelta="1" AutoTicks="False"/>
                 </s:SciChartSurface.XAxis>
 
-                <!--<s:SciChartSurface.ChartModifier>
+                --><!--<s:SciChartSurface.ChartModifier>
                 <s:ModifierGroup>
                     <s:RubberBandXyZoomModifier/>
                     <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick"/>
                 </s:ModifierGroup>
-            </s:SciChartSurface.ChartModifier>-->
+            </s:SciChartSurface.ChartModifier>--><!--
 
-            </s:SciChartSurface>
+            </s:SciChartSurface>-->
 
         </Grid>
 
