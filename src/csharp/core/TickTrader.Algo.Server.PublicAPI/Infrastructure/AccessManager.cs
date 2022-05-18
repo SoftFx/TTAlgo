@@ -1,7 +1,4 @@
-﻿using TickTrader.Algo.Domain;
-using TickTrader.Algo.Domain.ServerControl;
-
-namespace TickTrader.Algo.Server.Common
+﻿namespace TickTrader.Algo.Server.PublicAPI
 {
     public class AccessManager
     {

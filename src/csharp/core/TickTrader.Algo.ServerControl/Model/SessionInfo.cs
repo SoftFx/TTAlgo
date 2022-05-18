@@ -1,7 +1,7 @@
 ﻿using NLog;
 using System;
-using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.Algo.ServerControl.Model
 {

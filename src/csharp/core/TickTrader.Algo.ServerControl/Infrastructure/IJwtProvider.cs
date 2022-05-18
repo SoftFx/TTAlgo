@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Domain.ServerControl;
+﻿using TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.Algo.ServerControl
 {

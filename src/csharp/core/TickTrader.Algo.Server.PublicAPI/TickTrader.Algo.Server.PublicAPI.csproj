@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
@@ -55,33 +55,33 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Info\ParameterConfigs\input.parameter.config.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\ParameterConfigs\output.parameter.config.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\ParameterConfigs\parameter.config.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\property.descriptor.info.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\file.transfer.info.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\log.info.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\Mappings\mapping.info.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\Mappings\reduction.info.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\plugin.folder.info.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\server.metadata.info.proto" GrpcServices="Client" />
-    <Protobuf Include="Management\base.request.proto" GrpcServices="Client" />
-    <Protobuf Include="Management\account.management.proto" GrpcServices="Client" />
-    <Protobuf Include="Management\connection.management.proto" GrpcServices="Client" />
-    <Protobuf Include="Management\server.management.proto" GrpcServices="Client" />
-    <Protobuf Include="Management\subscriptions.management.proto" GrpcServices="Client" />
-    <Protobuf Include="Management\package.management.proto" GrpcServices="Client" />
-    <Protobuf Include="Management\plugin.files.management.proto" GrpcServices="Client" />
-    <Protobuf Include="Management\plugin.management.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\account.info.proto" GrpcServices="Client" />
-    <Protobuf Include="Info\package.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\ParameterConfigs\input.parameter.config.proto" GrpcServices="None" />
+    <Protobuf Include="Info\ParameterConfigs\output.parameter.config.proto" GrpcServices="None" />
+    <Protobuf Include="Info\ParameterConfigs\parameter.config.proto" GrpcServices="None" />
+    <Protobuf Include="Info\property.descriptor.info.proto" GrpcServices="None" />
+    <Protobuf Include="Info\file.transfer.info.proto" GrpcServices="None" />
+    <Protobuf Include="Info\log.info.proto" GrpcServices="None" />
+    <Protobuf Include="Info\Mappings\mapping.info.proto" GrpcServices="None" />
+    <Protobuf Include="Info\Mappings\reduction.info.proto" GrpcServices="None" />
+    <Protobuf Include="Info\plugin.folder.info.proto" GrpcServices="None" />
+    <Protobuf Include="Info\server.metadata.info.proto" GrpcServices="None" />
+    <Protobuf Include="Management\base.request.proto" GrpcServices="None" />
+    <Protobuf Include="Management\account.management.proto" GrpcServices="None" />
+    <Protobuf Include="Management\connection.management.proto" GrpcServices="None" />
+    <Protobuf Include="Management\server.management.proto" GrpcServices="None" />
+    <Protobuf Include="Management\subscriptions.management.proto" GrpcServices="None" />
+    <Protobuf Include="Management\package.management.proto" GrpcServices="None" />
+    <Protobuf Include="Management\plugin.files.management.proto" GrpcServices="None" />
+    <Protobuf Include="Management\plugin.management.proto" GrpcServices="None" />
+    <Protobuf Include="Info\account.info.proto" GrpcServices="None" />
+    <Protobuf Include="Info\package.info.proto" GrpcServices="None" />
     <Protobuf Include="Services\algo.server.publicAPI.proto" GrpcServices="Both" />
-    <Protobuf Include="Info\plugin.info.proto" GrpcServices="Client" />
-    <Protobuf Include="Updates\server.metadata.update.proto" GrpcServices="Client" />
-    <Protobuf Include="Updates\base.update.proto" GrpcServices="Client" />
-    <Protobuf Include="Updates\log.record.update.proto" GrpcServices="Client" />
-    <Protobuf Include="Updates\model.state.update.proto" GrpcServices="Client" />
-    <Protobuf Include="Updates\model.update.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\plugin.info.proto" GrpcServices="None" />
+    <Protobuf Include="Updates\server.metadata.update.proto" GrpcServices="None" />
+    <Protobuf Include="Updates\base.update.proto" GrpcServices="None" />
+    <Protobuf Include="Updates\log.record.update.proto" GrpcServices="None" />
+    <Protobuf Include="Updates\model.state.update.proto" GrpcServices="None" />
+    <Protobuf Include="Updates\model.update.proto" GrpcServices="None" />
   </ItemGroup>
 
 </Project>

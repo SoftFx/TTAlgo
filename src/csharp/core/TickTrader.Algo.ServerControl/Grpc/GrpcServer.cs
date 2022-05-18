@@ -521,7 +521,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                             if (!string.IsNullOrWhiteSpace(accessToken))
                             {
                                 res.SessionId = session.Id;
-                                res.AccessLevel = session.AccessManager.Level.ToApi();
+                                res.AccessLevel = session.AccessManager.Level;
                                 res.AccessToken = accessToken;
 
                                 await SessionControl.AddSession(_sessionsRef, session, _logger.Factory);
@@ -1034,7 +1034,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var res = new AlgoServerApi.PluginFolderInfoResponse { ExecResult = execResult };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanGetBotFolderInfo(request.ToServer().FolderId))
+            if (!session.AccessManager.CanGetBotFolderInfo(request.FolderId))
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;
@@ -1109,7 +1109,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 await SendServerStreamResponse(responseStream, session, transferMsg);
                 return;
             }
-            if (!session.AccessManager.CanDownloadBotFile(request.FolderId.ToServer()))
+            if (!session.AccessManager.CanDownloadBotFile(request.FolderId))
             {
                 response.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 transferMsg.Header = Any.Pack(response);

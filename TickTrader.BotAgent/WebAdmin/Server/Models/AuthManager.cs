@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
 using OtpNet;
 using System;
-using System.Security.Claims;
-using System.Security.Principal;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
-using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Server.PublicAPI;
 using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Models

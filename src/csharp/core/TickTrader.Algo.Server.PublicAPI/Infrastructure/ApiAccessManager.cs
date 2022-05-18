@@ -1,6 +1,4 @@
-﻿using TickTrader.Algo.Server.Common;
-
-namespace TickTrader.Algo.Server.PublicAPI
+﻿namespace TickTrader.Algo.Server.PublicAPI
 {
     public sealed class ApiAccessManager : AccessManager, IAccessManager
     {
@@ -19,29 +17,6 @@ namespace TickTrader.Algo.Server.PublicAPI
                               Level == ClientClaims.Types.AccessLevel.Admin;
 
             HasAdminAccess = Level == ClientClaims.Types.AccessLevel.Admin;
-        }
-
-
-        public bool CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId folderId)
-        {
-            switch (folderId)
-            {
-                case PluginFolderInfo.Types.PluginFolderId.BotLogs:
-                    return HasViewerAccess;
-                default:
-                    return HasAdminAccess;
-            }
-        }
-
-        public bool CanDownloadBotFile(PluginFolderInfo.Types.PluginFolderId folderId)
-        {
-            switch (folderId)
-            {
-                case PluginFolderInfo.Types.PluginFolderId.BotLogs:
-                    return HasViewerAccess;
-                default:
-                    return HasAdminAccess;
-            }
         }
     }
 }

@@ -6,8 +6,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Server.PublicAPI;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Core.Auth
