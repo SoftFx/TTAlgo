@@ -162,6 +162,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.PkgStorage"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Server.PublicAPI.Adapter", "src\csharp\core\TickTrader.Algo.Server.PublicAPI.Adapter\TickTrader.Algo.Server.PublicAPI.Adapter.csproj", "{104A1694-9ACA-4476-BB4F-8CD1A2736625}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Server.PublicAPI.NetFxClient", "src\csharp\core\TickTrader.Algo.Server.PublicAPI.NetFxClient\TickTrader.Algo.Server.PublicAPI.NetFxClient.csproj", "{06B7F293-9A1E-457E-BE58-EF23F3855522}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -928,6 +930,18 @@ Global
 		{104A1694-9ACA-4476-BB4F-8CD1A2736625}.Release|x64.Build.0 = Release|Any CPU
 		{104A1694-9ACA-4476-BB4F-8CD1A2736625}.Release|x86.ActiveCfg = Release|Any CPU
 		{104A1694-9ACA-4476-BB4F-8CD1A2736625}.Release|x86.Build.0 = Release|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Debug|x64.Build.0 = Debug|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Debug|x86.Build.0 = Debug|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Release|x64.ActiveCfg = Release|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Release|x64.Build.0 = Release|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Release|x86.ActiveCfg = Release|Any CPU
+		{06B7F293-9A1E-457E-BE58-EF23F3855522}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -998,6 +1012,7 @@ Global
 		{D50FAF09-2A1B-44D6-A791-8D4C5221518F} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{104A1694-9ACA-4476-BB4F-8CD1A2736625} = {C5AE642C-4A61-47BD-9272-69909998B71D}
+		{06B7F293-9A1E-457E-BE58-EF23F3855522} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}

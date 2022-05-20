@@ -136,7 +136,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
 
             var update = new AlgoServerMetadataUpdate
             {
-                ExecResult = BotAgentServerImpl.CreateSuccessResult(),
+                ExecResult = AlgoServerPublicImpl.CreateSuccessResult(),
                 ApiMetadata = _apiMetadata,
                 SetupContext = _setupContext,
                 MappingsCollection = _mappings,

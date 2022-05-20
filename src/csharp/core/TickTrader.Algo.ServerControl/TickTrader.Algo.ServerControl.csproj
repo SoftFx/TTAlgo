@@ -15,6 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\TickTrader.Algo.Server.PublicAPI.NetFxClient\GrpcLoggerAdapter.cs" Link="Infrastructure\GrpcLoggerAdapter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="certs\algo-ca.crt" />
   </ItemGroup>
 

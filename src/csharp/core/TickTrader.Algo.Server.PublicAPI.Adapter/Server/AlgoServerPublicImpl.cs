@@ -13,7 +13,7 @@ using TickTrader.Algo.Server.Common;
 
 namespace TickTrader.Algo.Server.PublicAPI.Adapter
 {
-    internal class BotAgentServerImpl : AlgoServerPublic.AlgoServerPublicBase
+    internal class AlgoServerPublicImpl : AlgoServerPublic.AlgoServerPublicBase
     {
         private readonly IActorRef _sessionsRef;
 
@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         private VersionSpec _version;
 
 
-        public BotAgentServerImpl(IAlgoServerApi serverApi, IAuthManager authManager, IJwtProvider jwtProvider, ILogger logger, bool logMessages, VersionSpec version)
+        public AlgoServerPublicImpl(IAlgoServerApi serverApi, IAuthManager authManager, IJwtProvider jwtProvider, ILogger logger, bool logMessages, VersionSpec version)
         {
             _version = version;
             _algoServer = new AlgoServerAdapter(serverApi, authManager);

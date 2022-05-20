@@ -4,7 +4,6 @@ using Grpc.Core;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Server.Common;
@@ -27,7 +26,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         static AlgoServerClient()
         {
-            CertificateProvider.InitClient(Assembly.GetExecutingAssembly(), "TickTrader.Algo.Server.PublicAPI.certs.algo-ca.crt");
+            CertificateProvider.InitClient(typeof(IAlgoServerClient).Assembly, "TickTrader.Algo.Server.PublicAPI.certs.algo-ca.crt");
         }
 
         private AlgoServerClient(IAlgoServerEventHandler handler) : base(handler)
