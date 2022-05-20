@@ -7,28 +7,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\..\..\protobuf\common.proto">
+    <Protobuf Include="..\..\..\protobuf\common.proto" GrpcServices="None">
       <Link>protos\common.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\..\protobuf\runtime.feed.proto">
+    <Protobuf Include="..\..\..\protobuf\runtime.feed.proto" GrpcServices="None">
       <Link>protos\runtime.feed.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\..\protobuf\runtime.package.proto">
+    <Protobuf Include="..\..\..\protobuf\runtime.package.proto" GrpcServices="None">
       <Link>protos\runtime.package.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\..\protobuf\runtime.plugin.proto">
+    <Protobuf Include="..\..\..\protobuf\runtime.plugin.proto" GrpcServices="None">
       <Link>protos\runtime.plugin.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\..\protobuf\runtime.proto">
+    <Protobuf Include="..\..\..\protobuf\runtime.proto" GrpcServices="None">
       <Link>protos\runtime.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\..\protobuf\runtime.trade.proto">
+    <Protobuf Include="..\..\..\protobuf\runtime.trade.proto" GrpcServices="None">
       <Link>protos\runtime.trade.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\..\protobuf\server.control.proto">
+    <Protobuf Include="..\..\..\protobuf\server.control.proto" GrpcServices="None">
       <Link>protos\server.control.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\..\protobuf\server.data.proto">
+    <Protobuf Include="..\..\..\protobuf\server.data.proto" GrpcServices="None">
       <Link>protos\server.data.proto</Link>
     </Protobuf>
   </ItemGroup>
@@ -40,6 +40,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

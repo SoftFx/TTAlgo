@@ -1,12 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using Google.Protobuf;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Package;
 using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
 {
-    public interface IAlgoServerLocal
+    public interface IAlgoServerLocal : IAlgoServerApi
     {
         ServerBusModel EventBus { get; }
 
@@ -16,48 +19,24 @@ namespace TickTrader.Algo.Server
         Task<bool> NeedLegacyState();
         Task LoadLegacyState(ServerSavedState savedState);
 
-        Task<PackageListSnapshot> GetPackageSnapshot();
         Task<bool> PackageWithNameExists(string pkgName);
-        Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath);
-        Task<byte[]> GetPackageBinary(string pkgId);
-        Task RemovePackage(RemovePackageRequest request);
-        Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request);
 
-        Task<AccountListSnapshot> GetAccounts();
-        Task<string> AddAccount(AddAccountRequest request);
-        Task ChangeAccount(ChangeAccountRequest request);
-        Task RemoveAccount(RemoveAccountRequest request);
-        Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
-        Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request);
-        Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
-
-        Task<PluginListSnapshot> GetPlugins();
         Task<PluginModelInfo> GetPluginInfo(string pluginId);
         Task<bool> PluginExists(string pluginId);
         Task<string> GeneratePluginId(string pluginDisplayName);
-        Task AddPlugin(AddPluginRequest request);
-        Task UpdatePluginConfig(ChangePluginConfigRequest request);
-        Task RemovePlugin(RemovePluginRequest request);
-        Task StartPlugin(StartPluginRequest request);
-        Task StopPlugin(StopPluginRequest request);
-        Task<PluginLogsResponse> GetPluginLogs(PluginLogsRequest request);
-        Task<PluginStatusResponse> GetPluginStatus(PluginStatusRequest request);
-
-        Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request);
-        Task ClearPluginFolder(ClearPluginFolderRequest request);
-        Task DeletePluginFile(DeletePluginFileRequest request);
-        Task<string> GetPluginFileReadPath(DownloadPluginFileRequest request);
-        Task<string> GetPluginFileWritePath(UploadPluginFileRequest request);
-
-        Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
     }
 
     public class LocalAlgoServer : IAlgoServerLocal
     {
+        private static readonly SetupContextInfo _setupContext = new SetupContextInfo(Feed.Types.Timeframe.M1,
+            new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
+
         private IActorRef _server;
 
 
         public ServerBusModel EventBus { get; } = new ServerBusModel();
+
+        public SetupContextInfo DefaultSetupContext => _setupContext;
 
 
         public LocalAlgoServer() { }
@@ -109,6 +88,8 @@ namespace TickTrader.Algo.Server
         public Task<string> GetPluginFileWritePath(UploadPluginFileRequest request) => _server.Ask<string>(request);
 
         public Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request) => _server.Ask<AlertRecordInfo[]>(request);
+
+        public Task SubscribeToUpdates(ChannelWriter<IMessage> channel) => EventBus.SubscribeToUpdates(channel, true);
 
 
         internal class PkgFileExistsRequest
