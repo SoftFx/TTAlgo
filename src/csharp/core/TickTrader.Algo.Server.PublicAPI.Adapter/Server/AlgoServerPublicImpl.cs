@@ -239,9 +239,9 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         {
             try
             {
-                _messageFormatter.LogClientRequest(_logger, request);
+                _messageFormatter.LogMsgFromClient(_logger, request);
                 var response = await requestAction(request, context);
-                _messageFormatter.LogClientResponse(_logger, response);
+                _messageFormatter.LogMsgToClient(_logger, response);
 
                 return response;
             }
@@ -264,9 +264,9 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 if (session != null)
                     ValidateSession(sessionId, session, out execResult);
 
-                _messageFormatter.LogClientRequest(session?.Logger, request);
+                _messageFormatter.LogMsgFromClient(session?.Logger, request);
                 var response = await requestAction(request, context, session, execResult);
-                _messageFormatter.LogClientResponse(session?.Logger, response);
+                _messageFormatter.LogMsgToClient(session?.Logger, response);
 
                 return response;
             }
@@ -290,7 +290,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 if (session != null)
                     ValidateSession(sessionId, session, out execResult);
 
-                _messageFormatter.LogClientRequest(session?.Logger, request);
+                _messageFormatter.LogMsgFromClient(session?.Logger, request);
                 await requestAction(request, responseStream, context, session, execResult);
             }
             catch (Exception ex)
@@ -314,7 +314,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                     ValidateSession(sessionId, session, out execResult);
 
                 var response = await requestAction(requestStream, context, session, execResult);
-                _messageFormatter.LogClientResponse(session?.Logger, response);
+                _messageFormatter.LogMsgToClient(session?.Logger, response);
 
                 return response;
             }
@@ -398,14 +398,14 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         private async Task SendServerStreamResponse<TResponse>(IServerStreamWriter<TResponse> responseStream, SessionInfo session, TResponse response)
             where TResponse : IMessage
         {
-            _messageFormatter.LogClientResponse(session?.Logger, response);
+            _messageFormatter.LogMsgToClient(session?.Logger, response);
             await responseStream.WriteAsync(response);
         }
 
         private TRequest GetClientStreamRequest<TRequest>(IAsyncStreamReader<TRequest> requestStream, SessionInfo session)
             where TRequest : IMessage
         {
-            _messageFormatter.LogClientResponse(session?.Logger, requestStream.Current);
+            _messageFormatter.LogMsgToClient(session?.Logger, requestStream.Current);
             return requestStream.Current;
         }
 
@@ -869,7 +869,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 return res;
             }
             var request = transferMsg.Header.Unpack<UploadPackageRequest>();
-            _messageFormatter.LogClientResponse(session?.Logger, request);
+            _messageFormatter.LogMsgToClient(session?.Logger, request);
 
             var tmpPath = Path.GetTempFileName();
             try
@@ -1129,7 +1129,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 return res;
             }
             var request = transferMsg.Header.Unpack<UploadPluginFileRequest>();
-            _messageFormatter.LogClientResponse(session?.Logger, request);
+            _messageFormatter.LogMsgToClient(session?.Logger, request);
 
             try
             {

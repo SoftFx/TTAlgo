@@ -63,7 +63,7 @@ namespace TickTrader.Algo.ServerControl.Model
             var snapshot = node.GetLogsCacheSnapshot();
             if (TryPackUpdate(snapshot, out var packedSnapshot, true))
             {
-                var logMsg = _msgFormatter.FormatServerUpdate(snapshot, packedSnapshot.Payload.Length, packedSnapshot.Compressed);
+                var logMsg = _msgFormatter.FormatUpdateToClient(snapshot, packedSnapshot.Payload.Length, packedSnapshot.Compressed);
                 session.TryWrite(packedSnapshot, logMsg);
             }
         }
@@ -124,7 +124,7 @@ namespace TickTrader.Algo.ServerControl.Model
                     var update = new PluginStatusUpdate { PluginId = id, Message = status };
                     if (TryPackUpdate(update, out var packedUpdate, true))
                     {
-                        var logMsg = _msgFormatter.FormatServerUpdate(update, packedUpdate.Payload.Length, packedUpdate.Compressed);
+                        var logMsg = _msgFormatter.FormatUpdateToClient(update, packedUpdate.Payload.Length, packedUpdate.Compressed);
                         node.DispatchUpdate(packedUpdate, logMsg);
                     }
                 }
@@ -161,7 +161,7 @@ namespace TickTrader.Algo.ServerControl.Model
                     var update = node.UpdateLogsCache(logs);
                     if (TryPackUpdate(update, out var packedUpdate, true))
                     {
-                        var logMsg = _msgFormatter.FormatServerUpdate(update, packedUpdate.Payload.Length, packedUpdate.Compressed);
+                        var logMsg = _msgFormatter.FormatUpdateToClient(update, packedUpdate.Payload.Length, packedUpdate.Compressed);
                         node.DispatchUpdate(packedUpdate, logMsg);
                     }
                 }

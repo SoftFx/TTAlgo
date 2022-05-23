@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Grpc.Core.Interceptors;
 using System;
 using System.IO;
 using System.Linq;
@@ -49,7 +50,17 @@ namespace TickTrader.Algo.Server.PublicAPI
             var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
 
             _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ServerPort, creds, options);
-            _client = new AlgoServerPublic.AlgoServerPublicClient(_channel);
+            _client = new AlgoServerPublic.AlgoServerPublicClient(_channel
+                .Intercept(headers =>
+                {
+                    if (!string.IsNullOrEmpty(_accessToken))
+                    {
+                        headers.Add(AlgoGrpcCredentials.GetBearerGrpcHeader(_accessToken));
+                    }
+                    return headers;
+                })
+                .Intercept(new CallOptionsInterceptor())
+                .Intercept(new ClientLoggerInterceptor(_logger, _messageFormatter, SessionSettings.LogMessages)));
 
             _messageFormatter.LogMessages = SessionSettings.LogMessages;
             _accessToken = string.Empty;
@@ -276,7 +287,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                     }
                     else if (updateInfo.TryUnpack(out var update))
                     {
-                        _messageFormatter.LogClientUpdate(_logger, update);
+                        _messageFormatter.LogUpdateFromServer(_logger, update, updateInfo.Payload.Length, updateInfo.Compressed);
                         DispatchUpdate(update);
                     }
                     else
@@ -329,10 +340,10 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private static CallOptions BuildCallOptions(string accessToken = null, bool setDeadline = true)
         {
-            var deadline = setDeadline ? (DateTime?)DateTime.UtcNow.AddSeconds(DefaultRequestTimeout) : null;
-            var credentials = string.IsNullOrEmpty(accessToken) ? null : AlgoGrpcCredentials.FromAccessToken(accessToken);
+            //var deadline = setDeadline ? (DateTime?)DateTime.UtcNow.AddSeconds(DefaultRequestTimeout) : null;
+            //var credentials = string.IsNullOrEmpty(accessToken) ? null : AlgoGrpcCredentials.FromAccessToken(accessToken);
 
-            return new CallOptions(deadline: deadline, credentials: credentials);
+            return new CallOptions();// (deadline: deadline, credentials: credentials);
         }
 
         private async Task<TResponse> ExecuteUnaryRequest<TRequest, TResponse>(
@@ -342,9 +353,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             try
             {
-                _messageFormatter.LogServerRequest(_logger, request);
+                _messageFormatter.LogMsgToServer(_logger, request);
                 var response = await requestAction(request, BuildCallOptions());
-                _messageFormatter.LogServerResponse(_logger, response);
+                _messageFormatter.LogMsgFromServer(_logger, response);
 
                 return response;
             }
@@ -362,9 +373,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             try
             {
-                _messageFormatter.LogServerRequest(_logger, request);
+                _messageFormatter.LogMsgToServer(_logger, request);
                 var response = await requestAction(request, BuildCallOptions(_accessToken));
-                _messageFormatter.LogServerResponse(_logger, response);
+                _messageFormatter.LogMsgFromServer(_logger, response);
 
                 return response;
             }
@@ -402,7 +413,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             try
             {
-                _messageFormatter.LogServerRequest(_logger, request);
+                _messageFormatter.LogMsgToServer(_logger, request);
 
                 return requestAction(request, BuildCallOptions(_accessToken, false));
             }
@@ -425,7 +436,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             try
             {
-                _messageFormatter.LogServerRequest(_logger, request);
+                _messageFormatter.LogMsgToServer(_logger, request);
 
                 return requestAction(request, BuildCallOptions(_accessToken, false));
             }
@@ -740,7 +751,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
                         transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
-                        _messageFormatter.LogClientRequest(_logger, transferMsg);
+                        _messageFormatter.LogMsgFromClient(_logger, transferMsg);
                         await clientStream.RequestStream.WriteAsync(transferMsg);
                         progressListener.IncrementProgress(cnt);
                         transferMsg.Data.Id++;
@@ -750,7 +761,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             finally
             {
                 transferMsg.Data = FileChunk.FinalChunk;
-                _messageFormatter.LogClientRequest(_logger, transferMsg);
+                _messageFormatter.LogMsgFromClient(_logger, transferMsg);
                 await clientStream.RequestStream.WriteAsync(transferMsg);
             }
 
@@ -811,12 +822,12 @@ namespace TickTrader.Algo.Server.PublicAPI
                     do
                     {
                         var transferMsg = fileReader.Current;
-                        _messageFormatter.LogServerResponse(_logger, transferMsg);
+                        _messageFormatter.LogMsgFromServer(_logger, transferMsg);
 
                         if (transferMsg.Header != null)
                         {
                             var response = transferMsg.Header.Unpack<DownloadPackageResponse>();
-                            _messageFormatter.LogServerResponse(_logger, response);
+                            _messageFormatter.LogMsgFromServer(_logger, response);
                             FailForNonSuccess(response.ExecResult);
                         }
 
@@ -905,12 +916,12 @@ namespace TickTrader.Algo.Server.PublicAPI
                     do
                     {
                         var transferMsg = fileReader.Current;
-                        _messageFormatter.LogServerResponse(_logger, transferMsg);
+                        _messageFormatter.LogMsgFromServer(_logger, transferMsg);
 
                         if (transferMsg.Header != null)
                         {
                             var response = transferMsg.Header.Unpack<DownloadPluginFileResponse>();
-                            _messageFormatter.LogServerResponse(_logger, response);
+                            _messageFormatter.LogMsgFromServer(_logger, response);
                             FailForNonSuccess(response.ExecResult);
                         }
 
@@ -954,7 +965,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
                         transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
-                        _messageFormatter.LogClientRequest(_logger, transferMsg);
+                        _messageFormatter.LogMsgFromClient(_logger, transferMsg);
                         await clientStream.RequestStream.WriteAsync(transferMsg);
                         progressListener.IncrementProgress(cnt);
                         transferMsg.Data.Id++;
@@ -964,7 +975,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             finally
             {
                 transferMsg.Data = FileChunk.FinalChunk;
-                _messageFormatter.LogClientRequest(_logger, request);
+                _messageFormatter.LogMsgFromClient(_logger, request);
                 await clientStream.RequestStream.WriteAsync(transferMsg);
             }
 

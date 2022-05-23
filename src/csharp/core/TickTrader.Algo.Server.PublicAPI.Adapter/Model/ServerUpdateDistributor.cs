@@ -148,7 +148,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
 
             if (UpdateInfo.TryPack(update, out _metadataSnapshot, true))
             {
-                _metadataSnapshotLogMsg = _msgFormatter.FormatServerUpdate(update, _metadataSnapshot.Payload.Length, _metadataSnapshot.Compressed);
+                _metadataSnapshotLogMsg = _msgFormatter.FormatUpdateToClient(update, _metadataSnapshot.Payload.Length, _metadataSnapshot.Compressed);
                 _metadataSnapshotVersion = _metadataVersion;
 
                 return true;
@@ -289,7 +289,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 return;
             }
 
-            var logMsg = _msgFormatter.FormatServerUpdate(update, packedUpdate.Payload.Length, packedUpdate.Compressed);
+            var logMsg = _msgFormatter.FormatUpdateToClient(update, packedUpdate.Payload.Length, packedUpdate.Compressed);
 
             var node = _sessions.First;
             while (node != null)
