@@ -2,21 +2,19 @@
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using NLog;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Server.Common;
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
-    public class ClientLoggerInterceptor : Interceptor
+    public class MessageLoggerInterceptor : Interceptor
     {
         private ILogger _logger;
         private ApiMessageFormatter _messageFormatter;
         private bool _logMessages;
 
 
-        public ClientLoggerInterceptor(ILogger logger, ApiMessageFormatter messageFormatter, bool logMessages)
+        public MessageLoggerInterceptor(ILogger logger, ApiMessageFormatter messageFormatter, bool logMessages)
         {
             _logger = logger;
             _messageFormatter = messageFormatter;
@@ -24,13 +22,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         }
 
 
-        public override TResponse BlockingUnaryCall<TRequest, TResponse>(TRequest request, ClientInterceptorContext<TRequest, TResponse> context, BlockingUnaryCallContinuation<TRequest, TResponse> continuation)
-        {
-            throw new UnsupportedException("Blocking calls should not be used");
-        }
-
         public override AsyncUnaryCall<TResponse> AsyncUnaryCall<TRequest, TResponse>(TRequest request, ClientInterceptorContext<TRequest, TResponse> context, AsyncUnaryCallContinuation<TRequest, TResponse> continuation)
         {
+            LogOutMsg(request);
             var call = continuation(request, context);
 
             return new AsyncUnaryCall<TResponse>(LogResponseAsync(call.ResponseAsync, context.Method.Name, request),
@@ -58,49 +52,11 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private async Task<TResponse> LogResponseAsync<TRequest, TResponse>(Task<TResponse> asyncAction, string methodName, TRequest request)
         {
-            try
-            {
-                LogOutMsg(request);
-                var response = await asyncAction;
-                LogInMsg(response);
-                return response;
-            }
-            catch (UnauthorizedException uex)
-            {
-                LogMethodError(methodName, request, uex, "Bad access token for");
-                throw;
-            }
-            catch (RpcException rex)
-            {
-                if (rex.StatusCode == StatusCode.DeadlineExceeded)
-                {
-                    LogMethodError(methodName, request, "Request timed out");
-                    throw new Common.TimeoutException($"Request {nameof(TRequest)} timed out");
-                }
-                else if (rex.StatusCode == StatusCode.Unknown && rex.Status.Detail == "Stream removed")
-                {
-                    LogMethodError(methodName, request, "Disconnected while executing");
-                    throw new AlgoServerException("Connection error");
-                }
-                LogMethodError(methodName, request, rex);
-                throw;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(methodName, request, ex);
-                throw;
-            }
+            var response = await asyncAction;
+            LogInMsg(response);
+            return response;
         }
 
-        private void LogMethodError<TRequest>(string methodName, TRequest request, string errorMsgPrefix)
-        {
-            _logger.Error($"{errorMsgPrefix} {methodName}({_messageFormatter.ToJson(request as IMessage)})");
-        }
-
-        private void LogMethodError<TRequest>(string methodName, TRequest request, Exception ex, string errorMsgPrefix = "Failed to execute")
-        {
-            _logger.Error(ex, $"{errorMsgPrefix} {methodName}({_messageFormatter.ToJson(request as IMessage)})");
-        }
 
         private void LogOutMsg<TRequest>(TRequest request)
         {
@@ -123,14 +79,14 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private class GrpcReaderStreamWrapper<T> : IAsyncStreamReader<T>
         {
-            private ClientLoggerInterceptor _parent;
+            private MessageLoggerInterceptor _parent;
             private IAsyncStreamReader<T> _innerStream;
 
 
             public T Current => _innerStream.Current;
 
 
-            public GrpcReaderStreamWrapper(ClientLoggerInterceptor parent, IAsyncStreamReader<T> innerStream)
+            public GrpcReaderStreamWrapper(MessageLoggerInterceptor parent, IAsyncStreamReader<T> innerStream)
             {
                 _parent = parent;
                 _innerStream = innerStream;
@@ -150,7 +106,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private class GrpcWriterStreamWrapper<T> : IClientStreamWriter<T>
         {
-            private ClientLoggerInterceptor _parent;
+            private MessageLoggerInterceptor _parent;
             private IClientStreamWriter<T> _innerStream;
 
 
@@ -161,7 +117,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
 
 
-            public GrpcWriterStreamWrapper(ClientLoggerInterceptor parent, IClientStreamWriter<T> innerStream)
+            public GrpcWriterStreamWrapper(MessageLoggerInterceptor parent, IClientStreamWriter<T> innerStream)
             {
                 _parent = parent;
                 _innerStream = innerStream;

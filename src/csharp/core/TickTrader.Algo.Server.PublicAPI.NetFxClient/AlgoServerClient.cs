@@ -60,7 +60,8 @@ namespace TickTrader.Algo.Server.PublicAPI
                     return headers;
                 })
                 .Intercept(new CallOptionsInterceptor())
-                .Intercept(new ClientLoggerInterceptor(_logger, _messageFormatter, SessionSettings.LogMessages)));
+                .Intercept(new MessageLoggerInterceptor(_logger, _messageFormatter, SessionSettings.LogMessages))
+                .Intercept(new ErrorLoggerInterceptor(_logger, _messageFormatter)));
 
             _messageFormatter.LogMessages = SessionSettings.LogMessages;
             _accessToken = string.Empty;
