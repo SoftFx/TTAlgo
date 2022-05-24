@@ -134,7 +134,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private async Task<LoginResponse> LoginAsync()
         {
-            return await ExecuteUnaryRequest(LoginInternal, GetLoginRequest());
+            return await _client.LoginAsync(GetLoginRequest());
         }
 
         private async Task<LoginResponse> Login2FAAsync()
@@ -151,7 +151,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             var request = GetLoginRequest();
             request.OneTimePassword = otp;
 
-            return await ExecuteUnaryRequest(LoginInternal, request);
+            return await _client.LoginAsync(request);
         }
 
         private LoginRequest GetLoginRequest()
@@ -191,30 +191,24 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public override void Init()
         {
-            ExecuteServerStreamingRequestAuthorized(SubscribeToUpdatesInternal, new SubscribeToUpdatesRequest())
-                .ContinueWith(t =>
-                {
-                    switch (t.Status)
-                    {
-                        case TaskStatus.RanToCompletion:
-                            ListenToUpdates(t.Result);
-                            RestoreSubscribeToPluginStatusInternal();
-                            RestoreSubscribeToPluginLogsInternal();
-                            OnSubscribed();
-                            break;
-                        case TaskStatus.Canceled:
-                            OnConnectionError("Request timeout during init");
-                            break;
-                        case TaskStatus.Faulted:
-                            OnConnectionError("Init failed: Can't subscribe to updates");
-                            break;
-                    }
-                });
+            try
+            {
+                var call = _client.SubscribeToUpdates(new SubscribeToUpdatesRequest());
+                ListenToUpdates(call);
+                RestoreSubscribeToPluginStatusInternal();
+                RestoreSubscribeToPluginLogsInternal();
+                OnSubscribed();
+            }
+            catch (OperationCanceledException) { OnConnectionError("Request timeout during init"); }
+            catch (Exception ex)
+            {
+                OnConnectionError("Init failed: Can't subscribe to updates", ex);
+            }
         }
 
         public override void SendLogout()
         {
-            ExecuteUnaryRequestAuthorized(LogoutInternal, new LogoutRequest())
+            _client.LogoutAsync(new LogoutRequest()).ResponseAsync
                 .ContinueWith(t =>
                 {
                     switch (t.Status)
@@ -265,9 +259,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         private static void FailForNonSuccess(RequestResult requestResult)
         {
             if (requestResult.Status != RequestResult.Types.RequestStatus.Success)
-                throw requestResult.Status == RequestResult.Types.RequestStatus.Unauthorized
-                    ? new UnauthorizedException(requestResult.Message)
-                    : new AlgoServerException($"{requestResult.Status} - {requestResult.Message}");
+                throw new AlgoServerException($"{requestResult.Status} - {requestResult.Message}");
         }
 
         private async void ListenToUpdates(AsyncServerStreamingCall<UpdateInfo> updateCall)
@@ -339,257 +331,11 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
         }
 
-        private static CallOptions BuildCallOptions(string accessToken = null, bool setDeadline = true)
-        {
-            //var deadline = setDeadline ? (DateTime?)DateTime.UtcNow.AddSeconds(DefaultRequestTimeout) : null;
-            //var credentials = string.IsNullOrEmpty(accessToken) ? null : AlgoGrpcCredentials.FromAccessToken(accessToken);
-
-            return new CallOptions();// (deadline: deadline, credentials: credentials);
-        }
-
-        private async Task<TResponse> ExecuteUnaryRequest<TRequest, TResponse>(
-            Func<TRequest, CallOptions, Task<TResponse>> requestAction, TRequest request)
-            where TRequest : IMessage
-            where TResponse : IMessage
-        {
-            try
-            {
-                _messageFormatter.LogMsgToServer(_logger, request);
-                var response = await requestAction(request, BuildCallOptions());
-                _messageFormatter.LogMsgFromServer(_logger, response);
-
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
-                throw;
-            }
-        }
-
-        private async Task<TResponse> ExecuteUnaryRequestAuthorized<TRequest, TResponse>(
-            Func<TRequest, CallOptions, Task<TResponse>> requestAction, TRequest request)
-            where TRequest : IMessage
-            where TResponse : IMessage
-        {
-            try
-            {
-                _messageFormatter.LogMsgToServer(_logger, request);
-                var response = await requestAction(request, BuildCallOptions(_accessToken));
-                _messageFormatter.LogMsgFromServer(_logger, response);
-
-                return response;
-            }
-            catch (UnauthorizedException uex)
-            {
-                _logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
-                throw;
-            }
-            catch (RpcException rex)
-            {
-                if (rex.StatusCode == StatusCode.DeadlineExceeded)
-                {
-                    _logger.Error($"Request timed out {_messageFormatter.ToJson(request)}");
-                    throw new Common.TimeoutException($"Request {nameof(TRequest)} timed out");
-                }
-                else if (rex.StatusCode == StatusCode.Unknown && rex.Status.Detail == "Stream removed")
-                {
-                    _logger.Error($"Disconnected while executing {_messageFormatter.ToJson(request)}");
-                    throw new AlgoServerException("Connection error");
-                }
-                _logger.Error(rex, $"Failed to execute {_messageFormatter.ToJson(request)}");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
-                throw;
-            }
-        }
-
-        private Task<AsyncServerStreamingCall<TResponse>> ExecuteServerStreamingRequestAuthorized<TRequest, TResponse>(
-            Func<TRequest, CallOptions, Task<AsyncServerStreamingCall<TResponse>>> requestAction, TRequest request)
-            where TRequest : IMessage
-            where TResponse : IMessage
-        {
-            try
-            {
-                _messageFormatter.LogMsgToServer(_logger, request);
-
-                return requestAction(request, BuildCallOptions(_accessToken, false));
-            }
-            catch (UnauthorizedException uex)
-            {
-                _logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
-                throw;
-            }
-        }
-
-        private Task<AsyncClientStreamingCall<TRequest, TResponse>> ExecuteClientStreamingRequestAuthorized<TRequest, TResponse>(
-            Func<TRequest, CallOptions, Task<AsyncClientStreamingCall<TRequest, TResponse>>> requestAction, TRequest request)
-            where TRequest : IMessage
-            where TResponse : IMessage
-        {
-            try
-            {
-                _messageFormatter.LogMsgToServer(_logger, request);
-
-                return requestAction(request, BuildCallOptions(_accessToken, false));
-            }
-            catch (UnauthorizedException uex)
-            {
-                _logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
-                throw;
-            }
-        }
-
-
-        #region Grpc request calls
-
-        private Task<LoginResponse> LoginInternal(LoginRequest request, CallOptions options)
-        {
-            return _client.LoginAsync(request, options).ResponseAsync;
-        }
-
-        private Task<LogoutResponse> LogoutInternal(LogoutRequest request, CallOptions options)
-        {
-            return _client.LogoutAsync(request, options).ResponseAsync;
-        }
-
-        private Task<AccountMetadataResponse> GetAccountMetadataInternal(AccountMetadataRequest request, CallOptions options)
-        {
-            return _client.GetAccountMetadataAsync(request, options).ResponseAsync;
-        }
-
-        private Task<AddPluginResponse> AddBotInternal(AddPluginRequest request, CallOptions options)
-        {
-            return _client.AddPluginAsync(request, options).ResponseAsync;
-        }
-
-        private Task<RemovePluginResponse> RemoveBotInternal(RemovePluginRequest request, CallOptions options)
-        {
-            return _client.RemovePluginAsync(request, options).ResponseAsync;
-        }
-
-        private Task<StartPluginResponse> StartBotInternal(StartPluginRequest request, CallOptions options)
-        {
-            return _client.StartPluginAsync(request, options).ResponseAsync;
-        }
-
-        private Task<StopPluginResponse> StopBotInternal(StopPluginRequest request, CallOptions options)
-        {
-            return _client.StopPluginAsync(request, options).ResponseAsync;
-        }
-
-        private Task<ChangePluginConfigResponse> ChangeBotConfigInternal(ChangePluginConfigRequest request, CallOptions options)
-        {
-            return _client.ChangePluginConfigAsync(request, options).ResponseAsync;
-        }
-
-        private Task<AddAccountResponse> AddAccountInternal(AddAccountRequest request, CallOptions options)
-        {
-            return _client.AddAccountAsync(request, options).ResponseAsync;
-        }
-
-        private Task<RemoveAccountResponse> RemoveAccountInternal(RemoveAccountRequest request, CallOptions options)
-        {
-            return _client.RemoveAccountAsync(request, options).ResponseAsync;
-        }
-
-        private Task<ChangeAccountResponse> ChangeAccountInternal(ChangeAccountRequest request, CallOptions options)
-        {
-            return _client.ChangeAccountAsync(request, options).ResponseAsync;
-        }
-
-        private Task<TestAccountResponse> TestAccountInternal(TestAccountRequest request, CallOptions options)
-        {
-            return _client.TestAccountAsync(request, options).ResponseAsync;
-        }
-
-        private Task<TestAccountCredsResponse> TestAccountCredsInternal(TestAccountCredsRequest request, CallOptions options)
-        {
-            return _client.TestAccountCredsAsync(request, options).ResponseAsync;
-        }
-
-        private async Task<AsyncClientStreamingCall<FileTransferMsg, UploadPackageResponse>> UploadPackageInternal(FileTransferMsg request, CallOptions options)
-        {
-            var call = _client.UploadPackage(options);
-            await call.RequestStream.WriteAsync(request);
-            return call;
-        }
-
-        private Task<RemovePackageResponse> RemovePackageInternal(RemovePackageRequest request, CallOptions options)
-        {
-            return _client.RemovePackageAsync(request, options).ResponseAsync;
-        }
-
-        private Task<AsyncServerStreamingCall<FileTransferMsg>> DownloadPackageInternal(DownloadPackageRequest request, CallOptions options)
-        {
-            return Task.FromResult(_client.DownloadPackage(request, options));
-        }
-
-        private Task<PluginFolderInfoResponse> GetBotFolderInfoInternal(PluginFolderInfoRequest request, CallOptions options)
-        {
-            return _client.GetPluginFolderInfoAsync(request, options).ResponseAsync;
-        }
-
-        private Task<ClearPluginFolderResponse> ClearBotFolderInternal(ClearPluginFolderRequest request, CallOptions options)
-        {
-            return _client.ClearPluginFolderAsync(request, options).ResponseAsync;
-        }
-
-        private Task<DeletePluginFileResponse> DeleteBotFileInternal(DeletePluginFileRequest request, CallOptions options)
-        {
-            return _client.DeletePluginFileAsync(request, options).ResponseAsync;
-        }
-
-        private Task<AsyncServerStreamingCall<FileTransferMsg>> DownloadBotFileInternal(DownloadPluginFileRequest request, CallOptions options)
-        {
-            return Task.FromResult(_client.DownloadPluginFile(request, options));
-        }
-
-        private async Task<AsyncClientStreamingCall<FileTransferMsg, UploadPluginFileResponse>> UploadBotFileInternal(FileTransferMsg request, CallOptions options)
-        {
-            var call = _client.UploadPluginFile(options);
-            await call.RequestStream.WriteAsync(request);
-            return call;
-        }
-
-        private Task<PluginStatusSubscribeResponse> SubscribeToPluginStatusInternal(PluginStatusSubscribeRequest request, CallOptions options)
-        {
-            return _client.SubscribeToPluginStatusAsync(request, options).ResponseAsync;
-        }
-
-        private Task<PluginStatusUnsubscribeResponse> UnsubscribeToPluginStatusInternal(PluginStatusUnsubscribeRequest request, CallOptions options)
-        {
-            return _client.UnsubscribeToPluginStatusAsync(request, options).ResponseAsync;
-        }
 
         private void RestoreSubscribeToPluginStatusInternal()
         {
             foreach (var request in _subscriptions.BuildStatusSubscriptionRequests())
                 Task.Run(() => SubscribeToPluginStatus(request));
-        }
-
-
-        private Task<PluginLogsUnsubscribeResponse> UnsubscribeToPluginLogsInternal(PluginLogsUnsubscribeRequest request, CallOptions options)
-        {
-            return _client.UnsubscribeToPluginLogsAsync(request, options).ResponseAsync;
-        }
-
-        private Task<PluginLogsSubscribeResponse> SubscribeToPluginLogsInternal(PluginLogsSubscribeRequest request, CallOptions options)
-        {
-            return _client.SubscribeToPluginLogsAsync(request, options).ResponseAsync;
         }
 
         private void RestoreSubscribeToPluginLogsInternal()
@@ -599,18 +345,11 @@ namespace TickTrader.Algo.Server.PublicAPI
         }
 
 
-        private Task<AsyncServerStreamingCall<UpdateInfo>> SubscribeToUpdatesInternal(SubscribeToUpdatesRequest request, CallOptions options)
-        {
-            return Task.FromResult(_client.SubscribeToUpdates(request, options));
-        }
-        #endregion Grpc request calls
-
-
         #region Requests
 
         public async Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetAccountMetadataInternal, request);
+            var response = await _client.GetAccountMetadataAsync(request);
             FailForNonSuccess(response.ExecResult);
             return response.AccountMetadata;
         }
@@ -623,7 +362,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                 if (!CanSendPluginSubRequests())
                     return;
 
-                var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginStatusInternal, request);
+                var response = await _client.SubscribeToPluginStatusAsync(request);
                 FailForNonSuccess(response.ExecResult);
             }
         }
@@ -635,7 +374,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                 if (!CanSendPluginSubRequests())
                     return;
 
-                var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginStatusInternal, request);
+                var response = await _client.UnsubscribeToPluginStatusAsync(request);
                 FailForNonSuccess(response.ExecResult);
             }
         }
@@ -648,7 +387,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                 if (!CanSendPluginSubRequests())
                     return;
 
-                var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginLogsInternal, request);
+                var response = await _client.SubscribeToPluginLogsAsync(request);
                 FailForNonSuccess(response.ExecResult);
             }
         }
@@ -660,7 +399,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                 if (!CanSendPluginSubRequests())
                     return;
 
-                var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginLogsInternal, request);
+                var response = await _client.UnsubscribeToPluginLogsAsync(request);
                 FailForNonSuccess(response.ExecResult);
             }
         }
@@ -668,62 +407,62 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public async Task AddPlugin(AddPluginRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, request);
+            var response = await _client.AddPluginAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
         public async Task RemovePlugin(RemovePluginRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(RemoveBotInternal, request);
+            var response = await _client.RemovePluginAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
         public async Task StartPlugin(StartPluginRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(StartBotInternal, request);
+            var response = await _client.StartPluginAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
         public async Task StopPlugin(StopPluginRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(StopBotInternal, request);
+            var response = await _client.StopPluginAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
         public async Task ChangePluginConfig(ChangePluginConfigRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, request);
+            var response = await _client.ChangePluginConfigAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
         public async Task AddAccount(AddAccountRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(AddAccountInternal, request);
+            var response = await _client.AddAccountAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
         public async Task RemoveAccount(RemoveAccountRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(RemoveAccountInternal, request);
+            var response = await _client.RemoveAccountAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
         public async Task ChangeAccount(ChangeAccountRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(ChangeAccountInternal, request);
+            var response = await _client.ChangeAccountAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
         public async Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(TestAccountInternal, request);
+            var response = await _client.TestAccountAsync(request);
             FailForNonSuccess(response.ExecResult);
             return response.ErrorInfo;
         }
 
         public async Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(TestAccountCredsInternal, request);
+            var response = await _client.TestAccountCredsAsync(request);
             FailForNonSuccess(response.ExecResult);
             return response.ErrorInfo;
         }
@@ -739,40 +478,41 @@ namespace TickTrader.Algo.Server.PublicAPI
             progressListener.Init((long)chunkOffset * chunkSize);
 
             var transferMsg = new FileTransferMsg { Header = Any.Pack(request) };
-            var clientStream = await ExecuteClientStreamingRequestAuthorized(UploadPackageInternal, transferMsg);
-
-            transferMsg.Header = null;
-            transferMsg.Data = new FileChunk(chunkOffset);
-            var buffer = new byte[chunkSize];
-            try
+            using (var call = _client.UploadPackage())
             {
-                using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                await call.RequestStream.WriteAsync(transferMsg);
+
+                transferMsg.Header = null;
+                transferMsg.Data = new FileChunk(chunkOffset);
+                var buffer = new byte[chunkSize];
+                try
                 {
-                    stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
-                    for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
+                    using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
-                        transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
-                        _messageFormatter.LogMsgFromClient(_logger, transferMsg);
-                        await clientStream.RequestStream.WriteAsync(transferMsg);
-                        progressListener.IncrementProgress(cnt);
-                        transferMsg.Data.Id++;
+                        stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
+                        for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
+                        {
+                            transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
+                            await call.RequestStream.WriteAsync(transferMsg);
+                            progressListener.IncrementProgress(cnt);
+                            transferMsg.Data.Id++;
+                        }
                     }
                 }
-            }
-            finally
-            {
-                transferMsg.Data = FileChunk.FinalChunk;
-                _messageFormatter.LogMsgFromClient(_logger, transferMsg);
-                await clientStream.RequestStream.WriteAsync(transferMsg);
-            }
+                finally
+                {
+                    transferMsg.Data = FileChunk.FinalChunk;
+                    await call.RequestStream.WriteAsync(transferMsg);
+                }
 
-            var response = await clientStream.ResponseAsync;
-            FailForNonSuccess(response.ExecResult);
+                var response = await call.ResponseAsync;
+                FailForNonSuccess(response.ExecResult);
+            }
         }
 
         public async Task RemovePackage(RemovePackageRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(RemovePackageInternal, request);
+            var response = await _client.RemovePackageAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -813,22 +553,20 @@ namespace TickTrader.Algo.Server.PublicAPI
                     }
                 }
 
-                var serverCall = await ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal, request);
-                var fileReader = serverCall.ResponseStream;
-                try
+                using (var serverCall = _client.DownloadPackage(request))
                 {
+                    var fileReader = serverCall.ResponseStream;
+
                     if (!await fileReader.MoveNext())
                         throw new AlgoServerException("Empty download response");
 
                     do
                     {
                         var transferMsg = fileReader.Current;
-                        _messageFormatter.LogMsgFromServer(_logger, transferMsg);
 
                         if (transferMsg.Header != null)
                         {
                             var response = transferMsg.Header.Unpack<DownloadPackageResponse>();
-                            _messageFormatter.LogMsgFromServer(_logger, response);
                             FailForNonSuccess(response.ExecResult);
                         }
 
@@ -844,29 +582,25 @@ namespace TickTrader.Algo.Server.PublicAPI
                     }
                     while (await fileReader.MoveNext());
                 }
-                finally
-                {
-                    serverCall.Dispose();
-                }
             }
         }
 
         public async Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, request);
+            var response = await _client.GetPluginFolderInfoAsync(request);
             FailForNonSuccess(response.ExecResult);
             return response.FolderInfo;
         }
 
         public async Task ClearPluginFolder(ClearPluginFolderRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, request);
+            var response = await _client.ClearPluginFolderAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
         public async Task DeletePluginFile(DeletePluginFileRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, request);
+            var response = await _client.DeletePluginFileAsync(request);
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -907,22 +641,20 @@ namespace TickTrader.Algo.Server.PublicAPI
                     }
                 }
 
-                var serverCall = await ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal, request);
-                var fileReader = serverCall.ResponseStream;
-                try
+                using (var serverCall = _client.DownloadPluginFile(request))
                 {
+                    var fileReader = serverCall.ResponseStream;
+
                     if (!await fileReader.MoveNext())
                         throw new AlgoServerException("Empty download response");
 
                     do
                     {
                         var transferMsg = fileReader.Current;
-                        _messageFormatter.LogMsgFromServer(_logger, transferMsg);
 
                         if (transferMsg.Header != null)
                         {
                             var response = transferMsg.Header.Unpack<DownloadPluginFileResponse>();
-                            _messageFormatter.LogMsgFromServer(_logger, response);
                             FailForNonSuccess(response.ExecResult);
                         }
 
@@ -938,10 +670,6 @@ namespace TickTrader.Algo.Server.PublicAPI
                     }
                     while (await fileReader.MoveNext());
                 }
-                finally
-                {
-                    serverCall.Dispose();
-                }
             }
         }
 
@@ -953,35 +681,34 @@ namespace TickTrader.Algo.Server.PublicAPI
             progressListener.Init((long)chunkOffset * chunkSize);
 
             var transferMsg = new FileTransferMsg { Header = Any.Pack(request) };
-            var clientStream = await ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, transferMsg);
-
-            transferMsg.Header = null;
-            transferMsg.Data = new FileChunk(chunkOffset);
-            var buffer = new byte[chunkSize];
-            try
+            using (var call = _client.UploadPluginFile()) 
             {
-                using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                transferMsg.Header = null;
+                transferMsg.Data = new FileChunk(chunkOffset);
+                var buffer = new byte[chunkSize];
+                try
                 {
-                    stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
-                    for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
+                    using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
-                        transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
-                        _messageFormatter.LogMsgFromClient(_logger, transferMsg);
-                        await clientStream.RequestStream.WriteAsync(transferMsg);
-                        progressListener.IncrementProgress(cnt);
-                        transferMsg.Data.Id++;
+                        stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
+                        for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
+                        {
+                            transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
+                            await call.RequestStream.WriteAsync(transferMsg);
+                            progressListener.IncrementProgress(cnt);
+                            transferMsg.Data.Id++;
+                        }
                     }
                 }
-            }
-            finally
-            {
-                transferMsg.Data = FileChunk.FinalChunk;
-                _messageFormatter.LogMsgFromClient(_logger, request);
-                await clientStream.RequestStream.WriteAsync(transferMsg);
-            }
+                finally
+                {
+                    transferMsg.Data = FileChunk.FinalChunk;
+                    await call.RequestStream.WriteAsync(transferMsg);
+                }
 
-            var response = await clientStream.ResponseAsync;
-            FailForNonSuccess(response.ExecResult);
+                var response = await call.ResponseAsync;
+                FailForNonSuccess(response.ExecResult);
+            }
         }
 
         #endregion Requests

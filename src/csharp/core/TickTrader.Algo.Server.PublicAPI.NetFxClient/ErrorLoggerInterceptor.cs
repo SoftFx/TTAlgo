@@ -93,8 +93,8 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             switch (ex)
             {
-                case UnauthorizedException uex:
-                    LogMethodError(methodName, request, uex, "Bad access token for");
+                case AlgoServerException algoEx:
+                    LogMethodError(methodName, request, $"Bad response result({algoEx.Message}) for");
                     break;
                 case RpcException rex:
                     if (rex.StatusCode == StatusCode.DeadlineExceeded)
