@@ -140,8 +140,8 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                //var layoutSerializer = new XmlLayoutSerializer(this);
-                //layoutSerializer.Serialize(stream);
+                var layoutSerializer = new XmlLayoutSerializer(this);
+                layoutSerializer.Serialize(stream);
             }
             catch (Exception ex)
             {
