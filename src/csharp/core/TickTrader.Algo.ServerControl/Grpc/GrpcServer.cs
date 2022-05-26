@@ -32,7 +32,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         protected override Task StartServer()
         {
-            GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
+            //GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
             _impl = new BotAgentServerImpl(AlgoSrv, _jwtProvider, Logger, Settings.LogMessages, VersionSpec);
             var creds = new SslServerCredentials(new[] { new KeyCertificatePair(CertificateProvider.ServerCertificate, CertificateProvider.ServerKey), }); //,CertificateProvider.RootCertificate, true);
             _server = new GrpcCore.Server

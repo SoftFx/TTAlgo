@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private AlgoServerPublic.AlgoServerPublicClient _client;
         private CancellationTokenSource _updateStreamCancelTokenSrc;
-        private Channel _channel;
+        private IGrpcChannelProxy _channel;
         private string _accessToken;
 
 
@@ -44,13 +44,10 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public override void StartClient()
         {
-            GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(_logger));
+            _channel = new GrpcChannelProxy(SessionSettings, _logger);
 
-            var creds = new SslCredentials(CertificateProvider.RootCertificate);
-            var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
-
-            _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ServerPort, creds, options);
-            _client = new AlgoServerPublic.AlgoServerPublicClient(_channel
+            _client = new AlgoServerPublic.AlgoServerPublicClient(
+                _channel.GetCallInvoker()
                 .Intercept(headers =>
                 {
                     if (!string.IsNullOrEmpty(_accessToken))
@@ -469,7 +466,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public async Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener)
         {
-            if (_client == null || _channel.State == ChannelState.Shutdown)
+            if (_client == null || _channel.IsShutdownState)
                 throw new ConnectionFailedException("Connection failed");
 
             var chunkOffset = request.TransferSettings.ChunkOffset;

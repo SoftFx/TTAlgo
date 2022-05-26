@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NETFRAMEWORK
+using System;
 using Grpc.Core.Logging;
 
 namespace TickTrader.Algo.Server.Common.Grpc
@@ -70,3 +71,4 @@ namespace TickTrader.Algo.Server.Common.Grpc
         }
     }
 }
+#endif

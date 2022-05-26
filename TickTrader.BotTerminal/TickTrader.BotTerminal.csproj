@@ -22,7 +22,6 @@
     <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
     <PackageReference Include="FontAwesome.Sharp" Version="5.15.4" />
-    <PackageReference Include="Grpc.Core" Version="2.36.1" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageReference Include="NLog" Version="4.7.15" />
     <PackageReference Include="System.Management" Version="6.0.0" />
@@ -35,7 +34,7 @@
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetCore\TickTrader.Algo.Isolation.NetCore.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.NetFxClient\TickTrader.Algo.Server.PublicAPI.NetFxClient.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Client\TickTrader.Algo.Server.PublicAPI.Client.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
     <ProjectReference Include="..\src\csharp\lib\Machinarium\Machinarium.csproj" />

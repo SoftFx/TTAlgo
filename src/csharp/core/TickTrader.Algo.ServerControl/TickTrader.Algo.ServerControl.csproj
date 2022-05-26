@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\TickTrader.Algo.Server.PublicAPI.NetFxClient\GrpcLoggerAdapter.cs" Link="Infrastructure\GrpcLoggerAdapter.cs" />
+    <Compile Include="..\TickTrader.Algo.Server.PublicAPI.Client\GrpcLoggerAdapter.cs" Link="Infrastructure\GrpcLoggerAdapter.cs" />
   </ItemGroup>
 
   <ItemGroup>
