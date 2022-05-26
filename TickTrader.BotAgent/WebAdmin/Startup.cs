@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json.Serialization;
+using TickTrader.Algo.Server.PublicAPI.Adapter;
 using TickTrader.BotAgent.WebAdmin.Server.Core;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
@@ -73,6 +74,9 @@ namespace TickTrader.BotAgent.WebAdmin
                     .RequireAuthenticatedUser()
                     .Build();
             });
+
+            services.AddGrpc();
+            services.AddSingleton<AlgoServerPublicImpl>(s => s.GetRequiredService<PublicApiServer>().Impl);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -109,6 +113,8 @@ namespace TickTrader.BotAgent.WebAdmin
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<BAFeed>("/signalr").RequireAuthorization();
+
+                endpoints.MapGrpcService<AlgoServerPublicImpl>().AllowAnonymous();
 
                 endpoints.MapControllers();
 

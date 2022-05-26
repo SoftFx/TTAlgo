@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Server.PublicAPI\TickTrader.Algo.Server.PublicAPI.csproj" />
   </ItemGroup>
 

@@ -13,15 +13,15 @@ using TickTrader.Algo.Server.Common;
 
 namespace TickTrader.Algo.Server.PublicAPI.Adapter
 {
-    internal class AlgoServerPublicImpl : AlgoServerPublic.AlgoServerPublicBase
+    public class AlgoServerPublicImpl : AlgoServerPublic.AlgoServerPublicBase
     {
-        private readonly IActorRef _sessionsRef;
+        private readonly AlgoServerAdapter _algoServer;
+        private readonly IJwtProvider _jwtProvider;
+        private readonly ILogger _logger;
+        private readonly MessageFormatter _messageFormatter;
+        private readonly VersionSpec _version;
 
-        private AlgoServerAdapter _algoServer;
-        private IJwtProvider _jwtProvider;
-        private ILogger _logger;
-        private MessageFormatter _messageFormatter;
-        private VersionSpec _version;
+        private IActorRef _sessionsRef;
 
 
         public AlgoServerPublicImpl(IAlgoServerApi serverApi, IAuthManager authManager, IJwtProvider jwtProvider, ILogger logger, bool logMessages, VersionSpec version)
@@ -32,9 +32,13 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             _logger = logger;
 
             _messageFormatter = new MessageFormatter(AlgoServerPublicAPIReflection.Descriptor) { LogMessages = logMessages };
-            _sessionsRef = SessionControlActor.Create(_algoServer, logger, _messageFormatter);
         }
 
+
+        public void Start()
+        {
+            _sessionsRef = SessionControlActor.Create(_algoServer, _logger, _messageFormatter);
+        }
 
         public async Task Shutdown()
         {
@@ -91,7 +95,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             return CreateNotAllowedResult(ex.Flatten().Message);
         }
 
-        public static RequestResult CreateNotAllowedResult(SessionInfo session, string requestName)
+        internal static RequestResult CreateNotAllowedResult(SessionInfo session, string requestName)
         {
             return CreateNotAllowedResult($"{session.AccessManager.Level} is not allowed to execute {requestName}");
         }

@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using ServerApi = TickTrader.Algo.Domain.ServerControl;
 
-namespace TickTrader.Algo.Server.PublicAPI.Adapter
+namespace TickTrader.Algo.Server.PublicAPI.Converters
 {
     public static class PublicApiConverters
     {
@@ -330,29 +330,29 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         {
             IMessage message;
 
-            if (payload.Is(Domain.BoolParameterConfig.Descriptor))
+            if (payload.Is(BoolParameterConfig.Descriptor))
                 message = payload.Unpack<Domain.BoolParameterConfig>().ToApi();
-            else if (payload.Is(Domain.Int32ParameterConfig.Descriptor))
+            else if (payload.Is(Int32ParameterConfig.Descriptor))
                 message = payload.Unpack<Domain.Int32ParameterConfig>().ToApi();
-            else if (payload.Is(Domain.NullableInt32ParameterConfig.Descriptor))
+            else if (payload.Is(NullableInt32ParameterConfig.Descriptor))
                 message = payload.Unpack<Domain.NullableInt32ParameterConfig>().ToApi();
-            else if (payload.Is(Domain.DoubleParameterConfig.Descriptor))
+            else if (payload.Is(DoubleParameterConfig.Descriptor))
                 message = payload.Unpack<Domain.DoubleParameterConfig>().ToApi();
-            else if (payload.Is(Domain.NullableDoubleParameterConfig.Descriptor))
+            else if (payload.Is(NullableDoubleParameterConfig.Descriptor))
                 message = payload.Unpack<Domain.NullableDoubleParameterConfig>().ToApi();
-            else if (payload.Is(Domain.StringParameterConfig.Descriptor))
+            else if (payload.Is(StringParameterConfig.Descriptor))
                 message = payload.Unpack<Domain.StringParameterConfig>().ToApi();
-            else if (payload.Is(Domain.EnumParameterConfig.Descriptor))
+            else if (payload.Is(EnumParameterConfig.Descriptor))
                 message = payload.Unpack<Domain.EnumParameterConfig>().ToApi();
-            else if (payload.Is(Domain.FileParameterConfig.Descriptor))
+            else if (payload.Is(FileParameterConfig.Descriptor))
                 message = payload.Unpack<Domain.FileParameterConfig>().ToApi();
-            else if (payload.Is(Domain.BarToBarInputConfig.Descriptor))
+            else if (payload.Is(BarToBarInputConfig.Descriptor))
                 message = payload.Unpack<Domain.BarToBarInputConfig>().ToApi();
-            else if (payload.Is(Domain.BarToDoubleInputConfig.Descriptor))
+            else if (payload.Is(BarToDoubleInputConfig.Descriptor))
                 message = payload.Unpack<Domain.BarToDoubleInputConfig>().ToApi();
-            else if (payload.Is(Domain.ColoredLineOutputConfig.Descriptor))
+            else if (payload.Is(ColoredLineOutputConfig.Descriptor))
                 message = payload.Unpack<Domain.ColoredLineOutputConfig>().ToApi();
-            else if (payload.Is(Domain.MarkerSeriesOutputConfig.Descriptor))
+            else if (payload.Is(MarkerSeriesOutputConfig.Descriptor))
                 message = payload.Unpack<Domain.MarkerSeriesOutputConfig>().ToApi();
             else
                 throw new ArgumentException($"Unsupported type {payload}");

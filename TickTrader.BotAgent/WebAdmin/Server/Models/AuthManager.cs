@@ -6,23 +6,10 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Server.PublicAPI;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Adapter;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {
-    public interface IAuthManager
-    {
-        IEventSource<CredsChangedEvent> CredsChanged { get; }
-
-
-        Task<AuthResult> Login(string login, string password);
-
-        Task<AuthResult> Auth(string login, string password);
-
-        Task<AuthResult> Auth2FA(string login, string oneTimePassword);
-    }
-
-
     public class AuthManager : IAuthManager, IDisposable
     {
         public const int MaxFailedAttempts = 20;

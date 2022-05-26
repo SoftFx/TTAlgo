@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Adapter;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Models;

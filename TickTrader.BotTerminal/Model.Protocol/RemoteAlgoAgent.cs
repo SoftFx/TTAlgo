@@ -7,7 +7,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 
 using AlgoServerApi = TickTrader.Algo.Server.PublicAPI;
 

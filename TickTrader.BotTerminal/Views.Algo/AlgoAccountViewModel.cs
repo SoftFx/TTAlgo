@@ -3,7 +3,7 @@ using Machinarium.Qnil;
 using System.Linq;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 
 namespace TickTrader.BotTerminal
 {

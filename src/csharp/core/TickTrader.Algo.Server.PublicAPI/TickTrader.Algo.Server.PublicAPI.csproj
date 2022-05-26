@@ -49,7 +49,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Server.Common\TickTrader.Algo.Server.Common.csproj" />
   </ItemGroup>
 

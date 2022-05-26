@@ -8,15 +8,15 @@ using TickTrader.BotAgent.BA;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.HostedServices
 {
-    public class BotAgentHostedService : IHostedService
+    public class AlgoServerHostedService : IHostedService
     {
         private readonly IBotAgent _botAgent;
         private readonly IConfiguration _config;
-        private readonly ILogger<BotAgentHostedService> _logger;
+        private readonly ILogger<AlgoServerHostedService> _logger;
         private bool _started;
 
 
-        public BotAgentHostedService(IBotAgent botAgent, IConfiguration config, ILogger<BotAgentHostedService> logger)
+        public AlgoServerHostedService(IBotAgent botAgent, IConfiguration config, ILogger<AlgoServerHostedService> logger)
         {
             _botAgent = botAgent;
             _config = config;
