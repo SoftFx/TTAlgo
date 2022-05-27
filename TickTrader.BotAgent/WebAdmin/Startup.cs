@@ -56,17 +56,23 @@ namespace TickTrader.BotAgent.WebAdmin
 
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "AlgoServer WebAPI", Version = "v1" }));
 
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(jwtOptions =>
-            {
-                jwtOptions.SecurityTokenValidators.Clear();
-                jwtOptions.SecurityTokenValidators.Add(tokenProvider);
-                jwtOptions.TokenValidationParameters = tokenProvider.WebValidationParams;
-            });
+            services.AddAuthentication("token")
+                .AddPolicyScheme("token", "jwt-token", policySchemeOptions =>
+                {
+                    policySchemeOptions.ForwardDefaultSelector = context => context.Request.ContentType == "application/grpc" ? "jwt-grpc" : "jwt-web";
+                })
+                .AddJwtBearer("jwt-web", jwtOptions =>
+                {
+                    jwtOptions.SecurityTokenValidators.Clear();
+                    jwtOptions.SecurityTokenValidators.Add(tokenProvider);
+                    jwtOptions.TokenValidationParameters = tokenProvider.WebValidationParams;
+                })
+                .AddJwtBearer("jwt-grpc", jwtOptions =>
+                {
+                    jwtOptions.SecurityTokenValidators.Clear();
+                    jwtOptions.SecurityTokenValidators.Add(tokenProvider);
+                    jwtOptions.TokenValidationParameters = tokenProvider.ProtocolValidationParams;
+                }); ;
 
             services.AddAuthorization(options =>
             {
@@ -114,7 +120,7 @@ namespace TickTrader.BotAgent.WebAdmin
             {
                 endpoints.MapHub<BAFeed>("/signalr").RequireAuthorization();
 
-                endpoints.MapGrpcService<AlgoServerPublicImpl>().AllowAnonymous();
+                endpoints.MapGrpcService<AlgoServerPublicImpl>();
 
                 endpoints.MapControllers();
 
