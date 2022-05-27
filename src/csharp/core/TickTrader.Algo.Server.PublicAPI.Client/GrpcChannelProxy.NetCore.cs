@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Server.Common;
 
@@ -38,7 +39,11 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public CallInvoker GetCallInvoker() => _channel.CreateCallInvoker();
 
-        public Task ConnectAsync(DateTime? deadline) => _channel.ConnectAsync();
+        public Task ConnectAsync(DateTime deadline)
+        {
+            var cancelTokenSrc = new CancellationTokenSource(deadline - DateTime.UtcNow);
+            return _channel.ConnectAsync(cancelTokenSrc.Token);
+        }
 
         public Task ShutdownAsync() => _channel.ShutdownAsync();
 

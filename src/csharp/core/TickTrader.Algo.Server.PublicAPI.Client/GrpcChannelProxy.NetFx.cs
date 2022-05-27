@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public CallInvoker GetCallInvoker() => _channel.CreateCallInvoker();
 
-        public Task ConnectAsync(DateTime? deadline) => _channel.ConnectAsync(deadline);
+        public Task ConnectAsync(DateTime deadline) => _channel.ConnectAsync(deadline);
 
         public Task ShutdownAsync() => _channel.ShutdownAsync();
 

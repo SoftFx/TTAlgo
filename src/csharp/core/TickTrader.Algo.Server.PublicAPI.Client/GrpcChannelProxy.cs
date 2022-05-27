@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         bool IsShutdownState { get; }
 
 
-        Task ConnectAsync(DateTime? deadline);
+        Task ConnectAsync(DateTime deadline);
 
         CallInvoker GetCallInvoker();
 
