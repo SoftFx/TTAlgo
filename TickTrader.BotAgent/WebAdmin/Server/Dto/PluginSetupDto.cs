@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Text.Json;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Dto
 {
@@ -16,7 +16,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Dto
     public class PluginSetupParameter
     {
         public string Id { get; set; }
-        public Object Value { get; set; }
+        public JsonElement Value { get; set; }
         public string DataType { get; set; }
     }
 }
