@@ -9,6 +9,7 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <ApplicationIcon>configuration.ico</ApplicationIcon>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>
