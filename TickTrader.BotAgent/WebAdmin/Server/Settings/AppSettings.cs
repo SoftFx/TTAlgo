@@ -138,10 +138,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Settings
                 anyChanges = true;
             }
 
-            if (!string.IsNullOrEmpty(currentSettings.ServerUrlsObsolete))
+            if (!string.IsNullOrEmpty(currentSettings.ServerUrlsObsolete)
+                && currentSettings.ServerUrls != currentSettings.ServerUrlsObsolete)
             {
                 currentSettings.ServerUrls = currentSettings.ServerUrlsObsolete;
-                currentSettings.ServerUrlsObsolete = null;
                 anyChanges = true;
             }
 
