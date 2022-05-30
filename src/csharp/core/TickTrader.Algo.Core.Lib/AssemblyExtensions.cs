@@ -6,20 +6,12 @@ namespace TickTrader.Algo.Core.Lib
 {
     public static class AssemblyExtensions
     {
-        public static DateTime GetLinkerTime(this AssemblyName assemblyName, TimeZoneInfo target = null)
-        {
-            var uri = new UriBuilder(assemblyName.CodeBase);
-            string filePath = Uri.UnescapeDataString(uri.Path);
-            return GetLinkerTime(filePath);
-        }
-
         public static DateTime GetLinkerTime(this Assembly assembly, TimeZoneInfo target = null)
         {
             return GetLinkerTime(assembly.Location);
         }
 
-
-        private static DateTime GetLinkerTime(string filePath, TimeZoneInfo target = null)
+        public static DateTime GetLinkerTime(string filePath, TimeZoneInfo target = null)
         {
             const int c_PeHeaderOffset = 60;
             const int c_LinkerTimestampOffset = 8;
