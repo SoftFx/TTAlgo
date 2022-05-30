@@ -398,8 +398,7 @@ Task("PrepareArtifacts")
       CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").FullPath, repoPath);
 
       var configuratorInstallPath = serverBinPath.Combine("Configurator");
-      CreateDirectory(configuratorInstallPath);
-      CopyFiles(configuratorBinPath.Combine("**/*.*").ToString(), configuratorInstallPath);
+      CopyDirectory(configuratorBinPath, configuratorInstallPath);
    }
    finally
    {
