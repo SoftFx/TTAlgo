@@ -69,7 +69,7 @@ namespace TickTrader.Algo.Server
             Receive<LocalAlgoServer.GeneratePluginIdRequest, string>(r => _plugins.GeneratePluginId(r.PluginDisplayName));
             Receive<AddPluginRequest>(r => _plugins.AddPlugin(r));
             Receive<ChangePluginConfigRequest>(r => _plugins.UpdateConfig(r));
-            Receive<RemovePluginRequest>(r => _plugins.RemovePlugin(r));
+            Receive<RemovePluginRequest>(RemovePlugin);
             Receive<StartPluginRequest>(r => _plugins.StartPlugin(r));
             Receive<StopPluginRequest>(r => _plugins.StopPlugin(r));
             Receive<PluginLogsRequest, PluginLogsResponse>(r => _plugins.GetPluginLogs(r));
