@@ -7,10 +7,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Settings
 {
     public class AppSettings
     {
-        [JsonProperty("server.urls", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string ServerUrlsObsolete { get; set; }
-
-        [JsonProperty("urls")]
+        [JsonProperty("server.urls")]
         public string ServerUrls { get; set; }
 
         public string SecretKey { get; set; }
@@ -135,13 +132,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Settings
             if (currentSettings.Monitoring == null)
             {
                 currentSettings.Monitoring = AppSettings.Default.Monitoring;
-                anyChanges = true;
-            }
-
-            if (!string.IsNullOrEmpty(currentSettings.ServerUrlsObsolete)
-                && currentSettings.ServerUrls != currentSettings.ServerUrlsObsolete)
-            {
-                currentSettings.ServerUrls = currentSettings.ServerUrlsObsolete;
                 anyChanges = true;
             }
 

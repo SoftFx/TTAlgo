@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Net;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
@@ -106,11 +105,11 @@ namespace TickTrader.BotAgent
             var config = configBuilder.Build();
 
             var cert = config.GetCertificate(pathToContentRoot);
-            var urls = config.GetValue<string>("urls");
+            var kesterSection = config.GetSection("Kestrel");
             var publicApiSettings = config.GetProtocolSettings();
 
             var builder = Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((context, builder) =>
+                .ConfigureAppConfiguration(builder =>
                 {
                     builder.Sources.Clear();
                     builder.AddConfiguration(config);
@@ -123,7 +122,7 @@ namespace TickTrader.BotAgent
                         options.Mode = launchSettings.Mode;
                     }))
                 .ConfigureWebHostDefaults(webBuilder => webBuilder
-                    .ConfigureKestrel((context, options) =>
+                    .UseKestrel(options =>
                     {
                         options.ConfigureHttpsDefaults(httpsOptions =>
                         {
@@ -131,25 +130,18 @@ namespace TickTrader.BotAgent
                             httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13;
                         });
 
-                        foreach (var url in urls.Split(';'))
+                        var kestrelLoader = options.Configure(kesterSection, true);
+                        if (publicApiSettings.ListeningPort >= 0) // advanced configuration: less than zero disables additional port to use only kestrel section
                         {
-                            if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                            if (publicApiSettings.IsLocalServer)
                             {
-                                if (uri.HostNameType == UriHostNameType.IPv4 || uri.HostNameType == UriHostNameType.IPv6)
-                                {
-                                    options.Listen(IPEndPoint.Parse(url));
-                                }
-                                else
-                                {
-                                    if (uri.Scheme == "https")
-                                        options.ListenAnyIP(uri.Port, o => o.UseHttps());
-                                    else if (uri.Scheme == "http")
-                                        options.ListenAnyIP(uri.Port);
-                                }
+                                kestrelLoader.LocalhostEndpoint(publicApiSettings.ListeningPort, o => o.UseHttps());
+                            }
+                            else
+                            {
+                                kestrelLoader.AnyIPEndpoint(publicApiSettings.ListeningPort, o => o.UseHttps());
                             }
                         }
-
-                        options.ListenAnyIP(publicApiSettings.ListeningPort, o => o.UseHttps());
                     })
                     .UseContentRoot(pathToContentRoot)
                     .UseWebRoot(pathToWebRoot)

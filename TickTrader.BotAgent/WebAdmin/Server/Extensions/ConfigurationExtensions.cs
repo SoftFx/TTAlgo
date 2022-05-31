@@ -92,7 +92,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             if (protocolConfig == null)
                 throw new ArgumentException("Protocol configuration not found");
 
-            if (protocolConfig.ListeningPort < 0 || protocolConfig.ListeningPort > 65535)
+            if (protocolConfig.ListeningPort > 65535)
                 throw new ArgumentException("Invalid port number");
 
             var logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, protocolConfig.LogDirectoryName);
