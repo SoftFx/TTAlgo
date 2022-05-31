@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
@@ -105,6 +106,8 @@ namespace TickTrader.BotAgent
             var config = configBuilder.Build();
 
             var cert = config.GetCertificate(pathToContentRoot);
+            var urls = config.GetValue<string>("urls");
+            var publicApiSettings = config.GetProtocolSettings();
 
             var builder = Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, builder) =>
@@ -121,15 +124,36 @@ namespace TickTrader.BotAgent
                     }))
                 .ConfigureWebHostDefaults(webBuilder => webBuilder
                     .ConfigureKestrel((context, options) =>
+                    {
                         options.ConfigureHttpsDefaults(httpsOptions =>
                         {
                             httpsOptions.ServerCertificate = cert;
-                            httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
-                        }))
+                            httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13;
+                        });
+
+                        foreach (var url in urls.Split(';'))
+                        {
+                            if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                            {
+                                if (uri.HostNameType == UriHostNameType.IPv4 || uri.HostNameType == UriHostNameType.IPv6)
+                                {
+                                    options.Listen(IPEndPoint.Parse(url));
+                                }
+                                else
+                                {
+                                    if (uri.Scheme == "https")
+                                        options.ListenAnyIP(uri.Port, o => o.UseHttps());
+                                    else if (uri.Scheme == "http")
+                                        options.ListenAnyIP(uri.Port);
+                                }
+                            }
+                        }
+
+                        options.ListenAnyIP(publicApiSettings.ListeningPort, o => o.UseHttps());
+                    })
                     .UseContentRoot(pathToContentRoot)
                     .UseWebRoot(pathToWebRoot)
                     .UseStartup<Startup>());
-
             if (launchSettings.Mode == LaunchMode.WindowsService)
                 builder.UseWindowsService();
 

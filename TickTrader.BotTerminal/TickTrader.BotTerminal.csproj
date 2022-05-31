@@ -19,11 +19,10 @@
 
   <ItemGroup>
     <PackageReference Include="Caliburn.Micro" Version="4.0.209" />
-    <PackageReference Include="Dirkster.AvalonDock" Version="4.70.1" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.240" />
+    <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
     <PackageReference Include="FontAwesome.Sharp" Version="5.15.4" />
-    <PackageReference Include="Grpc.Core" Version="2.36.1" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.240" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageReference Include="NLog" Version="4.7.15" />
     <PackageReference Include="System.Management" Version="6.0.0" />
@@ -35,9 +34,11 @@
     <ProjectReference Include="..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\TickTrader.Algo.BacktesterV1Host.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetCore\TickTrader.Algo.Isolation.NetCore.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Client\TickTrader.Algo.Server.PublicAPI.Client.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Converters\TickTrader.Algo.Server.PublicAPI.Converters.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj" />
     <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
     <ProjectReference Include="..\TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj" />

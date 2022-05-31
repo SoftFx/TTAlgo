@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Data;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
 {
@@ -118,7 +119,7 @@ namespace TickTrader.BotTerminal
 
         public void ShowInFolder()
         {
-            Process.Start(EnvService.Instance.LogFolder);
+            WinExplorerHelper.ShowFolder(EnvService.Instance.LogFolder);
         }
 
         public void Clear()

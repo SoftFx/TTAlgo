@@ -14,7 +14,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
 

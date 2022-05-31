@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json.Serialization;
+using TickTrader.Algo.Server.PublicAPI.Adapter;
 using TickTrader.BotAgent.WebAdmin.Server.Core;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
@@ -55,17 +56,23 @@ namespace TickTrader.BotAgent.WebAdmin
 
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "AlgoServer WebAPI", Version = "v1" }));
 
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(jwtOptions =>
-            {
-                jwtOptions.SecurityTokenValidators.Clear();
-                jwtOptions.SecurityTokenValidators.Add(tokenProvider);
-                jwtOptions.TokenValidationParameters = tokenProvider.WebValidationParams;
-            });
+            services.AddAuthentication("token")
+                .AddPolicyScheme("token", "jwt-token", policySchemeOptions =>
+                {
+                    policySchemeOptions.ForwardDefaultSelector = context => context.Request.ContentType == "application/grpc" ? "jwt-grpc" : "jwt-web";
+                })
+                .AddJwtBearer("jwt-web", jwtOptions =>
+                {
+                    jwtOptions.SecurityTokenValidators.Clear();
+                    jwtOptions.SecurityTokenValidators.Add(tokenProvider);
+                    jwtOptions.TokenValidationParameters = tokenProvider.WebValidationParams;
+                })
+                .AddJwtBearer("jwt-grpc", jwtOptions =>
+                {
+                    jwtOptions.SecurityTokenValidators.Clear();
+                    jwtOptions.SecurityTokenValidators.Add(tokenProvider);
+                    jwtOptions.TokenValidationParameters = tokenProvider.ProtocolValidationParams;
+                }); ;
 
             services.AddAuthorization(options =>
             {
@@ -73,6 +80,9 @@ namespace TickTrader.BotAgent.WebAdmin
                     .RequireAuthenticatedUser()
                     .Build();
             });
+
+            services.AddGrpc();
+            services.AddSingleton<AlgoServerPublicImpl>(s => s.GetRequiredService<PublicApiServer>().Impl);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -109,6 +119,8 @@ namespace TickTrader.BotAgent.WebAdmin
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<BAFeed>("/signalr").RequireAuthorization();
+
+                endpoints.MapGrpcService<AlgoServerPublicImpl>();
 
                 endpoints.MapControllers();
 

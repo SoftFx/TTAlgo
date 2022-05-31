@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 
 namespace TickTrader.BotTerminal
 {

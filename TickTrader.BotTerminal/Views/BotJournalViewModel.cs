@@ -4,7 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Windows.Data;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 
 namespace TickTrader.BotTerminal
 {

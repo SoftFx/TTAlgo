@@ -4,7 +4,8 @@ using System.IO;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Converters;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
 {
@@ -105,9 +106,7 @@ namespace TickTrader.BotTerminal
             {
                 var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.Escape(InstanceId));
 
-                if (!Directory.Exists(logDir))
-                    Directory.CreateDirectory(logDir);
-                Process.Start(logDir);
+                WinExplorerHelper.ShowFolder(logDir);
             }
         }
 
