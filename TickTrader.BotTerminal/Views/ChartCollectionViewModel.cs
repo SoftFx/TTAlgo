@@ -42,11 +42,13 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public override Task ActivateItemAsync(ChartViewModel item, CancellationToken cancellationToken = default)
+        public override async Task ActivateItemAsync(ChartViewModel item, CancellationToken cancellationToken = default)
         {
             _charts[item.ChartWindowId] = item;
+
+            await base.ActivateItemAsync(item, cancellationToken);
+
             NotifyOfPropertyChange(nameof(SelectedChartProxy));
-            return base.ActivateItemAsync(item, cancellationToken);
         }
 
 

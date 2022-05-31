@@ -90,6 +90,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             _settings = new ChartTradeSettings
             {
                 SymbolDigits = PricePrecision,
+                ChartType = ChartType,
                 Period = Period,
             };
 
@@ -126,6 +127,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
             _currentPosition = Math.Min(_currentPosition, currentBarSize);
             _currentPosition = Math.Max(_currentPosition, currentWindowsSize);
+
+            if (_currentPosition < 0)
+                return;
 
             _xAxis.MinLimit = BarsSource[_currentPosition - currentWindowsSize].Date.Ticks;
             _xAxis.MaxLimit = BarsSource[_currentPosition].Date.Ticks;
@@ -173,6 +177,23 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 InitStartPosition();
         }
 
+        private void UpdateDrawableSeries()
+        {
+            _settings.ChartType = ChartType;
+
+            if (BarsSource is not null)
+                Series = new ISeries[]
+                {
+                    Customizer.GetBarSeries(BarsSource, _settings),
+
+                    _askSupportLine.Label,
+                    _bidSupportLine.Label,
+
+                    _crosshair.XLable,
+                    _crosshair.YLable,
+                };
+        }
+
 
         private static void ChangeBarsSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
@@ -183,24 +204,14 @@ namespace TickTrader.BotTerminal.Controls.Chart
             barSource.NewBarEvent += chart.SyncSeriesPosition;
 
             chart.SubscribeToTickUpdates();
-
-            chart.Series = new ISeries[]
-            {
-                Customizer.GetBarSeries(barSource, chart.ChartType),
-
-                chart._askSupportLine.Label,
-                chart._bidSupportLine.Label,
-
-                chart._crosshair.XLable,
-                chart._crosshair.YLable,
-            };
+            chart.UpdateDrawableSeries();
         }
 
         private static void ChangeChartTypeSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
-            if (obj is CartesianScrollBarChart chart && chart.BarsSource != null)
+            if (obj is CartesianScrollBarChart chart)
             {
-                chart.SetValue(SeriesProperty, Customizer.GetBarSeries(chart.BarsSource, chart.ChartType));
+                chart.UpdateDrawableSeries();
                 chart.InitStartPosition();
             }
         }

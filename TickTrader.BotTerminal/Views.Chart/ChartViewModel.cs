@@ -91,9 +91,6 @@ namespace TickTrader.BotTerminal
             get => _selTime;
             set
             {
-                if (_selTime == value)
-                    return;
-
                 _selTime = value;
                 DisplayName = $"{Symbol}, {value}";
 

@@ -111,14 +111,14 @@ namespace TickTrader.BotTerminal.Controls.Chart
         }
 
 
-        internal static ISeries GetBarSeries(ObservableBarVector source, ChartTypes type)
+        internal static ISeries GetBarSeries(ObservableBarVector source, ChartTradeSettings settings)
         {
-            var series = type switch
+            var series = settings.ChartType switch
             {
-                ChartTypes.Candle => GetCandelSeries(),
-                ChartTypes.Line => GetLineSeries(),
-                ChartTypes.Mountain => GetLineSeries(fill: true),
-                _ => throw new ArgumentException($"Unsupported type for bar chart {type}"),
+                ChartTypes.Candle => GetCandelSeries(settings),
+                ChartTypes.Line => GetLineSeries(settings),
+                ChartTypes.Mountain => GetLineSeries(settings, fill: true),
+                _ => throw new ArgumentException($"Unsupported type for bar chart {settings.ChartType}"),
             };
 
             series.Values = source;
@@ -127,7 +127,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             return series;
         }
 
-        internal static ISeries GetCandelSeries()
+        internal static ISeries GetCandelSeries(ChartTradeSettings settings)
         {
             return new CandlesticksSeries<FinancialPoint>
             {
@@ -136,18 +136,18 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 UpStroke = new SolidColorPaint(UpColor),
                 DownFill = new SolidColorPaint(DownColor),
                 DownStroke = new SolidColorPaint(DownColor),
-                TooltipLabelFormatter = p => p.Model.ToCandelTooltipInfo(6),
+                TooltipLabelFormatter = p => p.Model.ToCandelTooltipInfo(settings),
             };
         }
 
-        internal static ISeries GetLineSeries(bool fill = false)
+        internal static ISeries GetLineSeries(ChartTradeSettings settings, bool fill = false)
         {
             return new LineSeries<FinancialPoint>
             {
                 Fill = fill ? new SolidColorPaint(_lineColor) : null,
                 GeometrySize = 0,
                 LineSmoothness = 0,
-                TooltipLabelFormatter = p => p.Model.ToLineTooltipInfo(6),
+                TooltipLabelFormatter = p => p.Model.ToLineTooltipInfo(settings),
                 Stroke = new SolidColorPaint(_lineColor, DefaultChartStroke),
             };
         }

@@ -7,12 +7,13 @@ namespace TickTrader.BotTerminal.Controls.Chart
 {
     internal static class CartesianExtensions
     {
-        internal static string ToCandelTooltipInfo(this FinancialPoint bar, int precision)
+        internal static string ToCandelTooltipInfo(this FinancialPoint bar, ChartTradeSettings settings)
         {
             var sb = new StringBuilder(1 << 5);
-            var format = $"F{precision}";
+            var format = settings.PriceFormat;
 
-            sb.AppendLine($"O: {bar.Open.ToString(format)}")
+            sb.AppendLine($"{bar.Date.ToString(settings.DateFormat)}")
+              .AppendLine($"O: {bar.Open.ToString(format)}")
               .AppendLine($"H: {bar.High.ToString(format)}")
               .AppendLine($"L: {bar.Low.ToString(format)}")
               .Append($"C: {bar.Close.ToString(format)}");
@@ -20,9 +21,14 @@ namespace TickTrader.BotTerminal.Controls.Chart
             return sb.ToString();
         }
 
-        internal static string ToLineTooltipInfo(this FinancialPoint bar, int precision)
+        internal static string ToLineTooltipInfo(this FinancialPoint bar, ChartTradeSettings settings)
         {
-            return $"C: {bar.Close.ToString($"F{precision}")}";
+            var sb = new StringBuilder(1 << 5);
+
+            sb.AppendLine($"{bar.Date.ToString(settings.DateFormat)}")
+              .Append($"C: {bar.Close.ToString(settings.PriceFormat)}");
+
+            return sb.ToString();
         }
 
         internal static FinancialPoint ToPoint(this BarData data)
