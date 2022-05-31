@@ -1,55 +1,58 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
-//using SciChart.Charting.Model.ChartSeries;
-using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Domain;
-using Google.Protobuf.WellKnownTypes;
+using TickTrader.BotTerminal.Controls.Chart;
 
 namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        //private readonly ChartBarVector _barVector = new ChartBarVector(Feed.Types.Timeframe.M1);
+        internal const int BarsCount = 4000;
 
-        public BarChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv)
-            : base(symbol, algoEnv)
+        public ObservableBarVector BarVector { get; } = new(Feed.Types.Timeframe.M1);
+
+        public override IEnumerable<ChartTypes> AvailableChartTypes { get; }
+
+
+        public BarChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv) : base(symbol, algoEnv)
         {
-            Support(SelectableChartTypes.OHLC);
-            Support(SelectableChartTypes.Candle);
-            Support(SelectableChartTypes.Line);
-            Support(SelectableChartTypes.Mountain);
+            AvailableChartTypes = new List<ChartTypes>()
+            {
+                ChartTypes.Candle,
+                ChartTypes.Line,
+                ChartTypes.Mountain,
+            };
 
-            //Navigator = new UniformChartNavigator();
-
-            SelectedChartType = SelectableChartTypes.Candle;
+            SelectedChartType = ChartTypes.Candle;
         }
 
         public void Activate(Feed.Types.Timeframe timeframe)
         {
             TimeFrame = timeframe;
+            BarVector.Timeframe = timeframe;
             base.Activate();
         }
 
-        public override ITimeVectorRef TimeSyncRef => null; //_barVector.Ref;
+        //public override ITimeVectorRef TimeSyncRef => null; //_barVector.Ref;
+
 
         protected override void ClearData()
         {
-          //  _barVector.Clear();
+            BarVector.Clear();
         }
 
         protected async override Task LoadData(CancellationToken cToken)
         {
             var aproximateTimeRef = DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
-            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef.ToUniversalTime().ToTimestamp(), -4000);
+            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef.ToUniversalTime().ToTimestamp(), -BarsCount);
 
             cToken.ThrowIfCancellationRequested();
 
-            //_barVector.Clear();
-            //_barVector.TimeFrame = TimeFrame;
-            //_barVector.AppendRange(barArray);
+            BarVector.InitNewVector(barArray);
 
             if (barArray.Length > 0)
                 InitBoundaries(barArray.Length, barArray.First().OpenTime.ToUtcDateTime(), barArray.Last().OpenTime.ToUtcDateTime());
@@ -65,16 +68,18 @@ namespace TickTrader.BotTerminal
             base.InitializePlugin(config);
 
             config.InitBarStrategy(Feed.Types.MarketSide.Bid);
-            //config.SetMainSeries(_barVector);
+            //config.SetMainSeries(_barVector.Select(u));
         }
 
         protected override void ApplyUpdate(QuoteInfo quote)
         {
-            if (quote.HasBid)
-            {
-                //_barVector.TryAppendQuote(quote.Time, quote.Bid, 1);
-                //ExtendBoundaries(_barVector.Count, quote.TimeUtc);
-            }
+            BarVector.ApplyQuote(quote);
+
+            //if (quote.HasBid)
+            //{
+            //    //_barVector.TryAppendQuote(quote.Time, quote.Bid, 1);
+            //    //ExtendBoundaries(_barVector.Count, quote.TimeUtc);
+            //}
         }
 
         protected override void UpdateSeries()
@@ -86,22 +91,5 @@ namespace TickTrader.BotTerminal
             //else
             //    SeriesCollection[0] = seriesModel;
         }
-
-        //private IRenderableSeriesViewModel CreateSeriesModel()
-        //{
-        //    switch (SelectedChartType)
-        //    {
-        //        case SelectableChartTypes.OHLC:
-        //            return new OhlcRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_OhlcStyle" };
-        //        case SelectableChartTypes.Candle:
-        //            return new CandlestickRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_CandlestickStyle" };
-        //        case SelectableChartTypes.Line:
-        //            return new LineRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_LineStyle" };
-        //        case SelectableChartTypes.Mountain:
-        //            return new MountainRenderableSeriesViewModel() { DataSeries = _barVector.SciChartdata, StyleKey = "BarChart_MountainStyle" };
-        //    }
-
-        //    throw new InvalidOperationException("Unsupported chart type: " + SelectedChartType);
-        //}
     }
 }

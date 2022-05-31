@@ -11,34 +11,32 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ChartCollectionViewModel : Conductor<ChartViewModel>.Collection.OneActive
+    internal sealed class ChartCollectionViewModel : Conductor<ChartViewModel>.Collection.OneActive
     {
-        private Logger _logger;
-        private TraderClientModel _clientModel;
-        private IShell _shell;
+        private readonly Dictionary<string, ChartViewModel> _charts = new();
+
+        private readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+        private readonly TraderClientModel _clientModel;
         private readonly AlgoEnvironment _algoEnv;
-        private Dictionary<string, ChartViewModel> _charts;
 
 
         public object SelectedChartProxy
         {
-            get { return this.ActiveItem; }
+            get => ActiveItem;
+
             set
             {
-                var chart = value as ChartViewModel;
-                if (chart != null)
-                    this.ActiveItem = chart;
+                if (value is ChartViewModel chart)
+                    ActiveItem = chart;
             }
         }
 
 
-        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv)
+        public ChartCollectionViewModel(TraderClientModel clientModel, AlgoEnvironment algoEnv)
         {
-            _logger = NLog.LogManager.GetCurrentClassLogger();
             _clientModel = clientModel;
             _algoEnv = algoEnv;
-            _shell = shell;
-            _charts = new Dictionary<string, ChartViewModel>();
 
             clientModel.Symbols.Updated += Symbols_Updated;
         }
@@ -51,21 +49,15 @@ namespace TickTrader.BotTerminal
             return base.ActivateItemAsync(item, cancellationToken);
         }
 
-        //public override void ActivateItem(ChartViewModel item)
-        //{
-        //    base.ActivateItem(item);
-        //    _charts[item.ChartWindowId] = item;
-        //    NotifyOfPropertyChange(nameof(SelectedChartProxy));
-        //}
 
-        public void Open(string symbol, ChartPeriods period = ChartPeriods.M1)
+        public void Open(string symbol, Feed.Types.Timeframe period = Feed.Types.Timeframe.M1)
         {
             ActivateItemAsync(new ChartViewModel(GenerateChartId(), symbol, period, _algoEnv));
         }
 
-        public void OpenOrActivate(string symbol, ChartPeriods period)
+        public void OpenOrActivate(string symbol, Feed.Types.Timeframe period)
         {
-            var chart = Items.FirstOrDefault(c => c.Symbol == symbol && c.SelectedPeriod.Key == period);
+            var chart = Items.FirstOrDefault(c => c.Symbol == symbol && c.SelectedTimeframe == period);
             if (chart != null)
             {
                 ActivateItemAsync(chart);
@@ -100,9 +92,9 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                profileStorage.SelectedChart = (SelectedChartProxy as ChartViewModel)?.Symbol;
+                profileStorage.SelectedChart = ActiveItem?.Symbol;
                 profileStorage.Charts = new List<ChartStorageEntry>();
-                //Items.ForEach(i => profileStorage.Charts.Add(i.GetSnapshot()));
+                Items.ForEach(i => profileStorage.Charts.Add(i.GetSnapshot()));
             }
             catch (Exception ex)
             {
@@ -134,7 +126,7 @@ namespace TickTrader.BotTerminal
                     }
 
                     var id = chart.Id ?? GenerateChartId(); // generate missing chartIds
-                    var item = new ChartViewModel(id, chart.Symbol, chart.SelectedPeriod, _algoEnv);
+                    var item = new ChartViewModel(id, chart.Symbol, ChartStorageEntry.ConvertPeriod(chart.SelectedPeriod), _algoEnv);
                     ActivateItemAsync(item);
                     item.RestoreFromSnapshot(chart);
                 }

@@ -47,7 +47,6 @@
                 </l:MenuItemSelector.ItemTemplate>
             </l:MenuItemSelector>-->
             <MenuItem Header="Sounds" IsChecked="{l:Setting EnableSounds}" IsCheckable="True"></MenuItem>
-            <!--<MenuItem Header="Notifications" IsChecked="{l:Setting EnableNotifications}" IsCheckable="True"></MenuItem>-->
             <MenuItem Header="Restart Bots On Startup" IsChecked="{l:Setting RestartBotsOnStartup}" IsCheckable="True"></MenuItem>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Profile}" DataContext="{Binding ProfileManager}">
@@ -206,122 +205,6 @@
         </Grid>
     </DataTemplate>
 
-    <!-- Old Template -->
-
-    <ControlTemplate x:Key="ShellViewTemplate.Old" TargetType="Window">
-        <Grid Background="{TemplateBinding Background}">
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" MinWidth="250" MaxWidth="400"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="2*"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*" MinHeight="150"/>
-            </Grid.RowDefinitions>
-
-            <ContentControl cal:View.Model="{Binding AccountPane}" Grid.Column="0" Grid.Row="1" Margin="5,0,0,0" />
-
-            <l:TabControl x:Name="LeftPanel" Grid.Column="0" Grid.Row="2" Grid.RowSpan="3" Style="{DynamicResource ShellTabControl_Style}" Margin="5,5,0,5">
-                <TabItem Header="{l:Resx Tab_Symbols}">
-                    <ContentControl cal:View.Model="{Binding SymbolList}"/>
-                </TabItem>
-                <TabItem Header="{l:Resx Tab_Algo}">
-                    <ContentControl  cal:View.Model="{Binding AlgoList}"/>
-                </TabItem>
-            </l:TabControl>
-
-            <ContentControl cal:View.Model="{Binding Charts}" Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" Margin="0,0,5,0">
-                <i:Interaction.Behaviors>
-                    <l:DropBehavior/>
-                </i:Interaction.Behaviors>
-            </ContentControl>
-            <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="4" Width="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent"/>
-
-            <ContentControl Content="{StaticResource ShellMenu}"  Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Margin="3"/>
-
-            <GridSplitter Grid.Column="2" Grid.Row="3" Height="5" Width="Auto" HorizontalAlignment="Stretch" Background="Transparent"/>
-
-            <l:TabControl x:Name="BottomPanel" Grid.Column="2" Grid.Row="4" Style="{DynamicResource ShellTabControl_Style}" Margin="0,0,5,5" SelectedIndex="4">
-                <TabItem Header="{Binding}" Visibility="{Binding Trade.IsEnabled, Converter={StaticResource BoolToVis}}">
-                    <TabItem.HeaderTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"></ColumnDefinition>
-                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{l:Resx Tab_Trade}"></TextBlock>
-                                <Border Grid.Column="1" Margin="5 0 0 0" CornerRadius="4" Name="PositionCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
-                                    <Grid>
-                                        <TextBlock Margin="5 0" Text="{Binding Trade.Positions.Net.Positions.Count}" Visibility="{Binding Trade.Positions.Net.IsEnabled, Converter={StaticResource BoolToVis}}"/>
-                                        <TextBlock Margin="5 0" Text="{Binding Trade.Positions.Gross.Positions.Count}" Visibility="{Binding Trade.Positions.Gross.IsEnabled, Converter={StaticResource BoolToVis}}"/>
-                                    </Grid>
-                                </Border>
-                                <Border Grid.Column="2" Margin="2 0 0 0" CornerRadius="4" Name="OrderCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
-                                    <TextBlock Margin="5 0" Text="{Binding Trade.Orders.Orders.Count}"/>
-                                </Border>
-                            </Grid>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Value="True">
-                                    <DataTrigger.Binding>
-                                        <MultiBinding Converter="{l:BoolConverter ConversionMode=LeastOne}">
-                                            <Binding Path="Trade.Positions.Net.Positions.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
-                                            <Binding Path="Trade.Positions.Gross.Positions.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
-                                            <Binding Path="Trade.Assets.Assets.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
-                                        </MultiBinding>
-                                    </DataTrigger.Binding>
-                                    <Setter TargetName="PositionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Trade.Orders.Orders.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
-                                    <Setter TargetName="OrderCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
-                        </DataTemplate>
-                    </TabItem.HeaderTemplate>
-                    <ContentControl cal:View.Model="{Binding Trade}"/>
-                </TabItem>
-                <TabItem Name="TabHistory" Header="{Binding}">
-                    <TabItem.HeaderTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"></ColumnDefinition>
-                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{l:Resx Tab_History}"></TextBlock>
-                                <Border Grid.Column="1" Margin="5 0 0 0" CornerRadius="4" Name="TransactionCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
-                                    <TextBlock Margin="5 0" Text="{Binding TradeHistory.GridView.Items.Value.Count}"></TextBlock>
-                                </Border>
-                            </Grid>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding TradeHistory.GridView.Items.Value.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
-                                    <Setter TargetName="TransactionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
-                        </DataTemplate>
-                    </TabItem.HeaderTemplate>
-                    <ContentControl cal:View.Model="{Binding TradeHistory}"/>
-                </TabItem>
-                <TabItem Header="{l:Resx Tab_Journal}" IsSelected="True">
-                    <ContentControl  cal:View.Model="{Binding Journal}"/>
-                </TabItem>
-                <!--<TabItem Header="{l:Resx Tab_BotJournal}">
-                    <ContentControl  cal:View.Model="{Binding BotJournal}"/>
-                </TabItem>-->
-            </l:TabControl>
-
-        </Grid>
-    </ControlTemplate>
-
-    <!-- Classic Template -->
-
     <Grid x:Key="ShellViewTemplate.Classic">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -331,13 +214,13 @@
 
         <ContentControl Content="{StaticResource ShellMenu}" />
 
-        <l:CustomDockManager x:Name="DockManager" Grid.Row="1" 
+        <l:CustomDockManager x:Name="DockManager" Grid.Row="1"
                                     DocumentsSource="{Binding Charts.Items}"
                                     ActiveContent="{Binding Charts.SelectedChartProxy, Mode=TwoWay}" Margin="5,0,5,4" 
                                     DockManagerService="{Binding DockManagerService, Mode=TwoWay}">
 
             <l:CustomDockManager.LayoutItemContainerStyleSelector>
-                <l:AvalonDockStyleSelector DefaultStyle="{StaticResource LayoutItemDefaultStyle}" ChartStyle="{StaticResource LayoutItemChartStyle}" />
+                <l:AvalonDockStyleSelector DefaultStyle="{StaticResource LayoutItemDefaultStyle}" ChartStyle="{StaticResource LayoutItemChartStyle}"/>
             </l:CustomDockManager.LayoutItemContainerStyleSelector>
 
             <l:CustomDockManager.LayoutItemTemplateSelector>
@@ -355,10 +238,6 @@
                                                 HistoryTemplate="{StaticResource LayoutAnchorHeaderHistoryTemplate}"
                                                 TradesTemplate="{StaticResource LayoutAnchorHeaderTradesTemplate}" />
             </l:CustomDockManager.AnchorableHeaderTemplateSelector>
-
-            <!--<dk:DockingManager.Theme>
-                <dk:AeroTheme/>
-            </dk:DockingManager.Theme>-->
 
             <dk:LayoutRoot>
                 <dk:LayoutPanel Orientation="Horizontal">
@@ -424,18 +303,6 @@
         </StatusBar>
 
     </Grid>
-
-    <Style x:Key="ShellViewStyle" TargetType="Window">
-        <Setter Property="Template" Value="{StaticResource ShellViewTemplate.Old}"/>
-        <Setter Property="Height" Value="800"/>
-        <Setter Property="Width" Value="1100"/>
-        <Setter Property="MinWidth" Value="500"/>
-        <Setter Property="MinHeight" Value="500"/>
-        <Setter Property="Icon" Value="{StaticResource MainAppIcon}"/>
-        <Setter Property="Background" Value="{DynamicResource Shell_BackgroundBrush}"/>
-        <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
-    </Style>
 
     <Style x:Key="ShellViewStyle.Classic" TargetType="Window">
         <Setter Property="Height" Value="800"/>
