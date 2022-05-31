@@ -14,6 +14,7 @@ using System.Windows.Data;
 using System.Windows.Threading;
 using Machinarium.Qnil;
 using System.Collections.Specialized;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
 {
@@ -62,8 +63,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                Directory.CreateDirectory(EnvService.Instance.JournalFolder);
-                Process.Start(EnvService.Instance.JournalFolder);
+                WinExplorerHelper.ShowFolder(EnvService.Instance.JournalFolder);
             }
             catch (Exception ex)
             {
