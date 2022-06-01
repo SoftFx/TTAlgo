@@ -680,6 +680,8 @@ namespace TickTrader.Algo.Server.PublicAPI
             var transferMsg = new FileTransferMsg { Header = Any.Pack(request) };
             using (var call = _client.UploadPluginFile()) 
             {
+                await call.RequestStream.WriteAsync(transferMsg);
+
                 transferMsg.Header = null;
                 transferMsg.Data = new FileChunk(chunkOffset);
                 var buffer = new byte[chunkSize];
