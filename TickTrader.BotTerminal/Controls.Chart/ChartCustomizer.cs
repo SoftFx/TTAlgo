@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         internal static Axis SetXSettings(this Axis axis, ChartTradeSettings settings)
         {
             axis.Padding = new LiveChartsCore.Drawing.Padding(-50, 0, 0, 5);
-            axis.Labeler = value => new DateTime((long)value).ToString(settings.DateFormat);
+            axis.Labeler = value => value >= DateTime.MinValue.Ticks ? new DateTime((long)value).ToString(settings.DateFormat) : null;
             axis.UnitWidth = settings.Period.ToTimespan().Ticks;
 
             axis.ForceStepToMin = true;
@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         internal static ColumnSeries<ObservablePoint> SetPeriod(this ColumnSeries<ObservablePoint> label, ChartTradeSettings settings)
         {
-            label.DataLabelsFormatter = value => new DateTime((long)value.Model.X).ToString(settings.DateFormat);
+            label.DataLabelsFormatter = value => value.Model.X >= DateTime.MinValue.Ticks ? new DateTime((long)value.Model.X).ToString(settings.DateFormat) : null;
 
             return label;
         }

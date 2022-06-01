@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         private double _rightSeriesShift;
         private int _currentPosition;
 
-        private int MaxIndexBorder => BarsSource.Count - 1;
+        private int MaxIndexBorder => BarsSource?.Count - 1 ?? 0;
 
 
         public ObservableBarVector BarsSource
@@ -128,7 +128,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             _currentPosition = Math.Min(_currentPosition, currentBarSize);
             _currentPosition = Math.Max(_currentPosition, currentWindowsSize);
 
-            if (_currentPosition < 0)
+            if (_currentPosition < 0 || BarsSource is null)
                 return;
 
             _xAxis.MinLimit = BarsSource[_currentPosition - currentWindowsSize].Date.Ticks;
