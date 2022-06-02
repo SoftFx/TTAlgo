@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             axis.Labeler = value => value >= DateTime.MinValue.Ticks ? new DateTime((long)value).ToString(settings.DateFormat) : null;
             axis.UnitWidth = settings.Period.ToTimespan().Ticks;
 
-            axis.ForceStepToMin = true;
+            //axis.ForceStepToMin = true;
             axis.MinStep = GetPeriodStep(settings.Period);
 
             return axis;

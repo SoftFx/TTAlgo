@@ -100,20 +100,25 @@ namespace TickTrader.BotTerminal.Controls.Chart
             _yAxis = Customizer.GetDefaultAxis().SetYSettings(_settings);
 
             _yLabelAxis = new YLabelAxis(_yAxis);
-
-            XAxes = new Axis[] { _xAxis };
-            YAxes = new Axis[] { _yAxis, _yLabelAxis };
-
             _crosshair = new Crosshair(this, _settings, yAxisIndex: 1);
 
             _bidSupportLine = new SupportPriceLine(Customizer.DownColor, _settings, labelAxisIndex: 1);
             _askSupportLine = new SupportPriceLine(Customizer.UpColor, _settings, labelAxisIndex: 1);
 
             MouseMove += _crosshair.OnCrossHairMove;
-
-            Sections = new RectangularSection[] { _bidSupportLine, _askSupportLine, _crosshair.XLine, _crosshair.YLine };
+            Loaded += CartesianScrollBarChart_Loaded; // Required for correct tab switching
         }
 
+        private void CartesianScrollBarChart_Loaded(object sender, RoutedEventArgs e)
+        {
+            XAxes = new Axis[] { _xAxis };
+            YAxes = new Axis[] { _yAxis, _yLabelAxis };
+
+            Sections = new RectangularSection[] { _bidSupportLine, _askSupportLine, _crosshair.XLine, _crosshair.YLine };
+
+            UpdateDrawableSeries();
+            InitStartPosition();
+        }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e) => ScrollPage(e.Delta / ScrollSpeed);
 
@@ -181,8 +186,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             _settings.ChartType = ChartType;
 
-            if (BarsSource is not null)
-                Series = new ISeries[]
+            if (BarsSource != null)
+            {
+                var s = new ISeries[]
                 {
                     Customizer.GetBarSeries(BarsSource, _settings),
 
@@ -192,6 +198,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
                     _crosshair.XLable,
                     _crosshair.YLable,
                 };
+
+                SetValueOrCurrentValue(SeriesProperty, s);
+            }
         }
 
 
