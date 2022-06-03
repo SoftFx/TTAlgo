@@ -38,7 +38,7 @@
                 <!--<Button Content="Resume" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="ResumeEmulation" IsEnabled="{Binding CanResume.Value}"/>-->
                 <Slider Margin="6,0,3,0" Maximum="9" Minimum="0" Value="{Binding SelectedSpeed.Value}" VerticalAlignment="Center" Width="150"
                             IsEnabled="{Binding CanControlSpeed.Value}"/>
-                <Separator/>
+                <!--<Separator/>
                 <Button Content="{DynamicResource ZoomInToolIcon}" ToolTip="Zoom Chart In" l:Icon.Fill="Black"
                             Margin="3,0,0,0" cal:Message.Attach="ZoomIn" cal:Action.TargetWithoutContext="{Binding ChartPage.ChartControlModel}" />
                 <Button Content="{DynamicResource ZoomOutToolIcon}" ToolTip="Zoom Chart Out" l:Icon.Fill="Black"
@@ -47,7 +47,7 @@
                 <ToggleButton Content="{DynamicResource CrosshairsToolIcon}" ToolTip="Toggle Crosshairs" l:Icon.Fill="Black"
                                   Margin="3,0,0,0" IsChecked="{Binding ChartPage.ChartControlModel.IsCrosshairEnabled.Value}"/>
                 <ToggleButton Content="{DynamicResource AutoScrollToolIcon}" ToolTip="Auto-scroll to new data" IsChecked="{Binding ChartPage.ChartControlModel.AutoScroll.Value, Mode=TwoWay}"
-                                  Margin="3,0,0,0" l:Icon.Fill="Black"/>
+                                  Margin="3,0,0,0" l:Icon.Fill="Black"/>-->
             </ToolBar>
 
             <TabControl Name="Items" Grid.Row="1" Margin="5">

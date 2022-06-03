@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
             TradesPage = new BacktesterCurrentTradesViewModel(profile);
             TradeHistoryPage = new BacktesterTradeGridViewModel(profile);
             OptimizationPage = new BacktesterOptimizerViewModel(_localWnd, IsRunning);
-            //ChartPage = new BacktesterChartPageViewModel();
+            ChartPage = new BacktesterChartPageViewModel();
             ResultsPage = new BacktesterReportViewModel();
 
             CanStart = !IsRunning & client.IsConnected & SetupPage.IsSetupValid;
@@ -91,7 +91,7 @@ namespace TickTrader.BotTerminal
             Items.Add(JournalPage);
             Items.Add(TradesPage);
             Items.Add(TradeHistoryPage);
-            //Items.Add(ChartPage);
+            Items.Add(ChartPage);
             Items.Add(OptimizationResultsPage);
             Items.Add(ResultsPage);
         }
@@ -114,7 +114,7 @@ namespace TickTrader.BotTerminal
         public BacktesterSetupPageViewModel SetupPage { get; }
         public BacktesterJournalViewModel JournalPage { get; } = new BacktesterJournalViewModel();
         public BacktesterReportViewModel ResultsPage { get; }
-        //public BacktesterChartPageViewModel ChartPage { get; }
+        public BacktesterChartPageViewModel ChartPage { get; }
         public BacktesterTradeGridViewModel TradeHistoryPage { get; }
         public BacktesterCurrentTradesViewModel TradesPage { get; private set; }
         public BacktesterOptimizerViewModel OptimizationPage { get; }
@@ -124,7 +124,7 @@ namespace TickTrader.BotTerminal
         private void ResetResultsView()
         {
             _isVisualizing.Clear();
-            //ChartPage.Clear();
+            ChartPage.Clear();
             ResultsPage.Clear();
             JournalPage.Clear();
             TradeHistoryPage.Clear();
@@ -255,14 +255,14 @@ namespace TickTrader.BotTerminal
             if (config.Core.Mode == BacktesterMode.Visualization)
             {
                 JournalPage.IsVisible = true;
-                //ChartPage.IsVisible = true;
+                ChartPage.IsVisible = true;
                 TradeHistoryPage.IsVisible = true;
                 ResultsPage.IsVisible = true;
                 TradesPage.IsVisible = true;
 
                 OptimizationResultsPage.IsVisible = false;
 
-                //ChartPage.OnStart(config);
+                ChartPage.OnStart(config);
                 TradeHistoryPage.OnStart(config);
                 TradesPage.Start(config);
             }
@@ -291,21 +291,21 @@ namespace TickTrader.BotTerminal
         private void OnLoadingBacktestingResults(BacktesterConfig config)
         {
             JournalPage.IsVisible = true;
-            //ChartPage.IsVisible = true;
+            ChartPage.IsVisible = true;
             TradeHistoryPage.IsVisible = true;
             ResultsPage.IsVisible = true;
 
             TradesPage.IsVisible = false;
             OptimizationResultsPage.IsVisible = false;
 
-            //ChartPage.Init(config);
+            ChartPage.Init(config);
             TradeHistoryPage.Init(config);
         }
 
         private void OnLoadingOptimizationResults()
         {
             JournalPage.IsVisible = false;
-            //ChartPage.IsVisible = false;
+            ChartPage.IsVisible = false;
             TradeHistoryPage.IsVisible = false;
             ResultsPage.IsVisible = false;
             TradesPage.IsVisible = false;
@@ -360,7 +360,7 @@ namespace TickTrader.BotTerminal
             if (results.Feed.TryGetValue(mainSymbol, out var mainBars))
             {
                 observer.SetMessage("Loading feed chart data ...");
-                //await ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
+                await ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
                 //await ChartPage.LoadOutputs(config, results);
             }
 

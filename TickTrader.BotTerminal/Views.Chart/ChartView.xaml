@@ -18,10 +18,6 @@
         <Rectangle Fill="Red" Width="5" Height="5"/>
     </ControlTemplate>
 
-    <!--<Style TargetType="s:FastLineRenderableSeries">
-        <Setter Property="RolloverMarkerTemplate" Value="{StaticResource IndicatorOutputRolloverTooltipTemplate}"/>
-    </Style>-->
-
     <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
 
     <Style x:Key="PluginsMenu" TargetType="MenuItem">
@@ -39,85 +35,6 @@
         </Setter>
     </Style>
 
-    <!--<ContextMenu x:Key="MainChartPanelContextMenu" Style="{DynamicResource ContextMenu_Style}">
-
-        <l:MenuItemSelector Header="{l:Resx ContextMenu_Periods}"
-                            ItemsSource="{Binding AvailablePeriods}"
-                            SelectedItem="{Binding SelectedTimeframe, Mode=TwoWay}"
-                            IsEnabled="{Binding UiLock.IsNotLocked}"/>
-
-        <Separator/>
-
-        <MenuItem Header="Crosshair" IsCheckable="True" IsChecked="{Binding ChartControl.IsCrosshairEnabled.Value}"/>
-        <MenuItem x:Name="autoScrollControl" Header="AutoScroll" IsCheckable="True"/>
-
-        <Separator/>
-
-        <l:MenuItemSelector Header="{l:Resx ContextMenu_ChartType}" 
-                            ItemsSource="{Binding Chart.AvailableChartTypes}"
-                            SelectedItem="{Binding Chart.SelectedChartType, Mode=TwoWay}"
-                            IsEnabled="{Binding UiLock.IsNotLocked}"/>
-
-        <MenuItem Header="Add Indicator" IsEnabled="{Binding CanAddIndicator}"
-                  Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=Chart.HasAvailableIndicators}"
-                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
-                  cal:Message.Attach="OpenPlugin($originalsourcecontext)">
-            <MenuItem.Resources>
-                <CollectionViewSource x:Key="IndicatorsViewSrc" Source="{Binding Chart.AvailableIndicators}">
-                    <CollectionViewSource.SortDescriptions>
-                        <scm:SortDescription PropertyName="Category" />
-                        <scm:SortDescription PropertyName="DisplayName" />
-                    </CollectionViewSource.SortDescriptions>
-                    <CollectionViewSource.GroupDescriptions>
-                        <PropertyGroupDescription PropertyName="Category" />
-                    </CollectionViewSource.GroupDescriptions>
-                </CollectionViewSource>
-            </MenuItem.Resources>
-            <MenuItem.Style>
-                <Style TargetType="MenuItem" BasedOn="{StaticResource PluginsMenu}">
-                    <Setter Property="ItemsSource" Value="{Binding Source={StaticResource IndicatorsViewSrc}, Path=Groups}"/>
-                </Style>
-            </MenuItem.Style>
-        </MenuItem>
-
-        <MenuItem Header="Add Bot" IsEnabled="{Binding CanAddBot}"
-                  Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=Chart.HasAvailableBotTraders}"
-                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
-                  cal:Message.Attach="OpenPlugin($originalsourcecontext)">
-            <MenuItem.Resources>
-                <CollectionViewSource x:Key="BotTradersViewSrc" Source="{Binding Chart.AvailableBotTraders}">
-                    <CollectionViewSource.SortDescriptions>
-                        <scm:SortDescription PropertyName="Category" />
-                        <scm:SortDescription PropertyName="DisplayName" />
-                    </CollectionViewSource.SortDescriptions>
-                    <CollectionViewSource.GroupDescriptions>
-                        <PropertyGroupDescription PropertyName="Category" />
-                    </CollectionViewSource.GroupDescriptions>
-                </CollectionViewSource>
-            </MenuItem.Resources>
-            <MenuItem.Style>
-                <Style TargetType="MenuItem" BasedOn="{StaticResource PluginsMenu}">
-                    <Setter Property="ItemsSource" Value="{Binding Source={StaticResource BotTradersViewSrc}, Path=Groups}"/>
-                </Style>
-            </MenuItem.Style>
-        </MenuItem>
-
-        <MenuItem Header="Indicators" ItemsSource="{Binding Indicators}"
-                  Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=HasIndicators}">
-            <MenuItem.ItemTemplate>
-                <DataTemplate>
-                    -->
-    <!--<StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
-                        <l:FlatButton Margin="5,0" Width="14" Height="14" Padding="0" Content="X" BorderThickness="0"
-                                      VerticalAlignment="Center" cal:Message.Attach="Close" FontFamily="Consolas"/>
-                    </StackPanel>-->
-    <!--
-                </DataTemplate>
-            </MenuItem.ItemTemplate>
-        </MenuItem>
-
-    </ContextMenu>-->
 
     <ControlTemplate x:Key="ChartView" x:Shared="False">
         <Grid Margin="4">

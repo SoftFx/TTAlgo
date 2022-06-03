@@ -1,34 +1,20 @@
 ﻿using LiveChartsCore;
 using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.WPF;
-using System;
 using System.Windows;
 using System.Windows.Input;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {
     public enum ChartTypes { Candle, Line, Mountain, DigitalLine, DigitalMountain, Scatter }
 
 
-    public class CartesianScrollBarChart : CartesianChart
+    public class CartesianScrollBarChart : CartesianTradeChart
     {
-        private const double RightShiftBarsCount = 30.0;
-        private const int BarsOnWindow = 150;
-        private const int ScrollSpeed = 10;
-
-        private static readonly DependencyProperty _barsSourceProperty = DependencyProperty.Register(nameof(BarsSource),
-            typeof(ObservableBarVector), typeof(CartesianScrollBarChart), new PropertyMetadata(ChangeBarsSource));
-
-        private static readonly DependencyProperty _periodSourceProperty = DependencyProperty.Register(nameof(Period),
-            typeof(Feed.Types.Timeframe), typeof(CartesianScrollBarChart), new PropertyMetadata(ChangePeriodSource));
+        private const int MouseScrollSpeed = 10;
 
         private static readonly DependencyProperty _typeSourceProperty = DependencyProperty.Register(nameof(ChartType),
             typeof(ChartTypes), typeof(CartesianScrollBarChart), new PropertyMetadata(ChangeChartTypeSource));
-
-        private static readonly DependencyProperty _precisionSourceProperty = DependencyProperty.Register(nameof(PricePrecision),
-            typeof(int), typeof(CartesianScrollBarChart), new PropertyMetadata(ChangePricePrecisionSource));
 
         private static readonly DependencyProperty _autoScrollSourceProperty = DependencyProperty.Register(nameof(AutoScroll),
             typeof(bool), typeof(CartesianScrollBarChart), new PropertyMetadata(ChangeAutoScrollSource));
@@ -39,37 +25,12 @@ namespace TickTrader.BotTerminal.Controls.Chart
         private readonly SupportPriceLine _bidSupportLine, _askSupportLine;
         private readonly YLabelAxis _yLabelAxis;
         private readonly Crosshair _crosshair;
-        private readonly Axis _xAxis, _yAxis;
-        private readonly ChartTradeSettings _settings;
 
-        private double _rightSeriesShift;
-        private int _currentPosition;
-
-        private int MaxIndexBorder => BarsSource?.Count - 1 ?? 0;
-
-
-        public ObservableBarVector BarsSource
-        {
-            get => (ObservableBarVector)GetValue(_barsSourceProperty);
-            set => SetValue(_barsSourceProperty, value);
-        }
-
-        public Feed.Types.Timeframe Period
-        {
-            get => (Feed.Types.Timeframe)GetValue(_periodSourceProperty);
-            set => SetValue(_periodSourceProperty, value);
-        }
 
         public ChartTypes ChartType
         {
             get => (ChartTypes)GetValue(_typeSourceProperty);
             set => SetValue(_typeSourceProperty, value);
-        }
-
-        public int PricePrecision
-        {
-            get => (int)GetValue(_precisionSourceProperty);
-            set => SetValue(_precisionSourceProperty, value);
         }
 
         public bool AutoScroll
@@ -85,19 +46,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
         }
 
 
-        public CartesianScrollBarChart()
+        public CartesianScrollBarChart() : base()
         {
-            _settings = new ChartTradeSettings
-            {
-                SymbolDigits = PricePrecision,
-                ChartType = ChartType,
-                Period = Period,
-            };
-
-            ZoomMode = ZoomAndPanMode.None;
-
-            _xAxis = Customizer.GetDefaultAxis().SetXSettings(_settings);
-            _yAxis = Customizer.GetDefaultAxis().SetYSettings(_settings);
+            _settings.ChartType = ChartType;
 
             _yLabelAxis = new YLabelAxis(_yAxis);
             _crosshair = new Crosshair(this, _settings, yAxisIndex: 1);
@@ -106,41 +57,25 @@ namespace TickTrader.BotTerminal.Controls.Chart
             _askSupportLine = new SupportPriceLine(Customizer.UpColor, _settings, labelAxisIndex: 1);
 
             MouseMove += _crosshair.OnCrossHairMove;
-            Loaded += CartesianScrollBarChart_Loaded; // Required for correct tab switching
         }
 
-        private void CartesianScrollBarChart_Loaded(object sender, RoutedEventArgs e)
+
+        protected override void CartesianScrollBarChart_Loaded(object sender, RoutedEventArgs e)
         {
-            XAxes = new Axis[] { _xAxis };
+            base.CartesianScrollBarChart_Loaded(sender, e);
+
+            ZoomMode = ZoomAndPanMode.None;
+
             YAxes = new Axis[] { _yAxis, _yLabelAxis };
-
             Sections = new RectangularSection[] { _bidSupportLine, _askSupportLine, _crosshair.XLine, _crosshair.YLine };
-
-            UpdateDrawableSeries();
-            InitStartPosition();
         }
 
-        protected override void OnMouseWheel(MouseWheelEventArgs e) => ScrollPage(e.Delta / ScrollSpeed);
+        protected override void OnMouseWheel(MouseWheelEventArgs e) => ScrollPage(e.Delta / MouseScrollSpeed);
 
 
-        private void ScrollPage(int delta)
+        protected override void ScrollPage(int delta)
         {
-            _currentPosition += delta;
-
-            var currentBarSize = MaxIndexBorder;
-            var currentWindowsSize = Math.Min(currentBarSize, BarsOnWindow);
-
-            _currentPosition = Math.Min(_currentPosition, currentBarSize);
-            _currentPosition = Math.Max(_currentPosition, currentWindowsSize);
-
-            if (_currentPosition < 0 || BarsSource is null)
-                return;
-
-            _xAxis.MinLimit = BarsSource[_currentPosition - currentWindowsSize].Date.Ticks;
-            _xAxis.MaxLimit = BarsSource[_currentPosition].Date.Ticks;
-
-            if (_currentPosition == currentBarSize && _xAxis.MaxLimit is not null)
-                _xAxis.MaxLimit += _rightSeriesShift;
+            base.ScrollPage(delta);
 
             _askSupportLine.X = _xAxis.MaxLimit;
             _bidSupportLine.X = _xAxis.MaxLimit;
@@ -149,14 +84,33 @@ namespace TickTrader.BotTerminal.Controls.Chart
             _yLabelAxis.SyncWithMain();
         }
 
-        private void InitStartPosition()
+        protected override void UpdateDrawableSeries()
         {
-            _currentPosition = MaxIndexBorder;
-            ScrollPage(0);
+            _settings.ChartType = ChartType;
+
+            if (BarsSource != null)
+                Series = new ISeries[]
+                {
+                    Customizer.GetBarSeries(BarsSource, _settings),
+
+                    _askSupportLine.Label,
+                    _bidSupportLine.Label,
+
+                    _crosshair.XLable,
+                    _crosshair.YLable,
+                };
         }
 
-        private void SubscribeToTickUpdates()
+        protected override void InitializeBarsSource()
         {
+            base.InitializeBarsSource();
+
+            BarsSource.NewBarEvent += () =>
+            {
+                if (AutoScroll)
+                    InitStartPosition();
+            };
+
             BarsSource.ApplyNewTickEvent += (bid, ask) =>
             {
                 _bidSupportLine.Price = bid;
@@ -167,54 +121,6 @@ namespace TickTrader.BotTerminal.Controls.Chart
             };
         }
 
-        private void UpdatePeriod()
-        {
-            _settings.Period = Period;
-
-            _xAxis?.SetXSettings(_settings);
-
-            _rightSeriesShift = Period.ToTimespan().Ticks * RightShiftBarsCount;
-        }
-
-        private void SyncSeriesPosition()
-        {
-            if (AutoScroll)
-                InitStartPosition();
-        }
-
-        private void UpdateDrawableSeries()
-        {
-            _settings.ChartType = ChartType;
-
-            if (BarsSource != null)
-            {
-                var s = new ISeries[]
-                {
-                    Customizer.GetBarSeries(BarsSource, _settings),
-
-                    _askSupportLine.Label,
-                    _bidSupportLine.Label,
-
-                    _crosshair.XLable,
-                    _crosshair.YLable,
-                };
-
-                SetValueOrCurrentValue(SeriesProperty, s);
-            }
-        }
-
-
-        private static void ChangeBarsSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-            var barSource = (ObservableBarVector)e.NewValue;
-            var chart = (CartesianScrollBarChart)obj;
-
-            barSource.VectorInitEvent += chart.InitStartPosition;
-            barSource.NewBarEvent += chart.SyncSeriesPosition;
-
-            chart.SubscribeToTickUpdates();
-            chart.UpdateDrawableSeries();
-        }
 
         private static void ChangeChartTypeSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
@@ -223,17 +129,6 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 chart.UpdateDrawableSeries();
                 chart.InitStartPosition();
             }
-        }
-
-        private static void ChangePeriodSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-            (obj as CartesianScrollBarChart)?.UpdatePeriod();
-        }
-
-        private static void ChangePricePrecisionSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-            if (obj is CartesianScrollBarChart chart)
-                chart._settings.SymbolDigits = chart.PricePrecision;
         }
 
         private static void ChangeAutoScrollSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)

@@ -1,6 +1,7 @@
 ﻿using LiveChartsCore.Defaults;
 using Machinarium.ObservableCollections;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
@@ -10,7 +11,9 @@ namespace TickTrader.BotTerminal
 {
     public sealed class ObservableBarVector : ObservableRangeCollection<FinancialPoint>
     {
-        private const int MaxBarVectorSize = 4000;
+        private const int DefaultBarVectorSize = 4000;
+
+        private readonly int _maxVectorSize;
 
         private Feed.Types.Timeframe _timeFrame;
         private BarSampler _sampler;
@@ -35,13 +38,15 @@ namespace TickTrader.BotTerminal
         internal event Action<double?, double?> ApplyNewTickEvent;
 
 
-        internal ObservableBarVector(Feed.Types.Timeframe timeFrame)
+        internal ObservableBarVector(Feed.Types.Timeframe timeFrame, int? size = null)
         {
+            _maxVectorSize = size ?? DefaultBarVectorSize;
+
             Timeframe = timeFrame;
         }
 
 
-        public void InitNewVector(BarData[] vector)
+        public void InitNewVector(IEnumerable<BarData> vector)
         {
             Clear();
             AddRange(vector.Select(b => b.ToPoint()));
@@ -67,7 +72,7 @@ namespace TickTrader.BotTerminal
 
             Add(bar.ToPoint());
 
-            if (Count > MaxBarVectorSize)
+            if (Count > _maxVectorSize)
                 RemoveAt(0);
 
             NewBarEvent?.Invoke();
