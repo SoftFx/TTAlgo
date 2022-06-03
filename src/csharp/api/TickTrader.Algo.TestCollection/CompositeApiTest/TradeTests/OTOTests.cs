@@ -466,7 +466,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
             else
             {
-                await TestModifyOrder(order.ForPending(5).WithExpiration(20), OrderEvents.Activate, OrderEvents.Open);
+                await TestModifyOrder(order.ForPending(5).WithExpiration(90), OrderEvents.Activate, OrderEvents.Open);
                 await order.OnTimeTriggerReceived.Task;
                 await order.Opened.Task;
                 await TestCancelOrder(order);
