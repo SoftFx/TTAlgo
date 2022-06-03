@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Isolation
 
             internal void Init(string assemblyFullName, string typeFullName)
             {
-                PackageExplorer.Init((IPackageExplorer)Activator.CreateInstance(assemblyFullName, typeFullName));
+                PackageExplorer.Init((IPackageExplorer)Activator.CreateInstance(assemblyFullName, typeFullName).Unwrap());
             }
         }
     }
