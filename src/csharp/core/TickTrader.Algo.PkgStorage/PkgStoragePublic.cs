@@ -65,12 +65,9 @@ namespace TickTrader.Algo.PkgStorage
 
         static PkgStoragePublic()
         {
-            PackageExplorer.Init(PackageV1Explorer.Create());
-#if NET472_OR_GREATER
-            PackageLoadContext.Init(Isolation.NetFx.PackageLoadContextProvider.Create);
-#endif
-#if NET5_0_OR_GREATER
-            PackageLoadContext.Init(Isolation.NetCore.PackageLoadContextProvider.Create);
+            PackageExplorer.Init<PackageV1Explorer>();
+#if !NETSTANDARD
+            PackageLoadContext.Init(Isolation.PackageLoadContextProvider.Create);
 #endif
         }
 

@@ -14,7 +14,6 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
-using TickTrader.Algo.Isolation.NetCore;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
@@ -56,8 +55,8 @@ namespace TickTrader.BotTerminal
                 ConfigurateLogger();
                 ConfigureGlobalExceptionHandling();
 
-                PackageLoadContext.Init(PackageLoadContextProvider.Create);
-                PackageExplorer.Init(PackageV1Explorer.Create());
+                PackageLoadContext.Init(Algo.Isolation.PackageLoadContextProvider.Create);
+                PackageExplorer.Init<PackageV1Explorer>();
                 PluginLogWriter.Init(NLogPluginLogWriter.Create);
                 BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
             }

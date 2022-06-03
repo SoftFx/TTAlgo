@@ -6,7 +6,6 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
-using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Rpc;
@@ -43,8 +42,8 @@ namespace TickTrader.Algo.RuntimeV1Host.NetFx
 
             logger.Info("Starting runtime with id {runtimeId} at server {address}:{port}", rpcParams.ProxyId, rpcParams.Address, rpcParams.Port);
 
-            PackageLoadContext.Init(PackageLoadContextProvider.Create);
-            PackageExplorer.Init(PackageV1Explorer.Create());
+            PackageLoadContext.Init(Isolation.PackageLoadContextProvider.Create);
+            PackageExplorer.Init<PackageV1Explorer>();
             PluginLogWriter.Init(NLogPluginLogWriter.Create);
 
             RuntimeV1Loader loader = null;

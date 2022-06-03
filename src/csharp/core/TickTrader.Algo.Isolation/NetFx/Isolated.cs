@@ -1,6 +1,7 @@
-﻿using System;
+﻿#if NETFRAMEWORK
+using System;
 
-namespace TickTrader.Algo.Isolation.NetFx
+namespace TickTrader.Algo.Isolation
 {
     public sealed class Isolated<T> : IDisposable where T : MarshalByRefObject
     {
@@ -36,3 +37,4 @@ namespace TickTrader.Algo.Isolation.NetFx
         }
     }
 }
+#endif

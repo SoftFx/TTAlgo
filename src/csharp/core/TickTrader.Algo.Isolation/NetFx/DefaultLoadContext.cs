@@ -1,26 +1,29 @@
-﻿using System;
+﻿#if NETFRAMEWORK
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Loader;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 
-namespace TickTrader.Algo.Isolation.NetCore
+namespace TickTrader.Algo.Isolation
 {
     internal sealed class DefaultLoadContext : IPackageLoadContext
     {
         private readonly object _lock = new object();
-        private readonly List<IPackageLoader> _loaders;
-        private readonly List<Assembly> _loadedAssemblies;
+        private readonly List<IPackageLoader> _loaders = new List<IPackageLoader>();
+        private readonly List<Assembly> _loadedAssemblies = new List<Assembly>();
+        private readonly bool _cacheScanResult;
 
 
-        public DefaultLoadContext()
+        public DefaultLoadContext() : this(true) { }
+
+
+        internal DefaultLoadContext(bool cacheScanResult)
         {
-            _loaders = new List<IPackageLoader>();
-            _loadedAssemblies = new List<Assembly>();
+            _cacheScanResult = cacheScanResult;
 
-            AssemblyLoadContext.Default.Resolving += OnAssemblyResolve;
+            AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
         }
 
 
@@ -45,7 +48,7 @@ namespace TickTrader.Algo.Isolation.NetCore
 
         public PackageInfo ScanAssembly(string pkgId, Assembly assembly)
         {
-            return PackageExplorer.ScanAssembly(pkgId, assembly);
+            return PackageExplorer.ScanAssembly(pkgId, assembly, _cacheScanResult);
         }
 
 
@@ -56,7 +59,7 @@ namespace TickTrader.Algo.Isolation.NetCore
                 _loaders.Add(loader);
             }
             var mainAssembly = LoadAssembly(loader, loader.MainAssemblyName);
-            return PackageExplorer.ScanAssembly(pkgId, mainAssembly);
+            return PackageExplorer.ScanAssembly(pkgId, mainAssembly, _cacheScanResult);
         }
 
         private Assembly LoadAssembly(IPackageLoader loader, string assemblyFileName)
@@ -77,13 +80,15 @@ namespace TickTrader.Algo.Isolation.NetCore
             return assembly;
         }
 
-        private Assembly OnAssemblyResolve(AssemblyLoadContext loadContext, AssemblyName name)
+        private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
         {
-            //lock (_lock)
-            //{
-            //    if (!_loadedAssemblies.Contains(args.RequestingAssembly))
-            //        return null; // we don't need to resolve dependencies of assemblies that are not tracked
-            //}
+            var name = new AssemblyName(args.Name);
+
+            lock (_lock)
+            {
+                if (!_loadedAssemblies.Contains(args.RequestingAssembly))
+                    return null; // we don't need to resolve dependencies of assemblies that are not tracked
+            }
 
             if (name.Name == "TickTrader.Algo.Api")
                 return typeof(Api.AlgoPlugin).Assembly;
@@ -105,3 +110,4 @@ namespace TickTrader.Algo.Isolation.NetCore
         }
     }
 }
+#endif

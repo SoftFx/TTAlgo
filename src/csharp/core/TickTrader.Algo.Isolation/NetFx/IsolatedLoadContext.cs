@@ -1,14 +1,14 @@
-﻿using Google.Protobuf;
+﻿#if NETFRAMEWORK
+using Google.Protobuf;
 using System;
 using System.Reflection;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 
-namespace TickTrader.Algo.Isolation.NetFx
+namespace TickTrader.Algo.Isolation
 {
-    internal class IsolatedLoadContext : IPackageLoadContext
+    internal sealed class IsolatedLoadContext : IPackageLoadContext
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<IsolatedLoadContext>();
 
@@ -18,6 +18,9 @@ namespace TickTrader.Algo.Isolation.NetFx
         public IsolatedLoadContext()
         {
             _childDomain = new Isolated<ChildDomainProxy>();
+
+            var typeInfo = PackageExplorer.GetTypeInfo();
+            _childDomain.Value.Init(typeInfo.Item1, typeInfo.Item2);
         }
 
 
@@ -55,8 +58,7 @@ namespace TickTrader.Algo.Isolation.NetFx
 
             public ChildDomainProxy()
             {
-                _loadContext = new DefaultLoadContext();
-                PackageExplorer.Init(PackageV1Explorer.Create());
+                _loadContext = new DefaultLoadContext(false);
             }
 
 
@@ -75,6 +77,12 @@ namespace TickTrader.Algo.Isolation.NetFx
                 var pkgInfo = _loadContext.LoadInternal(pkgId, loader);
                 return pkgInfo.ToByteArray();
             }
+
+            internal void Init(string assemblyFullName, string typeFullName)
+            {
+                PackageExplorer.Init((IPackageExplorer)Activator.CreateInstance(assemblyFullName, typeFullName));
+            }
         }
     }
 }
+#endif

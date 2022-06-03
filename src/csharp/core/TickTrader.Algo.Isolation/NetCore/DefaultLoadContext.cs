@@ -1,44 +1,30 @@
-﻿using System;
+﻿#if NETCOREAPP3_1_OR_GREATER
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 
-namespace TickTrader.Algo.Isolation.NetCore
+namespace TickTrader.Algo.Isolation
 {
-    internal class IsolatedLoadContext : IPackageLoadContext
+    internal sealed class DefaultLoadContext : IPackageLoadContext
     {
-        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<IsolatedLoadContext>();
-
         private readonly object _lock = new object();
-        private readonly List<IPackageLoader> _loaders;
-        private readonly AssemblyLoadContext _childContext;
+        private readonly List<IPackageLoader> _loaders = new List<IPackageLoader>();
 
 
-        public IsolatedLoadContext()
+        public DefaultLoadContext()
         {
-            _loaders = new List<IPackageLoader>();
-
-            _childContext = new AssemblyLoadContext($"PackageLoadContext {Guid.NewGuid():N}", true);
-            _childContext.Resolving += OnAssemblyResolve;
+            AssemblyLoadContext.Default.Resolving += OnAssemblyResolve;
         }
 
 
         public void Dispose()
         {
-            try
-            {
-                _childContext?.Unload();
-            }
-            catch (Exception ex)
-            {
-                _logger?.Error("Failed to unload child context: " + ex.Message);
-            }
+            throw new NotSupportedException("Can't unload current load context");
         }
-
 
         public PackageInfo Load(string pkgId, string pkgPath)
         {
@@ -54,7 +40,10 @@ namespace TickTrader.Algo.Isolation.NetCore
             return LoadInternal(pkgId, loader);
         }
 
-        public PackageInfo ScanAssembly(string pkgId, Assembly assembly) => throw new NotSupportedException("Assembly should be loaded into isolated context explicitly");
+        public PackageInfo ScanAssembly(string pkgId, Assembly assembly)
+        {
+            return PackageExplorer.ScanAssembly(pkgId, assembly);
+        }
 
 
         internal PackageInfo LoadInternal(string pkgId, IPackageLoader loader)
@@ -77,28 +66,16 @@ namespace TickTrader.Algo.Isolation.NetCore
             if (assemblyBytes == null)
                 return null;
 
-            var assembly = _childContext.LoadFromStream(new MemoryStream(assemblyBytes), new MemoryStream(symbolsBytes));
-            //lock (_lock)
-            //{
-            //    _loadedAssemblies.Add(assembly);
-            //}
-            return assembly;
+            return Assembly.Load(assemblyBytes, symbolsBytes);
         }
 
-
-        private Assembly OnAssemblyResolve(AssemblyLoadContext ctx, AssemblyName name)
+        private Assembly OnAssemblyResolve(AssemblyLoadContext loadContext, AssemblyName name)
         {
-            //lock (_lock)
-            //{
-            //    if (!_loadedAssemblies.Contains(args.RequestingAssembly))
-            //        return null; // we don't need to resolve dependencies of assemblies that are not tracked
-            //}
-
             if (name.Name == "TickTrader.Algo.Api")
                 return typeof(Api.AlgoPlugin).Assembly;
 
             var loadersSnapshot = new IPackageLoader[0];
-            lock (_lock)
+            lock(_lock)
             {
                 loadersSnapshot = _loaders.ToArray();
             }
@@ -114,3 +91,4 @@ namespace TickTrader.Algo.Isolation.NetCore
         }
     }
 }
+#endif

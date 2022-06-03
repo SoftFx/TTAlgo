@@ -26,7 +26,7 @@ namespace TickTrader.Algo.CoreV1.Metadata
         }
 
 
-        public static PackageMetadata ExamineAssembly(string packageId, Assembly targetAssembly)
+        public static PackageMetadata ExamineAssembly(string packageId, Assembly targetAssembly, bool cacheResult)
         {
             if (_packageCacheById.ContainsKey(packageId))
                 throw new AlgoException($"Package '{packageId}' has been already cached");
@@ -35,7 +35,8 @@ namespace TickTrader.Algo.CoreV1.Metadata
             var reductions = FindReductions(targetAssembly);
 
             var metadata = new PackageMetadata(packageId, plugins, reductions);
-            _packageCacheById.TryAdd(packageId, metadata);
+            if (cacheResult)
+                _packageCacheById.TryAdd(packageId, metadata);
             return metadata;
         }
 

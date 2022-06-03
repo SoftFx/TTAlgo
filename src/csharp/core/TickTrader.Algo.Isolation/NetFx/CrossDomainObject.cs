@@ -1,8 +1,9 @@
-﻿using System;
+﻿#if NETFRAMEWORK
+using System;
 using System.Collections.Generic;
 using System.Runtime.Remoting;
 
-namespace TickTrader.Algo.Isolation.NetFx
+namespace TickTrader.Algo.Isolation
 {
     public class CrossDomainObject : MarshalByRefObject, IDisposable
     {
@@ -44,3 +45,4 @@ namespace TickTrader.Algo.Isolation.NetFx
         }
     }
 }
+#endif

@@ -58,8 +58,8 @@ namespace TickTrader.Algo.BacktesterV1Host
             {
                 ConfigureLogging(logsDir, args.Length != 0);
 
-                PackageLoadContext.Init(Isolation.NetCore.PackageLoadContextProvider.Create);
-                PackageExplorer.Init(PackageV1Explorer.Create());
+                PackageLoadContext.Init(Isolation.PackageLoadContextProvider.Create);
+                PackageExplorer.Init<PackageV1Explorer>();
                 PluginLogWriter.Init(NLogPluginLogWriter.Create);
                 BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
             }
