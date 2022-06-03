@@ -257,5 +257,3 @@ package-lock.json
 
 tools/vswhere*
 FDK2.Build.props
-
-src/csharp/apps/TickTrader.Algo.BacktesterV1Host/Properties/*
