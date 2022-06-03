@@ -457,7 +457,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (order.WithOnTimeTrigger(4).IsInstantOrder)
             {
-                await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill, OrderEvents.Open);
+                if (order.IsGrossAcc)
+                    await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill, OrderEvents.Open);
+                else
+                    await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill);
+
                 await order.OnTimeTriggerReceived.Task;
             }
             else
