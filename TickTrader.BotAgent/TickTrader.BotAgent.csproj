@@ -88,18 +88,18 @@
 
   <Target Name="CopyBinaries" AfterTargets="Build">
     <ItemGroup>
-      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host\bin\$(Configuration)\net6.0\*.*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)bin\runtime\" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="CopyBinariesForPublish" AfterTargets="AfterPublish">
     <ItemGroup>
-      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host\bin\$(Configuration)\net6.0\*.*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(PublishDir)\AlgoRuntime\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(PublishDir)bin\runtime\" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="RemoveLinuxLibs" AfterTargets="Build">

@@ -11,7 +11,7 @@ using TickTrader.Algo.Package;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Runtime;
 
-namespace TickTrader.Algo.RuntimeV1Host.NetCore
+namespace TickTrader.Algo.RuntimeV1Host
 {
     class Program
     {
