@@ -22,9 +22,9 @@
     <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
     <PackageReference Include="FontAwesome.Sharp" Version="5.15.4" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.300" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageReference Include="NLog" Version="4.7.15" />
-    <PackageReference Include="SkiaSharp.Views.WPF" Version="2.88.1-preview.1" />
     <PackageReference Include="System.Management" Version="6.0.0" />
   </ItemGroup>
 
@@ -82,18 +82,6 @@
     <Page Remove="Resx\Styles.SystemDefault\DataGridColumnHeadersPresenter.xaml" />
     <Page Remove="Resx\Styles.SystemDefault\DataGridRow.xaml" />
     <Page Remove="Resx\Styles.SystemDefault\TextBox.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="LiveChartsCore">
-      <HintPath>..\lib\LiveChartsCore.dll</HintPath>
-    </Reference>
-    <Reference Include="LiveChartsCore.SkiaSharpView">
-      <HintPath>..\lib\LiveChartsCore.SkiaSharpView.dll</HintPath>
-    </Reference>
-    <Reference Include="LiveChartsCore.SkiaSharpView.WPF">
-      <HintPath>..\lib\LiveChartsCore.SkiaSharpView.WPF.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
