@@ -1,7 +1,5 @@
 ﻿#if NETCOREAPP3_1_OR_GREATER
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
 using TickTrader.Algo.Domain;
@@ -11,13 +9,12 @@ namespace TickTrader.Algo.Isolation
 {
     internal sealed class DefaultLoadContext : IPackageLoadContext
     {
-        private readonly object _lock = new object();
-        private readonly List<IPackageLoader> _loaders = new List<IPackageLoader>();
+        private readonly LoadContextAdapter _adapter;
 
 
         public DefaultLoadContext()
         {
-            AssemblyLoadContext.Default.Resolving += OnAssemblyResolve;
+            _adapter = new LoadContextAdapter(AssemblyLoadContext.Default, true);
         }
 
 
@@ -26,69 +23,11 @@ namespace TickTrader.Algo.Isolation
             throw new NotSupportedException("Can't unload current load context");
         }
 
-        public PackageInfo Load(string pkgId, string pkgPath)
-        {
-            var loader = PackageLoader.CreateForPath(pkgPath);
-            loader.Init();
-            return LoadInternal(pkgId, loader);
-        }
+        public PackageInfo Load(string pkgId, string pkgPath) => _adapter.Load(pkgId, pkgPath);
 
-        public PackageInfo Load(string pkgId, byte[] pkgBinary)
-        {
-            var loader = new ZipBinaryV1Loader(pkgBinary);
-            loader.Init();
-            return LoadInternal(pkgId, loader);
-        }
+        public PackageInfo Load(string pkgId, byte[] pkgBinary) => _adapter.Load(pkgId, pkgBinary);
 
-        public PackageInfo ScanAssembly(string pkgId, Assembly assembly)
-        {
-            return PackageExplorer.ScanAssembly(pkgId, assembly);
-        }
-
-
-        internal PackageInfo LoadInternal(string pkgId, IPackageLoader loader)
-        {
-            lock (_lock)
-            {
-                _loaders.Add(loader);
-            }
-            var mainAssembly = LoadAssembly(loader, loader.MainAssemblyName);
-            return PackageExplorer.ScanAssembly(pkgId, mainAssembly);
-        }
-
-        private Assembly LoadAssembly(IPackageLoader loader, string assemblyFileName)
-        {
-            string pdbFileName = Path.GetFileNameWithoutExtension(assemblyFileName) + ".pdb";
-
-            byte[] assemblyBytes = loader.GetFileBytes(assemblyFileName);
-            byte[] symbolsBytes = loader.GetFileBytes(pdbFileName);
-
-            if (assemblyBytes == null)
-                return null;
-
-            return Assembly.Load(assemblyBytes, symbolsBytes);
-        }
-
-        private Assembly OnAssemblyResolve(AssemblyLoadContext loadContext, AssemblyName name)
-        {
-            if (name.Name == "TickTrader.Algo.Api")
-                return typeof(Api.AlgoPlugin).Assembly;
-
-            var loadersSnapshot = new IPackageLoader[0];
-            lock(_lock)
-            {
-                loadersSnapshot = _loaders.ToArray();
-            }
-
-            foreach (var loader in loadersSnapshot)
-            {
-                var assembly = LoadAssembly(loader, $"{name.Name}.dll");
-                if (assembly != null)
-                    return assembly;
-            }
-
-            return null;
-        }
+        public PackageInfo ScanAssembly(string pkgId, Assembly assembly) => PackageExplorer.ScanAssembly(pkgId, assembly);
     }
 }
 #endif
