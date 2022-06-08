@@ -9,7 +9,7 @@ namespace TickTrader.Algo.CoreV1
     {
         public PositionCollection(PluginBuilder builder) : base(builder) { }
 
-        public NetPosition this[string symbol] => !_entities.TryGetValue(symbol, out PositionAccessor entity) ? entity : new PositionAccessor(symbol, _builder.Symbols.GetOrNull(symbol));
+        public NetPosition this[string symbol] => _entities.TryGetValue(symbol, out PositionAccessor entity) ? entity : new PositionAccessor(symbol, _builder.Symbols.GetOrNull(symbol));
 
         public PositionAccessor UpdatePosition(PositionInfo posInfo)
         {
