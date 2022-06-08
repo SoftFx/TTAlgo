@@ -8,7 +8,8 @@
     <ControlTemplate x:Key="BacktesterChartPageTemplate.Classic">
         <lvc:CartesianTradeChart BarsSource="{Binding BarVector}" 
                                  Period="{l:UpdateBind Period.Value}"
-                                 PricePrecision="{l:UpdateBind PricePrecision.Value}"/>
+                                 PricePrecision="{l:UpdateBind PricePrecision.Value}"
+                                 TradeEventHandler="{Binding TradeEventHandler}"/>
     </ControlTemplate>
 
     <!-- View Style -->

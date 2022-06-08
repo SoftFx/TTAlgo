@@ -1,17 +1,13 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Machinarium.Qnil;
-using Machinarium.Var;
+﻿using Machinarium.Var;
 //using SciChart.Charting.Model.ChartSeries;
 //using SciChart.Charting.Visuals.Axes;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.BotTerminal.Lib;
+using TickTrader.BotTerminal.Controls.Chart;
 using static TickTrader.BotTerminal.BaseTransactionModel;
 
 namespace TickTrader.BotTerminal
@@ -34,6 +30,9 @@ namespace TickTrader.BotTerminal
 
 
         public ObservableBarVector BarVector { get; } = new(DefaultTimeframe, int.MaxValue);
+
+        public TradeEventsWriter TradeEventHandler { get; } = new();
+
 
         public Property<Feed.Types.Timeframe> Period { get; }
 
@@ -111,7 +110,7 @@ namespace TickTrader.BotTerminal
             _postponedMarkers.Clear();
         }
 
-        public async Task LoadMainChart(IEnumerable<BarData> bars, Feed.Types.Timeframe timeframe, IEnumerable<BaseTransactionModel> tradeHistory)
+        public void LoadMainChart(IEnumerable<BarData> bars, Feed.Types.Timeframe timeframe, IEnumerable<BaseTransactionModel> tradeHistory)
         {
             //_barVector = new ChartBarVectorWithMarkers(timeframe);
 
@@ -119,10 +118,10 @@ namespace TickTrader.BotTerminal
             ////ChartControlModel.SymbolInfo.Value = mainSymbol;
 
             BarVector.InitNewVector(bars);
-
+            TradeEventHandler.LoadTradeEvents(tradeHistory);
             //await Task.Run(() =>
             //{
-                
+
             //    //foreach (var bar in bars)
             //    //{
             //    //    _barVector.AppendBarPart(bar);

@@ -1,7 +1,9 @@
 ﻿using LiveChartsCore;
 using LiveChartsCore.Defaults;
+using LiveChartsCore.Drawing;
 using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Drawing;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using System;
@@ -151,6 +153,29 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 Stroke = new SolidColorPaint(_lineColor, DefaultChartStroke),
             };
         }
+
+        internal static ISeries GetScatterSeries<T>(TradeEventSettings settings) where T : class, ISizedVisualChartPoint<SkiaSharpDrawingContext>, new()
+        {
+            return new ScatterSeries<TradeEventPoint, T>
+            {
+                Values = settings.Events,
+                Name = settings.Name,
+
+                Fill = new SolidColorPaint(settings.Color),
+                Stroke = new SolidColorPaint
+                {
+                    Color = SKColors.Black,
+                    StrokeThickness = 0.1f,
+                },
+
+                TooltipLabelFormatter = m => m.Model?.ToolTip,
+
+                GeometrySize = 20,
+                ZIndex = 10,
+                AnimationsSpeed = DefaultAnimationSpeed,
+            };
+        }
+
 
         internal static string GetPeriodDateFormat(Feed.Types.Timeframe period)
         {

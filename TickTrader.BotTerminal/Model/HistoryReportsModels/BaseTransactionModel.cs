@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal abstract class BaseTransactionModel
+    public abstract class BaseTransactionModel
     {
         public enum AggregatedTransactionType
         {

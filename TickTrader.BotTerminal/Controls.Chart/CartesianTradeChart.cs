@@ -3,6 +3,7 @@ using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.WPF;
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using TickTrader.Algo.Domain;
 
@@ -12,6 +13,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
     {
         private const double RightShiftBarsCount = 30.0;
         private const int BarsOnWindow = 150;
+
+        protected static readonly DependencyProperty _tradeEventHandlerSourceProperty = DependencyProperty.Register(nameof(TradeEventHandler),
+            typeof(TradeEventsWriter), typeof(CartesianTradeChart), new PropertyMetadata(ChangeTradeEventHandlerSource));
 
         protected static readonly DependencyProperty _barsSourceProperty = DependencyProperty.Register(nameof(BarsSource),
             typeof(ObservableBarVector), typeof(CartesianTradeChart), new PropertyMetadata(ChangeBarsSource));
@@ -51,9 +55,17 @@ namespace TickTrader.BotTerminal.Controls.Chart
             set => SetValue(_precisionSourceProperty, value);
         }
 
+        public TradeEventsWriter TradeEventHandler
+        {
+            get => (TradeEventsWriter)GetValue(_tradeEventHandlerSourceProperty);
+            set => SetValue(_tradeEventHandlerSourceProperty, value);
+        }
+
 
         public CartesianTradeChart()
         {
+            TooltipPosition = TooltipPosition.Right;
+
             _settings = new ChartTradeSettings
             {
                 SymbolDigits = PricePrecision,
@@ -108,10 +120,17 @@ namespace TickTrader.BotTerminal.Controls.Chart
         protected virtual void UpdateDrawableSeries()
         {
             if (BarsSource != null)
-                Series = new ISeries[]
+            {
+                var series = new List<ISeries>
                 {
                     Customizer.GetBarSeries(BarsSource, _settings),
                 };
+
+                if (TradeEventHandler is not null)
+                    series.AddRange(TradeEventHandler.Markers);
+
+                Series = series;
+            }
         }
 
         protected virtual void UpdatePeriod()
@@ -145,6 +164,12 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             if (obj is CartesianTradeChart chart)
                 chart._settings.SymbolDigits = chart.PricePrecision;
+        }
+
+        private static void ChangeTradeEventHandlerSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        {
+            if (obj is CartesianTradeChart chart)
+                chart.TradeEventHandler.InitNewDataEvent += chart.UpdateDrawableSeries;
         }
     }
 }
