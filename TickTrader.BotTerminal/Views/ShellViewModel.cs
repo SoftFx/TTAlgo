@@ -280,8 +280,8 @@ namespace TickTrader.BotTerminal
 
         public TradeInfoViewModel Trade { get; }
         public TradeHistoryViewModel TradeHistory { get; }
-        public AlgoListViewModel AlgoList { get; set; }
-        public SymbolListViewModel SymbolList { get; private set; }
+        public AlgoListViewModel AlgoList { get; }
+        public SymbolListViewModel SymbolList { get; }
         public ChartCollectionViewModel Charts { get; private set; }
         public AccountPaneViewModel AccountPane { get; private set; }
         public JournalViewModel Journal { get; set; }

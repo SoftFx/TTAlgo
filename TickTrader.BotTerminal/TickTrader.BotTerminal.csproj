@@ -20,6 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Caliburn.Micro" Version="4.0.209" />
     <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
+    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.60.0" />
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
     <PackageReference Include="FontAwesome.Sharp" Version="5.15.4" />
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.300" />

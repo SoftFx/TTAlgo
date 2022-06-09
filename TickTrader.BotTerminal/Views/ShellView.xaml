@@ -243,14 +243,14 @@
                 <dk:LayoutPanel Orientation="Horizontal">
                     <dk:LayoutPanel DockMinWidth="200" DockWidth="290" Orientation="Vertical">
                         <dk:LayoutAnchorablePane>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_Symbols}" CanClose="False" CanHide="True" 
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Symbols}" CanClose="False" CanHide="True"
                                                  ContentId="{x:Static l:DockManagerService.Tab_Symbols}">
                                 <ContentControl cal:View.Model="{Binding SymbolList}" />
                             </dk:LayoutAnchorable>
                         </dk:LayoutAnchorablePane>
                         <dk:LayoutAnchorablePane>
                             <dk:LayoutAnchorable Title="{l:Resx Tab_Bots}" CanClose="False" CanHide="True" 
-                                                 ContentId="{x:Static l:DockManagerService.Tab_Bots}" >
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Bots}">
                                 <ContentControl cal:View.Model="{Binding BotList}" />
                             </dk:LayoutAnchorable>
                         </dk:LayoutAnchorablePane>
