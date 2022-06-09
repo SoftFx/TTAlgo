@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
             _model = model;
             _symbolPrecision = new PricePrecisionConverter<double>(model?.Digits ?? 2);
 
-            distributor.AddSubscription(OnRateUpdate, model.Name);
+            distributor.AddListener(OnRateUpdate, model.Name);
 
             Bid = new RateViewModel(_symbolPrecision);
             Ask = new RateViewModel(_symbolPrecision);

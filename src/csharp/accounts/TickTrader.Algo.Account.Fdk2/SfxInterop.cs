@@ -317,9 +317,9 @@ namespace TickTrader.Algo.Account.Fdk2
             return symbols.Select(Convert).ToArray();
         }
 
-        public Task<Domain.QuoteInfo[]> SubscribeToQuotes(string[] symbols, int depth)
+        public Task<Domain.QuoteInfo[]> SubscribeToQuotes(string[] symbols, int depth, int? frequency)
         {
-            return _feedProxyAdapter.SubscribeQuotesAsync(symbols, depth);
+            return _feedProxyAdapter.SubscribeQuotesAsync(symbols, depth, frequency);
         }
 
         public async Task<Domain.QuoteInfo[]> GetQuoteSnapshot(string[] symbols, int depth)

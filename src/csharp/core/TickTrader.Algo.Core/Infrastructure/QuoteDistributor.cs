@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Infrastructure
@@ -9,6 +10,7 @@ namespace TickTrader.Algo.Core.Infrastructure
     public class QuoteDistributor
     {
         private readonly ConcurrentDictionary<string, SubscriptionGroup> _groups = new ConcurrentDictionary<string, SubscriptionGroup>();
+        private readonly ChannelEventSource<QuoteInfo> _globalQuoteSrc = new ChannelEventSource<QuoteInfo>();
         private IFeedSubscription _src;
         //private bool _isSubscribedForAll;
         private ConcurrentDictionary<string, bool> _availableSymbols;
@@ -32,8 +34,14 @@ namespace TickTrader.Algo.Core.Infrastructure
             return subscription;
         }
 
+        public IDisposable AddListener(Action<QuoteInfo> handler) => _globalQuoteSrc.Subscribe(handler);
+
+        public IDisposable AddListener(Action<QuoteInfo> handler, string symbol) => GetOrAddGroup(symbol).AddListener(handler);
+
         public virtual void UpdateRate(QuoteInfo tick)
         {
+            _globalQuoteSrc.Send(tick);
+
             GetGroupOrDefault(tick.Symbol)?.UpdateRate(tick);
         }
 
@@ -87,7 +95,7 @@ namespace TickTrader.Algo.Core.Infrastructure
             {
                 var group = GetGroupOrDefault(smb);
                 if (group == null)
-                    yield return new Tuple<int, string>(1, smb);
+                    yield return new Tuple<int, string>(SubscriptionDepth.Ambient, smb);
                 else
                     yield return new Tuple<int, string>(group.Depth, smb);
             }
@@ -145,27 +153,15 @@ namespace TickTrader.Algo.Core.Infrastructure
                 var group = GetOrAddGroup(symbol);
                 if (group != null)
                 {
-                    if (group.Subscriptions.Count == 0)
+                    var oldDepth = group.Depth;
+                    var newDepth = group.GetMaxDepth();
+                    if (newDepth != oldDepth)
                     {
-                        if (group.Depth >= 0)
-                        {
-                            //_src.Remove(group.Symbol);
-                            update = FeedSubscriptionUpdate.Remove(symbol);
-                            group.Depth = -1;
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        var oldDepth = group.Depth;
-                        var newDepth = group.GetMaxDepth();
-                        if (newDepth != oldDepth)
-                        {
-                            group.Depth = newDepth;
-                            //_src.AddOrModify(symbol, newDepth);
-                            update = FeedSubscriptionUpdate.Upsert(symbol, newDepth);
-                            return true;
-                        }
+                        group.Depth = newDepth;
+                        update = newDepth != SubscriptionDepth.Ambient
+                            ? FeedSubscriptionUpdate.Upsert(symbol, newDepth)
+                            : FeedSubscriptionUpdate.Remove(symbol);
+                        return true;
                     }
                 }
             }

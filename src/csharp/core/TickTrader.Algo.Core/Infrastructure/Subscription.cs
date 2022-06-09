@@ -68,7 +68,6 @@ namespace TickTrader.Algo.Core.Infrastructure
                 var isNewSub = group.Upsert(this, update.Depth);
                 if (isNewSub && group.LastQuote != null)
                     snapshot.Add(group.LastQuote);
-                //_parent.AdjustGroupSubscription(symbol);
                 _bySymbol.AddOrUpdate(update.Symbol, update.Depth, (key, value) => update.Depth);
                 return true;
             }
@@ -79,8 +78,7 @@ namespace TickTrader.Algo.Core.Infrastructure
                     var group = _parent.GetGroupOrDefault(update.Symbol);
                     if (group != null)
                     {
-                        group.Subscriptions.TryRemove(this, out _);
-                        //_parent.AdjustGroupSubscription(symbol);
+                        group.Remove(this);
                         return true;
                     }
                 }
@@ -104,7 +102,7 @@ namespace TickTrader.Algo.Core.Infrastructure
             {
                 var group = _parent.GetGroupOrDefault(symbol);
                 if (group != null)
-                    group.Subscriptions.TryRemove(this, out _);
+                    group.Remove(this);
             }
 
             if (symbols.Count > 0)
