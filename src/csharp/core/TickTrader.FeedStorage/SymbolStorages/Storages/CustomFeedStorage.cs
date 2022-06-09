@@ -15,8 +15,8 @@ namespace TickTrader.FeedStorage.StorageBase
     {
         private const string CustomSymbolsCollectionName = "customSymbols";
 
-        private readonly ActorEvent<DictionaryUpdateArgs<string, CustomSymbolInfo>> _symbolListeners = new ActorEvent<DictionaryUpdateArgs<string, CustomSymbolInfo>>();
-        private readonly VarDictionary<string, CustomSymbolInfo> _customSymbols = new VarDictionary<string, CustomSymbolInfo>();
+        private readonly ActorEvent<DictionaryUpdateArgs<string, CustomSymbolInfo>> _symbolListeners = new();
+        private readonly VarDictionary<string, CustomSymbolInfo> _customSymbols = new();
 
         private ICollectionStorage<Guid, CustomSymbolInfo> _customSymbolsCollection;
 

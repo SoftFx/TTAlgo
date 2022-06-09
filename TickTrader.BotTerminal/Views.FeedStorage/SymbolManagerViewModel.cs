@@ -57,10 +57,29 @@ namespace TickTrader.BotTerminal.SymbolManager
             AllSymbolsView.GroupDescriptions.Add(new PropertyGroupDescription(SymbolViewModel.SecurityHeader));
             AllSymbolsView.Filter = FilterGroup;
 
-            SubscribeHandlersToCollection(_catalog.OnlineCollection);
-            SubscribeHandlersToCollection(_catalog.CustomCollection);
-
             _varContext.TriggerOnChange(FilterString.Var, _ => AllSymbolsView.Refresh());
+        }
+
+        protected override Task OnActivateAsync(CancellationToken cancellationToken)
+        {
+            if (_catalog is not null)
+            {
+                SubscribeHandlersToCollection(_catalog.OnlineCollection);
+                SubscribeHandlersToCollection(_catalog.CustomCollection);
+            }
+
+            return base.OnActivateAsync(cancellationToken);
+        }
+
+        protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
+        {
+            if (close && _catalog is not null)
+            {
+                UnsubscribeHandlersToCollection(_catalog.OnlineCollection);
+                UnsubscribeHandlersToCollection(_catalog.CustomCollection);
+            }
+
+            return base.OnDeactivateAsync(close, cancellationToken);
         }
 
 
@@ -178,14 +197,6 @@ namespace TickTrader.BotTerminal.SymbolManager
         {
             smbName = smbName.Trim();
             return _catalog.OnlineCollection[smbName] != null || _catalog.CustomCollection[smbName] != null;
-        }
-
-        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
-        {
-            UnsubscribeHandlersToCollection(_catalog.OnlineCollection);
-            UnsubscribeHandlersToCollection(_catalog.CustomCollection);
-
-            return base.CanCloseAsync(cancellationToken);
         }
     }
 }
