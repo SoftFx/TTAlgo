@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Infrastructure
@@ -11,22 +12,32 @@ namespace TickTrader.Algo.Core.Infrastructure
     {
         private readonly ConcurrentDictionary<string, int> _bySymbol = new ConcurrentDictionary<string, int>();
         private readonly QuoteDistributor _parent;
-        private readonly Action<QuoteInfo> _handler;
 
-        public Subscription(Action<QuoteInfo> handler, QuoteDistributor parent)
+        private ChannelEventSource<QuoteInfo> _quoteSrc;
+
+
+        public Subscription(QuoteDistributor parent)
         {
             _parent = parent;
-            _handler = handler ?? throw new ArgumentNullException("handler");
         }
 
-        public void OnNewQuote(QuoteInfo newQuote)
+
+        public void AddHandler(Action<QuoteInfo> handler)
         {
-            _handler.Invoke(TruncateQuote(newQuote));
+            if (_quoteSrc == null)
+                _quoteSrc = new ChannelEventSource<QuoteInfo>();
+
+            _quoteSrc.Subscribe(handler);
         }
 
-        protected QuoteInfo TruncateQuote(QuoteInfo quote)
+        internal void OnNewQuote(QuoteInfo newQuote)
         {
-            if (_bySymbol.TryGetValue(quote.Symbol, out var depth) && depth == 0)
+            _quoteSrc?.Send(TruncateQuote(newQuote));
+        }
+
+        private QuoteInfo TruncateQuote(QuoteInfo quote)
+        {
+            if (_bySymbol.TryGetValue(quote.Symbol, out var depth) && depth == SubscriptionDepth.MaxDepth)
             {
                 return quote;
             }
@@ -89,12 +100,6 @@ namespace TickTrader.Algo.Core.Infrastructure
 
         public void CancelAll()
         {
-            //if (IsSubscribedForAll)
-            //{
-            //    _parent._allSymbolSubscriptions.Remove(this);
-            //    _parent.AdjustAllSymbolsSubscription();
-            //}
-
             var symbols = _bySymbol.Keys.ToList();
             _bySymbol.Clear();
 

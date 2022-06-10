@@ -11,25 +11,19 @@ namespace TickTrader.Algo.Core.Infrastructure
     {
         private readonly ConcurrentDictionary<string, SubscriptionGroup> _groups = new ConcurrentDictionary<string, SubscriptionGroup>();
         private readonly ChannelEventSource<QuoteInfo> _globalQuoteSrc = new ChannelEventSource<QuoteInfo>();
+        private readonly SubscriptionGroup _allSymbolsGroup = new SubscriptionGroup(FeedSubscriptionUpdate.AllSymbolsAlias);
         private IFeedSubscription _src;
-        //private bool _isSubscribedForAll;
         private ConcurrentDictionary<string, bool> _availableSymbols;
 
-        public IFeedSubscription AddSubscription(Action<QuoteInfo> handler)
+
+        public IFeedSubscription AddSubscription()
         {
-            return new Subscription(handler, this);
+            return new Subscription(this);
         }
 
-        public IFeedSubscription AddSubscription(Action<QuoteInfo> handler, IEnumerable<string> symbols, int depth = 1)
+        public IFeedSubscription AddSubscription(string symbol, int depth = 1)
         {
-            var sub = new Subscription(handler, this);
-            sub.AddOrModify(symbols, depth);
-            return sub;
-        }
-
-        public IFeedSubscription AddSubscription(Action<QuoteInfo> handler, string symbol, int depth = 1)
-        {
-            var subscription = new Subscription(handler, this);
+            var subscription = new Subscription(this);
             subscription.AddOrModify(symbol, depth);
             return subscription;
         }
@@ -42,11 +36,12 @@ namespace TickTrader.Algo.Core.Infrastructure
         {
             _globalQuoteSrc.Send(tick);
 
+            _allSymbolsGroup.UpdateRate(tick);
+
             GetGroupOrDefault(tick.Symbol)?.UpdateRate(tick);
         }
 
         public bool IsStarted => _src != null;
-        //protected IEnumerable<Subscription> GlobalSubscriptions => _allSymbolSubscriptions;
 
         public virtual void Start(IFeedSubscription src, IEnumerable<string> avaialbleSymbols = null, bool subscribeOnStart = true)
         {
@@ -101,27 +96,6 @@ namespace TickTrader.Algo.Core.Infrastructure
             }
         }
 
-        //private void AdjustAllSymbolsSubscription()
-        //{
-        //    if (!IsStarted)
-        //        return;
-
-        //    if (_allSymbolSubscriptions.Count > 0)
-        //    {
-        //        if (!_isSubscribedForAll)
-        //        {
-        //            _src.SubscribeForAll();
-        //            _isSubscribedForAll = true;
-        //        }
-        //    }
-        //}
-
-        //private void ResetAllSubscriptions()
-        //{
-        //    foreach (var group in groups.Values)
-        //        group.Depth = -1;
-        //}
-
         internal List<QuoteInfo> AdjustGroupSubscription(IEnumerable<string> symbols)
         {
             if (!IsStarted)
@@ -172,19 +146,17 @@ namespace TickTrader.Algo.Core.Infrastructure
 
         public virtual SubscriptionGroup GetOrAddGroup(string symbol)
         {
-            lock (_groups)
-            {
-                if (!_groups.TryGetValue(symbol, out var group))
-                {
-                    group = new SubscriptionGroup(symbol);
-                    _groups.TryAdd(symbol, group);
-                }
-                return group;
-            }
+            if (symbol == FeedSubscriptionUpdate.AllSymbolsAlias)
+                return _allSymbolsGroup;
+
+            return _groups.GetOrAdd(symbol, s => new SubscriptionGroup(s));
         }
 
         public virtual SubscriptionGroup GetGroupOrDefault(string symbol)
         {
+            if (symbol == FeedSubscriptionUpdate.AllSymbolsAlias)
+                return _allSymbolsGroup;
+
             _groups.TryGetValue(symbol, out var group);
             return group;
         }

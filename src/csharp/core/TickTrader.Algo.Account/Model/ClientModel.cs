@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Account
         {
             _ref = this.GetRef();
             _rootDistributor = new QuoteDistributor();
-            _defaultSubscription = _rootDistributor.AddSubscription(q => { });
+            _defaultSubscription = _rootDistributor.AddSubscription();
         }
 
         private void Init(AccountModelSettings settings)
@@ -185,7 +185,8 @@ namespace TickTrader.Algo.Account
             {
                 Cache = new EntityCache();
                 Distributor = new QuoteDistributor();
-                _defaultSubscription = Distributor.AddSubscription(q => { });
+                _defaultSubscription = Distributor.AddSubscription();
+                _defaultSubscription.AddOrModifyAllSymbols();
             }
 
             public string Id => Actor.ActorName;
@@ -287,13 +288,11 @@ namespace TickTrader.Algo.Account
             private void Connection_Connected()
             {
                 Distributor.Start(this);
-                //_defaultSubscription.AddOrModify(Cache.Symbols.Snapshot.Keys, 1);
             }
 
             private void Connection_Disconnected()
             {
                 Distributor.Stop();
-                //_defaultSubscription.CancelAll();
             }
         }
 
@@ -509,7 +508,7 @@ namespace TickTrader.Algo.Account
 
         private void UpsertSubscription(ActorRef sender, List<FeedSubscriptionUpdate> updates)
         {
-            var subscription = _feedSubcribers.GetOrAdd(sender, () => _rootDistributor.AddSubscription(q => { }));
+            var subscription = _feedSubcribers.GetOrAdd(sender, () => _rootDistributor.AddSubscription());
             subscription.Modify(updates);
         }
 
@@ -529,7 +528,7 @@ namespace TickTrader.Algo.Account
                 switch (depth)
                 {
                     case SubscriptionDepth.RemoveSub: _logger.Error($"Removing subs not supported. Arguments Symbols = {string.Join(",", symbols)}, Depth = {depth}"); break;
-                    case SubscriptionDepth.AllBands: return await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 0, null);
+                    case SubscriptionDepth.MaxDepth: return await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 0, null);
                     case SubscriptionDepth.Ambient: return await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 7);
                     case SubscriptionDepth.Tick_S0: return await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 0);
                     case SubscriptionDepth.Tick_S1: return await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 1);

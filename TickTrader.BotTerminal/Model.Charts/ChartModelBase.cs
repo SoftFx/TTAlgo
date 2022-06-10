@@ -68,7 +68,8 @@ namespace TickTrader.BotTerminal
             ClientModel.Disconnected += Connection_Disconnected;
             ClientModel.Deinitializing += Client_Deinitializing;
 
-            subscription = ClientModel.Distributor.AddSubscription(OnRateUpdate, symbol.Name);
+            subscription = ClientModel.Distributor.AddSubscription(symbol.Name);
+            ClientModel.Distributor.AddListener(q => { if (Model.Name == q.Symbol) OnRateUpdate(q); });
             //subscription.NewQuote += ;
 
             _currentRateProp.Value = (IRateInfo)symbol.LastQuote;
@@ -363,7 +364,7 @@ namespace TickTrader.BotTerminal
 
         AxisBase IPluginDataChartModel.CreateXAxis()
         {
-            var axis =  Navigator.CreateAxis();
+            var axis = Navigator.CreateAxis();
             CreateXAxisBinging(axis);
             return axis;
         }

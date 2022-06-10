@@ -3,7 +3,7 @@
     public static class SubscriptionDepth
     {
         // positive values correspond to realtime subscription with specified depth
-        public const int AllBands = int.MaxValue;
+        public const int MaxDepth = int.MaxValue; // all bands available
         public const int RemoveSub = 0; // removes subscription
         // negative values are special
         public const int Ambient = int.MinValue; // default subscription defined by algo server
@@ -14,6 +14,9 @@
 
     public partial class FeedSubscriptionUpdate
     {
+        public const string AllSymbolsAlias = "";
+
+
         public bool IsRemoveAction => Depth == 0;
 
         public bool IsUpsertAction => Depth != 0;

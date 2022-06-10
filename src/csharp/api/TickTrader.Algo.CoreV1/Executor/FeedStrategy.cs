@@ -121,7 +121,7 @@ namespace TickTrader.Algo.CoreV1
 
         private void InitDefaultSubscription()
         {
-            _defaultSubscription = RateDispenser.AddSubscription(q => { });
+            _defaultSubscription = RateDispenser.AddSubscription();
             var snaphsot = _defaultSubscription.AddOrModify(BufferedSymbols, 1);
             ApplySnaphost(snaphsot);
         }
@@ -134,8 +134,7 @@ namespace TickTrader.Algo.CoreV1
 
         internal void SubscribeAll()
         {
-            var symbols = ExecContext.Builder.Symbols.Select(s => s.Name);
-            var snaphsot = _defaultSubscription.AddOrModify(symbols, 1);
+            var snaphsot = _defaultSubscription.AddOrModifyAllSymbols();
             ApplySnaphost(snaphsot);
         }
 
@@ -447,6 +446,9 @@ namespace TickTrader.Algo.CoreV1
 
         void CustomFeedProvider.Subscribe(string symbol, int depth)
         {
+            if (depth == 0) // in Algo.Api depth=0 is all bands available
+                depth = SubscriptionDepth.MaxDepth;
+
             RateDispenser.SetUserSubscription(symbol, depth);
         }
 
