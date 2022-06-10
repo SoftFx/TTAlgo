@@ -92,15 +92,18 @@ namespace TickTrader.BotTerminal
 
         public void SaveChartsSnapshot(ProfileStorageModel profileStorage)
         {
-            try
+            if (Items.Count > 0)
             {
-                profileStorage.SelectedChart = ActiveItem?.Symbol;
-                profileStorage.Charts = new List<ChartStorageEntry>();
-                Items.ForEach(i => profileStorage.Charts.Add(i.GetSnapshot()));
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to save charts snapshot");
+                try
+                {
+                    profileStorage.SelectedChart = ActiveItem?.Symbol;
+                    profileStorage.Charts = new List<ChartStorageEntry>();
+                    Items.ForEach(i => profileStorage.Charts.Add(i.GetSnapshot()));
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to save charts snapshot");
+                }
             }
         }
 
