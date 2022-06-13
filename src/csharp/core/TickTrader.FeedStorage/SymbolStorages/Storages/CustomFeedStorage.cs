@@ -154,15 +154,17 @@ namespace TickTrader.FeedStorage.StorageBase
                         _symbols.Remove(update.OldItem.Name);
                         break;
                     case DLinqAction.Insert:
-                    case DLinqAction.Replace:
                         AddNewCustomSymbol(update.NewItem);
+                        break;
+                    case DLinqAction.Replace:
+                        _symbols[update.NewItem.Name].UpdateInfo(update.NewItem);
                         break;
                     default:
                         break;
                 }
             }
 
-            private void AddNewCustomSymbol(CustomSymbolInfo data) => _symbols[data.Name] = new CustomSymbol(data, this);
+            private void AddNewCustomSymbol(CustomSymbolInfo info) => _symbols[info.Name] = new CustomSymbol(info, this);
         }
     }
 }

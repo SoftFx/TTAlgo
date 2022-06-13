@@ -26,7 +26,7 @@ namespace TickTrader.FeedStorage
         public virtual bool IsDownloadAvailable => true;
 
 
-        public ISymbolInfo Info { get; }
+        public ISymbolInfo Info { get; private set; }
 
         public abstract SymbolConfig.Types.SymbolOrigin Origin { get; }
 
@@ -42,9 +42,14 @@ namespace TickTrader.FeedStorage
             _series = new ConcurrentDictionary<ISeriesKey, IStorageSeries>();
             _storage = storage;
 
-            Info = info;
+            UpdateInfo(info);
         }
 
+
+        internal void UpdateInfo(ISymbolInfo info)
+        {
+            Info = info;
+        }
 
         public abstract Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
 
