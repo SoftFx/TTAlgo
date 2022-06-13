@@ -9,7 +9,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <l:TabControl x:Name="Items" Style="{DynamicResource ShellTabControl_Style}"
                   TabHeaderPadding="10,2,1,2">
-        <TabControl.ItemTemplate>
+        <!--<TabControl.ItemTemplate>
             <DataTemplate>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
@@ -24,6 +24,6 @@
                                   HorizontalAlignment="Center"/>
                 </StackPanel>
             </DataTemplate>
-        </TabControl.ItemTemplate>
+        </TabControl.ItemTemplate>-->
     </l:TabControl>
 </UserControl>

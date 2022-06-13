@@ -104,8 +104,8 @@
     </Style>
 
     <Style x:Key="LayoutItemChartStyle" TargetType="{x:Type dkc:LayoutItem}">
-        <Setter Property="Title" Value="{Binding Model.DisplayName}" />
-        <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
+        <Setter Property="Title" Value="{Binding Model.DisplayName}"/>
+        <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}"/>
         <Setter Property="ContentId" Value="{Binding Model.ChartWindowId}"/>
         <!--<Setter Property="CanClose" Value="{Binding Model.CanClose}" />-->
     </Style>
