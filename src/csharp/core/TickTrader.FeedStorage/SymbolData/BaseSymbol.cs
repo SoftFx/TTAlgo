@@ -46,9 +46,11 @@ namespace TickTrader.FeedStorage
         }
 
 
-        internal void UpdateInfo(ISymbolInfo info)
+        internal BaseSymbol UpdateInfo(ISymbolInfo info)
         {
             Info = info;
+
+            return this;
         }
 
         public abstract Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);

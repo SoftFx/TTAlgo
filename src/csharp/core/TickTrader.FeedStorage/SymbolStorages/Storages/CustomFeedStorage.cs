@@ -157,7 +157,7 @@ namespace TickTrader.FeedStorage.StorageBase
                         AddNewCustomSymbol(update.NewItem);
                         break;
                     case DLinqAction.Replace:
-                        _symbols[update.NewItem.Name].UpdateInfo(update.NewItem);
+                        _symbols[update.NewItem.Name] = _symbols[update.NewItem.Name].UpdateInfo(update.NewItem);
                         break;
                     default:
                         break;
