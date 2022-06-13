@@ -231,7 +231,7 @@ namespace TickTrader.BotTerminal
             var execStatus = results.ExecStatus;
             if (execStatus.ResultsNotCorrupted)
             {
-                var config = results.GetConfig();
+                var config = results.TryGetConfig().ResultValue;
 
                 if (loadConfig)
                     await SetupPage.LoadConfig(config);
@@ -601,8 +601,13 @@ namespace TickTrader.BotTerminal
             try
             {
                 ResetResultsView();
-                var config = BacktesterConfig.Load(configPath);
-                await SetupPage.LoadConfig(config);
+
+                var result = BacktesterConfig.TryLoad(configPath);
+
+                if (!result)
+                    throw result.Exception;
+
+                await SetupPage.LoadConfig(result.ResultValue);
             }
             catch (Exception ex)
             {

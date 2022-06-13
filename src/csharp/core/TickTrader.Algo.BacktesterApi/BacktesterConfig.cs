@@ -39,13 +39,13 @@ namespace TickTrader.Algo.BacktesterApi
         public PluginConfig PluginConfig { get; private set; }
 
 
-        public static BacktesterConfig Load(string filePath)
+        public static Result<BacktesterConfig> TryLoad(string filePath)
         {
             using (var file = File.Open(filePath, FileMode.Open))
-                return Load(file);
+                return TryLoad(file);
         }
 
-        public static BacktesterConfig Load(Stream stream)
+        public static Result<BacktesterConfig> TryLoad(Stream stream)
         {
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
             {
@@ -58,7 +58,7 @@ namespace TickTrader.Algo.BacktesterApi
                     Env = ReadZipEntryAsJson<EnvInfo>(zip, "env.json"),
                 };
                 res.PluginConfig = ReadZipEntry(zip, res._version.PluginConfigSubPath, Algo.Core.Config.PluginConfig.LoadFromStream).ToDomain();
-                return res;
+                return Result<BacktesterConfig>.WithValue(res);
             }
         }
 
