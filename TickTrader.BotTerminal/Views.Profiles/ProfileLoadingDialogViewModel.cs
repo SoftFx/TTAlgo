@@ -37,13 +37,6 @@ namespace TickTrader.BotTerminal
             return base.OnInitializeAsync(cancellationToken);
         }
 
-        //protected override void OnInitialize()
-        //{
-        //    base.OnInitialize();
-
-        //    ApplyProfile();
-        //}
-
         private async void ApplyProfile()
         {
             try
