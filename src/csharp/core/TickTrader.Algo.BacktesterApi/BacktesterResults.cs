@@ -120,11 +120,11 @@ namespace TickTrader.Algo.BacktesterApi
         }
 
 
-        public BacktesterConfig GetConfig()
+        public Result<BacktesterConfig> TryGetConfig()
         {
             var path = _path;
             if (Directory.Exists(path))
-                return BacktesterConfig.Load(Path.Combine(path, ConfigFileName));
+                return BacktesterConfig.TryLoad(Path.Combine(path, ConfigFileName));
 
             if (File.Exists(path))
             {
@@ -133,11 +133,11 @@ namespace TickTrader.Algo.BacktesterApi
                 {
                     var entry = zip.GetEntry(ConfigFileName);
                     if (entry != null)
-                        return BacktesterConfig.Load(entry.Open());
+                        return BacktesterConfig.TryLoad(entry.Open());
                 }
             }
 
-            throw new AlgoException($"Backtester config not found in '{path}'");
+            return new Result<BacktesterConfig>($"Backtester config not found in '{path}'");
         }
 
 
