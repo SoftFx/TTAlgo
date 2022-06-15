@@ -1,7 +1,5 @@
 ﻿using TickTrader.Algo.Calculator.Conversions;
 using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 
@@ -52,9 +50,8 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
         public bool IsShadowCopy { get; private set; }
 
-        public IFeedSubscription UserSubscriptionInfo { get; set; }
-
-        public SubscriptionGroup SubGroup { get; set; }
+        // Needed there only to manage user subscription OnQuote() call
+        public FeedSubscriptionUpdate UserSubscriptionInfo { get; set; }
 
 
         SymbolInfo ISymbolCalculator.SymbolInfo => (SymbolInfo)SymbolInfo;

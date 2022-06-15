@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
@@ -13,6 +14,8 @@ namespace TickTrader.Algo.Server
         private readonly IAccountProxy _account;
         private readonly RpcSession _session;
         private readonly ConcurrentDictionary<string, object> _pendingRequestHandlers = new ConcurrentDictionary<string, object>();
+
+        private IQuoteSub _quoteSub;
 
 
         public AccountRpcHandler(IAccountProxy account, RpcSession session)
@@ -269,14 +272,23 @@ namespace TickTrader.Algo.Server
         {
             var request = payload.Unpack<ModifyFeedSubscriptionRequest>();
             var response = new QuotePage();
-            var snapshot = _account.Feed.Sync.Invoke(() => _account.Feed.Modify(request.Updates.ToList()));
-            response.Quotes.AddRange(snapshot.Select(q => q.GetFullQuote()));
+            _account.Feed.Sync.Invoke(() =>
+            {
+                if (_quoteSub == null)
+                    _quoteSub = _account.Feed.GetSubscription();
+
+                _quoteSub.Modify(request.Updates.ToList());
+            });
             return Task.FromResult(Any.Pack(response));
         }
 
         private Task<Any> CancelAllFeedSubscriptionsRequestHandler()
         {
-            _account.Feed.Sync.Invoke(() => _account.Feed.CancelAll());
+            _account.Feed.Sync.Invoke(() =>
+            {
+                _quoteSub?.Dispose();
+                _quoteSub = null;
+            });
             return Task.FromResult(RpcHandler.VoidResponse);
         }
 

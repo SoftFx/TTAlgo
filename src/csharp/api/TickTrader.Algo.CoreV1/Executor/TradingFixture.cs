@@ -67,11 +67,6 @@ namespace TickTrader.Algo.CoreV1
         {
             _dataProvider.SyncInvoke(Init);
             context.MarketData.StartCalculators();
-
-            // makes all symbols in symbol list have correct rates
-            // also required for account calculator
-            // actor synchronization is broken, workaround for this case
-            context.FeedStrategy.SubscribeAll();
         }
 
         private void Init()

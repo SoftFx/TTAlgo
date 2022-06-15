@@ -5,113 +5,86 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Account
 {
     public class PluginFeedProvider : IFeedProvider, IFeedHistoryProvider, IPluginMetadata
     {
-        private IFeedSubscription subscription;
-        private IVarSet<string, SymbolInfo> symbols;
-        private QuoteDistributor _distributor;
-        private FeedHistoryProviderModel.Handler history;
-        private Dictionary<string, int> _subscriptionCache;
-        private IReadOnlyDictionary<string, CurrencyInfo> currencies;
+        private readonly IQuoteSub _subscription;
+        private readonly IQuoteSubManager _subManager;
+        private readonly IDisposable _subHandler;
+        private readonly IVarSet<string, SymbolInfo> _symbols;
+        private readonly FeedHistoryProviderModel.Handler _history;
+        private readonly IReadOnlyDictionary<string, CurrencyInfo> _currencies;
 
         public event Action<QuoteInfo> RateUpdated;
         public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
 
         public ISyncContext Sync { get; }
 
-        public PluginFeedProvider(EntityCache cache, QuoteDistributor quoteDistributor, FeedHistoryProviderModel.Handler history, ISyncContext sync)
+        public PluginFeedProvider(EntityCache cache, IQuoteSubManager subManager, FeedHistoryProviderModel.Handler history, ISyncContext sync)
         {
             Sync = sync;
-            this.symbols = cache.Symbols;
-            _distributor = quoteDistributor;
-            this.history = history;
-            this.currencies = cache.Currencies.Snapshot;
-            _subscriptionCache = new Dictionary<string, int>();
-            subscription = quoteDistributor.AddSubscription();
-            quoteDistributor.AddListener(r => RateUpdated?.Invoke(r));
+            _symbols = cache.Symbols;
+            _history = history;
+            _currencies = cache.Currencies.Snapshot;
+            _subManager = subManager;
+            _subscription = new QuoteSubscription(subManager);
+            _subHandler = _subscription.AddHandler(r => RateUpdated?.Invoke(r));
         }
 
         #region IFeedHistoryProvider implementation
 
         public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
-            return history.GetBarList(symbol, marketSide, timeframe, from, to).GetAwaiter().GetResult();
+            return _history.GetBarList(symbol, marketSide, timeframe, from, to).GetAwaiter().GetResult();
         }
 
         public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
         {
-            return history.GetBarPage(symbol, marketSide, timeframe, from, count).GetAwaiter().GetResult().ToList();
+            return _history.GetBarPage(symbol, marketSide, timeframe, from, count).GetAwaiter().GetResult().ToList();
         }
 
         public List<QuoteInfo> QueryQuotes(string symbolCode, Timestamp from, Timestamp to, bool level2)
         {
-            return history.GetQuoteList(symbolCode, from, to, level2).GetAwaiter().GetResult();
+            return _history.GetQuoteList(symbolCode, from, to, level2).GetAwaiter().GetResult();
         }
 
         public List<QuoteInfo> QueryQuotes(string symbolCode, Timestamp from, int count, bool level2)
         {
-            return history.GetQuotePage(symbolCode, from, count, level2).GetAwaiter().GetResult().ToList();
+            return _history.GetQuotePage(symbolCode, from, count, level2).GetAwaiter().GetResult().ToList();
         }
 
         public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
-            return history.GetBarList(symbol, marketSide, timeframe, from, to);
+            return _history.GetBarList(symbol, marketSide, timeframe, from, to);
         }
 
         public async Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
         {
-            return (await history.GetBarPage(symbol, marketSide, timeframe, from, count)).ToList();
+            return (await _history.GetBarPage(symbol, marketSide, timeframe, from, count)).ToList();
         }
 
         public Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, Timestamp from, Timestamp to, bool level2)
         {
-            return history.GetQuoteList(symbolCode, from, to, level2);
+            return _history.GetQuoteList(symbolCode, from, to, level2);
         }
 
         public async Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, Timestamp from, int count, bool level2)
         {
-            return (await history.GetQuotePage(symbolCode, from, count, level2)).ToList();
+            return (await _history.GetQuotePage(symbolCode, from, count, level2)).ToList();
         }
 
         #endregion
 
         #region IFeedProvider
 
-        public QuoteInfo GetRate(string symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
-        {
-            return subscription.Modify(updates);
-        }
-
-        public Task<List<QuoteInfo>> ModifyAsync(List<FeedSubscriptionUpdate> updates)
-        {
-            return Task.FromResult(Modify(updates));
-        }
-
-        public void CancelAll()
-        {
-            subscription.CancelAll();
-        }
-
-        public Task CancelAllAsync()
-        {
-            CancelAll();
-            return Task.CompletedTask;
-        }
-
         public List<QuoteInfo> GetSnapshot()
         {
-            return symbols.Snapshot
+            return _symbols.Snapshot
                 .Where(s => s.Value.LastQuote != null)
                 .Select(s => s.Value.LastQuote).Cast<QuoteInfo>().ToList();
         }
@@ -121,9 +94,9 @@ namespace TickTrader.Algo.Account
             return Task.FromResult(GetSnapshot());
         }
 
-        public IFeedSubscription GetSubscription()
+        public IQuoteSub GetSubscription()
         {
-            return this;
+            return new QuoteSubscription(_subManager);
         }
 
         #endregion
@@ -132,17 +105,17 @@ namespace TickTrader.Algo.Account
 
         public IEnumerable<Domain.SymbolInfo> GetSymbolMetadata()
         {
-            return symbols.Snapshot.Values.ToList();
+            return _symbols.Snapshot.Values.ToList();
         }
 
         public IEnumerable<CurrencyInfo> GetCurrencyMetadata()
         {
-            return currencies.Values.ToList();
+            return _currencies.Values.ToList();
         }
 
         public IEnumerable<FullQuoteInfo> GetLastQuoteMetadata()
         {
-            return symbols.Snapshot.Values.Where(u => u.LastQuote != null).Select(u => (u.LastQuote as QuoteInfo)?.GetFullQuote()).ToList();
+            return _symbols.Snapshot.Values.Where(u => u.LastQuote != null).Select(u => (u.LastQuote as QuoteInfo)?.GetFullQuote()).ToList();
         }
 
         #endregion

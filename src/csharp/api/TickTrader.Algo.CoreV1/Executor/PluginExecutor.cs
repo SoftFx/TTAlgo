@@ -319,7 +319,6 @@ namespace TickTrader.Algo.CoreV1
 
                     iStrategy.Init(this, OnRuntimeException, _fStrategy);
                     _fStrategy.Init(this, _bStrategy, _marketFixture);
-                    _fStrategy.SetUserSubscription(MainSymbolCode, 1);   // Default subscribe
                     setupActions.ForEach(a => a());
                     BindAllOutputs();
 

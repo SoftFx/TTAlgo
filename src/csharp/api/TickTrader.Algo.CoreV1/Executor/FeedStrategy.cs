@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Infrastructure;
-using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
@@ -13,7 +12,7 @@ namespace TickTrader.Algo.CoreV1
     public abstract class FeedStrategy : IFeedBuferStrategyContext, CustomFeedProvider
     {
         private MarketStateFixture _marketFixture;
-        private IFeedSubscription _defaultSubscription;
+        private IQuoteSub _defaultSubscription;
         private readonly List<SetupAction> _setupActions = new List<SetupAction>();
         private CrossDomainProxy _proxy;
         private string _mainSymbol;
@@ -80,11 +79,6 @@ namespace TickTrader.Algo.CoreV1
             return copy;
         }
 
-        internal void SetUserSubscription(string symbol, int depth)
-        {
-            RateDispenser.SetUserSubscription(symbol, depth);
-        }
-
         protected void AddSetupAction(SetupAction setupAction)
         {
             _setupActions.Add(setupAction);
@@ -121,36 +115,19 @@ namespace TickTrader.Algo.CoreV1
 
         private void InitDefaultSubscription()
         {
-            _defaultSubscription = RateDispenser.AddSubscription();
-            var snaphsot = _defaultSubscription.AddOrModify(BufferedSymbols, 1);
-            ApplySnaphost(snaphsot);
+            _defaultSubscription = FeedProvider.GetSubscription();
+            _defaultSubscription.Modify(BufferedSymbols, 1);
         }
 
         protected void AddSubscription(string symbol)
         {
-            var snapshot = _defaultSubscription.AddOrModify(symbol, 1);
-            ApplySnaphost(snapshot == null ? null : new List<QuoteInfo> { snapshot });
-        }
-
-        internal void SubscribeAll()
-        {
-            var snaphsot = _defaultSubscription.AddOrModifyAllSymbols();
-            ApplySnaphost(snaphsot);
+            _defaultSubscription.Modify(symbol, 1);
         }
 
         private void CancelDefaultSubscription()
         {
-            _defaultSubscription.CancelAll();
+            _defaultSubscription.Dispose();
             _defaultSubscription = null;
-        }
-
-        private void ApplySnaphost(List<QuoteInfo> snaphsot)
-        {
-            if (snaphsot != null)
-            {
-                foreach (var rate in snaphsot)
-                    _marketFixture.Market.GetUpdateNode(rate);
-            }
         }
 
         internal BufferUpdateResult ApplyUpdate(IRateInfo update)

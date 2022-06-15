@@ -115,7 +115,6 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
         {
             foreach (var node in _marketNodes.Values)
             {
-                node.UserSubscriptionInfo?.CancelAll();
                 node.UserSubscriptionInfo = null;
             }
         }

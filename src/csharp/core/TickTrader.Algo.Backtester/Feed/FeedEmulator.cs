@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Backtester
@@ -182,9 +183,18 @@ namespace TickTrader.Algo.Backtester
             return Task.FromResult(_feedSeries.Values.Where(s => s.Current != null).Select(s => s.Current.LastQuote).ToList());
         }
 
-        IFeedSubscription IFeedProvider.GetSubscription()
+        IQuoteSub IFeedProvider.GetSubscription()
         {
-            return this;
+            return new QuoteSubStub();
+        }
+
+        private class QuoteSubStub : IQuoteSub
+        {
+            public IDisposable AddHandler(Action<QuoteInfo> handler) => null;
+
+            public void Dispose() { }
+
+            public void Modify(List<FeedSubscriptionUpdate> updates) { }
         }
 
         List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
@@ -225,47 +235,6 @@ namespace TickTrader.Algo.Backtester
         Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2)
         {
             return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryTicks(from, count, level2) ?? new List<QuoteInfo>());
-        }
-
-        List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
-        {
-            var snapshot = new List<QuoteInfo>();
-
-            foreach (var upd in updates)
-            {
-                if (upd.IsUpsertAction)
-                {
-                    if (_feedSeries.TryGetValue(upd.Symbol, out var series) && series.Current != null)
-                        snapshot.Add(series.Current.LastQuote);
-                }
-            }
-
-            return snapshot;
-        }
-
-        Task<List<QuoteInfo>> IFeedSubscription.ModifyAsync(List<FeedSubscriptionUpdate> updates)
-        {
-            var snapshot = new List<QuoteInfo>();
-
-            foreach (var upd in updates)
-            {
-                if (upd.IsUpsertAction)
-                {
-                    if (_feedSeries.TryGetValue(upd.Symbol, out var series) && series.Current != null)
-                        snapshot.Add(series.Current.LastQuote);
-                }
-            }
-
-            return Task.FromResult(snapshot);
-        }
-
-        void IFeedSubscription.CancelAll()
-        {
-        }
-
-        Task IFeedSubscription.CancelAllAsync()
-        {
-            return Task.CompletedTask;
         }
 
         public event Action<QuoteInfo> RateUpdated { add { } remove { } }

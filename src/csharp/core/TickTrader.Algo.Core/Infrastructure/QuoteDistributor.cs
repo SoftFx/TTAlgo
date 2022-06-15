@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core.Infrastructure
         public IFeedSubscription AddSubscription(string symbol, int depth = 1)
         {
             var subscription = new Subscription(this);
-            subscription.AddOrModify(symbol, depth);
+            subscription.Modify(new List<FeedSubscriptionUpdate> { FeedSubscriptionUpdate.Upsert(symbol, depth) });
             return subscription;
         }
 

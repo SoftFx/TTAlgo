@@ -1,6 +1,6 @@
 ﻿using Machinarium.Qnil;
 using Machinarium.Var;
-using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
         public IObservableList<SymbolViewModel> Symbols { get; }
 
 
-        public SymbolListViewModel(IVarSet<string, SymbolInfo> symbolCollection, QuoteDistributor distributor, IShell shell)
+        public SymbolListViewModel(IVarSet<string, SymbolInfo> symbolCollection, QuoteDistributor2 distributor, IShell shell)
         {
             _shell = shell;
 

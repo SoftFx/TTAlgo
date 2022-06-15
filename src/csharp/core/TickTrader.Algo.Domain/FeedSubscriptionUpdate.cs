@@ -21,15 +21,15 @@
 
         public bool IsUpsertAction => Depth != 0;
 
+        public bool IsAllSymbols => Symbol == AllSymbolsAlias;
 
-        public static FeedSubscriptionUpdate Upsert(string symbol, int depth)
-        {
-            return new FeedSubscriptionUpdate { Symbol = symbol, Depth = depth };
-        }
 
-        public static FeedSubscriptionUpdate Remove(string symbol)
-        {
-            return new FeedSubscriptionUpdate { Symbol = symbol, Depth = SubscriptionDepth.RemoveSub };
-        }
+        public static FeedSubscriptionUpdate Upsert(string symbol, int depth) => new FeedSubscriptionUpdate { Symbol = symbol, Depth = depth };
+
+        public static FeedSubscriptionUpdate Remove(string symbol) => new FeedSubscriptionUpdate { Symbol = symbol, Depth = SubscriptionDepth.RemoveSub };
+
+        public static FeedSubscriptionUpdate UpsertAll(int depth = SubscriptionDepth.Ambient) => new FeedSubscriptionUpdate { Symbol = AllSymbolsAlias, Depth = depth };
+
+        public static FeedSubscriptionUpdate ResetAll() => new FeedSubscriptionUpdate { Symbol = AllSymbolsAlias, Depth = SubscriptionDepth.Ambient };
     }
 }
