@@ -198,7 +198,7 @@ namespace TickTrader.Algo.Account
             public FeedHistoryProviderModel.Handler FeedHistory { get; private set; }
             public TradeHistoryProvider.Handler TradeHistory { get; private set; }
             public PluginTradeApiProvider.Handler TradeApi { get; private set; }
-            public QuoteDistributor2 Distributor { get; private set; }
+            public QuoteDistributor Distributor { get; private set; }
             public IVarSet<string, SymbolInfo> Symbols => Cache.Symbols;
             public IVarSet<string, CurrencyInfo> Currencies => Cache.Currencies;
 
@@ -219,7 +219,7 @@ namespace TickTrader.Algo.Account
 
             public async Task Init()
             {
-                Distributor = new QuoteDistributor2(await Actor.Call(a => a._rootSubManager));
+                Distributor = new QuoteDistributor(await Actor.Call(a => a._rootSubManager));
 
                 Connection = new ConnectionModel.Handler(await Actor.Call(a => a._connection.Ref));
                 await Connection.OpenHandler();
