@@ -15,7 +15,7 @@ namespace TickTrader.Algo.BacktesterApi
 
         public Exception Exception => _ex ?? (HasError ? new AlgoException(ErrorMessage) : null);
 
-        public bool HasError => string.IsNullOrEmpty(ErrorMessage);
+        public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
 
         protected Result() { }
@@ -35,7 +35,7 @@ namespace TickTrader.Algo.BacktesterApi
 
         public static implicit operator bool(Result result)
         {
-            return result.HasError;
+            return !result.HasError;
         }
     }
 

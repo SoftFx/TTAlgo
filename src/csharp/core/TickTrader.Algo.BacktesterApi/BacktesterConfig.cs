@@ -136,7 +136,7 @@ namespace TickTrader.Algo.BacktesterApi
             var entry = zip.GetEntry(entryName);
 
             if (entry == null)
-                return new Result<T>($"Folder {entryName} cannot find");
+                return new Result<T>($"Folder {entryName} cannot be found");
 
             using (var stream = entry.Open())
             {
