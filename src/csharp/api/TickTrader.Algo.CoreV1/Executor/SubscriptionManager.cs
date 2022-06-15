@@ -61,6 +61,9 @@ namespace TickTrader.Algo.CoreV1
 
         public override SubscriptionGroup GetOrAddGroup(string symbol)
         {
+            if (symbol == FeedSubscriptionUpdate.AllSymbolsAlias)
+                return base.GetOrAddGroup(symbol);
+
             var node = _marketFixture.Market.GetSymbolNodeOrNull(symbol);
 
             if (node == null)
@@ -78,7 +81,7 @@ namespace TickTrader.Algo.CoreV1
             if (node != null)
             {
                 if (node.UserSubscriptionInfo == null)
-                    node.UserSubscriptionInfo = AddSubscription(q => { }, symbol, depth);
+                    node.UserSubscriptionInfo = AddSubscription(symbol, depth);
                 else
                     node.UserSubscriptionInfo.AddOrModify(symbol, depth);
             }

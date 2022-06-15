@@ -123,6 +123,7 @@ namespace TickTrader.BotTerminal
                     UpdatePluginState(plugin.Descriptor_);
                     PluginConfig = null;
                     PluginSelected?.Invoke();
+                    CloseSetupDialog();
                 }
                 else
                     PluginConfig = null;
@@ -173,7 +174,6 @@ namespace TickTrader.BotTerminal
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolShadowSetup { get; private set; }
         public PluginConfig PluginConfig { get; private set; }
-        //public PluginConfig PluginConfig { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
         public List<OptionalItem<BacktesterMode>> Modes { get; }
         public Property<OptionalItem<BacktesterMode>> ModeProp { get; private set; }

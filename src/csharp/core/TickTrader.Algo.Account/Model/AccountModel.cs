@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Account
         private readonly IReadOnlyDictionary<string, SymbolInfo> _symbols;
         private bool _isCalcStarted;
         private OrderUpdateAction _updateWatingForPosition = null;
-        private IFeedSubscription _subscriptions;
+        private IDisposable _subscriptions;
 
         public AlgoMarketState Market { get; }
 
@@ -103,7 +103,7 @@ namespace TickTrader.Algo.Account
         {
             Market.Init(this, marketData.Symbols.Snapshot.Values, marketData.Currencies.Snapshot.Values);
             Market.StartCalculators();
-            _subscriptions = marketData.Distributor.AddSubscription((rate) => Market.GetUpdateNode(rate), marketData.Symbols.Snapshot.Keys);
+            _subscriptions = marketData.Distributor.AddListener((rate) => Market.GetUpdateNode(rate));
 
 
             if (!_isCalcStarted)
@@ -202,7 +202,7 @@ namespace TickTrader.Algo.Account
                 _isCalcStarted = false;
             }
 
-            _subscriptions?.CancelAll();
+            _subscriptions?.Dispose();
             _orders.Updated -= OrdersUpdated;
         }
 

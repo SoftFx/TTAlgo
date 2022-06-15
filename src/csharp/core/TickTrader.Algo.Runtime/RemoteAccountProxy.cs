@@ -145,7 +145,7 @@ namespace TickTrader.Algo.Runtime
 
         internal IFeedSubscription GetSubscription()
         {
-            return _distributor.AddSubscription(q => { });
+            return _distributor.AddSubscription();
         }
 
         internal async Task<List<CurrencyInfo>> GetCurrencyListAsync()

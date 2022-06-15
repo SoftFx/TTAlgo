@@ -2,11 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
-
     <SignAssembly>true</SignAssembly>
-
     <AssemblyOriginatorKeyFile>algo.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 

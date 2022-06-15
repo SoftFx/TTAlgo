@@ -7,7 +7,13 @@ namespace TickTrader.Algo.Core.Infrastructure
 {
     public static class SubscriptionExtentions
     {
-        public static List<QuoteInfo> AddOrModify(this IFeedSubscription subscription, IEnumerable<string> symbols, int depth = 1)
+        public static List<QuoteInfo> AddOrModifyAllSymbols(this IFeedSubscription subscription, int depth = SubscriptionDepth.Ambient)
+        {
+            var update = FeedSubscriptionUpdate.Upsert(FeedSubscriptionUpdate.AllSymbolsAlias, depth);
+            return subscription.Modify(ToList(update));
+        }
+
+        public static List<QuoteInfo> AddOrModify(this IFeedSubscription subscription, IEnumerable<string> symbols, int depth)
         {
             var updates = symbols.Select(s => FeedSubscriptionUpdate.Upsert(s, depth));
             return subscription.Modify(updates.ToList());

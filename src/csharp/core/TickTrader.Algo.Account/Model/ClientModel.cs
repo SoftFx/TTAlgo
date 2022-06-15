@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Account
         {
             _ref = this.GetRef();
             _rootDistributor = new QuoteDistributor();
-            _defaultSubscription = _rootDistributor.AddSubscription(q => { });
+            _defaultSubscription = _rootDistributor.AddSubscription();
         }
 
         private void Init(AccountModelSettings settings)
@@ -185,7 +185,8 @@ namespace TickTrader.Algo.Account
             {
                 Cache = new EntityCache();
                 Distributor = new QuoteDistributor();
-                _defaultSubscription = Distributor.AddSubscription(q => { });
+                _defaultSubscription = Distributor.AddSubscription();
+                _defaultSubscription.AddOrModifyAllSymbols();
             }
 
             public string Id => Actor.ActorName;
@@ -287,13 +288,11 @@ namespace TickTrader.Algo.Account
             private void Connection_Connected()
             {
                 Distributor.Start(this);
-                _defaultSubscription.AddOrModify(Cache.Symbols.Snapshot.Keys, 1);
             }
 
             private void Connection_Disconnected()
             {
                 Distributor.Stop();
-                _defaultSubscription.CancelAll();
             }
         }
 
@@ -480,7 +479,7 @@ namespace TickTrader.Algo.Account
 
             // In order to have valid cache we need to subscribe to all symbols by depth 1
             // This will create subscription groups which handle quotes cache
-            _defaultSubscription.AddOrModify(allSymbols, 1);
+            //_defaultSubscription.AddOrModify(allSymbols, 1);
 
             var groups = _rootDistributor.GetAllSubscriptions(allSymbols)
                 .GroupBy(i => i.Item1).ToList();
@@ -490,7 +489,7 @@ namespace TickTrader.Algo.Account
                 var groupSymbols = group.Select(g => g.Item2).ToArray();
                 var depth = group.Key;
 
-                var quotes = await _connection.FeedProxy.SubscribeToQuotes(groupSymbols, depth);
+                var quotes = await ModifySubscription(groupSymbols, depth);
                 _logger.Debug("Subscribed to " + string.Join(",", groupSymbols));
 
                 foreach (var q in quotes)
@@ -509,7 +508,7 @@ namespace TickTrader.Algo.Account
 
         private void UpsertSubscription(ActorRef sender, List<FeedSubscriptionUpdate> updates)
         {
-            var subscription = _feedSubcribers.GetOrAdd(sender, () => _rootDistributor.AddSubscription(q => { }));
+            var subscription = _feedSubcribers.GetOrAdd(sender, () => _rootDistributor.AddSubscription());
             subscription.Modify(updates);
         }
 
@@ -522,16 +521,25 @@ namespace TickTrader.Algo.Account
             }
         }
 
-        private async Task ModifySubscription(IEnumerable<string> symbols, int depth)
+        private async Task<QuoteInfo[]> ModifySubscription(IEnumerable<string> symbols, int depth)
         {
             try
             {
-                await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), depth);
+                switch (depth)
+                {
+                    case SubscriptionDepth.RemoveSub: _logger.Error($"Removing subs not supported. Arguments Symbols = {string.Join(",", symbols)}, Depth = {depth}"); break;
+                    case SubscriptionDepth.MaxDepth: return await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 0, null);
+                    case SubscriptionDepth.Ambient: return await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 7);
+                    case SubscriptionDepth.Tick_S0: return await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 0);
+                    case SubscriptionDepth.Tick_S1: return await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 1);
+                    default: return await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), depth, null);
+                }
             }
             catch (Exception ex)
             {
-                _logger.Debug($"Failed to modify quote subscription. Arguments Symbols = {string.Join(",", symbols)}, Depth = {depth}, Error = {ex}");
+                _logger.Error($"Failed to modify quote subscription. Arguments Symbols = {string.Join(",", symbols)}, Depth = {depth}, Error = {ex}");
             }
+            return new QuoteInfo[0];
         }
 
         List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
@@ -546,12 +554,15 @@ namespace TickTrader.Algo.Account
             var removes = updates.Where(u => u.IsRemoveAction);
             var upserts = updates.Where(u => u.IsUpsertAction).GroupBy(u => u.Depth);
 
-            foreach (var upsertGourp in upserts)
+            foreach (var upsertGroup in upserts)
             {
-                var depth = upsertGourp.Key;
-                var symols = upsertGourp.Select(e => e.Symbol);
-                await ModifySubscription(symols, depth);
+                var depth = upsertGroup.Key;
+                var symbols = upsertGroup.Select(e => e.Symbol);
+                await ModifySubscription(symbols, depth);
             }
+
+            if (removes.Any())
+                await ModifySubscription(removes.Select(e => e.Symbol), SubscriptionDepth.Ambient);
 
             return null;
         }

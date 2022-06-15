@@ -33,7 +33,8 @@ namespace TickTrader.Algo.Account
             this.history = history;
             this.currencies = cache.Currencies.Snapshot;
             _subscriptionCache = new Dictionary<string, int>();
-            subscription = quoteDistributor.AddSubscription(r => RateUpdated?.Invoke(r));
+            subscription = quoteDistributor.AddSubscription();
+            quoteDistributor.AddListener(r => RateUpdated?.Invoke(r));
         }
 
         #region IFeedHistoryProvider implementation

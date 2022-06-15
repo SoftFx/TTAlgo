@@ -1,11 +1,15 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Infrastructure
 {
     public class SubscriptionGroup
     {
-        public int Depth { get; internal set; } = -1;
+        private readonly ChannelEventSource<QuoteInfo> _quoteSrc = new ChannelEventSource<QuoteInfo>();
+
+        public int Depth { get; internal set; } = SubscriptionDepth.Ambient;
         public ConcurrentDictionary<Subscription, int> Subscriptions { get; } = new ConcurrentDictionary<Subscription, int>();
         public string Symbol { get; private set; }
         public QuoteInfo LastQuote { get; private set; }
@@ -20,24 +24,26 @@ namespace TickTrader.Algo.Core.Infrastructure
         {
             LastQuote = tick;
 
+            _quoteSrc.Send(tick);
+
             foreach (Subscription subscription in Subscriptions.Keys)
                 subscription.OnNewQuote(tick);
         }
 
         public int GetMaxDepth()
         {
-            int max = 1;
+            int max = SubscriptionDepth.Ambient;
 
             foreach (var value in Subscriptions.Values)
             {
-                if (value == 0)
-                    return 0;
                 if (value > max)
                     max = value;
             }
 
             return max;
         }
+
+        public IDisposable AddListener(Action<QuoteInfo> handler) => _quoteSrc.Subscribe(handler);
 
         internal bool Upsert(Subscription subscription, int depth)
         {

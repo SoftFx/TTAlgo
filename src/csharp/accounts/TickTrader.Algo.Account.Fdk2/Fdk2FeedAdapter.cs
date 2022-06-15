@@ -96,10 +96,12 @@ namespace TickTrader.Algo.Account.Fdk2
             return res;
         }
 
-        public async Task<Domain.QuoteInfo[]> SubscribeQuotesAsync(string[] symbolIds, int marketDepth)
+        public async Task<Domain.QuoteInfo[]> SubscribeQuotesAsync(string[] symbolIds, int marketDepth, int? frequency)
         {
             var taskSrc = new SfxTaskAdapter.RequestResultSource<Domain.QuoteInfo[]>("SubscribeQuotesRequest");
-            _feedProxy.SubscribeQuotesAsync(taskSrc, SfxConvert.GetSymbolEntries(symbolIds, marketDepth));
+            if (frequency.HasValue)
+                _feedProxy.SubscribeQuotesAsync(taskSrc, SfxConvert.GetSymbolEntries(symbolIds, marketDepth), frequency.Value);
+            else _feedProxy.SubscribeQuotesAsync(taskSrc, SfxConvert.GetSymbolEntries(symbolIds, marketDepth));
             var res = await taskSrc.Task;
             _logger.Debug(taskSrc.MeasureRequestTime());
             return res;

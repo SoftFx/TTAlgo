@@ -66,7 +66,13 @@ namespace TickTrader.Algo.BacktesterV1Host
             // load default reduction to metadata cache
             PackageExplorer.ScanAssembly(MappingDefaults.DefaultExtPackageId, typeof(BarCloseReduction).Assembly);
 
-            var config = BacktesterConfig.Load(Path.Combine(_resultsDir, BacktesterResults.ConfigFileName));
+            var result = BacktesterConfig.TryLoad(Path.Combine(_resultsDir, BacktesterResults.ConfigFileName));
+
+            if (!result)
+                throw result.Exception;
+
+            var config = result.ResultValue;
+
             config.Validate();
 
             var pkgId = config.PluginConfig.Key.PackageId;

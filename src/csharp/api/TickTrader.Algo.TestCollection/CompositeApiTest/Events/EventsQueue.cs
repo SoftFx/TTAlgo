@@ -93,7 +93,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 var template = _currentTemplates[orderId];
                 _currentTemplates.Remove(orderId);
 
-                _expectedToOpenTemplates.AddFirst(template.ToActivate());
+                if (template.IsOnTimeTrigger && template.TriggerTime <= DateTime.UtcNow)
+                    _expectedToOpenTemplates.AddFirst(template.ToOnTimeTriggerReceived());
+                else
+                    _expectedToOpenTemplates.AddFirst(template.ToActivate());
             }
 
             if (@event == OrderEvents.Cancel)
@@ -103,10 +106,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 var template = _currentTemplates[orderId];
                 _currentTemplates.Remove(orderId);
 
-                if (template.IsOnTimeTrigger && template.TriggerTime <= DateTime.UtcNow)
-                    _expectedToOpenTemplates.AddFirst(template.ToOnTimeTriggerReceived());
-                else
-                    template.ToCancel();
+                template.ToCancel();
             }
 
             if (@event == OrderEvents.Close)
