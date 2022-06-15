@@ -47,18 +47,48 @@ namespace TickTrader.Algo.BacktesterApi
 
         public static Result<BacktesterConfig> TryLoad(Stream stream)
         {
+            bool TryReadEntry<T>(ZipArchive zip, string entryName, out Result<T> result, out Result<BacktesterConfig> errorAnswer)
+            {
+                result = TryReadZipEntryAsJson<T>(zip, entryName);
+                errorAnswer = result ? null : new Result<BacktesterConfig>(result.ErrorMessage);
+
+                return !result.HasError;
+            }
+
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
             {
+                if (!TryReadEntry<VersionInfo>(zip, "version.json", out var version, out var error))
+                    return error;
+
+                if (!TryReadEntry<CoreConfig>(zip, "core.json", out var core, out error))
+                    return error;
+
+                if (!TryReadEntry<AccountConfig>(zip, "account.json", out var account, out error))
+                    return error;
+
+                if (!TryReadEntry<TradeServerConfig>(zip, "trade-server.json", out var server, out error))
+                    return error;
+
+                if (!TryReadEntry<EnvInfo>(zip, "env.json", out var env, out error))
+                    return error;
+
                 var res = new BacktesterConfig
                 {
-                    _version = ReadZipEntryAsJson<VersionInfo>(zip, "version.json"),
-                    Core = ReadZipEntryAsJson<CoreConfig>(zip, "core.json"),
-                    Account = ReadZipEntryAsJson<AccountConfig>(zip, "account.json"),
-                    TradeServer = ReadZipEntryAsJson<TradeServerConfig>(zip, "trade-server.json"),
-                    Env = ReadZipEntryAsJson<EnvInfo>(zip, "env.json"),
+                    _version = version.ResultValue,
+                    Core = core.ResultValue,
+                    Account = account.ResultValue,
+                    TradeServer = server.ResultValue,
+                    Env = env.ResultValue,
                 };
-                res.PluginConfig = ReadZipEntry(zip, res._version.PluginConfigSubPath, Algo.Core.Config.PluginConfig.LoadFromStream).ToDomain();
-                return Result<BacktesterConfig>.WithValue(res);
+
+                var pluginRequest = TryReadZipEntry(zip, res._version.PluginConfigSubPath, Algo.Core.Config.PluginConfig.LoadFromStream);
+
+                if (!pluginRequest)
+                    return new Result<BacktesterConfig>(pluginRequest.ErrorMessage);
+
+                res.PluginConfig = pluginRequest.ResultValue.ToDomain();
+
+                return Result<BacktesterConfig>.Ok(res);
             }
         }
 
@@ -101,25 +131,29 @@ namespace TickTrader.Algo.BacktesterApi
         }
 
 
-        private static T ReadZipEntry<T>(ZipArchive zip, string entryName, Func<Stream, T> readerFunc)
+        private static Result<T> TryReadZipEntry<T>(ZipArchive zip, string entryName, Func<Stream, T> readerFunc)
         {
             var entry = zip.GetEntry(entryName);
+
+            if (entry == null)
+                return new Result<T>($"Folder {entryName} cannot find");
+
             using (var stream = entry.Open())
             {
-                return readerFunc(stream);
+                return Result<T>.Ok(readerFunc(stream));
             }
         }
 
         private static T ReadDataAsJson<T>(Stream stream)
         {
-            using(var reader  = new StreamReader(stream))
+            using (var reader = new StreamReader(stream))
             {
                 var json = reader.ReadToEnd();
                 return JsonSerializer.Deserialize<T>(json);
             }
         }
 
-        private static T ReadZipEntryAsJson<T>(ZipArchive zip, string entryName) => ReadZipEntry(zip, entryName, ReadDataAsJson<T>);
+        private static Result<T> TryReadZipEntryAsJson<T>(ZipArchive zip, string entryName) => TryReadZipEntry(zip, entryName, ReadDataAsJson<T>);
 
 
         private static void WriteZipEntry<T>(ZipArchive zip, string entryName, T data, Action<Stream, T> writerFunc)
