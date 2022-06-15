@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Account
 
         private QuoteMonitoringModel _quoteMonitoring;
         private QuoteSubManager _rootSubManager;
+        private bool _allowSubModification;
         private ConnectionModel _connection;
 
         private Ref<ClientModel> _ref;
@@ -336,6 +337,8 @@ namespace TickTrader.Algo.Account
 
         private async Task Stop()
         {
+            _allowSubModification = false;
+
             try
             {
                 _logger.Debug("Stopping...");
@@ -441,6 +444,7 @@ namespace TickTrader.Algo.Account
         {
             var updates = _rootSubManager.InitUnwrap(allSymbols);
 
+            _allowSubModification = true;
             await ModifyAsync(updates);
         }
 
@@ -457,7 +461,7 @@ namespace TickTrader.Algo.Account
         {
             try
             {
-                if (_connection.State == ConnectionModel.States.Connecting || _connection.State == ConnectionModel.States.Online)
+                if (_allowSubModification)
                 {
                     QuoteInfo[] snapshot = new QuoteInfo[0];
                     switch (depth)
