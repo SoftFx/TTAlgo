@@ -55,6 +55,6 @@ namespace TickTrader.Algo.BacktesterApi
         public Result(Exception error) : base(error) { }
 
 
-        public static Result<T> WithValue(T value) => new Result<T>(value);
+        public static new Result<T> Ok(T value) => new Result<T>(value);
     }
 }
