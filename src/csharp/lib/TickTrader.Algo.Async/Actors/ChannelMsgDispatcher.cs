@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Async.Actors
             _actorName = actorName;
             _maxBatch = maxBatch;
 
-            _channel = DefaultChannelFactory.CreateForSingleConsumer<object>();
+            _channel = DefaultChannelFactory.CreateForManyToOne<object>();
             _syncContext = new SyncContextAdapter(this);
         }
 

@@ -66,7 +66,7 @@ namespace TickTrader.Algo.ServerControl.Model
             if (_channel != null)
                 throw new Domain.AlgoException("Session already opened");
 
-            _channel = DefaultChannelFactory.CreateForSingleConsumer<UpdateInfo>();
+            _channel = DefaultChannelFactory.CreateForManyToOne<UpdateInfo>();
             _writer = _channel.Writer;
 
             _closeTokenSrc = new CancellationTokenSource();

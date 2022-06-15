@@ -10,24 +10,28 @@ namespace TickTrader.Algo.Core.Subscriptions
 {
     public class QuoteDistributor : IQuoteSubInternal, IDisposable
     {
-        private readonly ChannelEventSource<QuoteInfo> _quoteSrc = new ChannelEventSource<QuoteInfo>();
+        private const string AllSymbolAlias = FeedSubscriptionUpdate.AllSymbolsAlias;
+
         private readonly ConcurrentDictionary<string, ListenerGroup> _symbolGroups = new ConcurrentDictionary<string, ListenerGroup>();
+        private readonly ListenerGroup _allGroup = new ListenerGroup();
         private readonly IQuoteSubManager _manager;
-        private readonly IDisposable _dispatchHandler;
+        private readonly ChannelConsumerWrapper<QuoteInfo> _quoteConsumer;
 
 
         public QuoteDistributor(IQuoteSubManager manager)
         {
             _manager = manager;
             _manager.Add(this);
-            _dispatchHandler = _quoteSrc.Subscribe(DispatchQuote);
+
+            _quoteConsumer = new ChannelConsumerWrapper<QuoteInfo>(DefaultChannelFactory.CreateForOneToOne<QuoteInfo>(), $"{nameof(QuoteDistributor)} loop");
+            _quoteConsumer.BatchSize = 10;
+            _quoteConsumer.Start(DispatchQuote);
         }
 
 
         public void Dispose()
         {
-            _dispatchHandler.Dispose();
-            _quoteSrc.Dispose();
+            _quoteConsumer.Dispose();
             _manager.Remove(this);
             _manager.Modify(this, _symbolGroups.Select(p => FeedSubscriptionUpdate.Remove(p.Key)).ToList());
         }
@@ -35,18 +39,24 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         public void UpdateRate(QuoteInfo quote)
         {
-            _quoteSrc?.Send(quote);
+            _quoteConsumer.Add(quote);
         }
 
         void IQuoteSubInternal.Dispatch(QuoteInfo quote) => UpdateRate(quote);
 
-        public IDisposable AddListener(Action<QuoteInfo> handler) => _quoteSrc.Subscribe(handler);
+        public IDisposable AddListener(Action<QuoteInfo> handler) => new Listener(handler, this, AllSymbolAlias, SubscriptionDepth.Ambient);
 
         public IDisposable AddListener(Action<QuoteInfo> handler, string symbol, int depth = SubscriptionDepth.Ambient) => new Listener(handler, this, symbol, depth);
 
 
         private void AddListener(string symbol, Listener listener)
         {
+            if (symbol == AllSymbolAlias)
+            {
+                _allGroup.Add(listener);
+                return;
+            }
+
             var group = _symbolGroups.GetOrAdd(symbol, () => new ListenerGroup());
             var oldDepth = group.Depth;
             group.Add(listener);
@@ -59,6 +69,12 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         private void RemoveListener(string symbol, Listener listener)
         {
+            if (symbol == AllSymbolAlias)
+            {
+                _allGroup.Remove(listener);
+                return;
+            }
+
             if (_symbolGroups.TryGetValue(symbol, out var group))
             {
                 var oldDepth = group.Depth;

@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Async
 {
-    public class ChannelConsumerWrapper<T> : IDisposable
+    public class ChannelItemProcessor<T>
     {
         private readonly object _syncObj = new object();
-        private readonly Channel<T> _channel;
+        private readonly ChannelOptions _options;
+        private Channel<T> _channel;
         private CancellationTokenSource _cancelTokenSrc;
         private Task _consumeTask;
 
@@ -22,29 +23,30 @@ namespace TickTrader.Algo.Async
         public int BatchSize { get; set; } = 1;
 
 
-        public ChannelConsumerWrapper(Channel<T> channel, string name)
+        public ChannelItemProcessor(ChannelOptions options, string name)
         {
-            _channel = channel;
+            _options = options;
             Name = name;
+
+            InitChannel();
+        }
+
+
+        public static ChannelItemProcessor<T> CreateUnbounded(string name, bool singleReader = false)
+        {
+            var options = new UnboundedChannelOptions
+            {
+                AllowSynchronousContinuations = false,
+                SingleReader = singleReader,
+                SingleWriter = false,
+            };
+            return new ChannelItemProcessor<T>(options, name);
         }
 
 
         public override string ToString()
         {
             return $"{Name}: {ItemsCount} items";
-        }
-
-        public void Dispose()
-        {
-            lock (_syncObj)
-            {
-                if (_cancelTokenSrc == null)
-                    return;
-
-                _cancelTokenSrc.Cancel();
-                _cancelTokenSrc = null;
-                _channel.Writer.TryComplete();
-            }
         }
 
 
@@ -86,11 +88,42 @@ namespace TickTrader.Algo.Async
 
         public async Task Stop()
         {
-            Dispose();
+            lock (_syncObj)
+            {
+                if (_cancelTokenSrc == null)
+                    return;
 
-            await _consumeTask;
+                _cancelTokenSrc.Cancel();
+                _cancelTokenSrc = null;
+                _channel.Writer.Complete();
+            }
+
+            try
+            {
+                await _consumeTask;
+            }
+            finally
+            {
+                InitChannel();
+            }
         }
 
-        public void Add(T item) => _channel.Writer.TryWrite(item);
+        public void Add(T item)
+        {
+            if (!_channel.Writer.TryWrite(item) && !_cancelTokenSrc.IsCancellationRequested)
+                throw new Exception($"Channel {Name} failed to write item");
+        }
+
+
+        private void InitChannel()
+        {
+            lock (_syncObj)
+            {
+                var options = _options;
+                _channel = options is BoundedChannelOptions
+                    ? Channel.CreateBounded<T>((BoundedChannelOptions)options)
+                    : Channel.CreateUnbounded<T>((UnboundedChannelOptions)options);
+            }
+        }
     }
 }

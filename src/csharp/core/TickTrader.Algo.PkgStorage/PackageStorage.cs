@@ -54,7 +54,7 @@ namespace TickTrader.Algo.PkgStorage
         {
             _pkgRefUpdateCallback = pkgRefUpdateCallback;
 
-            _updateChannel = DefaultChannelFactory.CreateForSingleConsumer<PackageFileUpdate>();
+            _updateChannel = DefaultChannelFactory.CreateForManyToOne<PackageFileUpdate>();
             _updateConsumerTask = _updateChannel.Consume(HandlePackageUpdate);
 
             _uploadLocationId = settings.UploadLocationId;

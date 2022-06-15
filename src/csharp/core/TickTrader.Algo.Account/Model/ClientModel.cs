@@ -22,8 +22,8 @@ namespace TickTrader.Algo.Account
 
         private readonly EntityCache _cache = new EntityCache();
 
-        private ChannelConsumerWrapper<QuoteInfo> _feedProcessor;
-        private ChannelConsumerWrapper<object> _tradeProcessor;
+        private ChannelItemProcessor<QuoteInfo> _feedProcessor;
+        private ChannelItemProcessor<object> _tradeProcessor;
 
         private FeedHistoryProviderModel.ControlHandler _feedHistory;
 
@@ -59,8 +59,8 @@ namespace TickTrader.Algo.Account
             if (settings.Monitoring?.EnableQuoteMonitoring ?? false)
                 _quoteMonitoring = new QuoteMonitoringModel(_connection, settings.Monitoring);
 
-            _feedProcessor = ChannelConsumerWrapper<QuoteInfo>.CreateUnbounded($"{Name} feed loop", true);
-            _tradeProcessor = ChannelConsumerWrapper<object>.CreateUnbounded($"{Name} trade loop", true);
+            _feedProcessor = ChannelItemProcessor<QuoteInfo>.CreateUnbounded($"{Name} feed loop", true);
+            _tradeProcessor = ChannelItemProcessor<object>.CreateUnbounded($"{Name} trade loop", true);
 
 
             _tradeApi.OnExclusiveReport += er => _tradeProcessor.Add(er);

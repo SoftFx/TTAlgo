@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Async
 
         public ChannelEventSource(int batchSize = 10)
         {
-            _channel = DefaultChannelFactory.CreateForEvent<T>();
+            _channel = DefaultChannelFactory.CreateForOneToOne<T>();
 
             _cancelTokenSrc = new CancellationTokenSource();
             var _ = DispatchEvents(_channel.Reader, batchSize, _cancelTokenSrc.Token);

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Async;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Subscriptions
@@ -20,7 +21,8 @@ namespace TickTrader.Algo.Core.Subscriptions
         private readonly ConcurrentDictionary<string, int> _bySymbol = new ConcurrentDictionary<string, int>();
         private readonly IQuoteSubManager _manager;
 
-        private ChannelEventSource<QuoteInfo> _quoteSrc;
+        private ChannelConsumerWrapper<QuoteInfo> _quoteConsumer;
+        private SubList<HandlerWrapper> _handlers;
 
 
         public QuoteSubscription(IQuoteSubManager manager)
@@ -33,7 +35,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         public void Dispose()
         {
-            _quoteSrc?.Dispose();
+            _quoteConsumer?.Dispose();
             _manager.Remove(this);
             _manager.Modify(this, _bySymbol.Select(p => FeedSubscriptionUpdate.Remove(p.Key)).ToList());
         }
@@ -62,15 +64,30 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         public IDisposable AddHandler(Action<QuoteInfo> handler)
         {
-            if (_quoteSrc == null)
-                _quoteSrc = new ChannelEventSource<QuoteInfo>();
+            if (_handlers == null)
+            {
+                _handlers = new SubList<HandlerWrapper>();
+                _quoteConsumer = new ChannelConsumerWrapper<QuoteInfo>(DefaultChannelFactory.CreateForOneToOne<QuoteInfo>(), $"{nameof(QuoteSubscription)} loop");
+                _quoteConsumer.BatchSize = 10;
+                _quoteConsumer.Start(DispatchQuote);
+            }
 
-            return _quoteSrc.Subscribe(handler);
+            return new HandlerWrapper(handler, this);
         }
 
 
-        void IQuoteSubInternal.Dispatch(QuoteInfo quote) => _quoteSrc?.Send(TruncateQuote(quote));
+        void IQuoteSubInternal.Dispatch(QuoteInfo quote) => _quoteConsumer?.Add(quote);
 
+
+        private void DispatchQuote(QuoteInfo quote)
+        {
+            quote = TruncateQuote(quote);
+            var sublist = _handlers.Items;
+            for (var i = 0; i < sublist.Length; i++)
+            {
+                sublist[i].OnNewQuote(quote);
+            }
+        }
 
         private QuoteInfo TruncateQuote(QuoteInfo quote)
         {
@@ -80,6 +97,34 @@ namespace TickTrader.Algo.Core.Subscriptions
             }
             depth = depth < 1 ? 1 : depth;
             return quote.Truncate(depth);
+        }
+
+
+        private class HandlerWrapper : IDisposable
+        {
+            private readonly Action<QuoteInfo> _handler;
+            private readonly QuoteSubscription _parent;
+
+
+            public HandlerWrapper(Action<QuoteInfo> handler, QuoteSubscription parent)
+            {
+                _handler = handler;
+                _parent = parent;
+
+                _parent._handlers.AddSub(this);
+            }
+
+
+            public void Dispose()
+            {
+                _parent._handlers.RemoveSub(this);
+            }
+
+
+            public void OnNewQuote(QuoteInfo quote)
+            {
+                _handler?.Invoke(quote);
+            }
         }
     }
 }
