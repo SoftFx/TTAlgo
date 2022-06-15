@@ -48,17 +48,7 @@ namespace TickTrader.Algo.Core
         Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2);
     }
 
-    public interface IFeedSubscription// : IDisposable
-    {
-        List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates);
-        Task<List<QuoteInfo>> ModifyAsync(List<FeedSubscriptionUpdate> updates);
-        void CancelAll();
-        Task CancelAllAsync();
-
-        //void AddHandler(Action<QuoteInfo> handler);
-    }
-
-    public interface IFeedProvider// : IFeedSubscription
+    public interface IFeedProvider
     {
         ISyncContext Sync { get; }
         List<QuoteInfo> GetSnapshot();

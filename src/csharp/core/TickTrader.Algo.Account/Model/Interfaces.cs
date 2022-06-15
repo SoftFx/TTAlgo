@@ -23,6 +23,6 @@ namespace TickTrader.Algo.Account
     {
         IVarSet<string, SymbolInfo> Symbols { get; }
         IVarSet<string, CurrencyInfo> Currencies { get; }
-        QuoteDistributor2 Distributor { get; }
+        QuoteDistributor Distributor { get; }
     }
 }

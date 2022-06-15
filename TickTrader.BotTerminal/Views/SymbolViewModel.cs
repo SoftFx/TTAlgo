@@ -22,7 +22,7 @@ namespace TickTrader.BotTerminal
         private readonly SymbolInfo _model;
         private readonly IDisposable _subscription;
 
-        public SymbolViewModel(SymbolInfo model, QuoteDistributor2 distributor)
+        public SymbolViewModel(SymbolInfo model, QuoteDistributor distributor)
         {
             _model = model;
             _symbolPrecision = new PricePrecisionConverter<double>(model?.Digits ?? 2);

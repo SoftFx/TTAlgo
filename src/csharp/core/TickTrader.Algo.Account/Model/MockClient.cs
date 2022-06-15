@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Account
         public MockClient()
         {
             Acc = new AccountModel(_currencies, _symbols);
-            Distributor = new QuoteDistributor2(this);
+            Distributor = new QuoteDistributor(this);
         }
 
         public AccountModel Acc { get; }
@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Account
 
         public IVarSet<string, CurrencyInfo> Currencies => _currencies;
 
-        public QuoteDistributor2 Distributor { get; }
+        public QuoteDistributor Distributor { get; }
 
         #endregion
 

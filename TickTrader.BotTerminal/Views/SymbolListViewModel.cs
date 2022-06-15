@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
         public IObservableList<SymbolViewModel> Symbols { get; }
 
 
-        public SymbolListViewModel(IVarSet<string, SymbolInfo> symbolCollection, QuoteDistributor2 distributor, IShell shell)
+        public SymbolListViewModel(IVarSet<string, SymbolInfo> symbolCollection, QuoteDistributor distributor, IShell shell)
         {
             _shell = shell;
 

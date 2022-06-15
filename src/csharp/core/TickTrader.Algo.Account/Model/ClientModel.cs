@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async;
-using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;

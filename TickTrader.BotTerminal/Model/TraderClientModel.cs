@@ -147,7 +147,7 @@ namespace TickTrader.BotTerminal
         public IVarSet<string, SymbolInfo> Symbols { get; private set; }
         public EntityCache Cache => _core.Cache;
         public IObservableList<SymbolInfo> SortedSymbols { get; }
-        public QuoteDistributor2 Distributor => _core.Distributor;
+        public QuoteDistributor Distributor => _core.Distributor;
         public FeedHistoryProviderModel.Handler FeedHistory => _core.FeedHistory;
         public IVarSet<string, CurrencyInfo> Currencies => _core.Currencies;
         public IObservableList<CurrencyInfo> SortedCurrencies { get; }

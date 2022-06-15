@@ -8,7 +8,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Subscriptions
 {
-    public class QuoteDistributor2 : IQuoteSubInternal, IDisposable
+    public class QuoteDistributor : IQuoteSubInternal, IDisposable
     {
         private readonly ChannelEventSource<QuoteInfo> _quoteSrc = new ChannelEventSource<QuoteInfo>();
         private readonly ConcurrentDictionary<string, ListenerGroup> _symbolGroups = new ConcurrentDictionary<string, ListenerGroup>();
@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core.Subscriptions
         private readonly IDisposable _dispatchHandler;
 
 
-        public QuoteDistributor2(IQuoteSubManager manager)
+        public QuoteDistributor(IQuoteSubManager manager)
         {
             _manager = manager;
             _manager.Add(this);
@@ -91,14 +91,14 @@ namespace TickTrader.Algo.Core.Subscriptions
         private class Listener : IDisposable
         {
             private readonly Action<QuoteInfo> _handler;
-            private readonly QuoteDistributor2 _parent;
+            private readonly QuoteDistributor _parent;
             private readonly string _symbol;
 
 
             public int Depth { get; }
 
 
-            public Listener(Action<QuoteInfo> handler, QuoteDistributor2 parent, string symbol, int depth)
+            public Listener(Action<QuoteInfo> handler, QuoteDistributor parent, string symbol, int depth)
             {
                 _handler = handler;
                 _parent = parent;
