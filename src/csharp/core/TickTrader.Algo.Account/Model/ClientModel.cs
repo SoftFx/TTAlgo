@@ -34,6 +34,7 @@ namespace TickTrader.Algo.Account
         private QuoteSubManager _rootSubManager;
         private bool _allowSubModification;
         private ConnectionModel _connection;
+        private TradeSubManager _tradeSubManager;
 
         private Ref<ClientModel> _ref;
 
@@ -44,6 +45,7 @@ namespace TickTrader.Algo.Account
         {
             _ref = this.GetRef();
             _rootSubManager = new QuoteSubManager(new QuoteSubProviderWrapper(_ref));
+            _tradeSubManager = new TradeSubManager(_cache.Account, new QuoteSubscription(_rootSubManager));
         }
 
         private void Init(AccountModelSettings settings)
@@ -295,8 +297,6 @@ namespace TickTrader.Algo.Account
             foreach (var update in _cache.GetMergeUpdate(symbols))
                 await ApplyUpdate(update);
 
-            var initFeedTask = LoadQuotesSnapshot(symbols.Select(s => s.Name));
-
             var accInfo = await getInfoTask;
 
             _logger.Debug("Loaded account info.");
@@ -313,17 +313,19 @@ namespace TickTrader.Algo.Account
 
             await ApplyUpdate(accUpdate);
 
-            await initFeedTask;
-
-            _logger.Debug("Loaded quotes snaphsot.");
-
             var orderStream = ActorChannel.NewInput<Domain.OrderInfo>();
             tradeApi.GetTradeRecords(CreateBlockingChannel(orderStream));
 
             while (await orderStream.ReadNext())
                 await ApplyUpdate(new AccountModel.LoadOrderUpdate(orderStream.Current));
 
+            _tradeSubManager.Start();
+
             _logger.Debug("Loaded orders.");
+
+            await LoadQuotesSnapshot(symbols.Select(s => s.Name));
+
+            _logger.Debug("Loaded quotes snaphsot.");
 
             await FlushListeners();
 
@@ -342,6 +344,9 @@ namespace TickTrader.Algo.Account
             try
             {
                 _logger.Debug("Stopping...");
+
+                await _tradeSubManager.Stop();
+                _logger.Debug("Stopped trade subscription management.");
 
                 await _tradeProcessor.Stop();
                 _logger.Debug("Stopped trade stream.");
