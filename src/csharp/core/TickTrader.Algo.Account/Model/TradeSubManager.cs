@@ -76,7 +76,7 @@ namespace TickTrader.Algo.Account
         {
             try
             {
-                while (cancelToken.IsCancellationRequested)
+                while (!cancelToken.IsCancellationRequested)
                 {
                     ResetOutdated();
                     await Task.Delay(1000, cancelToken);
