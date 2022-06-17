@@ -173,7 +173,7 @@ namespace TickTrader.Algo.CoreV1
             }
 
             if (eReport.EntityAction == OrderExecReport.Types.EntityAction.Added)
-                return collection.Add(eReport.OrderCopy);
+                return collection.Add(eReport.OrderCopy.Clone()); // OrderInfo.Calculator gets filled by each plugin instance
             if (eReport.EntityAction == OrderExecReport.Types.EntityAction.Removed)
                 return collection.Remove(eReport.OrderCopy, true);
             if (eReport.EntityAction == OrderExecReport.Types.EntityAction.Updated)
