@@ -68,11 +68,22 @@ namespace TickTrader.Algo.Calculator
         {
             pos.Calculator = Calculator;
 
-            swapDelta = pos.Swap - _netPosSwap;
-            commDelta = pos.Commission - _netPosComm;
+            if (type == PositionChangeTypes.Removed)
+            {
+                swapDelta = -pos.Swap;
+                commDelta = -pos.Commission;
 
-            _netPosSwap = pos.Swap;
-            _netPosComm = pos.Commission;
+                _netPosSwap = 0.0;
+                _netPosComm = 0.0;
+            }
+            else
+            {
+                swapDelta = pos.Swap - _netPosSwap;
+                commDelta = pos.Commission - _netPosComm;
+
+                _netPosSwap = pos.Swap;
+                _netPosComm = pos.Commission;
+            }
 
             double buyVolume = pos.Side.IsBuy() ? pos.Volume : 0.0;
             double sellVolume = pos.Side.IsSell() ? pos.Volume : 0.0;
