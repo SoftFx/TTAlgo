@@ -471,12 +471,24 @@ namespace TickTrader.Algo.Account
                     QuoteInfo[] snapshot = new QuoteInfo[0];
                     switch (depth)
                     {
-                        case SubscriptionDepth.RemoveSub: _logger.Error($"Removing subs not supported. Arguments Symbols = {string.Join(",", symbols)}, Depth = {depth}"); break;
-                        case SubscriptionDepth.MaxDepth: snapshot = await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 0, null); break;
-                        case SubscriptionDepth.Ambient: snapshot = await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 7); break;
-                        case SubscriptionDepth.Tick_S0: snapshot = await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 0); break;
-                        case SubscriptionDepth.Tick_S1: snapshot = await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 1); break;
-                        default: snapshot = await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), depth, null); break;
+                        case SubscriptionDepth.RemoveSub:
+                            _logger.Error($"Removing subs not supported. Arguments Symbols = {string.Join(",", symbols)}, Depth = {depth}");
+                            break;
+                        case SubscriptionDepth.MaxDepth:
+                            snapshot = await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 0, null);
+                            break;
+                        case SubscriptionDepth.Ambient:
+                            snapshot = await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 7);
+                            break;
+                        case SubscriptionDepth.Tick_S0:
+                            snapshot = await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 0);
+                            break;
+                        case SubscriptionDepth.Tick_S1:
+                            snapshot = await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), 1, 1);
+                            break;
+                        default:
+                            snapshot = await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), depth, null);
+                            break;
                     }
 
                     _logger.Debug("Subscribed with depth = " + depth + " to " + string.Join(",", symbols));

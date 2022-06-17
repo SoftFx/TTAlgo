@@ -342,6 +342,11 @@ namespace TickTrader.Algo.CoreV1
                     _fStrategy.Start(); // enqueue build action
                     _calcFixture.Start();
 
+                    if (_metadata.Descriptor.SetupMainSymbol)
+                    {
+                        _dispenser.SetUserSubscription(MainSymbolCode, 1); // Default subscription
+                    }
+
                     iStrategy.EnqueueCustomInvoke(b =>
                     {
                         if (InRunningState)
