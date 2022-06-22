@@ -96,7 +96,8 @@ namespace TickTrader.Algo.Calculator
         {
             double combinedMarginFactor = CalculateMarginFactor(type, symbol, isHidden);
 
-            double price = ((type == OrderInfo.Types.Type.Stop) || (type == OrderInfo.Types.Type.StopLimit)) ? orderStopPrice.Value : orderPrice.Value;
+            // StopLimit orders should use limit price for locked amount
+            double price = type == OrderInfo.Types.Type.Stop ? orderStopPrice.Value : orderPrice.Value;
 
             if (side == OrderInfo.Types.Side.Buy)
                 return combinedMarginFactor * amount * price;
