@@ -127,9 +127,9 @@ namespace TickTrader.Algo.Calculator
                 this.assets.Remove(asset.Currency);
             else if (changeType == AssetChangeType.Updated)
             {
-                var oldAsset = this.assets[asset.Currency];
+                this.assets.TryGetValue(asset.Currency, out var oldAsset);
                 this.assets[asset.Currency] = asset;
-                asset.Margin = oldAsset.Margin;
+                asset.Margin = oldAsset?.Margin ?? 0;
             }
         }
 

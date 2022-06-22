@@ -281,10 +281,13 @@ namespace TickTrader.Algo.Account
         {
             var model = assetInfo;
 
-            if (assetInfo.Balance == 0)
-                _assets.Remove(assetInfo.Currency);
-            else
+            if (assetInfo.Balance != 0)
                 _assets[assetInfo.Currency] = model;
+            else
+            {
+                if (_assets.ContainsKey(assetInfo.Currency))
+                    _assets.Remove(assetInfo.Currency);
+            }
 
             AssetsChanged?.Invoke(model, assetInfo.Balance == 0 ? AssetChangeType.Removed : AssetChangeType.Updated);
         }
@@ -298,17 +301,7 @@ namespace TickTrader.Algo.Account
             }
             else if (Type == Domain.AccountInfo.Types.Type.Cash)
             {
-                var model = new AssetInfo(newBalance, currency);
-
-                if (newBalance != 0)
-                    _assets[currency] = model;
-                else
-                {
-                    if (_assets.ContainsKey(currency))
-                        _assets.Remove(currency);
-                }
-
-                AssetsChanged?.Invoke(model, newBalance == 0 ? AssetChangeType.Removed : AssetChangeType.Updated);
+                UpdateAsset(new AssetInfo(newBalance, currency));
             }
         }
 

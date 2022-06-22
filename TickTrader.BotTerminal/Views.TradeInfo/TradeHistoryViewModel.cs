@@ -361,12 +361,15 @@ namespace TickTrader.BotTerminal
 
         private SymbolInfo GetSymbolInfo(TradeReportInfo transaction)
         {
+            if (IsBalanceOperation(transaction))
+                return null;
+
             var symbolModel = _tradeClient.Symbols.GetOrDefault(transaction.Symbol);
 
             if (symbolModel == null)
                 logger.Warn($"Symbol {transaction.Symbol} not found for TradeTransactionID {transaction.Id}.");
 
-            return IsBalanceOperation(transaction) ? null : symbolModel;
+            return symbolModel;
         }
 
         private SymbolInfo GetSymbolInfo(TriggerReportInfo transaction)

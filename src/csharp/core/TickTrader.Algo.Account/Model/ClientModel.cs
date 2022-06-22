@@ -123,13 +123,16 @@ namespace TickTrader.Algo.Account
 
         public class ControlHandler : BlockingHandler<ClientModel>
         {
+            private readonly string _loggerId;
+
             public ControlHandler(AccountModelSettings settings)
                 : base(SpawnLocal<ClientModel>(null, $"ClientModel {Interlocked.Increment(ref _actorNameIdSeed)}"))
             {
+                _loggerId = settings.LoggerId;
                 ActorSend(a => a.Init(settings));
             }
 
-            public Data CreateDataHandler() => new Data(Actor);
+            public Data CreateDataHandler() => new Data(Actor, _loggerId);
         }
 
         public class ControlHandler2 : Handler<ClientModel>
@@ -189,8 +192,11 @@ namespace TickTrader.Algo.Account
 
         public class Data : Handler<ClientModel>, IMarketDataProvider
         {
-            public Data(Ref<ClientModel> actorRef) : base(actorRef)
+            private readonly IAlgoLogger _logger;
+
+            public Data(Ref<ClientModel> actorRef, string loggerId) : base(actorRef)
             {
+                _logger = AlgoLoggerFactory.GetLogger($"{nameof(ClientModel)}.{nameof(Data)} {loggerId}");
                 Cache = new EntityCache();
             }
 
@@ -254,15 +260,31 @@ namespace TickTrader.Algo.Account
             private async void ApplyUpdates(ActorChannel<EntityCacheUpdate> updateStream)
             {
                 while (await updateStream.ReadNext())
-                    updateStream.Current.Apply(Cache);
+                {
+                    try
+                    {
+                        updateStream.Current.Apply(Cache);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, "Failed to apply cache update");
+                    }
+                }
             }
 
             private async void ApplyQuotes(ActorChannel<QuoteInfo> updateStream)
             {
                 while (await updateStream.ReadNext())
                 {
-                    var quote = updateStream.Current;
-                    Cache.ApplyQuote(quote);
+                    try
+                    {
+                        var quote = updateStream.Current;
+                        Cache.ApplyQuote(quote);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, "Failed to apply quote update");
+                    }
                 }
             }
         }
