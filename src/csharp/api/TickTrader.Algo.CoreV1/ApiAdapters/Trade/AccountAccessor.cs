@@ -135,9 +135,9 @@ namespace TickTrader.Algo.CoreV1
             Leverage = info.Leverage;
             Balance = info.Balance;
             UpdateCurrency(currencies.GetOrDefault(info.BalanceCurrency));
-            Assets.Clear();
+            _assets.Clear();
             foreach (var asset in info.Assets)
-                _builder.Account.Assets.Update(asset, out _);
+                _assets.Update(asset, out _);
         }
 
         internal void UpdateCurrency(CurrencyInfo currency)
