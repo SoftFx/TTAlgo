@@ -89,20 +89,30 @@ namespace TickTrader.Algo.Calculator
 
         public static double CalculateMargin(IOrderCalcInfo order, ISymbolInfo symbol)
         {
-            return CalculateMargin(order.Type, order.RemainingAmount, order.Price, order.StopPrice, order.Side, symbol, order.IsHidden);
+            return CalculateMargin(order.Type, order.RemainingAmount, order.Price, order.StopPrice, order.Side, symbol, order.IsHidden, order.Slippage);
         }
 
-        public static double CalculateMargin(OrderInfo.Types.Type type, double amount, double? orderPrice, double? orderStopPrice, OrderInfo.Types.Side side, ISymbolInfo symbol, bool isHidden)
+        public static double CalculateMargin(OrderInfo.Types.Type type, double amount, double? orderPrice, double? orderStopPrice, OrderInfo.Types.Side side, ISymbolInfo symbol, bool isHidden, double? slippage)
         {
             double combinedMarginFactor = CalculateMarginFactor(type, symbol, isHidden);
-
-            // StopLimit orders should use limit price for locked amount
-            double price = type == OrderInfo.Types.Type.Stop ? orderStopPrice.Value : orderPrice.Value;
-
-            if (side == OrderInfo.Types.Side.Buy)
-                return combinedMarginFactor * amount * price;
-            else
+            if (side.IsSell())
                 return combinedMarginFactor * amount;
+            else
+            {
+                if (type != OrderInfo.Types.Type.Stop)
+                    return combinedMarginFactor * amount * orderPrice.Value; // StopLimit orders should use limit price for locked amount
+                else
+                {
+                    double slippageCoeff = 1.0;
+                    if (slippage == null)
+                        slippage = symbol.Slippage;
+                    // expecting percent slippage
+                    if (slippage.Value < 1 && slippage.Value > 0)
+                        slippageCoeff = 1.0 + slippage.Value;
+
+                    return combinedMarginFactor * amount * orderStopPrice.Value * slippageCoeff;
+                }
+            }
         }
 
         public IAssetInfo GetMarginAsset(ISymbolInfo symbol, OrderInfo.Types.Side side)

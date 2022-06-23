@@ -255,7 +255,7 @@ namespace TickTrader.Algo.CoreV1
 
                 if (_cashCalc != null)
                 {
-                    var margin = CashAccountCalculator.CalculateMargin(type, orderVol, price, stopPrice, side, symbol, isHidden);
+                    var margin = CashAccountCalculator.CalculateMargin(type, orderVol, price, stopPrice, side, symbol, isHidden, null);
                     return _cashCalc.HasSufficientMarginToOpenOrder(type, side, symbol, margin);
                 }
             }
@@ -309,7 +309,7 @@ namespace TickTrader.Algo.CoreV1
                 if (_cashCalc != null)
                 {
                     var oldMargin = CashAccountCalculator.CalculateMargin(oldOrder.Info, symbol);
-                    var newMargin = CashAccountCalculator.CalculateMargin(type, newRemVolume, newPrice, newStopPrice, side, symbol, newIsHidden);
+                    var newMargin = CashAccountCalculator.CalculateMargin(type, newRemVolume, newPrice, newStopPrice, side, symbol, newIsHidden, null);
                     return _cashCalc.HasSufficientMarginToOpenOrder(type, side, symbol, newMargin - oldMargin);
                 }
             }
@@ -368,7 +368,7 @@ namespace TickTrader.Algo.CoreV1
                             return null;
                     }
 
-                    return CashAccountCalculator.CalculateMargin(type, orderVol, price, stopPrice, side, symbol, isHidden);
+                    return CashAccountCalculator.CalculateMargin(type, orderVol, price, stopPrice, side, symbol, isHidden, null);
                 }
             }
             catch (Exception ex)
