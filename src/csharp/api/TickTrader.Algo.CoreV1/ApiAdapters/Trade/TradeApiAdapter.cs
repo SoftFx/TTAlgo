@@ -916,31 +916,31 @@ namespace TickTrader.Algo.CoreV1
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ValidateQuotes(SymbolInfo symbol, Domain.OrderInfo.Types.Side side, ref OrderCmdResultCodes code)
         {
-            var quote = symbol.LastQuote;
+            //var quote = symbol.LastQuote;
 
-            if (quote == null)
-            {
-                code = OrderCmdResultCodes.OffQuotes;
-                return false;
-            }
+            //if (quote == null)
+            //{
+            //    code = OrderCmdResultCodes.OffQuotes;
+            //    return false;
+            //}
 
-            if (_account.Type != AccountInfo.Types.Type.Cash && (!quote.HasBid || !quote.HasAsk))
-            {
-                code = OrderCmdResultCodes.OffQuotes;
-                return false;
-            }
+            //if (_account.Type != AccountInfo.Types.Type.Cash && (!quote.HasBid || !quote.HasAsk))
+            //{
+            //    code = OrderCmdResultCodes.OffQuotes;
+            //    return false;
+            //}
 
-            if (side == Domain.OrderInfo.Types.Side.Sell && quote.IsBidIndicative)
-            {
-                code = OrderCmdResultCodes.OffQuotes;
-                return false;
-            }
+            //if (side == Domain.OrderInfo.Types.Side.Sell && quote.IsBidIndicative)
+            //{
+            //    code = OrderCmdResultCodes.OffQuotes;
+            //    return false;
+            //}
 
-            if (side == Domain.OrderInfo.Types.Side.Buy && quote.IsAskIndicative)
-            {
-                code = OrderCmdResultCodes.OffQuotes;
-                return false;
-            }
+            //if (side == Domain.OrderInfo.Types.Side.Buy && quote.IsAskIndicative)
+            //{
+            //    code = OrderCmdResultCodes.OffQuotes;
+            //    return false;
+            //}
 
             return true;
         }

@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Domain
 
         public double? Ask { get; private set; }
 
-        public string TradePair => Name; // lasts symbol have same currencies pair, which breaks calculator logic
+        public string TradePair => $"{BaseCurrency}{CounterCurrency}";
 
 
         double ISymbolInfoWithRate.Bid => Bid ?? double.NaN;
