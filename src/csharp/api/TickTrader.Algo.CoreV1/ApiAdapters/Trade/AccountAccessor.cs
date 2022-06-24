@@ -258,7 +258,7 @@ namespace TickTrader.Algo.CoreV1
             return MarginCalc;
         }
 
-        private void OnCalcAccess()
+        internal void OnCalcAccess()
         {
             if (MarginCalc == null)
             {
