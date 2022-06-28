@@ -425,6 +425,8 @@ namespace TickTrader.Algo.CoreV1
         {
             if (depth == 0) // in Algo.Api depth=0 is all bands available
                 depth = SubscriptionDepth.MaxDepth;
+            else if (depth < 0)
+                depth = 1;
 
             RateDispenser.SetUserSubscription(symbol, depth);
         }
