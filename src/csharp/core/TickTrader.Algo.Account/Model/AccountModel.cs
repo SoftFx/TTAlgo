@@ -436,10 +436,13 @@ namespace TickTrader.Algo.Account
                         if (_orders.TryGetValue(report.Id, out var order))
                         {
                             // ExecutionReport(Type=Calculated, Status=Calculated) is usually a transition from Executing state, which we currently ignore
-                            // The only exception is fully filled pending orders on gross acc, which trigger position with same id
+                            // One exception is fully filled pending orders on gross acc, which trigger position with same id
                             // StopLimit orders get new order id and opened as limit orders after activation
                             if ((order.Type == OrderInfo.Types.Type.Limit || order.Type == OrderInfo.Types.Type.Stop) && report.Type == OrderInfo.Types.Type.Position)
                                 return OnOrderUpdated(report, OrderExecReport.Types.ExecAction.Opened);
+                            // Another exception is partially closed positions, we receive commission update for remaining volume
+                            else if (report.Type == OrderInfo.Types.Type.Position || report.OrderStatus == OrderStatus.Calculated)
+                                return OnOrderUpdated(report, OrderExecReport.Types.ExecAction.None);
                             else break;
                         }
                         else
@@ -491,6 +494,13 @@ namespace TickTrader.Algo.Account
                     }
                     else if (report.Type == Domain.OrderInfo.Types.Type.Position)
                     {
+                        if (report.OrderStatus == OrderStatus.Calculated)
+                        {
+                            // fix ExecutionType to match order state diagram
+                            report.ExecutionType = ExecutionType.Calculated;
+                            return GetOrderUpdate(report);
+                        }
+
                         if (report.OrderStatus == OrderStatus.PartiallyFilled)
                             return OnOrderUpdated(report, Domain.OrderExecReport.Types.ExecAction.Closed);
 
