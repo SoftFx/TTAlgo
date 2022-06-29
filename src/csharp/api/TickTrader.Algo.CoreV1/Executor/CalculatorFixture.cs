@@ -179,15 +179,7 @@ namespace TickTrader.Algo.CoreV1
                     // Check for margin
                     var hasMargin = _marginCalc.HasSufficientMarginToOpenOrder(newOrder.Info);
 
-                    if (hasMargin.Error == CalculationError.NoCrossSymbol)
-                        throw new MisconfigException("No cross symbol to convert from " + newOrder.Info.Symbol + " to " + Acc.BalanceCurrency + "!");
-
-                    //if (error != CalcErrorCodes.None)
-                    //    throw new OrderValidationError($"Failed to calculate order margin: {error}", error.ToOrderError());
-
-                    if (!hasMargin)
-                        //throw new OrderValidationError($"Not Enough Money. {this}, NewMargin={newMargin}", Api.OrderCmdResultCodes.NotEnoughMoney);
-                        throw new OrderValidationError($"Not Enough Money. {this}", Api.OrderCmdResultCodes.NotEnoughMoney);
+                    HandleMarginCalcResult(hasMargin, newOrder);
                 }
                 catch (MarketConfigurationException e)
                 {
@@ -202,38 +194,63 @@ namespace TickTrader.Algo.CoreV1
 
         public void ValidateModifyOrder(OrderAccessor order, double newAmount, double? newPrice, double? newStopPrice) // for Emulator
         {
-            //if (Acc.IsMarginType)
-            //    ValidateModifyOrder_MarginAccount(order, newAmount);
+            if (Acc.IsMarginType)
+                ValidateModifyOrder_MarginAccount(order, newAmount);
         }
 
-        //private void ValidateModifyOrder_MarginAccount(OrderAccessor order, decimal newAmount)
-        //{
-        //    var fCalc = Market.GetCalculator(order.Info.Symbol, Acc);
-        //    using (fCalc.UsageScope())
-        //    {
-        //        //tempOrder.Margin = fCalc.CalculateMargin(tempOrder, this);
+        private void ValidateModifyOrder_MarginAccount(OrderAccessor order, double newAmount)
+        {
+            try
+            {
+                //tempOrder.Margin = fCalc.CalculateMargin(tempOrder, this);
 
-        //        //ValidateOrderState(order);
+                //ValidateOrderState(order);
 
-        //        //decimal filledAmount = order.Amount - order.RemainingAmount;
-        //        //decimal newRemainingAmount = newAmount - filledAmount;
-        //        var volumeDelta = newAmount - order.Entity.RequestedAmount;
+                //decimal filledAmount = order.Amount - order.RemainingAmount;
+                //decimal newRemainingAmount = newAmount - filledAmount;
+                var volumeDelta = newAmount - order.Info.RequestedAmount;
 
-        //        if (volumeDelta < 0)
-        //            return;
+                if (volumeDelta < 0)
+                    return;
 
-        //        var additionalMargin = fCalc.CalculateMargin((double)newAmount, order.Info.Type, order.Info.Side, false, out var calcErro);
+                var orderInfo = order.Info;
+                var hasMargin = _marginCalc.HasSufficientMarginToOpenOrder(volumeDelta, orderInfo.SymbolInfo, orderInfo.Type, orderInfo.Side, orderInfo.IsHidden);
 
-        //        if (calcErro == CalcErrorCodes.NoCrossSymbol)
-        //            throw new MisconfigException("No cross symbol to convert from " + order.Info.Symbol + " to " + Acc.BalanceCurrency + "!");
+                HandleMarginCalcResult(hasMargin, order);
+            }
+            catch (MarketConfigurationException e)
+            {
+                throw new OrderValidationError(e.Message, Api.OrderCmdResultCodes.InternalError);
+            }
+        }
 
-        //        if (calcErro != CalcErrorCodes.None)
-        //            throw new OrderValidationError("Not Enough Money.", OrderCmdResultCodes.NotEnoughMoney);
+        private void HandleMarginCalcResult(CalculateResponseBase<bool> marginRes, OrderAccessor order)
+        {
+            var error = marginRes.Error;
+            if (error == CalculationError.NoCrossSymbol)
+                throw new MisconfigException("No cross symbol to convert from " + order.Info.Symbol + " to " + Acc.BalanceCurrency + "!");
 
-        //        if (!_marginCalc.HasSufficientMarginToOpenOrder(additionalMargin, order.Info.Symbol, order.Info.Side))
-        //            throw new OrderValidationError("Not Enough Money.", OrderCmdResultCodes.NotEnoughMoney);
-        //    }
-        //}
+            if (error != CalculationError.None)
+                throw new OrderValidationError($"Failed to calculate order {order.Info.Id} margin: {error}", ToOrderError(error));
+
+            if (!marginRes.Value)
+                throw new OrderValidationError("Not Enough Money.", OrderCmdResultCodes.NotEnoughMoney);
+        }
+
+        private OrderCmdResultCodes ToOrderError(CalculationError error)
+        {
+            switch (error)
+            {
+                case CalculationError.SymbolNotFound:
+                    return OrderCmdResultCodes.SymbolNotFound;
+                case CalculationError.OffQuote:
+                case CalculationError.OffCrossQuote:
+                    return OrderCmdResultCodes.OffQuotes;
+                default:
+                    return OrderCmdResultCodes.UnknownError;
+            }
+        }
+
         #endregion
 
         #region CalculatorApi implementation
