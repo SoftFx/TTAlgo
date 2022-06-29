@@ -121,7 +121,7 @@ namespace TickTrader.FeedStorage.StorageBase
         private QuoteInfo ReadL2Slice(string line, int lineNumber)
         {
             var parts = line.Split(_separator);
-            var maxDepth = (parts.Length - 1) / 4;
+            var maxDepth = (parts.Length - 1) / 4; //bid.price, bid.volume, ask.price, ask.volume
 
             if (parts.Length < 5 || ((parts.Length - 1) % 4 != 0))
                 ThrowFormatError(lineNumber);
