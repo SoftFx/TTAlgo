@@ -69,12 +69,8 @@ namespace TickTrader.Algo.Server
 
             var accId = request.AccountId;
             var accControl = await _server.GetAccountControl(accId);
-            await accControl.AttachSession(_session);
-            if (!_accProxies.ContainsKey(accId))
-            {
-                var accProxy = new AccountRpcHandler(await accControl.GetAccountProxy(), _session);
-                _accProxies[accId] = accProxy;
-            }
+            var handler = await accControl.AttachSession(_session);
+            _accProxies.TryAdd(accId, handler);
 
             return RpcHandler.VoidResponse;
         }
@@ -84,6 +80,7 @@ namespace TickTrader.Algo.Server
             var request = payload.Unpack<DetachAccountRequest>();
 
             var accId = request.AccountId;
+            _accProxies.TryRemove(accId, out var _);
             var accControl = await _server.GetAccountControl(accId);
             await accControl.DetachSession(_session.Id);
 

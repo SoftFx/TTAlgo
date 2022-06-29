@@ -109,7 +109,6 @@ namespace TickTrader.Algo.Runtime
             _stopTaskSrc = new TaskCompletionSource<object>();
             try
             {
-                await CancelAllFeedSubscriptionsAsync();
                 //await Task.Factory.StartNew(() => _distributor.Stop());
             }
             finally
@@ -234,13 +233,6 @@ namespace TickTrader.Algo.Runtime
             _session.Ask(RpcMessage.Request(Id, request), context);
             var res = await context.TaskSrc.Task.ConfigureAwait(false);
             return res.Quotes.Select(QuoteInfo.Create).ToList();
-        }
-
-        internal Task CancelAllFeedSubscriptionsAsync()
-        {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(Id, new CancelAllFeedSubscriptionsRequest()), context);
-            return context.TaskSrc.Task;
         }
 
         internal async Task<List<BarData>> GetBarListAsync(BarListRequest request)

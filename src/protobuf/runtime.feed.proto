@@ -141,8 +141,6 @@ message ModifyFeedSubscriptionRequest { // returns QuotePage
     repeated FeedSubscriptionUpdate updates = 1;
 }
 
-message CancelAllFeedSubscriptionsRequest { }
-
 message BarInfo {
     string symbol = 1;
     Feed.MarketSide market_side = 2;

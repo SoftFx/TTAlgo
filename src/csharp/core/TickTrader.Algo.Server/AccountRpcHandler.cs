@@ -9,7 +9,7 @@ using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Server
 {
-    internal class AccountRpcHandler
+    public class AccountRpcHandler
     {
         private readonly IAccountProxy _account;
         private readonly RpcSession _session;
@@ -22,6 +22,15 @@ namespace TickTrader.Algo.Server
         {
             _account = account;
             _session = session;
+
+            _quoteSub = account.Feed.GetSubscription();
+        }
+
+
+        public void Dispose()
+        {
+            _quoteSub.Dispose();
+            _quoteSub = null;
         }
 
 
@@ -65,8 +74,6 @@ namespace TickTrader.Algo.Server
                 return FeedSnapshotRequestHandler();
             else if (payload.Is(ModifyFeedSubscriptionRequest.Descriptor))
                 return ModifyFeedSubscriptionRequestHandler(payload);
-            else if (payload.Is(CancelAllFeedSubscriptionsRequest.Descriptor))
-                return CancelAllFeedSubscriptionsRequestHandler();
             else if (payload.Is(BarListRequest.Descriptor))
                 return BarListRequestHandler(payload);
             else if (payload.Is(QuoteListRequest.Descriptor))
@@ -272,24 +279,8 @@ namespace TickTrader.Algo.Server
         {
             var request = payload.Unpack<ModifyFeedSubscriptionRequest>();
             var response = new QuotePage();
-            _account.Feed.Sync.Invoke(() =>
-            {
-                if (_quoteSub == null)
-                    _quoteSub = _account.Feed.GetSubscription();
-
-                _quoteSub.Modify(request.Updates.ToList());
-            });
+            _quoteSub.Modify(request.Updates.ToList());
             return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> CancelAllFeedSubscriptionsRequestHandler()
-        {
-            _account.Feed.Sync.Invoke(() =>
-            {
-                _quoteSub?.Dispose();
-                _quoteSub = null;
-            });
-            return Task.FromResult(RpcHandler.VoidResponse);
         }
 
         private async Task<Any> BarListRequestHandler(Any payload)
