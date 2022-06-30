@@ -441,7 +441,7 @@ namespace TickTrader.Algo.Account
                             if ((order.Type == OrderInfo.Types.Type.Limit || order.Type == OrderInfo.Types.Type.Stop) && report.Type == OrderInfo.Types.Type.Position)
                                 return OnOrderUpdated(report, OrderExecReport.Types.ExecAction.Opened);
                             // Another exception is partially closed positions, we receive commission update for remaining volume
-                            else if (report.Type == OrderInfo.Types.Type.Position || report.OrderStatus == OrderStatus.Calculated)
+                            else if (report.Type == OrderInfo.Types.Type.Position && report.OrderStatus == OrderStatus.Calculated)
                                 return OnOrderUpdated(report, OrderExecReport.Types.ExecAction.None);
                             else break;
                         }
