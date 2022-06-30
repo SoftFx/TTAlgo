@@ -1,11 +1,11 @@
 ﻿using Machinarium.Qnil;
 using System.Collections.Generic;
-using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Account
 {
-    public class MockClient : IMarketDataProvider
+    public class MockClient : IMarketDataProvider, IQuoteSubManager
     {
         private VarDictionary<string, SymbolInfo> _symbols = new VarDictionary<string, SymbolInfo>();
         private VarDictionary<string, CurrencyInfo> _currencies = new VarDictionary<string, CurrencyInfo>();
@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Account
         public MockClient()
         {
             Acc = new AccountModel(_currencies, _symbols);
-            Distributor = new QuoteDistributor();
+            Distributor = new QuoteDistributor(this);
         }
 
         public AccountModel Acc { get; }
@@ -53,9 +53,23 @@ namespace TickTrader.Algo.Account
         }
 
         #region IMarketDataProvider
+
         public IVarSet<string, SymbolInfo> Symbols => _symbols;
+
         public IVarSet<string, CurrencyInfo> Currencies => _currencies;
+
         public QuoteDistributor Distributor { get; }
+
+        #endregion
+
+        #region IQuoteSubManager
+
+        void IQuoteSubManager.Add(IQuoteSubInternal sub) { }
+
+        void IQuoteSubManager.Remove(IQuoteSubInternal sub) { }
+
+        void IQuoteSubManager.Modify(IQuoteSubInternal sub, List<FeedSubscriptionUpdate> updates) { }
+
         #endregion
     }
 }

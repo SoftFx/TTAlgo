@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Runtime
 {
-    public class RemoteAccountProxy : IRpcHandler, IFeedSubscription
+    public class RemoteAccountProxy : IRpcHandler, IQuoteSubProvider
     {
         private readonly IActorRef _acc;
-        private readonly QuoteDistributor _distributor;
+        private readonly QuoteSubManager _subManager;
 
         private RpcSession _session;
         private TaskCompletionSource<object> _startTaskSrc, _stopTaskSrc;
@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Runtime
             Id = id;
             _acc = acc;
 
-            _distributor = new QuoteDistributor();
+            _subManager = new QuoteSubManager(this);
         }
 
 
@@ -76,26 +76,11 @@ namespace TickTrader.Algo.Runtime
         }
 
 
-        List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
-        {
-            return (this as IFeedSubscription).ModifyAsync(updates).GetAwaiter().GetResult();
-        }
-
-        Task<List<QuoteInfo>> IFeedSubscription.ModifyAsync(List<FeedSubscriptionUpdate> updates)
+        void IQuoteSubProvider.Modify(List<FeedSubscriptionUpdate> updates)
         {
             var request = new ModifyFeedSubscriptionRequest();
             request.Updates.AddRange(updates);
-            return ModifyFeedSubscriptionAsync(request);
-        }
-
-        void IFeedSubscription.CancelAll()
-        {
-            (this as IFeedSubscription).CancelAllAsync().GetAwaiter().GetResult();
-        }
-
-        Task IFeedSubscription.CancelAllAsync()
-        {
-            return CancelAllFeedSubscriptionsAsync();
+            var _ = ModifyFeedSubscriptionAsync(request);
         }
 
 
@@ -107,7 +92,7 @@ namespace TickTrader.Algo.Runtime
             _startTaskSrc = new TaskCompletionSource<object>();
             try
             {
-                await Task.Factory.StartNew(() => _distributor.Start(this));
+                //await Task.Factory.StartNew(() => _distributor.Start(this));
             }
             finally
             {
@@ -124,7 +109,7 @@ namespace TickTrader.Algo.Runtime
             _stopTaskSrc = new TaskCompletionSource<object>();
             try
             {
-                await Task.Factory.StartNew(() => _distributor.Stop());
+                //await Task.Factory.StartNew(() => _distributor.Stop());
             }
             finally
             {
@@ -143,9 +128,9 @@ namespace TickTrader.Algo.Runtime
         }
 
 
-        internal IFeedSubscription GetSubscription()
+        internal IQuoteSub GetSubscription()
         {
-            return _distributor.AddSubscription(q => { });
+            return new QuoteSubscription(_subManager);
         }
 
         internal async Task<List<CurrencyInfo>> GetCurrencyListAsync()
@@ -250,13 +235,6 @@ namespace TickTrader.Algo.Runtime
             return res.Quotes.Select(QuoteInfo.Create).ToList();
         }
 
-        internal Task CancelAllFeedSubscriptionsAsync()
-        {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(Id, new CancelAllFeedSubscriptionsRequest()), context);
-            return context.TaskSrc.Task;
-        }
-
         internal async Task<List<BarData>> GetBarListAsync(BarListRequest request)
         {
             var context = new RpcResponseTaskContext<BarChunk>(RpcHandler.SingleReponseHandler);
@@ -291,14 +269,18 @@ namespace TickTrader.Algo.Runtime
 
         private void FullQuoteInfoNotificationHandler(Any payload)
         {
-            var quote = payload.Unpack<FullQuoteInfo>();
-            _rateEventSrc.Send(QuoteInfo.Create(quote));
+            var quote = QuoteInfo.Create(payload.Unpack<FullQuoteInfo>());
+            _rateEventSrc.Send(quote);
+            _subManager.Dispatch(quote);
         }
 
         private void QuotePageNotificationHandler(Any payload)
         {
             var page = payload.Unpack<QuotePage>();
-            _rateListEventSrc.Send(page.Quotes.Select(QuoteInfo.Create).ToList());
+            var quotes = page.Quotes.Select(QuoteInfo.Create).ToList();
+            _rateListEventSrc.Send(quotes);
+            foreach (var q in quotes)
+                _subManager.Dispatch(q);
         }
 
 

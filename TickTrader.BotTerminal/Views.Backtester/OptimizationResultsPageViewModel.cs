@@ -29,11 +29,10 @@ namespace TickTrader.BotTerminal
 
         public event Action<OptCaseReport> ShowDetailsRequested;
 
-        public void Start(IEnumerable<ParameterDescriptor> optParams)
+        public void Init(IEnumerable<ParameterDescriptor> optParams)
         {
             _optParams = optParams.ToList();
 
-            IsVisible = true;
             Clear();
 
             _idColumn = new DataColumn("No", typeof(long));
@@ -50,10 +49,6 @@ namespace TickTrader.BotTerminal
             Data.Columns.Add(_metricColumn);
 
             DataView.Sort = _metricColumn.ColumnName + " DESC";
-        }
-
-        public void Stop()
-        {
         }
 
         public void Update(OptCaseReport report)
@@ -84,12 +79,6 @@ namespace TickTrader.BotTerminal
                 return "Not Enough Data";
 
             return "Error";
-        }
-
-        public void Hide()
-        {
-            IsVisible = false;
-            Clear();
         }
 
         public void ShowReport(DataRowView rowView)

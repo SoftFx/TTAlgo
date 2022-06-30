@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -47,20 +48,12 @@ namespace TickTrader.Algo.Core
         Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2);
     }
 
-    public interface IFeedSubscription
-    {
-        List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates);
-        Task<List<QuoteInfo>> ModifyAsync(List<FeedSubscriptionUpdate> updates);
-        void CancelAll();
-        Task CancelAllAsync();
-    }
-
-    public interface IFeedProvider : IFeedSubscription
+    public interface IFeedProvider
     {
         ISyncContext Sync { get; }
         List<QuoteInfo> GetSnapshot();
         Task<List<QuoteInfo>> GetSnapshotAsync();
-        IFeedSubscription GetSubscription();
+        IQuoteSub GetSubscription();
 
         event Action<QuoteInfo> RateUpdated;
         event Action<List<QuoteInfo>> RatesUpdated;

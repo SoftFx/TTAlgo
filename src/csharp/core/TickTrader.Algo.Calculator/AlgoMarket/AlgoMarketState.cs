@@ -90,8 +90,13 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
             var node = new SymbolMarketNode(Account, symbol);
 
             _marketNodes[symbol.Name] = node;
-            Bid[symbol.TradePair] = node.Bid;
-            Ask[symbol.TradePair] = node.Ask;
+            // Lasts symbol have same currencies pair, which breaks calculator logic
+            // Also if there are multiple symbols for same currency pair we should use first
+            if (!symbol.Name.EndsWith("_L") && !Bid.ContainsKey(symbol.TradePair))
+            {
+                Bid[symbol.TradePair] = node.Bid;
+                Ask[symbol.TradePair] = node.Ask;
+            }
 
             return node;
         }
@@ -115,7 +120,6 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
         {
             foreach (var node in _marketNodes.Values)
             {
-                node.UserSubscriptionInfo?.CancelAll();
                 node.UserSubscriptionInfo = null;
             }
         }

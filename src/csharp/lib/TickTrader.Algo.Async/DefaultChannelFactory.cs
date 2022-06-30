@@ -9,12 +9,17 @@ namespace TickTrader.Algo.Async
             return Channel.CreateUnbounded<T>(new UnboundedChannelOptions { SingleReader = singleReader, SingleWriter = singleWriter, AllowSynchronousContinuations = allowSynchronousContinuations });
         }
 
-        public static Channel<T> CreateForSingleConsumer<T>()
+        public static Channel<T> CreateForOneToMany<T>()
+        {
+            return CreateUnbounded<T>(false, true);
+        }
+
+        public static Channel<T> CreateForManyToOne<T>()
         {
             return CreateUnbounded<T>(true);
         }
 
-        public static Channel<T> CreateForEvent<T>()
+        public static Channel<T> CreateForOneToOne<T>()
         {
             return CreateUnbounded<T>(true, true);
         }

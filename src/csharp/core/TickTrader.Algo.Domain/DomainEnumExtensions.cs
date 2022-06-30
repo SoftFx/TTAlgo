@@ -40,5 +40,10 @@
         {
             return mode == MarginInfo.Types.CalculationMode.Forex || mode == MarginInfo.Types.CalculationMode.CfdLeverage;
         }
+
+        public static bool IsOnline(this SymbolConfig.Types.SymbolOrigin origin)
+        {
+            return origin == SymbolConfig.Types.SymbolOrigin.Online;
+        }
     }
 }

@@ -29,7 +29,10 @@ namespace TickTrader.FeedStorage
         public double LotSize { get; set; }
 
         [ProtoMember(8)]
-        public int Slippage { get; set; }
+        public double Slippage { get; set; }
+
+        [ProtoMember(27)]
+        public SlippageInfo.Types.Type SlippageType { get; set; }
 
 
 
@@ -115,6 +118,7 @@ namespace TickTrader.FeedStorage
                 MaxVolume = info.MaxVolume,
                 VolumeStep = info.VolumeStep,
                 Slippage = info.Slippage,
+                SlippageType = info.SlippageType,
                 Description = info.Description,
 
                 Commission = info.Commission,

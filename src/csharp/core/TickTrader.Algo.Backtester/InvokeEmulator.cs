@@ -182,6 +182,7 @@ namespace TickTrader.Algo.Backtester
                     _collector.AddEvent(PluginLogRecord.Types.LogSeverity.Error, msg);
                     throw new NotEnoughDataException(msg);
                 }
+                ApplyLastQuotes();
                 _exStartAction();
                 wasStarted = true;
                 EmulateEvents();
@@ -561,6 +562,20 @@ namespace TickTrader.Algo.Backtester
             UpdateVirtualTimepoint(next.Time);
             isTrade = next.IsTrade;
             return next.Content;
+        }
+
+        private void ApplyLastQuotes()
+        {
+            var feed = _feed as IFeedProvider;
+            var lasts = feed.GetSnapshot();
+
+            foreach(var q in lasts)
+            {
+                if (_settings.CommonSettings.Symbols.TryGetValue(q.Symbol, out var smbInfo))
+                {
+                    smbInfo.UpdateRate(q);
+                }
+            }
         }
     }
 }

@@ -233,7 +233,9 @@ namespace TickTrader.BotTerminal
 
         protected virtual IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
         {
-            return new OutputCollector<T>(executor, config, descriptor);
+            var output = new OutputCollector<T>(config, descriptor);
+            output.Subscribe(executor.OutputUpdated);
+            return output;
         }
 
         private void ClearOutputs()

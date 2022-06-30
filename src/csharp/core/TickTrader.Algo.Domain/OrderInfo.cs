@@ -204,6 +204,8 @@ namespace TickTrader.Algo.Domain
 
         bool IgnoreCalculation { get; }
 
+        double? Slippage { get; }
+
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         event Action<OrderPropArgs<double>> SwapChanged;
         event Action<OrderPropArgs<double>> CommissionChanged;

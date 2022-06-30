@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Server
 
         public Task<ConnectionErrorInfo> Test(TestAccountRequest request) => _ref.Ask<ConnectionErrorInfo>(request);
 
-        public Task AttachSession(RpcSession session) => _ref.Ask(new AccountControlActor.AttachSessionCmd(session));
+        public Task<AccountRpcHandler> AttachSession(RpcSession session) => _ref.Ask<AccountRpcHandler>(new AccountControlActor.AttachSessionCmd(session));
 
         public Task DetachSession(string sessionId) => _ref.Ask(new AccountControlActor.DetachSessionCmd(sessionId));
 

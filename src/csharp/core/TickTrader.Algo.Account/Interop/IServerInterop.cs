@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Account
 
         Task<CurrencyInfo[]> GetCurrencies();
         Task<SymbolInfo[]> GetSymbols();
-        Task<QuoteInfo[]> SubscribeToQuotes(string[] symbols, int depth);
+        Task<QuoteInfo[]> SubscribeToQuotes(string[] symbols, int depth, int? frequency);
         Task<QuoteInfo[]> GetQuoteSnapshot(string[] symbols, int depth);
 
         Task<BarData[]> DownloadBarPage(string symbol, Timestamp from, int count, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);

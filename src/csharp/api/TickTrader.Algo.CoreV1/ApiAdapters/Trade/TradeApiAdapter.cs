@@ -57,6 +57,7 @@ namespace TickTrader.Algo.CoreV1
             var code = OrderCmdResultCodes.Ok;
             var domainRequest = apiRequest.ToDomain(IsolationTag);
 
+            TriggerAccountLazyInit();
             PreprocessAndValidateOpenOrderRequest(domainRequest, out var smbMetadata, ref code);
 
             if (code == OrderCmdResultCodes.Ok)
@@ -86,6 +87,7 @@ namespace TickTrader.Algo.CoreV1
             var code = OrderCmdResultCodes.Ok;
             var request = new Domain.CancelOrderRequest { OrderId = orderId };
 
+            TriggerAccountLazyInit();
             PreprocessAndValidateCancelOrderRequest(request, out var orderToCancel, ref code);
 
             if (code == OrderCmdResultCodes.Ok)
@@ -118,6 +120,7 @@ namespace TickTrader.Algo.CoreV1
                 Slippage = request.Slippage
             };
 
+            TriggerAccountLazyInit();
             PreprocessAndValidateCloseOrderRequest(requestContext, out var orderToClose, out var smbMetadata, ref code);
 
             if (code == OrderCmdResultCodes.Ok)
@@ -154,6 +157,7 @@ namespace TickTrader.Algo.CoreV1
                 Slippage = request.Slippage
             };
 
+            TriggerAccountLazyInit();
             PreprocessAndValidateClosePositionRequest(requestContext, out var position, out var smbMetadata, ref code);
 
             if (code == OrderCmdResultCodes.Ok)
@@ -188,6 +192,7 @@ namespace TickTrader.Algo.CoreV1
             var code = OrderCmdResultCodes.Ok;
             var request = new Domain.CloseOrderRequest { OrderId = orderId, ByOrderId = byOrderId };
 
+            TriggerAccountLazyInit();
             PreprocessAndValidateCloseOrderByRequest(request, out var orderToClose, ref code);
 
             if (code == OrderCmdResultCodes.Ok)
@@ -216,6 +221,7 @@ namespace TickTrader.Algo.CoreV1
             var code = OrderCmdResultCodes.Ok;
             var domainRequest = apiRequest.ToDomain(IsolationTag);
 
+            TriggerAccountLazyInit();
             PreprocessAndValidateModifyOrderRequest(domainRequest, out var orderToModify, out var smbMetadata, ref code);
 
             if (code == OrderCmdResultCodes.Ok)
@@ -251,6 +257,12 @@ namespace TickTrader.Algo.CoreV1
             if (delay)
                 await Task.Delay(5); //ugly hack to enable quotes snapshot updates
             else await Task.Yield(); //free plugin thread to enable queue processing
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void TriggerAccountLazyInit()
+        {
+            _account.OnCalcAccess(); // fully init account before trading
         }
 
         private void PreprocessAndValidateOpenOrderRequest(Domain.OpenOrderRequest request, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
@@ -916,31 +928,31 @@ namespace TickTrader.Algo.CoreV1
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ValidateQuotes(SymbolInfo symbol, Domain.OrderInfo.Types.Side side, ref OrderCmdResultCodes code)
         {
-            var quote = symbol.LastQuote;
+            //var quote = symbol.LastQuote;
 
-            if (quote == null)
-            {
-                code = OrderCmdResultCodes.OffQuotes;
-                return false;
-            }
+            //if (quote == null)
+            //{
+            //    code = OrderCmdResultCodes.OffQuotes;
+            //    return false;
+            //}
 
-            if (_account.Type != AccountInfo.Types.Type.Cash && (!quote.HasBid || !quote.HasAsk))
-            {
-                code = OrderCmdResultCodes.OffQuotes;
-                return false;
-            }
+            //if (_account.Type != AccountInfo.Types.Type.Cash && (!quote.HasBid || !quote.HasAsk))
+            //{
+            //    code = OrderCmdResultCodes.OffQuotes;
+            //    return false;
+            //}
 
-            if (side == Domain.OrderInfo.Types.Side.Sell && quote.IsBidIndicative)
-            {
-                code = OrderCmdResultCodes.OffQuotes;
-                return false;
-            }
+            //if (side == Domain.OrderInfo.Types.Side.Sell && quote.IsBidIndicative)
+            //{
+            //    code = OrderCmdResultCodes.OffQuotes;
+            //    return false;
+            //}
 
-            if (side == Domain.OrderInfo.Types.Side.Buy && quote.IsAskIndicative)
-            {
-                code = OrderCmdResultCodes.OffQuotes;
-                return false;
-            }
+            //if (side == Domain.OrderInfo.Types.Side.Buy && quote.IsAskIndicative)
+            //{
+            //    code = OrderCmdResultCodes.OffQuotes;
+            //    return false;
+            //}
 
             return true;
         }

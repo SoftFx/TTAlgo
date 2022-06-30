@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Account
         private readonly IReadOnlyDictionary<string, SymbolInfo> _symbols;
         private bool _isCalcStarted;
         private OrderUpdateAction _updateWatingForPosition = null;
-        private IFeedSubscription _subscriptions;
+        private IDisposable _subscriptions;
 
         public AlgoMarketState Market { get; }
 
@@ -103,7 +103,7 @@ namespace TickTrader.Algo.Account
         {
             Market.Init(this, marketData.Symbols.Snapshot.Values, marketData.Currencies.Snapshot.Values);
             Market.StartCalculators();
-            _subscriptions = marketData.Distributor.AddSubscription((rate) => Market.GetUpdateNode(rate), marketData.Symbols.Snapshot.Keys);
+            _subscriptions = marketData.Distributor.AddListener((rate) => Market.GetUpdateNode(rate));
 
 
             if (!_isCalcStarted)
@@ -202,7 +202,7 @@ namespace TickTrader.Algo.Account
                 _isCalcStarted = false;
             }
 
-            _subscriptions?.CancelAll();
+            _subscriptions?.Dispose();
             _orders.Updated -= OrdersUpdated;
         }
 
@@ -281,10 +281,13 @@ namespace TickTrader.Algo.Account
         {
             var model = assetInfo;
 
-            if (assetInfo.Balance == 0)
-                _assets.Remove(assetInfo.Currency);
-            else
+            if (assetInfo.Balance != 0)
                 _assets[assetInfo.Currency] = model;
+            else
+            {
+                if (_assets.ContainsKey(assetInfo.Currency))
+                    _assets.Remove(assetInfo.Currency);
+            }
 
             AssetsChanged?.Invoke(model, assetInfo.Balance == 0 ? AssetChangeType.Removed : AssetChangeType.Updated);
         }
@@ -298,17 +301,7 @@ namespace TickTrader.Algo.Account
             }
             else if (Type == Domain.AccountInfo.Types.Type.Cash)
             {
-                var model = new AssetInfo(newBalance, currency);
-
-                if (newBalance != 0)
-                    _assets[currency] = model;
-                else
-                {
-                    if (_assets.ContainsKey(currency))
-                        _assets.Remove(currency);
-                }
-
-                AssetsChanged?.Invoke(model, newBalance == 0 ? AssetChangeType.Removed : AssetChangeType.Updated);
+                UpdateAsset(new AssetInfo(newBalance, currency));
             }
         }
 
@@ -443,7 +436,7 @@ namespace TickTrader.Algo.Account
                         if (_orders.TryGetValue(report.Id, out var order))
                         {
                             // ExecutionReport(Type=Calculated, Status=Calculated) is usually a transition from Executing state, which we currently ignore
-                            // The only exception is fully filled pending orders on gross acc, which trigger position with same id
+                            // One exception is fully filled pending orders on gross acc, which trigger position with same id
                             // StopLimit orders get new order id and opened as limit orders after activation
                             if ((order.Type == OrderInfo.Types.Type.Limit || order.Type == OrderInfo.Types.Type.Stop) && report.Type == OrderInfo.Types.Type.Position)
                                 return OnOrderUpdated(report, OrderExecReport.Types.ExecAction.Opened);
@@ -498,6 +491,12 @@ namespace TickTrader.Algo.Account
                     }
                     else if (report.Type == Domain.OrderInfo.Types.Type.Position)
                     {
+                        if (report.OrderStatus == OrderStatus.Calculated)
+                        {
+                            // For partially closed positions, we receive commission update for remaining volume
+                            return OnOrderUpdated(report, OrderExecReport.Types.ExecAction.None);
+                        }
+
                         if (report.OrderStatus == OrderStatus.PartiallyFilled)
                             return OnOrderUpdated(report, Domain.OrderExecReport.Types.ExecAction.Closed);
 

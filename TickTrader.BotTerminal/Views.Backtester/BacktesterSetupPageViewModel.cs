@@ -46,7 +46,6 @@ namespace TickTrader.BotTerminal
             _allSymbolsValid = _var.AddBoolProperty();
             //_hasDataToSave = _var.AddBoolProperty();
             //_isRunning = _var.AddBoolProperty();
-            //_isVisualizing = _var.AddBoolProperty();
 
             _localWnd = new WindowManager(this);
 
@@ -56,9 +55,6 @@ namespace TickTrader.BotTerminal
             DateRange = new DateRangeSelectionViewModel(false);
             IsUpdatingRange = new BoolProperty();
             _isDateRangeValid = new BoolProperty();
-
-            SaveResultsToFile = new BoolProperty();
-            SaveResultsToFile.Set();
 
             //_availableSymbols = env.Symbols;
 
@@ -83,7 +79,6 @@ namespace TickTrader.BotTerminal
             CanSetup = !isRunning & client.IsConnected;
             //CanStop = ActionOverlay.CanCancel;
             //CanSave = !IsRunning & _hasDataToSave.Var;
-            //IsVisualizationEnabled = _var.AddBoolProperty();
 
 
             Plugins = env.LocalAgentVM.PluginList;
@@ -127,6 +122,7 @@ namespace TickTrader.BotTerminal
                     UpdatePluginState(plugin.Descriptor_);
                     PluginConfig = null;
                     PluginSelected?.Invoke();
+                    CloseSetupDialog();
                 }
                 else
                     PluginConfig = null;
@@ -177,13 +173,10 @@ namespace TickTrader.BotTerminal
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolShadowSetup { get; private set; }
         public PluginConfig PluginConfig { get; private set; }
-        //public PluginConfig PluginConfig { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
-        //public BoolProperty IsVisualizationEnabled { get; }
         public List<OptionalItem<BacktesterMode>> Modes { get; }
         public Property<OptionalItem<BacktesterMode>> ModeProp { get; private set; }
         public BacktesterMode Mode => ModeProp.Value.Value;
-        public BoolProperty SaveResultsToFile { get; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
         public BoolProperty IsUpdatingRange { get; private set; }
@@ -252,6 +245,64 @@ namespace TickTrader.BotTerminal
                 var c = CustomCurrency.FromAlgo(currency.Value);
                 config.TradeServer.Currencies.Add(c.Name, c);
             }
+        }
+
+        public BacktesterConfig CreateConfig()
+        {
+            var config = new BacktesterConfig();
+            Apply(config);
+            config.Env.FeedCachePath = _catalog.OnlineCollection.StorageFolder;
+            config.Env.CustomFeedCachePath = _catalog.CustomCollection.StorageFolder;
+            config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
+            return config;
+        }
+
+        public async Task LoadConfig(BacktesterConfig config)
+        {
+            ModeProp.Value = Modes.First(m => m.Value == config.Core.Mode);
+            Settings.Load(config);
+            UpdateTradeSummary();
+
+            var pluginConfig = config.PluginConfig;
+            SelectedPlugin.Value = Plugins.FirstOrDefault(p => p.Key.Equals(pluginConfig.Key));
+            PluginConfig = pluginConfig;
+
+            SelectedModel.Value = config.Core.ModelTimeframe;
+            var mainSymbolName = config.Core.MainSymbol;
+            var mainSymbolCfg = config.Core.FeedConfig[mainSymbolName];
+            if (!FeedCacheKey.TryParse(mainSymbolCfg, out var mainSymbolKey))
+                throw new ArgumentException($"Failed to parse symbol key '{mainSymbolCfg}'");
+            FeedSymbols.Clear();
+            FeedSymbols.Add(MainSymbolShadowSetup);
+            var smbData = _catalog[new StorageSymbolKey(mainSymbolKey.Symbol, mainSymbolKey.Origin)];
+            MainSymbolSetup.SelectedSymbolName.Value = smbData.Name;
+            MainSymbolSetup.SelectedSymbol.Value = smbData;
+            MainSymbolSetup.SelectedTimeframe.Value = config.Core.MainTimeframe;
+            MainSymbolShadowSetup.SelectedTimeframe.Value = mainSymbolKey.TimeFrame;
+
+            foreach(var pair in config.Core.FeedConfig)
+            {
+                if (pair.Key == mainSymbolName)
+                    continue;
+
+                if (!FeedCacheKey.TryParse(pair.Value, out var symbolKey))
+                    throw new ArgumentException($"Failed to parse symbol key '{pair.Value}'");
+
+                var smbSetup = CreateSymbolSetupModel(SymbolSetupType.Additional);
+                smbData = _catalog[new StorageSymbolKey(symbolKey.Symbol, symbolKey.Origin)];
+                smbSetup.SelectedSymbolName.Value = smbData.Name;
+                smbSetup.SelectedSymbol.Value = smbData;
+                smbSetup.SelectedTimeframe.Value = symbolKey.TimeFrame;
+                FeedSymbols.Add(smbSetup);
+            }
+
+            // Wait until available range for all symbols are updated
+            while (FeedSymbols.Any(s => s.IsUpdating.Value))
+            {
+                await Task.Delay(100);
+            }
+            DateRange.From = config.Core.EmulateFrom;
+            DateRange.To = config.Core.EmulateTo;
         }
 
 

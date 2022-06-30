@@ -1438,8 +1438,6 @@ namespace TickTrader.Algo.Backtester
                     _acc.NetPositions.RemovePosition(smb.Name);
 
                 var profitRes = symbolCalc.Profit.Calculate(new ProfitRequest(posPrice, closingAmount, posSide, fillPrice));
-                if (profitRes.Error != CalculationError.None)
-                    throw new Exception();
                 var profit = RoundMoney(profitRes.Value, _calcFixture.RoundingDigits);
 
                 balanceMovement += profit + closeSwap;

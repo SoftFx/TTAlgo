@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace Machinarium.Var
 {
@@ -58,7 +53,7 @@ namespace Machinarium.Var
             get
             {
                 if (columnName == nameof(Value))
-                    return (string)Error;
+                    return Error;
                 return "";
             }
         }
@@ -70,7 +65,7 @@ namespace Machinarium.Var
             {
                 isUpdating = true;
 
-                if (_convertError == null)
+                if (string.IsNullOrEmpty(_convertError))
                     _property.Var.Value = newVal;
             }
             finally
@@ -82,7 +77,7 @@ namespace Machinarium.Var
 
         private void UpdateError()
         {
-            _error.Value = _convertError == null ? _property.ErrorVar.Value : _convertError;
+            _error.Value = string.IsNullOrEmpty(_convertError) ? _property.ErrorVar.Value : _convertError;
         }
 
         private void ConvertFromProperty()
@@ -95,6 +90,7 @@ namespace Machinarium.Var
     public interface IValueConverter<TProp, T>
     {
         TProp ConvertTo(T val, out string error);
+
         T ConvertFrom(TProp val);
     }
 
@@ -112,14 +108,12 @@ namespace Machinarium.Var
 
         public int ConvertTo(string val, out string error)
         {
-            int result;
-            if (int.TryParse(val, out result))
-            {
-                error = null;
-                return result;
-            }
-            error = "Not a valid integer!";
-            return 0;
+            if (!int.TryParse(val, out var result))
+                error = "Invalid integer number!";
+            else
+                error = string.Empty;
+
+            return result;
         }
     }
 
@@ -150,14 +144,13 @@ namespace Machinarium.Var
 
         public double ConvertTo(string val, out string error)
         {
-            double result;
-            if (double.TryParse(val, out result))
+            if (double.TryParse(val, out double result))
             {
                 result /= _toPercent;
                 error = null;
                 return result;
             }
-            error = "Not a valid floating number!";
+            error = "Invalid floating number!";
             return 0;
         }
     }

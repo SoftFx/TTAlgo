@@ -1,6 +1,6 @@
 ﻿using Machinarium.Qnil;
 using Machinarium.Var;
-using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

@@ -24,6 +24,7 @@ namespace TickTrader.Algo.Server
         private readonly AlgoServerPrivate _server;
         private readonly string _id;
         private readonly Dictionary<string, RpcSession> _sessions = new Dictionary<string, RpcSession>();
+        private readonly Dictionary<string, AccountRpcHandler> _sessionHandlers = new Dictionary<string, AccountRpcHandler>();
 
         private AccountSavedState _savedState;
         private IAlgoLogger _logger;
@@ -48,7 +49,7 @@ namespace TickTrader.Algo.Server
             Receive<ChangeAccountRequest>(Change);
             Receive<AccountMetadataRequest, AccountMetadataInfo>(GetMetadata);
             Receive<TestAccountRequest, ConnectionErrorInfo>(TestConnection);
-            Receive<AttachSessionCmd>(AttachSession);
+            Receive<AttachSessionCmd, AccountRpcHandler>(AttachSession);
             Receive<DetachSessionCmd>(DetachSession);
             Receive<AccountProxyRequest, IAccountProxy>(_ => _accProxy);
             Receive<RpcMessage>(SendNotification);
@@ -333,7 +334,7 @@ namespace TickTrader.Algo.Server
         }
 
 
-        private void AttachSession(AttachSessionCmd cmd)
+        private AccountRpcHandler AttachSession(AttachSessionCmd cmd)
         {
             var session = cmd.Session;
             var sessionId = session.Id;
@@ -341,6 +342,9 @@ namespace TickTrader.Algo.Server
             _logger.Debug($"Attaching session {sessionId}...");
 
             _sessions[sessionId] = session;
+
+            var sessionHandler = new AccountRpcHandler(_accProxy, session);
+            _sessionHandlers[sessionId] = sessionHandler;
 
             // send connection state snapshot
             var update = new ConnectionStateUpdate(_id, (Domain.Account.Types.ConnectionState)_state, (Domain.Account.Types.ConnectionState)_state);
@@ -361,6 +365,8 @@ namespace TickTrader.Algo.Server
             }
 
             _logger.Debug($"Attached session {sessionId}. Have {_refCnt} active refs");
+
+            return sessionHandler;
         }
 
         private void DetachSession(DetachSessionCmd cmd)
@@ -370,6 +376,10 @@ namespace TickTrader.Algo.Server
             _logger.Debug($"Detaching session {sessionId}...");
 
             _sessions.Remove(sessionId);
+
+            var sessionHandler = _sessionHandlers[sessionId];
+            sessionHandler.Dispose();
+            _sessionHandlers.Remove(sessionId);
 
             _refCnt--;
             if (_refCnt == 0)

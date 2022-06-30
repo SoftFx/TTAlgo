@@ -58,34 +58,43 @@ namespace Machinarium.Var
 
         protected IntProperty AddIntProperty(int initialValue = 0, string notifyName = null)
         {
-            var property = new IntProperty();
-            property.Value = initialValue;
-            property.Name = notifyName;
+            var property = new IntProperty
+            {
+                Value = initialValue,
+                Name = notifyName
+            };
+
             AddChild(property);
             return property;
         }
 
         protected DoubleProperty AddDoubleProperty(double initialValue = 0, string notifyName = null)
         {
-            var property = new DoubleProperty();
-            property.Value = initialValue;
-            property.Name = notifyName;
+            var property = new DoubleProperty
+            {
+                Value = initialValue,
+                Name = notifyName
+            };
+
             AddChild(property);
             return property;
         }
 
         protected BoolProperty AddBoolProperty(bool initialValue = false, string notifyName = null)
         {
-            var property = new BoolProperty();
-            property.Value = initialValue;
-            property.Name = notifyName;
+            var property = new BoolProperty
+            {
+                Value = initialValue,
+                Name = notifyName
+            };
+
             AddChild(property);
             return property;
         }
 
-        protected Validable<T> AddValidable<T>(T initialValue = default(T), string notifyName = null)
+        protected Validable<T> AddValidable<T>(T initialValue = default, string notifyName = null)
         {
-            var property = new Validable<T>
+            var property = new Validable<T>(null)
             {
                 Value = initialValue,
                 Name = notifyName
@@ -97,16 +106,19 @@ namespace Machinarium.Var
 
         protected IntValidable AddIntValidable(int initialValue = 0, string notifyName = null)
         {
-            var property = new IntValidable();
-            property.Value = initialValue;
-            property.Name = notifyName;
+            var property = new IntValidable
+            {
+                Value = initialValue,
+                Name = notifyName
+            };
+
             AddChild(property);
             return property;
         }
 
-        protected DoubleValidable AddDoubleValidable(double initialValue = 0, string notifyName = null)
+        protected DoubleValidable AddDoubleValidable(double initialValue = 0, IValueConverter<double, string> conv = null, string notifyName = null)
         {
-            var property = new DoubleValidable
+            var property = new DoubleValidable(conv)
             {
                 Value = initialValue,
                 Name = notifyName
@@ -118,9 +130,12 @@ namespace Machinarium.Var
 
         protected BoolValidable AddBoolValidable(bool initialValue = false, string notifyName = null)
         {
-            var property = new BoolValidable();
-            property.Value = initialValue;
-            property.Name = notifyName;
+            var property = new BoolValidable
+            {
+                Value = initialValue,
+                Name = notifyName
+            };
+
             AddChild(property);
             return property;
         }

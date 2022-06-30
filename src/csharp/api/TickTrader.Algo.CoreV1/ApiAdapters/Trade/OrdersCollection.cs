@@ -43,11 +43,11 @@ namespace TickTrader.Algo.CoreV1
             if (_entities.TryRemove(info.Id, out var order))
             {
                 if (update)
-                    order?.Info.Update(info);
+                    order.Info.Update(info);
 
                 info.SetSymbol(order.SymbolInfo);
                 Removed?.Invoke(order);
-                RemovedInfo?.Invoke(info);
+                RemovedInfo?.Invoke(order.Info);
             }
 
             return order;

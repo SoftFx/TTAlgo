@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
 {
     internal class OutputPaneViewModel : PropertyChangedBase
     {
-        private SymbolInfo _symbol;
+        private ISymbolInfo _symbol;
         private VarList<OutputSeriesModel> _outputs;
 
         public IPluginModel Model { get; }
@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
         public BoolVar IsCrosshairEnabled { get; }
 
         public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, IPluginDataChartModel chart,
-            SymbolInfo symbol, Metadata.Types.OutputTarget target, BoolVar isCrosshairEnabled)
+            ISymbolInfo symbol, Metadata.Types.OutputTarget target, BoolVar isCrosshairEnabled)
         {
             Model = plugin;
             ChartWindowId = windowId;

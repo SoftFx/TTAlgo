@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Machinarium.Var
+﻿namespace Machinarium.Var
 {
     public class DoubleVar : Var<double>
     {

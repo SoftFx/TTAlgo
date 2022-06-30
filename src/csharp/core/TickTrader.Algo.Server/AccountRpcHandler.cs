@@ -3,22 +3,34 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Server
 {
-    internal class AccountRpcHandler
+    public class AccountRpcHandler
     {
         private readonly IAccountProxy _account;
         private readonly RpcSession _session;
         private readonly ConcurrentDictionary<string, object> _pendingRequestHandlers = new ConcurrentDictionary<string, object>();
+
+        private IQuoteSub _quoteSub;
 
 
         public AccountRpcHandler(IAccountProxy account, RpcSession session)
         {
             _account = account;
             _session = session;
+
+            _quoteSub = account.Feed.GetSubscription();
+        }
+
+
+        public void Dispose()
+        {
+            _quoteSub.Dispose();
+            _quoteSub = null;
         }
 
 
@@ -62,8 +74,6 @@ namespace TickTrader.Algo.Server
                 return FeedSnapshotRequestHandler();
             else if (payload.Is(ModifyFeedSubscriptionRequest.Descriptor))
                 return ModifyFeedSubscriptionRequestHandler(payload);
-            else if (payload.Is(CancelAllFeedSubscriptionsRequest.Descriptor))
-                return CancelAllFeedSubscriptionsRequestHandler();
             else if (payload.Is(BarListRequest.Descriptor))
                 return BarListRequestHandler(payload);
             else if (payload.Is(QuoteListRequest.Descriptor))
@@ -269,15 +279,8 @@ namespace TickTrader.Algo.Server
         {
             var request = payload.Unpack<ModifyFeedSubscriptionRequest>();
             var response = new QuotePage();
-            var snapshot = _account.Feed.Sync.Invoke(() => _account.Feed.Modify(request.Updates.ToList()));
-            response.Quotes.AddRange(snapshot.Select(q => q.GetFullQuote()));
+            _quoteSub.Modify(request.Updates.ToList());
             return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> CancelAllFeedSubscriptionsRequestHandler()
-        {
-            _account.Feed.Sync.Invoke(() => _account.Feed.CancelAll());
-            return Task.FromResult(RpcHandler.VoidResponse);
         }
 
         private async Task<Any> BarListRequestHandler(Any payload)

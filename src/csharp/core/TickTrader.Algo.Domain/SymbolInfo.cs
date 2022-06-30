@@ -42,6 +42,7 @@ namespace TickTrader.Algo.Domain
             Slippage = new SlippageInfo
             {
                 DefaultValue = info.Slippage,
+                Type = info.SlippageType,
             };
 
             Commission = new CommissonInfo
@@ -107,8 +108,9 @@ namespace TickTrader.Algo.Domain
         }
 
 
-        int ISymbolInfo.Slippage => (int)(Slippage.DefaultValue ?? 0);
+        double ISymbolInfo.Slippage => Slippage.DefaultValue ?? 0;
 
+        SlippageInfo.Types.Type ISymbolInfo.SlippageType => Slippage.Type;
 
         double ISymbolInfo.MaxVolume => MaxTradeVolume;
 
@@ -178,7 +180,9 @@ namespace TickTrader.Algo.Domain
 
         int Digits { get; }
 
-        int Slippage { get; }
+        double Slippage { get; }
+
+        SlippageInfo.Types.Type SlippageType { get; }
 
         bool TradeAllowed { get; }
 

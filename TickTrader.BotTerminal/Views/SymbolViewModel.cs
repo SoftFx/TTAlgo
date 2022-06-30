@@ -1,6 +1,6 @@
 ﻿using Machinarium.Var;
 using System;
-using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Converters;
 using TickTrader.BotTerminal.Converters.Machinarium.Converters;
@@ -14,24 +14,30 @@ namespace TickTrader.BotTerminal
         Down,
     }
 
-    internal sealed class SymbolViewModel
+    internal sealed class SymbolViewModel : IDisposable
     {
         private readonly VarContext _varContext = new VarContext();
         private readonly PricePrecisionConverter<double> _symbolPrecision;
 
         private readonly SymbolInfo _model;
+        private readonly IDisposable _subscription;
 
         public SymbolViewModel(SymbolInfo model, QuoteDistributor distributor)
         {
             _model = model;
             _symbolPrecision = new PricePrecisionConverter<double>(model?.Digits ?? 2);
 
-            distributor.AddSubscription(OnRateUpdate, model.Name);
+            _subscription = distributor.AddListener(OnRateUpdate, model.Name);
 
             Bid = new RateViewModel(_symbolPrecision);
             Ask = new RateViewModel(_symbolPrecision);
 
             QuoteTime = _varContext.AddProperty(default, new DateTimeToUtc());
+        }
+
+        public void Dispose()
+        {
+            _subscription.Dispose();
         }
 
         public string SymbolName => _model.Name;

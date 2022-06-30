@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
         public BoolProperty IsCrosshairEnabled { get; } = new BoolProperty();
         public Var<double?> CurrentAsk => _askProp.Var;
         public Var<double?> CurrentBid => _bidProp.Var;
-        public Property<SymbolInfo> SymbolInfo { get; } = new Property<SymbolInfo>();
+        public Property<ISymbolInfo> SymbolInfo { get; } = new Property<ISymbolInfo>();
         public int Precision { get; private set; }
         public Property<string> YAxisLabelFormat { get; } = new Property<string>();
         public Var<Feed.Types.Timeframe> Timeframe => _timeframeProp.Var;

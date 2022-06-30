@@ -20,6 +20,7 @@ using TickTrader.Algo.Server;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.Core.Subscriptions;
 
 namespace TickTrader.BotTerminal
 {
@@ -47,7 +48,7 @@ namespace TickTrader.BotTerminal
         private Property<AxisBase> _timeAxis = new Property<AxisBase>();
         private string dateAxisLabelFormat;
         private List<QuoteInfo> updateQueue;
-        private IFeedSubscription subscription;
+        private IDisposable _subscription;
         private Property<IRateInfo> _currentRateProp = new Property<IRateInfo>();
         private Feed.Types.Timeframe _timeframe;
 
@@ -68,7 +69,7 @@ namespace TickTrader.BotTerminal
             ClientModel.Disconnected += Connection_Disconnected;
             ClientModel.Deinitializing += Client_Deinitializing;
 
-            subscription = ClientModel.Distributor.AddSubscription(OnRateUpdate, symbol.Name);
+            _subscription = ClientModel.Distributor.AddListener(OnRateUpdate, symbol.Name, 1);
             //subscription.NewQuote += ;
 
             _currentRateProp.Value = (IRateInfo)symbol.LastQuote;
@@ -319,7 +320,7 @@ namespace TickTrader.BotTerminal
                     AvailableBotTraders.CollectionChanged -= AvailableBotTraders_CollectionChanged;
                     AvailableIndicators.Dispose();
                     AvailableBotTraders.Dispose();
-                    subscription.CancelAll();
+                    _subscription.Dispose();
 
                     logger.Debug("Chart[" + Model.Name + "] disposed!");
                 }
@@ -363,7 +364,7 @@ namespace TickTrader.BotTerminal
 
         AxisBase IPluginDataChartModel.CreateXAxis()
         {
-            var axis =  Navigator.CreateAxis();
+            var axis = Navigator.CreateAxis();
             CreateXAxisBinging(axis);
             return axis;
         }

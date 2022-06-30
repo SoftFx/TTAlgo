@@ -52,6 +52,9 @@ namespace TickTrader.Algo.Runtime
         {
             _logger.Info($"Received state change: {update.OldState} -> {update.NewState}");
 
+            if (update.OldState.IsOffline() && update.NewState.IsOffline())
+                return; // initial state update
+
             if (update.NewState.IsOffline() || update.NewState.IsDisconnecting())
             {
                 var _ = DeinitAccount();

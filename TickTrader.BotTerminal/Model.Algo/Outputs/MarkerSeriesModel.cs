@@ -13,13 +13,13 @@ namespace TickTrader.BotTerminal
         public override IXyDataSeries SeriesData => _seriesData;
         protected override MarkerInfo NanValue => NanMarker;
 
-        public MarkerSeriesModel(IPluginModel plugin, IPluginDataChartModel outputHost, IOutputCollector collector)
+        public MarkerSeriesModel(IPluginDataChartModel outputHost, IOutputCollector collector)
             : base(collector, outputHost)
         {
             _seriesData = new XyDataSeries<DateTime, double>();
 
             var config = collector.OutputConfig;
-            Init(plugin, config, collector.OutputDescriptor);
+            Init(config, collector.OutputDescriptor);
 
             if (config.IsEnabled)
             {

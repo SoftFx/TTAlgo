@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Runtime
@@ -186,31 +187,9 @@ namespace TickTrader.Algo.Runtime
             return RunOnThreadPool(_account.GetFeedSnapshotAsync);
         }
 
-        public IFeedSubscription GetSubscription()
+        public IQuoteSub GetSubscription()
         {
             return _account.GetSubscription();
-        }
-
-        public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
-        {
-            return ModifyAsync(updates).GetAwaiter().GetResult();
-        }
-
-        public Task<List<QuoteInfo>> ModifyAsync(List<FeedSubscriptionUpdate> updates)
-        {
-            var request = new ModifyFeedSubscriptionRequest();
-            request.Updates.AddRange(updates);
-            return RunOnThreadPool(() => _account.ModifyFeedSubscriptionAsync(request));
-        }
-
-        public void CancelAll()
-        {
-            CancelAllAsync().GetAwaiter().GetResult();
-        }
-
-        public Task CancelAllAsync()
-        {
-            return RunOnThreadPool(_account.CancelAllFeedSubscriptionsAsync);
         }
 
         #endregion IFeedProvider

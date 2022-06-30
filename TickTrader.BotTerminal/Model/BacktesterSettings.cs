@@ -18,10 +18,16 @@ namespace TickTrader.BotTerminal
 
         public JournalOptions JournalSettings { get; set; } = JournalOptions.Default;
 
+
         public void Apply(BacktesterConfig config)
         {
             if (ServerPingMs < 0)
                 throw new ArgumentException("Invalid ping value");
+            if (WarmupValue < 0)
+                throw new ArgumentException("Invalid warmup value");
+            if (Leverage < 0)
+                throw new ArgumentException("Invalid leverage value");
+
             config.Core.ServerPingMs = (uint)ServerPingMs;
             config.Core.WarmupValue = WarmupValue;
             config.Core.WarmupUnits = WarmupUnits;
@@ -31,6 +37,19 @@ namespace TickTrader.BotTerminal
             config.Account.Leverage = Leverage;
             config.Account.InitialBalance = InitialBalance;
             config.Account.BalanceCurrency = BalanceCurrency;
+        }
+
+        public void Load(BacktesterConfig config)
+        {
+            ServerPingMs = (int)config.Core.ServerPingMs;
+            WarmupValue = config.Core.WarmupValue;
+            WarmupUnits = config.Core.WarmupUnits;
+            JournalSettings = config.Core.JournalFlags;
+
+            AccType = config.Account.Type;
+            Leverage = config.Account.Leverage;
+            InitialBalance = config.Account.InitialBalance;
+            BalanceCurrency = config.Account.BalanceCurrency;
         }
 
         public string ToText(bool compact)

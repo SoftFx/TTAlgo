@@ -41,9 +41,9 @@ namespace Machinarium.Var
             return base.AddIntValidable(initialValue, notifyName);
         }
 
-        public new DoubleValidable AddDoubleValidable(double initialValue = 0, string notifyName = null)
+        public new DoubleValidable AddDoubleValidable(double initialValue = 0, IValueConverter<double, string> conv = null, string notifyName = null)
         {
-            return base.AddDoubleValidable(initialValue, notifyName);
+            return base.AddDoubleValidable(initialValue, conv, notifyName);
         }
 
         public new BoolValidable AddBoolValidable(bool initialValue = false, string notifyName = null)

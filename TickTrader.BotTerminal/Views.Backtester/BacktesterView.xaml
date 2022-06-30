@@ -23,6 +23,11 @@
             </Grid.RowDefinitions>
 
             <ToolBar Name="toolBar" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Focusable="False" Margin="5,5,5,0">
+                <Button Content="Load config" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="LoadConfig" IsEnabled="{Binding CanStart.Value}"/>
+                <Button Content="Save config" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="SaveConfig" IsEnabled="{Binding CanStart.Value}"/>
+                <Separator/>
+                <Button Content="Load results" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="LoadResults" IsEnabled="{Binding CanStart.Value}"/>
+                <Separator/>
                 <Button Name="startBtn" Content="{DynamicResource PlayToolIcon}" ToolTip="Start" l:Icon.Fill="Green"
                             Margin="3,0,0,0" Focusable="False" cal:Message.Attach="StartEmulation" IsEnabled="{Binding CanStart.Value}" />
                 <Button Content="{DynamicResource StopToolIcon}" ToolTip="Stop" l:Icon.Fill="Red"

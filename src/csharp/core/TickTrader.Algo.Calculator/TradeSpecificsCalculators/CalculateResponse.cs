@@ -21,6 +21,12 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
             Error = CalculationError.None;
         }
 
+        internal CalculateResponseBase(T value, CalculationError error)
+        {
+            Value = value;
+            Error = error;
+        }
+
 
         public static implicit operator bool(CalculateResponseBase<T> response)
         {

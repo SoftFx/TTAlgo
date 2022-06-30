@@ -92,6 +92,10 @@ namespace TickTrader.Algo.Calculator
             var calc = netting?.Calculator ?? _market.GetCalculator(order.SymbolInfo);
 
             var orderMargin = calc.Margin.Calculate(new MarginRequest(order.RemainingAmount, order.Type, order.IsHidden));
+            if (orderMargin.IsFailed)
+            {
+                return new CalculateResponseBase<bool>(false, orderMargin.Error);
+            }
             return HasSufficientMarginToOpenOrder(orderMargin.Value, netting, order.Side);
         }
 
@@ -103,9 +107,7 @@ namespace TickTrader.Algo.Calculator
             var orderMargin = calc.Margin.Calculate(new MarginRequest(orderAmount, type, isHidden));
             if (orderMargin.IsFailed)
             {
-                // newAccountMargin = 0;
-                //return new CalculateResponseBase<bool>(orderMargin.Error);
-                return new CalculateResponseBase<bool>(false);
+                return new CalculateResponseBase<bool>(false, orderMargin.Error);
             }
             return HasSufficientMarginToOpenOrder(orderMargin.Value, netting, side);
         }
