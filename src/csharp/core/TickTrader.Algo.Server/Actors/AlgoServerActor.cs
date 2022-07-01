@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
@@ -68,7 +69,7 @@ namespace TickTrader.Algo.Server
             Receive<LocalAlgoServer.GeneratePluginIdRequest, string>(r => _plugins.GeneratePluginId(r.PluginDisplayName));
             Receive<AddPluginRequest>(r => _plugins.AddPlugin(r));
             Receive<ChangePluginConfigRequest>(r => _plugins.UpdateConfig(r));
-            Receive<RemovePluginRequest>(r => _plugins.RemovePlugin(r));
+            Receive<RemovePluginRequest>(RemovePlugin);
             Receive<StartPluginRequest>(r => _plugins.StartPlugin(r));
             Receive<StopPluginRequest>(r => _plugins.StopPlugin(r));
             Receive<PluginLogsRequest, PluginLogsResponse>(r => _plugins.GetPluginLogs(r));
@@ -201,6 +202,30 @@ namespace TickTrader.Algo.Server
             await _plugins.RemoveAllPluginsFromAccount(accId);
 
             await _accounts.RemoveAccountInternal(accId, account);
+        }
+
+        private async Task RemovePlugin(RemovePluginRequest request)
+        {
+            var pluginId = request.PluginId;
+
+            await _plugins.RemovePlugin(request);
+
+            if (request.CleanAlgoData)
+            {
+                try
+                {
+                    _pluginFiles.ClearFolder(new ClearPluginFolderRequest(pluginId, PluginFolderInfo.Types.PluginFolderId.AlgoData));
+                }
+                catch (Exception) { }
+            }
+            if (request.CleanLog)
+            {
+                try
+                {
+                    _pluginFiles.ClearFolder(new ClearPluginFolderRequest(pluginId, PluginFolderInfo.Types.PluginFolderId.BotLogs));
+                }
+                catch (Exception) { }
+            }
         }
 
 

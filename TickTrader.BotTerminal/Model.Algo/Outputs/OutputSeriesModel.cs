@@ -1,4 +1,4 @@
-﻿using SciChart.Charting.Model.DataSeries;
+﻿//using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
 
         public IOutputConfig Config { get; private set; }
 
-        public abstract IXyDataSeries SeriesData { get; }
+        //public abstract IXyDataSeries SeriesData { get; }
 
         protected void Init(IOutputConfig config, OutputDescriptor descriptor)
         {

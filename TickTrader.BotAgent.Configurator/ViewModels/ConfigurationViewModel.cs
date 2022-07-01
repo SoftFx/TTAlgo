@@ -278,10 +278,10 @@ namespace TickTrader.BotAgent.Configurator
             {
                 string path = Path.GetDirectoryName(_model.Logs.LogsFilePath);
 
-                if (Directory.Exists(path))
-                    Process.Start(path);
-                else
+                if (!Directory.Exists(path))
                     MessageBoxManager.OkError($"{path} folder path not found");
+                else
+                    WinExplorerHelper.ShowFolder(path);
             }));
 
         public void RefreshModels()

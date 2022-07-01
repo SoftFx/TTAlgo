@@ -13,7 +13,7 @@
         LoggingIn2FA,
     };
 
-    internal enum ClientEvents
+    public enum ClientEvents
     {
         Started,
         Connected,

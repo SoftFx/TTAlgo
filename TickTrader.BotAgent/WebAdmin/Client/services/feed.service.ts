@@ -4,7 +4,7 @@ import 'rxjs/add/operator/toPromise';
 import { Observable } from "rxjs/Observable";
 import { Subject } from "rxjs/Subject";
 
-import * as signalR from '@aspnet/signalr';
+import * as signalR from '@microsoft/signalr';
 
 import { FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel, AccountModel, TradeBotStateModel, TradeBotModel } from '../models/index';
 import { setTimeout } from 'timers';

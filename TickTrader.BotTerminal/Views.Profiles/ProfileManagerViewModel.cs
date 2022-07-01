@@ -92,10 +92,12 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                if (!await _profileManager.StopCurrentProfile(server, login))
-                {
-                    return;
-                }
+                await _profileManager.StopCurrentProfile();
+
+                //if (!await _profileManager.StopCurrentProfile(server, login))
+                //{
+                //    return;
+                //}
 
                 token.ThrowIfCancellationRequested();
 

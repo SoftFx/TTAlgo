@@ -1,10 +1,17 @@
 ﻿using Caliburn.Micro;
+using LiveChartsCore;
+using LiveChartsCore.Defaults;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+using Machinarium.ObservableCollections;
 using Machinarium.Qnil;
 using Machinarium.Var;
-using SciChart.Charting.Model.ChartSeries;
-using SciChart.Charting.Visuals.Axes;
+using SkiaSharp;
+//using SciChart.Charting.Model.ChartSeries;
+//using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
@@ -22,18 +29,45 @@ namespace TickTrader.BotTerminal
         private IDisposable _axisBind;
         private IDisposable _currentRateBind;
 
-        public AlgoChartViewModel(IVarList<IRenderableSeriesViewModel> dataSeries)
+
+        //private readonly ObservableCollection<FinancialPoint> _bars = new();
+
+        //public IEnumerable<ISeries> Series { get; }
+
+        public ObservableRangeCollection<FinancialPoint> BarCollection { get; set; }
+
+        //public Axis[] XAxes { get; set; }
+
+        //public Axis[] YAxes { get; set; }
+
+
+        public AlgoChartViewModel(ObservableRangeCollection<FinancialPoint> barCollection)
         {
+            BarCollection = barCollection;
             //var dataSeries = DataSeries;
-            var overlaySeries = OutputGroups.Chain().SelectMany(i => i.OverlaySeries);
-            var allSeries = VarCollection.CombineChained(dataSeries, overlaySeries);
+            //var overlaySeries = OutputGroups.Chain().SelectMany(i => i.OverlaySeries);
+            //var allSeries = VarCollection.CombineChained(dataSeries, overlaySeries);
             var allPanes = OutputGroups.Chain().SelectMany(i => i.Panes);
 
-            DataSeries = dataSeries.AsObservable();
-            Series = allSeries.AsObservable();
+            //DataSeries = dataSeries.AsObservable();
+            //Series = allSeries.AsObservable();
             Panes = allPanes.AsObservable();
 
             OutputGroups.Updated += AllOutputs_Updated;
+
+            //Series = new ObservableCollection<ISeries>
+            //{
+            //    new CandlesticksSeries<FinancialPoint>
+            //    {
+            //        Values = barCollection,
+            //        UpFill = new SolidColorPaint(SKColors.Green),
+            //        UpStroke = new SolidColorPaint(SKColors.Green),
+            //        DownFill = new SolidColorPaint(SKColors.Orange),
+            //        DownStroke = new SolidColorPaint(SKColors.Orange),
+            //        MaxBarWidth = 5,
+            //        AnimationsSpeed = new TimeSpan(),
+            //    }
+            //};
 
             _var.TriggerOnChange(SymbolInfo, a => UpdatePrecision());
 
@@ -45,14 +79,12 @@ namespace TickTrader.BotTerminal
 
             InitZoom();
         }
-        
-        public IReadOnlyList<IRenderableSeriesViewModel> DataSeries { get; }
+
         public IReadOnlyList<OutputPaneViewModel> Panes { get; }
-        public IReadOnlyList<IRenderableSeriesViewModel> Series { get; }
         public VarList<OutputGroupViewModel> OutputGroups { get; } = new VarList<OutputGroupViewModel>();
         public Property<string> ChartWindowId { get; } = new Property<string>();
         public BoolProperty AutoScroll { get; } = new BoolProperty();
-        public Property<AxisBase> TimeAxis { get; } = new Property<AxisBase>();
+        //public Property<AxisBase> TimeAxis { get; } = new Property<AxisBase>();
         public bool ShowScrollbar { get; set; }
         public object Overlay { get; set; }
 
@@ -75,11 +107,11 @@ namespace TickTrader.BotTerminal
             _currentRateProp.Value = rate;
         }
 
-        public void BindAxis(Var<AxisBase> axis)
-        {
-            _axisBind?.Dispose();
-            _axisBind = _var.TriggerOnChange(axis, a => TimeAxis.Value = a.New);
-        }
+        //public void BindAxis(Var<AxisBase> axis)
+        //{
+        //    _axisBind?.Dispose();
+        //    _axisBind = _var.TriggerOnChange(axis, a => TimeAxis.Value = a.New);
+        //}
 
         public void SetTimeframe(Feed.Types.Timeframe timeframe)
         {
@@ -99,7 +131,7 @@ namespace TickTrader.BotTerminal
         public double MaxZoom => _zooms.Last();
         public double MinZoom => _zooms.First();
         public bool CanZoomIn { get; private set; }
-        public bool CanZoomOut{ get; private set; }
+        public bool CanZoomOut { get; private set; }
 
         private void InitZoom()
         {
@@ -110,7 +142,7 @@ namespace TickTrader.BotTerminal
             {
                 CanZoomIn = Zoom.Value < MaxZoom;
                 NotifyOfPropertyChange(nameof(CanZoomIn));
-                CanZoomOut = Zoom.Value > MinZoom; 
+                CanZoomOut = Zoom.Value > MinZoom;
                 NotifyOfPropertyChange(nameof(CanZoomOut));
             });
         }

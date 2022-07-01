@@ -78,10 +78,7 @@ namespace TickTrader.Algo.Core
 
         private T LastOrDefault()
         {
-            if (Count == 0)
-                return default(T);
-            else
-                return this[Count - 1];
+            return Count == 0 ? default : this[Count - 1];
         }
 
         public abstract IEnumerator<T> GetEnumerator();

@@ -2,13 +2,13 @@
 
 namespace TickTrader.BotTerminal
 {
-    public class ValidationBinding : Binding
+    public class ValidationBinding : UpdateBind
     {
         public ValidationBinding() : base()
         {
             ValidatesOnDataErrors = true;
             ValidatesOnNotifyDataErrors = true;
-            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+
             Mode = BindingMode.TwoWay;
         }
 
@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
         {
             ValidatesOnDataErrors = true;
             ValidatesOnNotifyDataErrors = true;
-            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+
             Mode = BindingMode.TwoWay;
         }
     }

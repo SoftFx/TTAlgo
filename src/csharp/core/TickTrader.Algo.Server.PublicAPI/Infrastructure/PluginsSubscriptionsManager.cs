@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
-    internal sealed class PluginsSubscriptionsManager
+    public sealed class PluginsSubscriptionsManager
     {
         private readonly HashSet<string> _logsSubscriptions;
         private readonly HashSet<string> _statusSubscriptions;
@@ -16,14 +16,14 @@ namespace TickTrader.Algo.Server.PublicAPI
         internal int StatusSubscriptionsCount => _statusSubscriptions.Count;
 
 
-        internal PluginsSubscriptionsManager()
+        public PluginsSubscriptionsManager()
         {
             _logsSubscriptions = new HashSet<string>();
             _statusSubscriptions = new HashSet<string>();
         }
 
 
-        internal bool TryAddLogsSubscription(string pluginId)
+        public bool TryAddLogsSubscription(string pluginId)
         {
             lock (_syncLock)
             {
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
         }
 
-        internal bool TryRemoveLogsSubscription(string pluginId)
+        public bool TryRemoveLogsSubscription(string pluginId)
         {
             lock (_syncLock)
             {
@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
         }
 
-        internal List<PluginLogsSubscribeRequest> BuildLogsSubscriptionRequests()
+        public List<PluginLogsSubscribeRequest> BuildLogsSubscriptionRequests()
         {
             lock (_syncLock)
             {
@@ -70,7 +70,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         }
 
 
-        internal bool TryAddStatusSubscription(string pluginId)
+        public bool TryAddStatusSubscription(string pluginId)
         {
             lock (_syncLock)
             {
@@ -83,7 +83,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
         }
 
-        internal bool TryRemoveStatusSubscription(string pluginId)
+        public bool TryRemoveStatusSubscription(string pluginId)
         {
             lock (_syncLock)
             {
@@ -95,7 +95,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                 return true;
             }        }
 
-        internal List<PluginStatusSubscribeRequest> BuildStatusSubscriptionRequests()
+        public List<PluginStatusSubscribeRequest> BuildStatusSubscriptionRequests()
         {
             lock (_syncLock)
             {

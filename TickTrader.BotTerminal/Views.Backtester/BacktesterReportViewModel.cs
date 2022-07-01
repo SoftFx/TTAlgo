@@ -1,5 +1,5 @@
 ﻿using Machinarium.Var;
-using SciChart.Charting.Model.DataSeries;
+//using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,8 +15,8 @@ namespace TickTrader.BotTerminal
         private readonly VarContext _var = new VarContext();
         private Property<Dictionary<string, string>> _statProperties;
         private IntProperty _depositDigits;
-        private OhlcDataSeries<DateTime, double> _equityData;
-        private OhlcDataSeries<DateTime, double> _marginData;
+        //private OhlcDataSeries<DateTime, double> _equityData;
+        //private OhlcDataSeries<DateTime, double> _marginData;
 
         public BacktesterReportViewModel()
         {
@@ -37,8 +37,8 @@ namespace TickTrader.BotTerminal
             _statProperties.Value = null;
             SmallCharts.Clear();
             LargeCharts.Clear();
-            _equityData = null;
-            _marginData = null;
+            //_equityData = null;
+            //_marginData = null;
         }
 
         public void ShowReport(TestingStatistics newStats, PluginDescriptor descriptor, long? id)
@@ -101,21 +101,21 @@ namespace TickTrader.BotTerminal
             return props;
         }
 
-        public void AddEquityChart(OhlcDataSeries<DateTime, double> bars)
-        {
-            _equityData = bars;
-            var chart = new BacktesterStatChartViewModel("Equity", ReportDiagramTypes.CategoryDatetime);
-            chart.AddBarSeries(bars, ReportSeriesStyles.Equity);
-            LargeCharts.Add(chart);
-        }
+        //public void AddEquityChart(OhlcDataSeries<DateTime, double> bars)
+        //{
+        //    _equityData = bars;
+        //    var chart = new BacktesterStatChartViewModel("Equity", ReportDiagramTypes.CategoryDatetime);
+        //    chart.AddBarSeries(bars, ReportSeriesStyles.Equity);
+        //    LargeCharts.Add(chart);
+        //}
 
-        public void AddMarginChart(OhlcDataSeries<DateTime, double> bars)
-        {
-            _marginData = bars;
-            var chart = new BacktesterStatChartViewModel("Margin", ReportDiagramTypes.CategoryDatetime);
-            chart.AddBarSeries(bars, ReportSeriesStyles.Margin);
-            LargeCharts.Add(chart);
-        }
+        //public void AddMarginChart(OhlcDataSeries<DateTime, double> bars)
+        //{
+        //    _marginData = bars;
+        //    var chart = new BacktesterStatChartViewModel("Margin", ReportDiagramTypes.CategoryDatetime);
+        //    chart.AddBarSeries(bars, ReportSeriesStyles.Margin);
+        //    LargeCharts.Add(chart);
+        //}
 
         private static string Format(TimeSpan timeSpan)
         {

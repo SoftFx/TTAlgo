@@ -8,7 +8,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
 
-    <UserControl.Resources>
+    <!--<UserControl.Resources>
         <Style TargetType="s:SciChartSurface">
             <Setter Property="Background" Value="{DynamicResource ChartBackground}"/>
             <Setter Property="ChartModifier">
@@ -20,7 +20,7 @@
                                           ShowTooltip="True"
                                           TooltipContainerStyle="{DynamicResource SymbolChartCursorTooltip_Style}"
                                           IsEnabled="{Binding IsCrosshairEnabled.Value}"/>
-                        <!--<s:MouseWheelZoomModifier/>-->
+                        --><!--<s:MouseWheelZoomModifier/>--><!--
                         <s:ZoomPanModifier ClipModeX="None" XyDirection="XDirection"/>
                         <s:TooltipModifier ShowTooltipOn="Always"/>
                     </s:ModifierGroup>
@@ -68,5 +68,5 @@
                 <ResourceDictionary Source="SeriesView.xaml"/>
             </s:SciChartSurface.Resources>
         </s:SciChartSurface>
-    </Grid>
+    </Grid>-->
 </UserControl>

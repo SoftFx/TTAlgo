@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.IO;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 
@@ -75,5 +76,69 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Settings
             Algo = DefaultAlgoSettigns,
             Monitoring = DefaultMonitoringSettings,
         };
+
+
+        public static void EnsureValidConfiguration(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                SaveSettings(filePath, AppSettings.Default);
+            }
+            else
+            {
+                MigrateSettings(filePath);
+            }
+        }
+
+
+        private static void SaveSettings(string filePath, AppSettings appSettings)
+        {
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(appSettings, Formatting.Indented));
+        }
+
+        private static void MigrateSettings(string filePath)
+        {
+            var currentSettings = JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText(filePath));
+
+            var anyChanges = false;
+
+            if (currentSettings.Protocol == null)
+            {
+                currentSettings.Protocol = AppSettings.Default.Protocol;
+                anyChanges = true;
+            }
+
+            if (currentSettings.Credentials.Login != null)
+            {
+                var oldCreds = currentSettings.Credentials;
+                currentSettings.Credentials = AppSettings.Default.Credentials;
+                currentSettings.Credentials.AdminLogin = oldCreds.Login;
+                currentSettings.Credentials.AdminPassword = oldCreds.Password;
+                anyChanges = true;
+            }
+
+            if (currentSettings.Fdk == null)
+            {
+                currentSettings.Fdk = AppSettings.Default.Fdk;
+                anyChanges = true;
+            }
+
+            if (currentSettings.Algo == null)
+            {
+                currentSettings.Algo = AppSettings.Default.Algo;
+                anyChanges = true;
+            }
+
+            if (currentSettings.Monitoring == null)
+            {
+                currentSettings.Monitoring = AppSettings.Default.Monitoring;
+                anyChanges = true;
+            }
+
+            if (anyChanges)
+            {
+                SaveSettings(filePath, currentSettings);
+            }
+        }
     }
 }

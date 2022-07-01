@@ -48,5 +48,5 @@ LangString FinishPageRebootNeeded       ${LANG_ENGLISH} "Your computer should be
 LangString FinishPageRebootNow          ${LANG_ENGLISH} "Reboot now"
 LangString FinishPageRebootLater        ${LANG_ENGLISH} "I will manually reboot later"
 
-LangString FrameworkInstallFailure      ${LANG_ENGLISH} "Unable to download .NET Framework. App will be installed, but will not function without the Framework!"
-LangString FrameworkManualInstall       ${LANG_ENGLISH} "Setup was unable to download and install .NET Framework. You will need to install .NET Framework 4.6.2 manually."
+LangString SDKInstallFailure      ${LANG_ENGLISH} "Unable to download .NET SDK. App will be installed, but will not function without the SDK!"
+LangString SDKManualInstall       ${LANG_ENGLISH} "Setup was unable to download and install .NET SDK. You will need to install .NET 6 SDK manually."

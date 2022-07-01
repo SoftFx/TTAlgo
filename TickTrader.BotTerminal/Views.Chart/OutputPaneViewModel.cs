@@ -1,8 +1,8 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
-using SciChart.Charting.Model.ChartSeries;
-using SciChart.Charting.Visuals.Axes;
+//using SciChart.Charting.Model.ChartSeries;
+//using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,11 +24,11 @@ namespace TickTrader.BotTerminal
 
         public IPluginDataChartModel Chart { get; }
 
-        public AxisBase TimeAxis { get; private set; }
+        //public AxisBase TimeAxis { get; private set; }
 
         public IVarList<OutputSeriesModel> Outputs => _outputs;
 
-        public IObservableList<IRenderableSeriesViewModel> Series { get; private set; }
+        //public IObservableList<IRenderableSeriesViewModel> Series { get; private set; }
 
         public int Precision { get; private set; }
 
@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
             IsCrosshairEnabled = isCrosshairEnabled;
 
             _outputs = new VarList<OutputSeriesModel>();
-            Series = _outputs.Select(SeriesViewModel.FromOutputSeries).AsObservable();
+            //Series = _outputs.Select(SeriesViewModel.FromOutputSeries).AsObservable();
 
             ouputModels.Where(o => o.Descriptor.Target == target).ForEach(_outputs.Add);
 
@@ -56,9 +56,9 @@ namespace TickTrader.BotTerminal
 
         private void UpdateAxis()
         {
-            TimeAxis = Chart.CreateXAxis();
-            TimeAxis.Visibility = System.Windows.Visibility.Collapsed;
-            NotifyOfPropertyChange(nameof(TimeAxis));
+            //TimeAxis = Chart.CreateXAxis();
+            //TimeAxis.Visibility = System.Windows.Visibility.Collapsed;
+            //NotifyOfPropertyChange(nameof(TimeAxis));
         }
 
         private void UpdatePrecision()

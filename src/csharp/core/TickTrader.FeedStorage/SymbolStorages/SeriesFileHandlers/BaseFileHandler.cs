@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib.FileStreams;
 using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.FeedStorage.StorageBase
@@ -21,6 +22,8 @@ namespace TickTrader.FeedStorage.StorageBase
     {
         private const int PageSize = 4000;
 
+        private static readonly CultureInfo _currentFormat = CultureInfo.InvariantCulture;
+
         protected readonly BaseFileFormatter _formatter;
         protected readonly FeedStorageBase _storage;
         protected readonly FeedCacheKey _key;
@@ -28,7 +31,7 @@ namespace TickTrader.FeedStorage.StorageBase
         protected readonly string _timeFormat;
         protected readonly char _separator;
 
-        protected StreamWriter _writer;
+        protected CulturalStreamWriter _writer;
         protected StreamReader _reader;
 
 
@@ -67,7 +70,7 @@ namespace TickTrader.FeedStorage.StorageBase
 
             try
             {
-                using (_writer = new StreamWriter(File.Open(settings.FilePath, FileMode.Create)))
+                using (_writer = new CulturalStreamWriter(File.Open(settings.FilePath, FileMode.Create), _currentFormat))
                 {
                     PreloadLogic(_writer);
 
@@ -143,6 +146,9 @@ namespace TickTrader.FeedStorage.StorageBase
             return DateTime.SpecifyKind(DateTime.ParseExact(str, _timeFormat, CultureInfo.InvariantCulture), DateTimeKind.Utc);
         }
 
-        protected void ThrowFormatError(int lineNumber) => throw new Exception($"Invalid format at line {lineNumber}");
+
+        protected static double ReadDouble(string str) => double.Parse(str, _currentFormat);
+
+        protected static void ThrowFormatError(int lineNumber) => throw new Exception($"Invalid format at line {lineNumber}");
     }
 }

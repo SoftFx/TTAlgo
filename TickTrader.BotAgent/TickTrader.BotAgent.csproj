@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <AssemblyName>TickTrader.AlgoServer</AssemblyName>
     <OutputType>Exe</OutputType>
@@ -10,7 +10,6 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <PostBuildEvent></PostBuildEvent>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
-    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <Deterministic>false</Deterministic>
@@ -18,7 +17,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;DEBUG;NET462</DefineConstants>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
 
@@ -42,47 +40,30 @@
     </None>
     <ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Adapter\TickTrader.Algo.Server.PublicAPI.Adapter.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.Core" Version="2.36.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Rewrite" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />
-    <PackageReference Include="NLog" Version="4.7.7" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.10.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server" Version="2.46.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
+    <PackageReference Include="NLog" Version="4.7.15" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
     <PackageReference Include="Otp.NET" Version="1.2.2" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="4.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="4.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="4.0.1" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <Target Name="NpmInstall" BeforeTargets="PreComputeCompileTypeScriptWithTSConfig">
@@ -107,18 +88,18 @@
 
   <Target Name="CopyBinaries" AfterTargets="Build">
     <ItemGroup>
-      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host\bin\$(Configuration)\net6.0\*.*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)bin\runtime\" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="CopyBinariesForPublish" AfterTargets="AfterPublish">
     <ItemGroup>
-      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host\bin\$(Configuration)\net6.0\*.*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(PublishDir)\AlgoRuntime\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(PublishDir)bin\runtime\" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="RemoveLinuxLibs" AfterTargets="Build">

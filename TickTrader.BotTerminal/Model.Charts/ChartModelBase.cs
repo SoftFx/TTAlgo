@@ -1,62 +1,59 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using Machinarium.Var;
 using NLog;
-using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Data;
-using TickTrader.BotTerminal.Lib;
-using TickTrader.Algo.Core;
-using SciChart.Charting.Model.ChartSeries;
-using System.Collections.Specialized;
-using Machinarium.Var;
-using SM = Machinarium.State;
-using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Domain;
-using TickTrader.Algo.Server;
-using TickTrader.Algo.Package;
-using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Core.Subscriptions;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
+using TickTrader.BotTerminal.Controls.Chart;
+using TickTrader.BotTerminal.Lib;
+using SM = Machinarium.State;
 
 namespace TickTrader.BotTerminal
 {
-    public enum SelectableChartTypes { Candle, OHLC, Line, Mountain, DigitalLine, DigitalMountain, Scatter }
-    public enum TimelineTypes { Real, Uniform }
-
     internal abstract class ChartModelBase : PropertyChangedBase, IDisposable, IAlgoPluginHost, IAlgoSetupContext
     {
-        private Logger logger;
         private enum States { Idle, LoadingData, Online, Stopping, Closed, Faulted }
+
         private enum Events { Loaded, LoadFailed, Stopped }
 
-        private SM.StateMachine<States> stateController = new SM.StateMachine<States>(new DispatcherStateMachineSync());
-        private VarList<IRenderableSeriesViewModel> seriesCollection = new VarList<IRenderableSeriesViewModel>();
+
+        private readonly SM.StateMachine<States> _stateController = new(new DispatcherStateMachineSync());
+        private readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+        //private VarList<IRenderableSeriesViewModel> seriesCollection = new VarList<IRenderableSeriesViewModel>();
         private VarList<IndicatorModel> indicators = new VarList<IndicatorModel>();
-        private SelectableChartTypes chartType;
+        private ChartTypes chartType;
         private bool isIndicatorsOnline;
         private bool isLoading;
         private bool isUpdateRequired;
         private bool isConnected;
         private bool _isDisposed;
-        private readonly List<SelectableChartTypes> supportedChartTypes = new List<SelectableChartTypes>();
-        private ChartNavigator navigator;
+        //private readonly List<ChartTypes> supportedChartTypes = new List<ChartTypes>();
+        //private ChartNavigator navigator;
         private long indicatorNextId = 1;
-        private Property<AxisBase> _timeAxis = new Property<AxisBase>();
+        //private Property<AxisBase> _timeAxis = new Property<AxisBase>();
         private string dateAxisLabelFormat;
         private List<QuoteInfo> updateQueue;
         private IDisposable _subscription;
         private Property<IRateInfo> _currentRateProp = new Property<IRateInfo>();
         private Feed.Types.Timeframe _timeframe;
 
+        public abstract IEnumerable<ChartTypes> AvailableChartTypes { get; }
+
         public ChartModelBase(SymbolInfo symbol, AlgoEnvironment algoEnv)
         {
-            logger = NLog.LogManager.GetCurrentClassLogger();
             AlgoEnv = algoEnv;
-            this.Model = symbol;
+            Model = symbol;
 
             AvailableIndicators = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.IsIndicator).AsObservable();
             AvailableBotTraders = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.IsTradeBot).AsObservable();
@@ -64,7 +61,7 @@ namespace TickTrader.BotTerminal
             AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
             AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
 
-            this.isConnected = ClientModel.IsConnected.Value;
+            isConnected = ClientModel.IsConnected.Value;
             ClientModel.Connected += Connection_Connected;
             ClientModel.Disconnected += Connection_Disconnected;
             ClientModel.Deinitializing += Client_Deinitializing;
@@ -77,20 +74,20 @@ namespace TickTrader.BotTerminal
             Func<bool> isReadyToStart = () => isConnected && !_isDisposed;
             Func<bool> isNotReadyToStart = () => !isReadyToStart();
 
-            stateController.AddTransition(States.Idle, isReadyToStart, States.LoadingData);
-            stateController.AddTransition(States.LoadingData, Events.Loaded, States.Online);
-            stateController.AddTransition(States.LoadingData, Events.LoadFailed, States.Faulted);
-            stateController.AddTransition(States.Online, () => isUpdateRequired || !isConnected || _isDisposed, States.Stopping);
-            stateController.AddTransition(States.Faulted, () => isUpdateRequired || !isConnected || _isDisposed, States.Stopping);
+            _stateController.AddTransition(States.Idle, isReadyToStart, States.LoadingData);
+            _stateController.AddTransition(States.LoadingData, Events.Loaded, States.Online);
+            _stateController.AddTransition(States.LoadingData, Events.LoadFailed, States.Faulted);
+            _stateController.AddTransition(States.Online, () => isUpdateRequired || !isConnected || _isDisposed, States.Stopping);
+            _stateController.AddTransition(States.Faulted, () => isUpdateRequired || !isConnected || _isDisposed, States.Stopping);
             //stateController.AddTransition(States.Stopping, () => isUpdateRequired && isConnected, States.LoadingData);
-            stateController.AddTransition(States.Stopping, Events.Stopped, isNotReadyToStart, States.Idle);
-            stateController.AddTransition(States.Stopping, Events.Stopped, isReadyToStart, States.LoadingData);
+            _stateController.AddTransition(States.Stopping, Events.Stopped, isNotReadyToStart, States.Idle);
+            _stateController.AddTransition(States.Stopping, Events.Stopped, isReadyToStart, States.LoadingData);
 
-            stateController.OnEnter(States.LoadingData, () => Update(CancellationToken.None));
-            stateController.OnEnter(States.Online, StartIndicators);
-            stateController.OnEnter(States.Stopping, StopIndicators);
+            _stateController.OnEnter(States.LoadingData, () => Update(CancellationToken.None));
+            _stateController.OnEnter(States.Online, StartIndicators);
+            _stateController.OnEnter(States.Stopping, StopIndicators);
 
-            stateController.StateChanged += (o, n) => logger.Debug("Chart [" + Model.Name + "] " + o + " => " + n);
+            _stateController.StateChanged += (o, n) => _logger.Debug("Chart [" + Model.Name + "] " + o + " => " + n);
         }
 
         protected LocalAlgoAgent Agent => AlgoEnv.LocalAgent;
@@ -98,7 +95,7 @@ namespace TickTrader.BotTerminal
         protected TraderClientModel ClientModel => Agent.ClientModel;
         protected AlgoEnvironment AlgoEnv { get; }
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
-        protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
+        //protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
         public Feed.Types.Timeframe TimeFrame
         {
@@ -113,14 +110,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public abstract ITimeVectorRef TimeSyncRef { get; }
-        public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
+        public ITimeVectorRef TimeSyncRef { get; }
+        //public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableList<AlgoPluginViewModel> AvailableIndicators { get; private set; }
         public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
         public IObservableList<AlgoPluginViewModel> AvailableBotTraders { get; private set; }
         public bool HasAvailableBotTraders => AvailableBotTraders.Count() > 0;
         public IVarList<IndicatorModel> Indicators { get { return indicators; } }
-        public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
+        //public IEnumerable<ChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
         public Var<IRateInfo> CurrentRate => _currentRateProp.Var;
         public bool IsIndicatorsOnline => isIndicatorsOnline;
@@ -129,7 +126,7 @@ namespace TickTrader.BotTerminal
 
         protected void Activate()
         {
-            stateController.ModifyConditions(() => isUpdateRequired = true);
+            _stateController.ModifyConditions(() => isUpdateRequired = true);
         }
 
         //protected void AddSeries(IRenderableSeriesViewModel series)
@@ -157,28 +154,28 @@ namespace TickTrader.BotTerminal
 
         public bool IsReady { get { return !IsLoading; } }
 
-        public ChartNavigator Navigator
-        {
-            get { return navigator; }
-            protected set
-            {
-                navigator = value;
-                _timeAxis.Value = value.CreateAxis();
-                CreateXAxisBinging(TimeAxis.Value);
-            }
-        }
+        //public ChartNavigator Navigator
+        //{
+        //    get { return navigator; }
+        //    protected set
+        //    {
+        //        navigator = value;
+        //        //_timeAxis.Value = value.CreateAxis();
+        //        //CreateXAxisBinging(TimeAxis.Value);
+        //    }
+        //}
 
-        public void CreateXAxisBinging(AxisBase timeAxis)
-        {
-            Binding cursorTextFormatBinding = new Binding(nameof(DateAxisLabelFormat));
-            cursorTextFormatBinding.Source = this;
-            cursorTextFormatBinding.Mode = BindingMode.TwoWay;
-            timeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
-        }
+        //public void CreateXAxisBinging(AxisBase timeAxis)
+        //{
+        //    Binding cursorTextFormatBinding = new Binding(nameof(DateAxisLabelFormat));
+        //    cursorTextFormatBinding.Source = this;
+        //    cursorTextFormatBinding.Mode = BindingMode.TwoWay;
+        //    timeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
+        //}
 
-        public Var<AxisBase> TimeAxis => _timeAxis.Var;
+        //public Var<AxisBase> TimeAxis => _timeAxis.Var;
 
-        public SelectableChartTypes SelectedChartType
+        public ChartTypes SelectedChartType
         {
             get { return chartType; }
             set
@@ -236,10 +233,10 @@ namespace TickTrader.BotTerminal
         protected abstract IndicatorModel CreateIndicator(PluginConfig config);
         protected abstract void ApplyUpdate(QuoteInfo update);
 
-        protected void Support(SelectableChartTypes chartType)
-        {
-            this.supportedChartTypes.Add(chartType);
-        }
+        //protected void Support(ChartTypes chartType)
+        //{
+        //    this.supportedChartTypes.Add(chartType);
+        //}
 
         private async void Update(CancellationToken cToken)
         {
@@ -252,17 +249,17 @@ namespace TickTrader.BotTerminal
                 updateQueue = new List<QuoteInfo>();
                 await LoadData(cToken);
                 ApplyQueue();
-                stateController.PushEvent(Events.Loaded);
+                _stateController.PushEvent(Events.Loaded);
             }
             catch (Exception ex)
             {
                 var fex = ex.FlattenAsPossible();
 
                 if (fex is InteropException)
-                    logger.Info("Chart[" + Model.Name + "] : load failed due disconnection.");
+                    _logger.Info("Chart[" + Model.Name + "] : load failed due disconnection.");
                 else
-                    logger.Error("Update ERROR " + ex);
-                stateController.PushEvent(Events.LoadFailed);
+                    _logger.Error("Update ERROR " + ex);
+                _stateController.PushEvent(Events.LoadFailed);
             }
 
             this.IsLoading = false;
@@ -273,7 +270,7 @@ namespace TickTrader.BotTerminal
             TimelineStart = startDate;
             TimelineEnd = endDate;
             //Navigator.Init(count, startDate, endDate);
-            Navigator.OnDataLoaded(count, startDate, endDate);
+            //Navigator.OnDataLoaded(count, startDate, endDate);
         }
 
         protected void ExtendBoundaries(int count, DateTime endDate)
@@ -289,13 +286,13 @@ namespace TickTrader.BotTerminal
 
         private void Connection_Connected()
         {
-            stateController.ModifyConditions(() => isConnected = true);
+            _stateController.ModifyConditions(() => isConnected = true);
             Connected?.Invoke();
         }
 
         private Task Client_Deinitializing(object sender, CancellationToken cancelToken)
         {
-            return stateController.ModifyConditionsAndWait(() => isConnected = false, States.Idle);
+            return _stateController.ModifyConditionsAndWait(() => isConnected = false, States.Idle);
         }
 
         private void AvailableIndicators_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -314,7 +311,7 @@ namespace TickTrader.BotTerminal
             {
                 try
                 {
-                    await stateController.ModifyConditionsAndWait(() => _isDisposed = true, States.Idle);
+                    await _stateController.ModifyConditionsAndWait(() => _isDisposed = true, States.Idle);
 
                     AvailableIndicators.CollectionChanged -= AvailableIndicators_CollectionChanged;
                     AvailableBotTraders.CollectionChanged -= AvailableBotTraders_CollectionChanged;
@@ -322,20 +319,20 @@ namespace TickTrader.BotTerminal
                     AvailableBotTraders.Dispose();
                     _subscription.Dispose();
 
-                    logger.Debug("Chart[" + Model.Name + "] disposed!");
+                    _logger.Debug("Chart[" + Model.Name + "] disposed!");
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex, "Dispose failed: " + ex.Message);
+                    _logger.Error(ex, "Dispose failed: " + ex.Message);
                 }
             }
         }
 
         protected virtual void OnRateUpdate(QuoteInfo tick)
         {
-            if (stateController.Current == States.LoadingData)
+            if (_stateController.Current == States.LoadingData)
                 updateQueue.Add(tick);
-            else if (stateController.Current == States.Online)
+            else if (_stateController.Current == States.Online)
                 ApplyUpdate(tick);
 
             _currentRateProp.Value = tick;
@@ -357,17 +354,17 @@ namespace TickTrader.BotTerminal
         {
             isIndicatorsOnline = false;
             await StopEvent.InvokeAsync(this);
-            stateController.PushEvent(Events.Stopped);
+            _stateController.PushEvent(Events.Stopped);
         }
 
         #region IAlgoPluginHost
 
-        AxisBase IPluginDataChartModel.CreateXAxis()
-        {
-            var axis = Navigator.CreateAxis();
-            CreateXAxisBinging(axis);
-            return axis;
-        }
+        //AxisBase IPluginDataChartModel.CreateXAxis()
+        //{
+        //    var axis =  Navigator.CreateAxis();
+        //    CreateXAxisBinging(axis);
+        //    return axis;
+        //}
 
         void IAlgoPluginHost.Lock()
         {

@@ -1,5 +1,5 @@
 ﻿using Machinarium.Qnil;
-using SciChart.Charting.Visuals.Axes;
+//using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -97,7 +97,7 @@ namespace TickTrader.BotTerminal
     {
         ITimeVectorRef TimeSyncRef { get; }
 
-        AxisBase CreateXAxis();
+        //AxisBase CreateXAxis();
     }
 
     internal interface IAlgoPluginHost : IPluginDataChartModel

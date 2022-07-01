@@ -102,7 +102,7 @@ Function DirectoryPageCreate
     Pop $Void
 
     StrCpy $OffsetY "36"
-    
+
     ${If} $Terminal_CoreSelected == ${TRUE}
 
         ${NSD_CreateGroupBox} 0 "$OffsetYu" 100% 36u "${TERMINAL_NAME} Folder"
@@ -202,7 +202,7 @@ Function ShortcutPageCreate
         ${EndIf}
 
         StrCpy $OffsetY "0"
-        
+
         ${If} $Terminal_DesktopSelected == ${TRUE}
         ${OrIf} $Terminal_StartMenuSelected == ${TRUE}
 
@@ -294,15 +294,15 @@ Function FinishPageCreate
 
     StrCpy $OffsetY "90"
 
-    ${If} $Framework_Installed == ${FALSE}
+    ${If} $SDK_Installed == ${FALSE}
 
-        ${NSD_CreateLabel} 120u "$OffsetYu" -130u -100u "$(FrameworkManualInstall)"
+        ${NSD_CreateLabel} 120u "$OffsetYu" -130u -100u "$(SDKManualInstall)"
         Pop $Void
         SetCtlColors $Void "ff0000" "ffffff"
 
     ${Else}
 
-        ${If} $Framework_RebootNeeded == ${TRUE}
+        ${If} $SDK_RebootNeeded == ${TRUE}
 
             ${NSD_CreateLabel} 120u "$OffsetYu" -130u 24u "$(FinishPageRebootNeeded)"
             Pop $Void
@@ -373,7 +373,7 @@ FunctionEnd
 
 Function FinishPageLeave
 
-    ${If} $Framework_RebootNeeded == ${TRUE}
+    ${If} $SDK_RebootNeeded == ${TRUE}
 
         ${NSD_GetState} $RebootNowRadioButton $Void
         ${If} $Void == ${BST_CHECKED}

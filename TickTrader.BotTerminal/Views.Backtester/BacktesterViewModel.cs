@@ -2,7 +2,7 @@
 using Machinarium.Var;
 using Microsoft.Win32;
 using NLog;
-using SciChart.Charting.Model.DataSeries;
+//using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -73,8 +73,8 @@ namespace TickTrader.BotTerminal
             {
                 ResultsPage.Clear();
                 ResultsPage.ShowReport(r.Stats, _descriptorCache, r.Config.Id);
-                ResultsPage.AddEquityChart(Convert(r.Equity));
-                ResultsPage.AddMarginChart(Convert(r.Margin));
+                //ResultsPage.AddEquityChart(Convert(r.Equity));
+                //ResultsPage.AddMarginChart(Convert(r.Margin));
                 await ActivateItemAsync(ResultsPage);
                 //ActivateItem(ResultsPage);
             };
@@ -360,21 +360,21 @@ namespace TickTrader.BotTerminal
             if (results.Feed.TryGetValue(mainSymbol, out var mainBars))
             {
                 observer.SetMessage("Loading feed chart data ...");
-                await ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
-                await ChartPage.LoadOutputs(config, results);
+                ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
+                //await ChartPage.LoadOutputs(config, results);
             }
 
             if (results.PluginInfo.IsTradeBot)
             {
                 observer.SetMessage("Loading equity chart data...");
-                var equityChartData = await LoadBarSeriesAsync(results.Equity);
+                //var equityChartData = await LoadBarSeriesAsync(results.Equity);
 
-                ResultsPage.AddEquityChart(equityChartData);
+                //ResultsPage.AddEquityChart(equityChartData);
 
-                observer.SetMessage("Loading margin chart data...");
-                var marginChartData = await LoadBarSeriesAsync(results.Margin);
+                //observer.SetMessage("Loading margin chart data...");
+                //var marginChartData = await LoadBarSeriesAsync(results.Margin);
 
-                ResultsPage.AddMarginChart(marginChartData);
+                //ResultsPage.AddMarginChart(marginChartData);
             }
 
             //ChartPage.SetFeedSeries(feedChartData);
@@ -382,34 +382,34 @@ namespace TickTrader.BotTerminal
             //ChartPage.SetMarginSeries(marginChartData);
         }
 
-        private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IEnumerable<BarData> src)
-        {
-            return Task.Run(() =>
-            {
-                var chartData = new OhlcDataSeries<DateTime, double>();
+        //private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IEnumerable<BarData> src)
+        //{
+        //    return Task.Run(() =>
+        //    {
+        //        var chartData = new OhlcDataSeries<DateTime, double>();
 
-                foreach (var bar in src)
-                {
-                    if (!double.IsNaN(bar.Open))
-                        chartData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
-                }
+        //        foreach (var bar in src)
+        //        {
+        //            if (!double.IsNaN(bar.Open))
+        //                chartData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
+        //        }
 
-                return chartData;
-            });
-        }
+        //        return chartData;
+        //    });
+        //}
 
-        private OhlcDataSeries<DateTime, double> Convert(IEnumerable<BarData> bars)
-        {
-            var chartData = new OhlcDataSeries<DateTime, double>();
+        //private OhlcDataSeries<DateTime, double> Convert(IEnumerable<BarData> bars)
+        //{
+        //    var chartData = new OhlcDataSeries<DateTime, double>();
 
-            foreach (var bar in bars)
-            {
-                if (!double.IsNaN(bar.Open))
-                    chartData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
-            }
+        //    foreach (var bar in bars)
+        //    {
+        //        if (!double.IsNaN(bar.Open))
+        //            chartData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
+        //    }
 
-            return chartData;
-        }
+        //    return chartData;
+        //}
 
         public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {

@@ -6,6 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.VS2013;component/LightTheme.xaml"/>
 
                 <!-- Caliburn bootstrapper-->
                 <ResourceDictionary>

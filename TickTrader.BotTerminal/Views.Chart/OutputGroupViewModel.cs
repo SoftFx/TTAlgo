@@ -1,7 +1,7 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
-using SciChart.Charting.Model.ChartSeries;
+//using SciChart.Charting.Model.ChartSeries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
         private List<OutputSeriesModel> _outputModels;
         private ISymbolInfo _symbol;
         private VarList<OutputSeriesModel> _overlayOutputs;
-        private VarList<IRenderableSeriesViewModel> _overlaySeries;
+        //private VarList<IRenderableSeriesViewModel> _overlaySeries;
         private VarList<OutputPaneViewModel> _panes;
         private BoolVar _isCrosshairEnabled;
 
@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
 
         public IVarList<OutputPaneViewModel> Panes => _panes;
 
-        public IVarList<IRenderableSeriesViewModel> OverlaySeries => _overlaySeries;
+        //public IVarList<IRenderableSeriesViewModel> OverlaySeries => _overlaySeries;
 
         public int Precision { get; private set; }
 
@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
 
             _overlayOutputs = new VarList<OutputSeriesModel>();
             _panes = new VarList<OutputPaneViewModel>();
-            _overlaySeries = new VarList<IRenderableSeriesViewModel>();
+            //_overlaySeries = new VarList<IRenderableSeriesViewModel>();
 
             Init();
 
@@ -65,10 +65,10 @@ namespace TickTrader.BotTerminal
         {
             DisposeOutputModels();
 
-            _outputModels = CreateOutputModels(Model).ToList();
+            //_outputModels = CreateOutputModels(Model).ToList();
 
             _outputModels.Where(o => o.Descriptor.Target == Metadata.Types.OutputTarget.Overlay).ForEach(_overlayOutputs.Add);
-            _overlayOutputs.Values.ForEach(o => _overlaySeries.Add(SeriesViewModel.FromOutputSeries(o)));
+            //_overlayOutputs.Values.ForEach(o => _overlaySeries.Add(SeriesViewModel.FromOutputSeries(o)));
 
             foreach (Metadata.Types.OutputTarget target in Enum.GetValues(typeof(Metadata.Types.OutputTarget)))
             {
@@ -93,18 +93,18 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private IEnumerable<OutputSeriesModel> CreateOutputModels(IPluginModel plugin)
-        {
-            foreach (var outputCollector in plugin.Outputs.Values)
-            {
-                var config = outputCollector.OutputConfig;
+        //private IEnumerable<OutputSeriesModel> CreateOutputModels(IPluginModel plugin)
+        //{
+        //    //foreach (var outputCollector in plugin.Outputs.Values)
+        //    //{
+        //    //    var config = outputCollector.OutputConfig;
 
-                if (config is ColoredLineOutputConfig)
-                    yield return new DoubleSeriesModel(_chart, outputCollector);
-                else if (config is MarkerSeriesOutputConfig)
-                    yield return new MarkerSeriesModel(_chart, outputCollector);
-            }
-        }
+        //    //    if (config is ColoredLineOutputConfig)
+        //    //        yield return new DoubleSeriesModel(_chart, outputCollector);
+        //    //    else if (config is MarkerSeriesOutputConfig)
+        //    //        yield return new MarkerSeriesModel(_chart, outputCollector);
+        //    //}
+        //}
 
         private void UpdatePrecision()
         {
@@ -121,7 +121,7 @@ namespace TickTrader.BotTerminal
             Execute.OnUIThread(() =>
             {
                 _overlayOutputs.Clear();
-                _overlaySeries.Clear();
+                //_overlaySeries.Clear();
                 _panes.Clear();
                 Init();
             });

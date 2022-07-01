@@ -1,7 +1,7 @@
 var path = require('path');
 var webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const Uglify = require("uglifyjs-webpack-plugin");
 
 var config = {
     entry:
@@ -80,7 +80,7 @@ var config = {
 module.exports = (env, argv) => {
     if (argv.mode === 'production') {
         config.devtool = false;
-        config.plugins.push(new UglifyJsPlugin())
+        config.plugins.push(new Uglify())
     }
 
     return config;

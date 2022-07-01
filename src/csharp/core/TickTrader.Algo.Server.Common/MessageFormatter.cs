@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Server.Common
     public class MessageFormatter
     {
         private static readonly string[] ExcludedFields = new[] { "password", "binary" };
-        private static readonly string[] EscapedMessages = new[] { "chunk" };
+        private static readonly string[] EscapedMessages = new[] { "data" };
 
 
         private JsonFormatter _formatter;
@@ -22,53 +22,26 @@ namespace TickTrader.Algo.Server.Common
 
         public MessageFormatter(FileDescriptor serviceDescriptor)
         {
-            _formatter = new JsonFormatter(new JsonFormatter.Settings(true, TypeRegistry.FromFiles(serviceDescriptor))); //передача
+            _formatter = new JsonFormatter(new JsonFormatter.Settings(true, TypeRegistry.FromFiles(serviceDescriptor)));
         }
 
 
-        public string ToJson(IMessage message)
-        {
-            return $"{message.Descriptor.Name}: {Format(message)}";
-        }
+        public string ToJson(IMessage message) => message == null ? "{null}" : $"{message.Descriptor.Name}: {Format(message)}";
 
-        public void LogClientRequest(ILogger logger, IMessage request)
-        {
-            if (LogMessages && logger != null)
-            {
-                logger.Info($"client > {request.Descriptor.Name}: {Format(request)}");
-            }
-        }
+        public void LogMsgFromClient(ILogger logger, IMessage msg) => LogMessageInternal("client >", logger, msg);
 
-        public void LogClientResponse(ILogger logger, IMessage request)
-        {
-            if (LogMessages && logger != null)
-            {
-                logger.Info($"client < {request.Descriptor.Name}: {Format(request)}");
-            }
-        }
+        public void LogMsgToClient(ILogger logger, IMessage msg) => LogMessageInternal("client <", logger, msg);
 
-        public void LogServerRequest(ILogger logger, IMessage request)
-        {
-            if (LogMessages && logger != null)
-            {
-                logger.Info($"server < {request.Descriptor.Name}: {Format(request)}");
-            }
-        }
+        public void LogMsgToServer(ILogger logger, IMessage msg) => LogMessageInternal("server <", logger, msg);
 
-        public void LogServerResponse(ILogger logger, IMessage request)
-        {
-            if (LogMessages && logger != null)
-            {
-                logger.Info($"server > {request.Descriptor.Name}: {Format(request)}");
-            }
-        }
+        public void LogMsgFromServer(ILogger logger, IMessage msg) => LogMessageInternal("server >", logger, msg);
 
-        public string FormatServerUpdate(IMessage update, int packedSize, bool compressed)
+        public string FormatUpdateToClient(IMessage update, int packedSize, bool compressed)
         {
             if (!LogMessages)
                 return null;
 
-            return $"server > {update.Descriptor.Name}({packedSize} bytes{(compressed ? ", compressed" : "")}): {Format(update)}";
+            return $"client < {update.Descriptor.Name}({packedSize} bytes{(compressed ? ", compressed" : "")}): {Format(update)}";
         }
 
 
@@ -83,6 +56,14 @@ namespace TickTrader.Algo.Server.Common
             RestoreMessage(msg, escapedFields);
 
             return res;
+        }
+
+        private void LogMessageInternal(string prefix, ILogger logger, IMessage msg)
+        {
+            if (LogMessages && logger != null)
+            {
+                logger.Info($"{prefix} {msg.Descriptor.Name}: {Format(msg)}");
+            }
         }
 
         private void EscapeMessage(IMessage msg, Dictionary<IFieldAccessor, object> escapedFields)

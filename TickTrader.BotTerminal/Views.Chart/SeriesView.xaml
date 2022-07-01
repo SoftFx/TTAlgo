@@ -3,17 +3,17 @@
                     xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <DataTemplate x:Key="MarkerTooltipTemplate" DataType="s:XySeriesInfo">
+    <!--<DataTemplate x:Key="MarkerTooltipTemplate" DataType="s:XySeriesInfo">
         <TextBlock Text="{Binding PointMetadata.Text}" FontSize="12" Margin="3"/>
-    </DataTemplate>
+    </DataTemplate>-->
 
-    <ControlTemplate x:Key="MarkerTooltipPanel_Template" TargetType="s:TooltipControl">
+    <!--<ControlTemplate x:Key="MarkerTooltipPanel_Template" TargetType="s:TooltipControl">
         <Border Background="{TemplateBinding Background}" Opacity="0.8" CornerRadius="4" Grid.IsSharedSizeScope="True">
             <ContentPresenter Content="{TemplateBinding DataContext}" ContentTemplate="{TemplateBinding ContentTemplate}" />
         </Border>
-    </ControlTemplate>
+    </ControlTemplate>-->
 
-    <Style x:Key="MarkerTooltipPanelStyle" TargetType="s:TooltipControl">
+    <!--<Style x:Key="MarkerTooltipPanelStyle" TargetType="s:TooltipControl">
         <Setter Property="Template" Value="{StaticResource MarkerTooltipPanel_Template}"/>
         <Setter Property="Background" Value="{DynamicResource Shell_BackgroundBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
@@ -31,7 +31,7 @@
 
     <Style x:Key="IndicatorSeriesStyle_Histogram" TargetType="s:FastColumnRenderableSeries">
         <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
-        <!--<Setter Property="StrokeThickness" Value="0.5"/>-->
+        --><!--<Setter Property="StrokeThickness" Value="0.5"/>--><!--
         <Setter Property="DataPointWidth" Value="0" />
     </Style>
 
@@ -75,25 +75,25 @@
     <Style x:Key="TickChart_LineStyle_Ask" TargetType="s:FastLineRenderableSeries">
         <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
         <Setter Property="Stroke" Value="#009344"/>
-        <!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />-->
+        --><!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />--><!--
     </Style>
 
     <Style x:Key="TickChart_LineStyle_Bid" TargetType="s:FastLineRenderableSeries">
         <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
         <Setter Property="Stroke" Value="#F15923"/>
-        <!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />-->
+        --><!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />--><!--
     </Style>
 
     <Style x:Key="TickChart_DigitalLineStyle_Ask" TargetType="s:FastLineRenderableSeries">
         <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
         <Setter Property="Stroke" Value="#009344"/>
-        <!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />-->
+        --><!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />--><!--
     </Style>
 
     <Style x:Key="TickChart_DigitalLineStyle_Bid" TargetType="s:FastLineRenderableSeries">
         <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
         <Setter Property="Stroke" Value="#F15923"/>
-        <!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />-->
+        --><!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />--><!--
     </Style>
 
     <Style x:Key="TickChart_ScatterStyle_Ask" TargetType="s:XyScatterRenderableSeries">
@@ -103,7 +103,7 @@
                 <s:EllipsePointMarker Width="4" Height="4" Fill="#009344" Stroke="#009344" StrokeThickness="2"/>
             </Setter.Value>
         </Setter>
-        <!--<Setter Property="Stroke" Value="{DynamicResource RateDownColor}" />-->
+        --><!--<Setter Property="Stroke" Value="{DynamicResource RateDownColor}" />--><!--
     </Style>
 
     <Style x:Key="TickChart_ScatterStyle_Bid" TargetType="s:XyScatterRenderableSeries">
@@ -113,8 +113,8 @@
                 <s:EllipsePointMarker Width="4" Height="4" Fill="#F15923" Stroke="#F15923" StrokeThickness="2"/>
             </Setter.Value>
         </Setter>
-        <!--<Setter Property="Stroke" Value="{DynamicResource RateDownColor}" />-->
-    </Style>
+        --><!--<Setter Property="Stroke" Value="{DynamicResource RateDownColor}" />--><!--
+    </Style>-->
 
 
 </ResourceDictionary>

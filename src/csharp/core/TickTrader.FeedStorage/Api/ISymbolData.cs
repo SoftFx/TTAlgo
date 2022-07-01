@@ -11,6 +11,25 @@ namespace TickTrader.FeedStorage.Api
         string Name { get; }
 
         SymbolConfig.Types.SymbolOrigin Origin { get; }
+
+
+        int IComparable<ISymbolKey>.CompareTo(ISymbolKey other)
+        {
+            if (Origin == other.Origin)
+                return Name.CompareTo(other.Name);
+            else
+                return Origin.CompareTo(other.Origin);
+        }
+
+
+        public sealed new bool Equals(ISymbolKey other) => (Name, Origin).Equals((other.Name, other.Origin));
+
+        public sealed int GetHashCode()
+        {
+            return Algo.Core.Lib.HashCode.GetComposite(Name, Origin);
+        }
+
+        bool IEquatable<ISymbolKey>.Equals(ISymbolKey other) => Equals(other); // for interface copability
     }
 
 
