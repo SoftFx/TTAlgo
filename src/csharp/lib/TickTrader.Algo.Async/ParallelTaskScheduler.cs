@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Async
         static ParallelTaskScheduler()
         {
             var shortConcurrencyLevel = Math.Max(Environment.ProcessorCount / 2, 2);
-            var longConcurrencyLevel = Math.Min(Environment.ProcessorCount / 2, 2);
+            var longConcurrencyLevel = Math.Max(1, Math.Min(Environment.ProcessorCount / 2, 2));
 
             ShortRunning = new LimitedConcurrencyLevelTaskScheduler(shortConcurrencyLevel);
             LongRunning = new LimitedConcurrencyLevelTaskScheduler(longConcurrencyLevel);
