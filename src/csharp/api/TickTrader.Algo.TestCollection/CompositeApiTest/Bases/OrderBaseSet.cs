@@ -58,7 +58,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        public static void FillBaseParameters(CompositeTradeApiTest bot)
+        public static void InitTemplate(CompositeTradeApiTest bot)
         {
             BaseOrderVolume = bot.DefaultOrderVolume;
             AccountType = bot.Account.Type;

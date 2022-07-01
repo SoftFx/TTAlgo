@@ -53,9 +53,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected override void Init()
         {
-            OrderBaseSet.FillBaseParameters(this);
             TestGroupBase.Bot = this;
             StatManagerFactory.Bot = this;
+
+            Events.Init(Account.Type);
+            OrderBaseSet.InitTemplate(this);
         }
 
         protected async override void OnStart()

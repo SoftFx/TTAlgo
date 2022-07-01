@@ -102,11 +102,20 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             Volume = volume;
         }
 
-        internal OrderStateTemplate WithOCO(OrderStateTemplate mainOrder)
+        internal OrderStateTemplate WithOCO(OrderTemplate mainOrder)
         {
-            Options |= OrderExecOptions.OneCancelsTheOther;
-            OcoRelatedOrderId = mainOrder.Id;
-            RelatedOcoTemplate = mainOrder;
+            void SetOCO(OrderTemplate main, OrderTemplate oco)
+            {
+                if (!main.Options.HasFlag(OrderExecOptions.OneCancelsTheOther))
+                {
+                    main.Options |= OrderExecOptions.OneCancelsTheOther;
+                    main.OcoRelatedOrderId = oco.Id;
+                    main.RelatedOcoTemplate = (OrderStateTemplate)oco;
+                }
+            }
+
+            SetOCO(mainOrder, this);
+            SetOCO(this, mainOrder);
 
             return (OrderStateTemplate)this;
         }
@@ -136,9 +145,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal OrderStateTemplate WithRemovedOCO()
         {
-            Options &= ~OrderExecOptions.OneCancelsTheOther;
-            OcoRelatedOrderId = null;
-            RelatedOcoTemplate = null;
+            void RemoveOCO(OrderTemplate order)
+            {
+                order.Options &= ~OrderExecOptions.OneCancelsTheOther;
+                order.OcoRelatedOrderId = null;
+                order.RelatedOcoTemplate = null;
+            }
+
+            RemoveOCO(RelatedOcoTemplate);
+            RemoveOCO(this);
 
             return (OrderStateTemplate)this;
         }

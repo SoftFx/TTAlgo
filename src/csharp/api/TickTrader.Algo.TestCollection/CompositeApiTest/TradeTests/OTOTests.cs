@@ -6,21 +6,19 @@ using TriggerType = TickTrader.Algo.Api.ContingentOrderTrigger.TriggerType;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    internal sealed class OTOTests : TestGroupBase
+    internal sealed class OTOTests : OCOTests
     {
-        private readonly bool _useOCO, _useAD;
+        private readonly bool _useOCO;
 
         private delegate Task TriggerTimeTest(OrderStateTemplate order);
         private delegate Task TriggerTest(OrderStateTemplate order, OrderStateTemplate trigger);
-        private delegate Task OCOwithOTOTest(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder);
 
         protected override string GroupName => nameof(OTOTests);
 
 
-        internal OTOTests(bool useOCO, bool useAD)
+        internal OTOTests(bool useOCO, bool useAD) : base(useAD)
         {
             _useOCO = useOCO;
-            _useAD = useAD;
         }
 
 
@@ -80,7 +78,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             await TestOpenOrder(order.WithExpiration(5));
             await TestOpenOrder(trigger.WithOnExpiredTrigger(order));
-            await TestCancelOrder(order, OrderEvents.Cancel);
+            await TestCancelOrder(order, Events.Cancel);
             await trigger.Canceled.Task;
         }
 
@@ -92,7 +90,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private async Task OpenAndTriggeredExpiredTrigger(OrderStateTemplate order, OrderStateTemplate trigger)
         {
             await TestOpenOrder(order.WithExpiration(5));
-            await TestOpenOrder(trigger.WithOnExpiredTrigger(order), OrderEvents.Expire, OrderEvents.Cancel, OrderEvents.Open);
+            await TestOpenOrder(trigger.WithOnExpiredTrigger(order), Events.Expire, Events.Cancel, Events.Open);
             await TestCancelOrder(trigger);
         }
 
@@ -123,7 +121,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await TestOpenOrder(trigger.WithOnExpiredTrigger(order));
 
             order.Comment = ADComments.ADCommentsList.WithActivate;
-            await TestModifyOrder(order, OrderEvents.Cancel);
+            await TestModifyOrder(order, Events.Cancel);
             await trigger.Canceled.Task;
         }
 
@@ -155,16 +153,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task RunOnTimeModifyTests(OrderBaseSet set)
         {
-            //await RunOnTimeTest(ModifyOnTimeTest, set, 30); wait fix on TTS side
+            await RunOnTimeTest(ModifyOnTimeTest, set, 30); //wait fix on TTS side
             await RunOnTimeTest(ModifyPropertyTest, set);
 
-            //await RunOnTimeTest(RejectModifyOnTime, set, 30); wait fix on TTS side
+            await RunOnTimeTest(RejectModifyTriggerTime, set, 30); //wait fix on TTS side
 
             if (!set.IsInstantOrder)
                 await RunOnTimeTest(RejectModifyExpiration, set);
 
-            //if (set.IsSupportedOCO)
-            //    await RunOnTimeOCOModifyTests(set); # wait TTs fix
+            if (set.IsSupportedOCO)
+                await RunOnTimeOCOModifyTests(set);// # wait TTs fix
 
             await RunModifyTriggerType(set, TriggerType.OnTime);
         }
@@ -268,11 +266,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             var ocoSet = new OrderBaseSet(OrderType.Stop, set.Side);
 
-            await RunOCOTriggerTest(CreateOnTimeOCOLinkViaModify, set, ocoSet, false);
-            await RunOCOTriggerTest(CreateOnTimeOCOLinkViaModify, set, ocoSet, true);
+            await RunOCOTest(CreateOnTimeOCOLinkViaModify, set, ocoSet, false);
+            await RunOCOTest(CreateOnTimeOCOLinkViaModify, set, ocoSet, true);
 
-            await RunOCOTriggerTest(BreakOnTimeOCOLinkViaModify, set, ocoSet, false);
-            await RunOCOTriggerTest(BreakOnTimeOCOLinkViaModify, set, ocoSet, true);
+            await RunOCOTest(BreakOnTimeOCOLinkViaModify, set, ocoSet, false);
+            await RunOCOTest(BreakOnTimeOCOLinkViaModify, set, ocoSet, true);
         }
 
         private async Task CreateOnTimeOCOLinkViaModify(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
@@ -280,13 +278,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await TestOpenOrder(mainOrder.WithOnTimeTrigger(60));
             await TestOpenOrder(ocoOrder.WithOnTimeTrigger(mainOrder.TriggerTime));
 
-            await TestModifyOrder(mainOrder.WithOCO(ocoOrder), OrderEvents.Modify);
+            await TestModifyOrder(mainOrder.WithOCO(ocoOrder), Events.Modify);
         }
 
         private async Task BreakOnTimeOCOLinkViaModify(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
             await CreateOnTimeOCOLinkViaModify(mainOrder, ocoOrder);
-            await TestModifyOrder(mainOrder.WithRemovedOCO(), OrderEvents.Modify);
+            await TestModifyOrder(mainOrder.WithRemovedOCO(), Events.Modify);
             await TestCancelOrder(mainOrder);
             await TestCancelOrder(ocoOrder);
         }
@@ -299,23 +297,19 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 await RunOnTimeTest(ActivateWithExpiration, set, 4);
 
             if (set.IsSupportedOCO)
-                await RunOCOTriggerTest(OpenCancelOnTimeOCO, set, new OrderBaseSet(OrderType.Stop, set.Side));
+                await RunOCOTest(OpenCancelOnTimeOCO, set, new OrderBaseSet(OrderType.Stop, set.Side));
         }
 
 
         private async Task OpenInstantOnTime(OrderStateTemplate order)
         {
-            if (order.IsGrossAcc)
-                await TestOpenOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill, OrderEvents.Open);
-            else
-                await TestOpenOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill);
-
+            await TestOpenOrder(order, Events.Order.InstantOnTimeActivation);
             await order.OnTimeTriggerReceived.Task;
         }
 
         private async Task OpenPendingOnTime(OrderStateTemplate order)
         {
-            await TestOpenOrder(order, OrderEvents.Activate, OrderEvents.Open);
+            await TestOpenOrder(order, Events.Activate, Events.Open);
             await order.OnTimeTriggerReceived.Task;
             await order.Opened.Task;
             await TestCancelOrder(order);
@@ -323,19 +317,19 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private Task ActivateWithExpiration(OrderStateTemplate order)
         {
-            return TestOpenOrder(order.WithExpiration(8), OrderEvents.Activate, OrderEvents.Open, OrderEvents.Expire);
+            return TestOpenOrder(order.WithExpiration(8), Events.Activate, Events.Open, Events.Expire);
         }
 
         private Task RejectWithIncorrectTime(OrderStateTemplate order)
         {
-            return TestOpenReject(order, Api.OrderCmdResultCodes.IncorrectTriggerTime);
+            return TestOpenReject(order, OrderCmdResultCodes.IncorrectTriggerTime);
         }
 
         private Task RejectWithNullTime(OrderStateTemplate order)
         {
             order.TriggerTime = null;
 
-            return TestOpenReject(order, Api.OrderCmdResultCodes.IncorrectTriggerTime);
+            return TestOpenReject(order, OrderCmdResultCodes.IncorrectTriggerTime);
         }
 
         private Task RejectWithExpirationLessThanOnTime(OrderStateTemplate order)
@@ -364,7 +358,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private async Task OpenCancelOnTimeOCO(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
             await OpenLinkedOCOWithTimeTrigger(mainOrder, ocoOrder);
-            await TestCancelOrder(mainOrder, OrderEvents.Cancel);
+            await TestCancelOrder(mainOrder, Events.Cancel);
             await ocoOrder.Canceled.Task;
         }
 
@@ -372,9 +366,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             var ocoSet = new OrderBaseSet(OrderType.Stop, set.Side);
 
-            //await RunOCOTriggerTest(OpenOCOWithTrigger, set, ocoSet, true); # wait fix on server side
-            //await RunOCOTriggerTest(OpenOCOWithTrigger, set, ocoSet, false);
-            await RunOCOTriggerTest(OpenLinkedOCOWithTimeTrigger, set, ocoSet);
+            await RunOCOTest(OpenOCOWithTrigger, set, ocoSet, true);
+            await RunOCOTest(OpenOCOWithTrigger, set, ocoSet, false);
+            await RunOCOTest(OpenLinkedOCOWithTimeTrigger, set, ocoSet);
         }
 
         private async Task RunRejectOCOWithTrigger(OrderBaseSet set)
@@ -382,20 +376,20 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             var incorrectSet = new OrderBaseSet(OrderType.Market, set.Side);
             var ocoSet = new OrderBaseSet(OrderType.Stop, set.Side);
 
-            await RunOCOTriggerTest(OpenOCOWithTriggerAndIncorrectType, set, incorrectSet);
-            await RunOCOTriggerTest(OpenLinkedOCOWithTriggerAndIncorrectType, set, incorrectSet);
-            await RunOCOTriggerTest(OpenOCOWithoutTrigger, set, ocoSet);
+            await RunOCOTest(OpenOCOWithTriggerAndIncorrectType, set, incorrectSet);
+            await RunOCOTest(OpenLinkedOCOWithTriggerAndIncorrectType, set, incorrectSet);
+            await RunOCOTest(OpenOCOWithoutTrigger, set, ocoSet);
         }
 
         private async Task OpenOCOWithTrigger(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
-            await TestOpenOrder(mainOrder.WithOnTimeTrigger(3000));
-            await TestOpenOrder(ocoOrder.WithOCO(mainOrder).WithOnTimeTrigger(mainOrder.TriggerTime));
+            await TestOpenOrder(mainOrder.WithOnTimeTrigger(30));
+            await TestOpenOrder(ocoOrder.WithOCO(mainOrder).WithOnTimeTrigger(mainOrder.TriggerTime), Events.Modify);
         }
 
         private Task OpenLinkedOCOWithTimeTrigger(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
-            return TestOpenOrder(mainOrder.WithOnTimeTrigger(30).WithLinkedOCO(ocoOrder), OrderEvents.Open);
+            return TestOpenOrder(mainOrder.WithOnTimeTrigger(30).WithLinkedOCO(ocoOrder), Events.Open);
         }
 
         private async Task OpenOCOWithTriggerAndIncorrectType(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
@@ -424,12 +418,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (order.WithOnTimeTrigger(4).IsInstantOrder)
             {
-                await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill);
+                await TestModifyOrder(order, Events.Order.InstantOnTimeActivation);
                 await order.OnTimeTriggerReceived.Task;
             }
             else
             {
-                await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open);
+                await TestModifyOrder(order, Events.Order.PendingOnTimeActivation);
                 await order.OnTimeTriggerReceived.Task;
                 await order.Opened.Task;
                 await TestCancelOrder(order);
@@ -449,24 +443,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             order.Volume *= 0.9;
             order.Comment = "Modified OnTime trigger comment";
 
-            //if (order.IsSupportedMaxVisibleVolume)
-            //    order.MaxVisibleVolume = order.Volume * 0.9;
-
-            //if (order.IsSupportedSlippage)
-            //    order.Slippage = OrderBaseSet.Symbol.Slippage * 0.9;
-
             if (order.WithOnTimeTrigger(4).IsInstantOrder)
             {
-                if (order.IsGrossAcc)
-                    await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill, OrderEvents.Open);
-                else
-                    await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill);
-
+                await TestModifyOrder(order, Events.Order.InstantOnTimeActivation);
                 await order.OnTimeTriggerReceived.Task;
             }
             else
             {
-                await TestModifyOrder(order.ForPending(5).WithExpiration(90), OrderEvents.Activate, OrderEvents.Open);
+                await TestModifyOrder(order.ForPending(5).WithExpiration(90), Events.Order.PendingOnTimeActivation);
                 await order.OnTimeTriggerReceived.Task;
                 await order.Opened.Task;
                 await TestCancelOrder(order);
@@ -488,37 +472,29 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private Task RunOCOTriggerTest(OCOwithOTOTest test, OrderBaseSet set, OrderBaseSet ocoSet, bool equalVolume = false, string testInfo = null)
-        {
-            async Task OCOTestEnviroment(OrderStateTemplate mainOrder)
-            {
-                var ocoOrder = ocoSet.BuildOrder(newVolume: mainOrder.Volume / 2)
-                                     .ForPending(ocoSet.Type == OrderType.Limit ? 4 : 2); //for pair limit/stop price for Buy must be less than Sell
+        //private Task RunOCOTriggerTest(OCOwithOTOTest test, OrderBaseSet set, OrderBaseSet ocoSet, bool equalVolume = false, string testInfo = null)
+        //{
+        //    async Task OCOTestEnviroment(OrderStateTemplate mainOrder)
+        //    {
+        //        var ocoOrder = ocoSet.BuildOrder(newVolume: mainOrder.Volume / 2)
+        //                             .ForPending(ocoSet.Type == OrderType.Limit ? 4 : 2); //for pair limit/stop price for Buy must be less than Sell
 
-                ocoOrder.OcoEqualVolume = equalVolume;
+        //        ocoOrder.OcoEqualVolume = equalVolume;
 
-                await test(mainOrder, ocoOrder);
-                await Task.Yield(); //wait modification real Oco and Main order
+        //        await test(mainOrder, ocoOrder);
+        //        await Task.Yield(); //wait modification real Oco and Main order
 
-                if (!string.IsNullOrEmpty(ocoOrder.Id))
-                    await RemoveOrder(ocoOrder);
-            }
+        //        if (!string.IsNullOrEmpty(ocoOrder.Id))
+        //            await RemoveOrder(ocoOrder);
+        //    }
 
-            return RunTest(OCOTestEnviroment, set, testInfo: $"{testInfo ?? test.Method.Name} TriggerType={TriggerType.OnTime} OCO =({ocoSet}) equalVolume={equalVolume}");
-        }
+        //    return RunTest(OCOTestEnviroment, set, testInfo: $"{testInfo ?? test.Method.Name} OCO =({ocoSet}) equalVolume={equalVolume}");
+        //}
 
         private Task RunOnTimeTest(TriggerTimeTest test, OrderBaseSet set, int seconds = 30, string testInfo = null)
         {
             Task OnTimeTest(OrderStateTemplate order)
             {
-                //if (order.IsSupportedMaxVisibleVolume)
-                //    order.MaxVisibleVolume = order.Volume * 0.9;
-
-                //if (order.IsSupportedSlippage)
-                //    order.Slippage = OrderBaseSet.Symbol.Slippage * 0.9;
-
-                //order.Comment = $"TriggerOrder Type={TriggerType.OnTime}";
-
                 return test(order.FillAdditionalProperties().WithOnTimeTrigger(seconds));
             }
 

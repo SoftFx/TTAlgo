@@ -65,8 +65,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             template.Comment = ADCommentsList.WithPartialToFullActivate(0.2 * OrderBaseSet.BaseOrderVolume);
 
-            await OpenOrderAndWaitExecution(template, template.IsGrossAcc ?
-                  OrderEvents.PartialFillGrossOrderEvents : OrderEvents.PartialFillOrderEvents);
+            await OpenOrderAndWaitExecution(template, Events.Order.PartialFill);
             await ClearTestEnviroment(template);
         }
     }
