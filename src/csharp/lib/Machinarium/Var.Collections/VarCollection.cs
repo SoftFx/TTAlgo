@@ -237,6 +237,12 @@ namespace Machinarium.Qnil
             return new DictionaryGrouping<TKey, TValue, TGrouping>(src, groupingKeySelector);
         }
 
+        public static IVarList<TValue> DisposeItems<TValue>(this IVarList<TValue> src)
+            where TValue : IDisposable
+        {
+            return new ListItemDisposeWrapper<TValue>(src);
+        }
+
         public static void EnableAutodispose<TKey, TVal>(this IVarSet<TKey, TVal> src)
             where TVal : IDisposable
         {
