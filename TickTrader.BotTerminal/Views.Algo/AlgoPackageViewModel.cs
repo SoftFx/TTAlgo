@@ -1,11 +1,12 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using System;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoPackageViewModel : PropertyChangedBase
+    internal class AlgoPackageViewModel : PropertyChangedBase, IDisposable
     {
         public PackageInfo Info { get; }
 
@@ -42,7 +43,7 @@ namespace TickTrader.BotTerminal
         public bool CanDownloadPackage => IsRemote && Agent.Model.AccessManager.CanDownloadPackage();
 
 
-        public AlgoPackageViewModel(PackageInfo info, AlgoAgentViewModel agent, bool listenEvents = true)
+        public AlgoPackageViewModel(PackageInfo info, AlgoAgentViewModel agent)
         {
             Info = info;
             Agent = agent;
@@ -54,11 +55,15 @@ namespace TickTrader.BotTerminal
             Plugins = Agent.Plugins.Where(p => PluginIsFromPackage(p)).AsObservable();
             Description = $"Server {Agent.Name}. Path {Info.Identity.FilePath}";
 
-            if (listenEvents)
-            {
-                Agent.Model.PackageStateChanged += OnPackageStateChanged;
-                Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
-            }
+            Agent.Model.PackageStateChanged += OnPackageStateChanged;
+            Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
+        }
+
+
+        public void Dispose()
+        {
+            Agent.Model.PackageStateChanged -= OnPackageStateChanged;
+            Agent.Model.AccessLevelChanged -= OnAccessLevelChanged;
         }
 
 
