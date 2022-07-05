@@ -39,6 +39,12 @@ namespace TickTrader.Algo.Calculator.Conversions
 
         public FormulaBuilder Div(ISideNode operand) => AddOperation(new DivOperator(Subscribe(operand)));
 
+        public void Dispose()
+        {
+            Unsubscribe(_node);
+            _operations.ForEach(o => Unsubscribe(o.Operand));
+        }
+
 
         private FormulaBuilder AddOperation(IOperation operation)
         {
@@ -80,6 +86,14 @@ namespace TickTrader.Algo.Calculator.Conversions
         {
             if (node != null)
                 node.ValueUpdate += RecalculateFormula;
+
+            return node;
+        }
+
+        private ISideNode Unsubscribe(ISideNode node)
+        {
+            if (node != null)
+                node.ValueUpdate -= RecalculateFormula;
 
             return node;
         }

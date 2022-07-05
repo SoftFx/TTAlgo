@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Calculator.AlgoMarket;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Calculator.Conversions
@@ -28,8 +29,11 @@ namespace TickTrader.Algo.Calculator.Conversions
         {
             _accountBalanceCurrency = accBalanceCurrency;
 
+            _marginConversions.Values.ForEach(f => f.Dispose());
             _marginConversions.Clear();
+            _posProfitConversions.Values.ForEach(f => f.Dispose());
             _posProfitConversions.Clear();
+            _negProfitConversions.Values.ForEach(f => f.Dispose());
             _negProfitConversions.Clear();
         }
 
