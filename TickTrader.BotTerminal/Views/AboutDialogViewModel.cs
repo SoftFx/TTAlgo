@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using System;
 using System.Reflection;
 using TickTrader.Algo.Core.Lib;
 
@@ -24,6 +25,11 @@ namespace TickTrader.BotTerminal
         {
             DisplayName = $"About - {EnvService.Instance.ApplicationName}";
             Version = $"Version: {_version} ({_buildDate})";
+
+//#if DEBUG
+//            for (var i = 0; i < 5; i++)
+//                GC.Collect(2, GCCollectionMode.Forced, true);
+//#endif
         }
 
 

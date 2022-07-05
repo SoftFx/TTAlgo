@@ -41,10 +41,20 @@ namespace TickTrader.BotTerminal
             OtoTime = _varContext.AddProperty(order.OtoTrigger?.TriggerTime?.ToDateTime());
             OtoTriggeredById = _varContext.AddProperty(order.OtoTrigger?.OrderIdTriggeredBy);
 
-            order.EssentialsChanged += o => Update();
+            order.EssentialsChanged += OrderChanged;
 
             Update();
         }
+
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            _order.EssentialsChanged -= OrderChanged;
+        }
+
+        private void OrderChanged(OrderEssentialsChangeArgs args) => Update();
+
 
         public override string Id => _order.Id;
         public override double Profit => _order?.Calculator?.Profit.Calculate(_order)?.Value ?? 0.0;

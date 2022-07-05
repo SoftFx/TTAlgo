@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Calculator.AlgoMarket;
+﻿using System;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator.Conversions
@@ -16,7 +17,7 @@ namespace TickTrader.Algo.Calculator.Conversions
     }
 
 
-    public interface IConversionFormula
+    public interface IConversionFormula : IDisposable
     {
         double Value { get; }
 
@@ -36,5 +37,7 @@ namespace TickTrader.Algo.Calculator.Conversions
             Value = value;
             Error = error;
         }
+
+        public void Dispose() { }
     }
 }

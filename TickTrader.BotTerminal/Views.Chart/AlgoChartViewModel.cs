@@ -29,9 +29,9 @@ namespace TickTrader.BotTerminal
             var allSeries = VarCollection.CombineChained(dataSeries, overlaySeries);
             var allPanes = OutputGroups.Chain().SelectMany(i => i.Panes);
 
-            DataSeries = dataSeries.AsObservable();
-            Series = allSeries.AsObservable();
-            Panes = allPanes.AsObservable();
+            DataSeries = dataSeries.Chain().AsObservable();
+            Series = allSeries.Chain().AsObservable();
+            Panes = allPanes.Chain().AsObservable();
 
             OutputGroups.Updated += AllOutputs_Updated;
 
@@ -46,9 +46,9 @@ namespace TickTrader.BotTerminal
             InitZoom();
         }
         
-        public IReadOnlyList<IRenderableSeriesViewModel> DataSeries { get; }
-        public IReadOnlyList<OutputPaneViewModel> Panes { get; }
-        public IReadOnlyList<IRenderableSeriesViewModel> Series { get; }
+        public IObservableList<IRenderableSeriesViewModel> DataSeries { get; }
+        public IObservableList<OutputPaneViewModel> Panes { get; }
+        public IObservableList<IRenderableSeriesViewModel> Series { get; }
         public VarList<OutputGroupViewModel> OutputGroups { get; } = new VarList<OutputGroupViewModel>();
         public Property<string> ChartWindowId { get; } = new Property<string>();
         public BoolProperty AutoScroll { get; } = new BoolProperty();
@@ -89,6 +89,12 @@ namespace TickTrader.BotTerminal
         public void Dispose()
         {
             _var.Dispose();
+
+            OutputGroups.Clear();
+            OutputGroups.Updated -= AllOutputs_Updated;
+            DataSeries.Dispose();
+            Series.Dispose();
+            Panes.Dispose();
         }
 
         #region Zoom control

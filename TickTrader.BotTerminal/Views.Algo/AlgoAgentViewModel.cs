@@ -45,16 +45,16 @@ namespace TickTrader.BotTerminal
             _algoEnv = algoEnv;
 
             Plugins = _agentModel.Plugins.OrderBy((k, v) => v.Descriptor_.UiDisplayName).Select(p => new AlgoPluginViewModel(p, this));
-            Packages = _agentModel.Packages.OrderBy((k, v) => k).Select(p => new AlgoPackageViewModel(p, this));
-            Bots = _agentModel.Bots.OrderBy((k, v) => k).Select(p => new AlgoBotViewModel(p, this));
-            Accounts = _agentModel.Accounts.OrderBy((k, v) => k).Select(p => new AlgoAccountViewModel(p, this));
+            Packages = _agentModel.Packages.OrderBy((k, v) => k).Select(p => new AlgoPackageViewModel(p, this)).DisposeItems();
+            Bots = _agentModel.Bots.OrderBy((k, v) => k).Select(p => new AlgoBotViewModel(p, this)).DisposeItems();
+            Accounts = _agentModel.Accounts.OrderBy((k, v) => k).Select(p => new AlgoAccountViewModel(p, this)).DisposeItems();
 
             PluginList = Plugins.AsObservable();
             PackageList = Packages.AsObservable();
             BotList = Bots.AsObservable();
             AccountList = Accounts.AsObservable();
             AccountServerList = _agentModel.Accounts.GroupBy((k, v) => GetServerAddress(v)).OrderBy((k, g) => k).Select(g => g.GroupKey)
-                .Select(s => new AccountServerViewModel(s, this)).AsObservable();
+                .Select(s => new AccountServerViewModel(s, this)).DisposeItems().AsObservable();
         }
 
 

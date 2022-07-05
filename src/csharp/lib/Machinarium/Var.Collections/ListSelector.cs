@@ -32,7 +32,7 @@ namespace Machinarium.Qnil
 
         public int Count { get { return src.Snapshot.Count; } }
         public IReadOnlyList<TResult> Snapshot { get { return this; } }
-        public TResult this[int index] { get { return selectFunc(src.Snapshot[index]); } }
+        public TResult this[int index] { get { return innerList[index]; } }
 
         public event ListUpdateHandler<TResult> Updated;
 

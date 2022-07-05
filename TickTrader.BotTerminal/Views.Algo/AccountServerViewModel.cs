@@ -1,9 +1,10 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using System;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AccountServerViewModel : PropertyChangedBase
+    internal class AccountServerViewModel : PropertyChangedBase, IDisposable
     {
         private readonly AlgoAgentViewModel _agent;
 
@@ -23,6 +24,12 @@ namespace TickTrader.BotTerminal
             Accounts = _agent.Accounts.Where(a => a.Server == serverAddress).AsObservable();
 
             _agent.Model.AccessLevelChanged += OnAccessLevelChanged;
+        }
+
+
+        public void Dispose()
+        {
+            _agent.Model.AccessLevelChanged -= OnAccessLevelChanged;
         }
 
 

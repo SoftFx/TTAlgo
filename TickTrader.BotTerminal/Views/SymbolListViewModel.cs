@@ -20,7 +20,8 @@ namespace TickTrader.BotTerminal
             _shell = shell;
 
             SelectedSymbol = AddProperty<SymbolViewModel>();
-            Symbols = symbolCollection.Select((k, v) => new SymbolViewModel(v, distributor)).OrderBy((k, v) => k).AsObservable();
+            Symbols = symbolCollection.Select((k, v) => new SymbolViewModel(v, distributor))
+                .OrderBy((k, v) => k).DisposeItems().AsObservable();
         }
 
         public void OpenNewChart() //using on UI
