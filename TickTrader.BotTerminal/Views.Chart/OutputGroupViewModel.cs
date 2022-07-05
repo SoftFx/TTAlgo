@@ -58,13 +58,11 @@ namespace TickTrader.BotTerminal
         {
             Model.OutputsChanged -= ModelOnOutputsChanged;
 
-            DisposeOutputModels();
+            Deinit();
         }
 
         private void Init()
         {
-            DisposeOutputModels();
-
             _outputModels = CreateOutputModels(Model).ToList();
 
             _outputModels.Where(o => o.Descriptor.Target == Metadata.Types.OutputTarget.Overlay).ForEach(_overlayOutputs.Add);
@@ -82,6 +80,19 @@ namespace TickTrader.BotTerminal
             }
 
             UpdatePrecision();
+        }
+
+        private void Deinit()
+        {
+            _overlayOutputs.Clear();
+            _overlaySeries.Clear();
+            foreach (var pane in _panes.Values)
+            {
+                pane.Dispose();
+            }
+            _panes.Clear();
+
+            DisposeOutputModels();
         }
 
         private void DisposeOutputModels()
@@ -120,9 +131,7 @@ namespace TickTrader.BotTerminal
         {
             Execute.OnUIThread(() =>
             {
-                _overlayOutputs.Clear();
-                _overlaySeries.Clear();
-                _panes.Clear();
+                Deinit();
                 Init();
             });
         }
