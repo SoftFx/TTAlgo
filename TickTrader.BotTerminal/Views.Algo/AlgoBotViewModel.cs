@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using System;
 using System.Diagnostics;
 using System.IO;
 using TickTrader.Algo.Core;
@@ -9,7 +10,7 @@ using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoBotViewModel : PropertyChangedBase
+    internal class AlgoBotViewModel : PropertyChangedBase, IDisposable
     {
         public ITradeBot Model { get; }
 
@@ -55,6 +56,15 @@ namespace TickTrader.BotTerminal
             Model.Updated += OnUpdated;
             Model.StatusChanged += OnStatusChanged;
             Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
+        }
+
+
+        public void Dispose()
+        {
+            Model.StateChanged -= OnStateChanged;
+            Model.Updated -= OnUpdated;
+            Model.StatusChanged -= OnStatusChanged;
+            Agent.Model.AccessLevelChanged -= OnAccessLevelChanged;
         }
 
 

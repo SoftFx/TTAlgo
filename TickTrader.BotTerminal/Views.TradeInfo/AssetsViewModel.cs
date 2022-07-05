@@ -15,6 +15,7 @@ namespace TickTrader.BotTerminal
             Assets = model.Assets
                 .OrderBy((c, a) => c)
                 .Select(a => new AssetViewModel(a, currencies.Read(a.Currency)))
+                .DisposeItems()
                 .AsObservable();
         }
 

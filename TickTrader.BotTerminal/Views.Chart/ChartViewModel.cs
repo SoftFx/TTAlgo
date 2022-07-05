@@ -20,6 +20,8 @@ namespace TickTrader.BotTerminal
         private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolInfo smb;
         private VarDictionary<string, AlgoBotViewModel> _chartBots = new VarDictionary<string, AlgoBotViewModel>();
+        private readonly IVarList<IndicatorModel> _allIndicators;
+        private readonly IVarList<AlgoBotViewModel> _allBots;
 
         public BarChartModel BarChart { get; }
 
@@ -41,11 +43,11 @@ namespace TickTrader.BotTerminal
             //this.tickChart = new TickChartModel(smb, _algoEnv);
             this.UiLock = new UiLock();
 
-            var allIndicators = charts.SelectMany(c => c.Indicators);
-            var allBots = _chartBots.OrderBy((id, bot) => id);
+            _allIndicators = charts.SelectMany(c => c.Indicators);
+            _allBots = _chartBots.OrderBy((id, bot) => id);
 
-            Indicators = allIndicators.Select(i => new IndicatorViewModel(Chart, i)).AsObservable();
-            Bots = allBots.AsObservable();
+            Indicators = _allIndicators.Chain().Select(i => new IndicatorViewModel(Chart, i)).Chain().AsObservable();
+            Bots = _allBots.Chain().AsObservable();
 
             //var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
 
@@ -58,8 +60,8 @@ namespace TickTrader.BotTerminal
             _algoEnv.LocalAgent.BotUpdated += BotOnUpdated;
             _algoEnv.LocalAgentVM.Bots.Updated += BotsOnUpdated;
 
-            allIndicators.Updated += AllIndicators_Updated;
-            allBots.Updated += AllBots_Updated;
+            _allIndicators.Updated += AllIndicators_Updated;
+            _allBots.Updated += AllBots_Updated;
 
             SelectedTimeframe = period;
 
@@ -127,11 +129,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public IReadOnlyList<IndicatorViewModel> Indicators { get; private set; }
-        public IReadOnlyList<AlgoBotViewModel> Bots { get; private set; }
+        public IObservableList<IndicatorViewModel> Indicators { get; private set; }
+        public IObservableList<AlgoBotViewModel> Bots { get; private set; }
         public GenericCommand CloseCommand { get; private set; }
 
-        public bool HasIndicators { get { return Indicators.Count > 0; } }
+        public bool HasIndicators { get { return Indicators.Count() > 0; } }
         public bool CanAddBot => false; /*Chart.TimeFrame != Feed.Types.Timeframe.Ticks;*/
         public bool CanAddIndicator => false;  /*Chart.TimeFrame != Feed.Types.Timeframe.Ticks;*/
 
@@ -152,6 +154,16 @@ namespace TickTrader.BotTerminal
 
             BarChart.Dispose();
             //tickChart.Dispose();
+
+            Indicators.Dispose();
+            Bots.Dispose();
+
+            charts.Clear();
+            _chartBots.Clear();
+            _allIndicators.Updated -= AllIndicators_Updated;
+            _allBots.Updated -= AllBots_Updated;
+            _allIndicators.Dispose();
+            _allBots.Dispose();
 
             return task;
         }
@@ -388,7 +400,7 @@ namespace TickTrader.BotTerminal
         private void FilterChartBots()
         {
             _chartBots.Clear();
-            _algoEnv.LocalAgentVM.Bots.Where(IsChartBot).Snapshot.ForEach(AddChartBot);
+            _algoEnv.LocalAgentVM.Bots.Snapshot.Where(IsChartBot).ForEach(AddChartBot);
         }
 
         private bool BotBelongsToChart(PluginModel bot)

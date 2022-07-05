@@ -55,8 +55,8 @@ namespace TickTrader.BotTerminal
             AlgoEnv = algoEnv;
             Model = symbol;
 
-            AvailableIndicators = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.IsIndicator).AsObservable();
-            AvailableBotTraders = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.IsTradeBot).AsObservable();
+            AvailableIndicators = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.IsIndicator).Chain().AsObservable();
+            AvailableBotTraders = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.IsTradeBot).Chain().AsObservable();
 
             AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
             AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
@@ -317,6 +317,10 @@ namespace TickTrader.BotTerminal
                     AvailableBotTraders.CollectionChanged -= AvailableBotTraders_CollectionChanged;
                     AvailableIndicators.Dispose();
                     AvailableBotTraders.Dispose();
+
+                    ClientModel.Connected -= Connection_Connected;
+                    ClientModel.Disconnected -= Connection_Disconnected;
+                    ClientModel.Deinitializing -= Client_Deinitializing;
                     _subscription.Dispose();
 
                     _logger.Debug("Chart[" + Model.Name + "] disposed!");

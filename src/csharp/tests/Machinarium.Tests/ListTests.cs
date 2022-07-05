@@ -1,5 +1,6 @@
 ﻿using Machinarium.Qnil;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -92,6 +93,26 @@ namespace Machinarium.Tests
             src.Add(10, "aaa");
 
             AssertEqual(selector.Snapshot, "aaa", "bbb", "xxx", "yyy");
+        }
+
+        [TestMethod]
+        public void List_Selector_Indexer_SameObjects()
+        {
+            var src = new VarDictionary<int, string>();
+
+            src.Add(1, "xxx");
+            src.Add(2, "bbb");
+            src.Add(3, "yyy");
+            src.Add(4, "ccc");
+
+            var selector = src.OrderBy((k, v) => v).Select(a => new Tuple<string, string>(a, a));
+            var readOnlyList = (IReadOnlyList<Tuple<string, string>>)selector;
+
+            for (var i = 0; i < src.Count; i++)
+            {
+                if (!ReferenceEquals(readOnlyList[i], readOnlyList[i]))
+                    throw new AssertFailedException($"Objects are different at index {i}");
+            }
         }
 
 

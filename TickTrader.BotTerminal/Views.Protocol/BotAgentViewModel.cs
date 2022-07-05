@@ -1,8 +1,9 @@
 ﻿using Caliburn.Micro;
+using System;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotAgentViewModel : PropertyChangedBase, IDropHandler
+    internal class BotAgentViewModel : PropertyChangedBase, IDropHandler, IDisposable
     {
         private AlgoEnvironment _algoEnv;
 
@@ -40,6 +41,13 @@ namespace TickTrader.BotTerminal
 
             Connection.StateChanged += ConnectionOnStateChanged;
             Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
+        }
+
+
+        public void Dispose()
+        {
+            Connection.StateChanged -= ConnectionOnStateChanged;
+            Agent.Model.AccessLevelChanged -= OnAccessLevelChanged;
         }
 
 

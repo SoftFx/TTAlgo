@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
             NetProfit.Value = Swap.Value + Commission.Value + Profit;
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (_symbol != null) // server misconfiguration can cause unexisting symbols
                 _symbol.RateUpdated -= RateUpdate;

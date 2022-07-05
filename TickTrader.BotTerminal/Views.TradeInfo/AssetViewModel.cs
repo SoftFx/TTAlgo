@@ -1,15 +1,23 @@
 ﻿using Machinarium.Var;
+using System;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Converters;
 
 namespace TickTrader.BotTerminal
 {
-    sealed class AssetViewModel
+    sealed class AssetViewModel : IDisposable
     {
         private readonly VarContext _varContext = new VarContext();
 
         private readonly PricePrecisionConverter<double> _currencyConverter;
         private readonly IAssetInfo _asset;
+
+
+        public Property<string> Currency { get; }
+        public Property<double> Amount { get; }
+        public Property<double> Margin { get; }
+        public Property<double> FreeAmount { get; }
+
 
         public AssetViewModel(AssetInfo asset, CurrencyInfo info)
         {
@@ -27,10 +35,12 @@ namespace TickTrader.BotTerminal
             Update();
         }
 
-        public Property<string> Currency { get; }
-        public Property<double> Amount { get; }
-        public Property<double> Margin { get; }
-        public Property<double> FreeAmount { get; }
+
+        public void Dispose()
+        {
+            _asset.MarginUpdate -= Update;
+        }
+
 
         private void Update()
         {

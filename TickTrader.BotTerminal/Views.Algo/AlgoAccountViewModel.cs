@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using System;
 using System.Linq;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -7,7 +8,7 @@ using TickTrader.Algo.Server.PublicAPI.Converters;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoAccountViewModel : PropertyChangedBase, IDropHandler
+    internal class AlgoAccountViewModel : PropertyChangedBase, IDropHandler, IDisposable
     {
         public AccountModelInfo Info { get; }
 
@@ -72,6 +73,14 @@ namespace TickTrader.BotTerminal
             Agent.Model.AccountStateChanged += OnAccountStateChanged;
             Agent.Model.BotStateChanged += OnBotStateChanged;
             Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
+        }
+
+
+        public void Dispose()
+        {
+            Agent.Model.AccountStateChanged -= OnAccountStateChanged;
+            Agent.Model.BotStateChanged -= OnBotStateChanged;
+            Agent.Model.AccessLevelChanged -= OnAccessLevelChanged;
         }
 
 

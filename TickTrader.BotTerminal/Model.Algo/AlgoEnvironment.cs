@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
             LocalAgentVM = new AlgoAgentViewModel(LocalAgent, this);
             _localAgentStub = new VarList<AlgoAgentViewModel>();
             _localAgentStub.Add(LocalAgentVM);
-            BotAgents = BotAgentManager.BotAgents.OrderBy((k, v) => k).Select(v => new BotAgentViewModel(v, this));
+            BotAgents = BotAgentManager.BotAgents.OrderBy((k, v) => k).Select(v => new BotAgentViewModel(v, this)).DisposeItems();
             Agents = VarCollection.CombineChained(_localAgentStub, BotAgents.Select(b => b.Agent));
             AgentsList = Agents.AsObservable();
         }

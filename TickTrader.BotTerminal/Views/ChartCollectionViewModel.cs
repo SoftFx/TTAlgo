@@ -51,6 +51,13 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(SelectedChartProxy));
         }
 
+        public override Task DeactivateItemAsync(ChartViewModel item, bool close, CancellationToken cancellationToken = default)
+        {
+            if (close)
+                _charts.Remove(item.ChartWindowId);
+            return base.DeactivateItemAsync(item, close, cancellationToken);
+        }
+
 
         public void Open(string symbol, Feed.Types.Timeframe period = Feed.Types.Timeframe.M1)
         {

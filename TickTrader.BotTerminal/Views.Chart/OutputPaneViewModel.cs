@@ -46,12 +46,17 @@ namespace TickTrader.BotTerminal
             IsCrosshairEnabled = isCrosshairEnabled;
 
             _outputs = new VarList<OutputSeriesModel>();
-            //Series = _outputs.Select(SeriesViewModel.FromOutputSeries).AsObservable();
+            //Series = _outputs.Select(SeriesViewModel.FromOutputSeries).Chain().AsObservable();
 
             ouputModels.Where(o => o.Descriptor.Target == target).ForEach(_outputs.Add);
 
             UpdateAxis();
             UpdatePrecision();
+        }
+
+        public void Dispose()
+        {
+            //Series.Dispose();
         }
 
         private void UpdateAxis()
