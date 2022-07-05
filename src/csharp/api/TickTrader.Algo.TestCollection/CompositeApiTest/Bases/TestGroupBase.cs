@@ -139,10 +139,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected async Task RemoveOrder(OrderStateTemplate template)
         {
-            await template.Opened.Task;
-
             if (template?.RealOrder?.IsNull ?? true)
                 return;
+
+            await template.Opened.Task;
 
             if (template.CanCloseOrder)
             {

@@ -101,8 +101,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (@event == Events.Cancel)
             {
-                //if (!_currentTemplates.TryGetValue(orderId, out var template))
-                //    return;
                 var template = _currentTemplates[orderId];
                 _currentTemplates.Remove(orderId);
 
@@ -112,6 +110,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             if (@event == Events.Close)
             {
                 _currentTemplates.Remove(orderId);
+            }
+
+            if (@event == Events.Expire)
+            {
+                var template = _currentTemplates[orderId];
+                _currentTemplates.Remove(orderId);
+
+                template.ToExpire();
             }
         }
 

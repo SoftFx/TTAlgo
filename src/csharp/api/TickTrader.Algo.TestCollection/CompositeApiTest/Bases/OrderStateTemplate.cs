@@ -25,6 +25,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public TaskCompletionSource<bool> Modified { get; private set; }
 
+        public TaskCompletionSource<bool> Expired { get; private set; }
+
         public TaskCompletionSource<bool> FinalExecution => IsGrossAcc ? OpenedGrossPosition : Filled;
 
 
@@ -48,6 +50,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             FilledParts = new List<OrderStateTemplate>();
             Canceled = new TaskCompletionSource<bool>();
             Modified = new TaskCompletionSource<bool>();
+            Expired = new TaskCompletionSource<bool>();
             OnTimeTriggerReceived = new TaskCompletionSource<bool>();
         }
 
@@ -113,6 +116,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal OrderStateTemplate ToCancel()
         {
             Canceled.SetResult(true);
+            RealOrder = null;
+
+            return this;
+        }
+
+        internal OrderStateTemplate ToExpire()
+        {
+            Expired.SetResult(true);
             RealOrder = null;
 
             return this;

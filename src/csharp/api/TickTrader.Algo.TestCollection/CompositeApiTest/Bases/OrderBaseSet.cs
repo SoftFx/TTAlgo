@@ -27,6 +27,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool IsInstantOrder => Type == OrderType.Market || IsLimitIoC;
 
+        public bool IsPendingOrder => !IsInstantOrder;
+
         public bool IsLimitIoC => Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
         public bool IsSupportedMaxVisibleVolume => IsSupportedIoC;

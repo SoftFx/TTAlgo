@@ -102,7 +102,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             Volume = volume;
         }
 
-        internal OrderStateTemplate WithOCO(OrderTemplate mainOrder)
+        internal OrderStateTemplate WithOCO(OrderTemplate ocoOrder)
         {
             void SetOCO(OrderTemplate main, OrderTemplate oco)
             {
@@ -114,8 +114,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 }
             }
 
-            SetOCO(mainOrder, this);
-            SetOCO(this, mainOrder);
+            SetOCO(ocoOrder, this);
+            SetOCO(this, ocoOrder);
 
             return (OrderStateTemplate)this;
         }
@@ -127,13 +127,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return (OrderStateTemplate)this;
         }
 
-        internal OrderStateTemplate WithOCO(OrderStateTemplate mainOrder, bool equalVolume)
-        {
-            OcoEqualVolume = equalVolume;
-
-            return WithOCO(mainOrder);
-        }
-
         internal OrderStateTemplate WithLinkedOCO(OrderStateTemplate linkedOrder)
         {
             Options |= OrderExecOptions.OneCancelsTheOther;
@@ -143,17 +136,19 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return WithFullLinkedOCOProperies();
         }
 
-        internal OrderStateTemplate WithRemovedOCO()
+        internal OrderStateTemplate BreakOCO()
         {
-            void RemoveOCO(OrderTemplate order)
-            {
-                order.Options &= ~OrderExecOptions.OneCancelsTheOther;
-                order.OcoRelatedOrderId = null;
-                order.RelatedOcoTemplate = null;
-            }
+            if (RelatedOcoTemplate == this)
+                RelatedOcoTemplate.RemoveOCO();
 
-            RemoveOCO(RelatedOcoTemplate);
-            RemoveOCO(this);
+            return RemoveOCO();
+        }
+
+        internal OrderStateTemplate RemoveOCO()
+        {
+            Options &= ~OrderExecOptions.OneCancelsTheOther;
+            OcoRelatedOrderId = null;
+            RelatedOcoTemplate = null;
 
             return (OrderStateTemplate)this;
         }
