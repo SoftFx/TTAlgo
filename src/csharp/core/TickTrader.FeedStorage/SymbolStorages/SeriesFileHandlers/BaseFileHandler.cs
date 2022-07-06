@@ -147,7 +147,10 @@ namespace TickTrader.FeedStorage.StorageBase
         }
 
 
-        protected static double ReadDouble(string str) => double.Parse(str, _currentFormat);
+        protected static double ReadDouble(string str)
+        {
+            return string.IsNullOrEmpty(str) ? 0.0 : double.Parse(str, _currentFormat);
+        }
 
         protected static void ThrowFormatError(int lineNumber) => throw new Exception($"Invalid format at line {lineNumber}");
     }
