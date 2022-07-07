@@ -168,7 +168,7 @@
                 <TextBlock Text="Logs" Style="{StaticResource LogsHeader}" />
                 <Button Grid.Column="1" Style="{StaticResource OpenLogsFolderButton}" Command="{Binding OpenLogsFolder}">
                     <Button.Content>
-                        <fa:IconBlock Icon="Folder" Style="{x:Null}"/>
+                        <fa:IconBlock Icon="Folder" FontSize="18" Style="{x:Null}"/>
                     </Button.Content>
                     <Button.ToolTip>
                         <TextBlock Text="Show in folder"/>

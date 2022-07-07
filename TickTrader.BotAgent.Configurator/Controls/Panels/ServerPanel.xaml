@@ -27,12 +27,12 @@
 
         <Separator Grid.Row="3" Grid.ColumnSpan="2"/>
 
-        <TextBlock Grid.Row="4" Text="Listening Urls: "/>
-        <c:MultipleURLsControl Grid.Row="5"/>
+        <!--<TextBlock Grid.Row="4" Text="Listening Urls: "/>-->
+        <!--<c:MultipleURLsControl Grid.Row="5"/>-->
 
         <Separator Grid.Row="6" Grid.ColumnSpan="2"/>
 
         <TextBlock Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Text="{Binding SecretKeyDescription}" Style="{StaticResource DescriptionTextBox}"/>
-        <TextBlock Grid.Column="1" Grid.Row="4" Grid.RowSpan="2" Text="{Binding UrlsDescription}" Style="{StaticResource DescriptionTextBox}"/>
+        <!--<TextBlock Grid.Column="1" Grid.Row="4" Grid.RowSpan="2" Text="{Binding UrlsDescription}" Style="{StaticResource DescriptionTextBox}"/>-->
     </Grid>
 </UserControl>
