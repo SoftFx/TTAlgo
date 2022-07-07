@@ -223,6 +223,7 @@ namespace TickTrader.Algo.Runtime
                 {
                     _logger.Error(ex, "Failed to abort executor");
                 }
+                _runtime.Tell(new ExecutorNotification(_id, new PluginAbortedMsg { Id = _id }));
 
                 return Task.CompletedTask;
             }

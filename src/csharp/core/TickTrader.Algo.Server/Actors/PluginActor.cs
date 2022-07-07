@@ -57,6 +57,7 @@ namespace TickTrader.Algo.Server
             Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
             Receive<PluginExitedMsg>(OnExited);
             Receive<RuntimeCrashedMsg>(OnRuntimeCrashed);
+            Receive<RuntimeInvalidMsg>(OnRuntimeInvalid);
             Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdated);
         }
 
@@ -227,6 +228,16 @@ namespace TickTrader.Algo.Server
 
                 _server.Alerts.SendServerAlert($"Process running plugin '{_id}' crashed");
                 _server.SavedState.SetPluginRunning(_id, false).Forget();
+            }
+        }
+
+        private void OnRuntimeInvalid(RuntimeInvalidMsg msg)
+        {
+            if (_state.IsRunning())
+            {
+                _logger.Info("Runtime reported invalid state");
+
+                _server.Alerts.SendServerAlert($"Restart required for '{_id}'");
             }
         }
 
@@ -512,5 +523,7 @@ namespace TickTrader.Algo.Server
         }
 
         internal class RuntimeCrashedMsg : Singleton<RuntimeCrashedMsg> { }
+
+        internal class RuntimeInvalidMsg : Singleton<RuntimeInvalidMsg> { }
     }
 }

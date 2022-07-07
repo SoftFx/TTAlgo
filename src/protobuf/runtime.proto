@@ -104,3 +104,7 @@ message ConnectionStateUpdate {
 message PluginExitedMsg {
     string id = 1;
 }
+
+message PluginAbortedMsg {
+    string id = 1;
+}

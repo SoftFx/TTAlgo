@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Server
         private RpcSession _session;
         private IDisposable _sessionStateChangedSub;
         private int _activeExecutorsCnt;
-        private bool _isObsolete;
+        private bool _isObsolete, _isInvalid;
         private DateTime _pendingShutdown;
         private ActorGate _requestGate;
         private ActorLock _controlLock;
@@ -331,8 +331,7 @@ namespace TickTrader.Algo.Server
             if (crashed)
             {
                 _activeExecutorsCnt = 0;
-                foreach (var plugin in _pluginsMap.Values)
-                    plugin.Tell(PluginActor.RuntimeCrashedMsg.Instance);
+                NotifyAttachedPlugins(PluginActor.RuntimeCrashedMsg.Instance);
             }
         }
 
@@ -476,6 +475,8 @@ namespace TickTrader.Algo.Server
                 plugin.Tell(payload.Unpack<DataSeriesUpdate>());
             else if (payload.Is(PluginExitedMsg.Descriptor))
                 plugin.Tell(payload.Unpack<PluginExitedMsg>());
+            else if (payload.Is(PluginAbortedMsg.Descriptor))
+                OnPluginAborted(payload.Unpack<PluginAbortedMsg>());
         }
 
         private void PluginErrorHandler(string id, Any payload)
@@ -519,6 +520,24 @@ namespace TickTrader.Algo.Server
             if (_isObsolete && _state == RuntimeState.Stopped && _pluginsMap.Count == 0)
             {
                 _server.OnRuntimeStopped(_id);
+            }
+        }
+
+        private void NotifyAttachedPlugins(object msg)
+        {
+            foreach (var plugin in _pluginsMap.Values)
+                plugin.Tell(msg);
+        }
+
+        private void OnPluginAborted(PluginAbortedMsg msg)
+        {
+            if (!_isInvalid)
+            {
+                _logger.Debug($"Plugin '{msg.Id}' aborted. Entering invalid state");
+
+                _isInvalid = true;
+                _server.OnRuntimeInvalid(_pkgId, _id);
+                NotifyAttachedPlugins(PluginActor.RuntimeInvalidMsg.Instance);
             }
         }
 

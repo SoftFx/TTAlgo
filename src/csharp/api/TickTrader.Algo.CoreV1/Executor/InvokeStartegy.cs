@@ -286,7 +286,7 @@ namespace TickTrader.Algo.CoreV1
                         Task.Factory.StartNew(() => asyncStopDoneEvent?.TrySetResult(this)); // without this async stop will continue execution on current thread. Which makes DoStop(bool) finish before continue this method
                     if (stopDoneEvent != null)
                         Task.Factory.StartNew(() => stopDoneEvent?.TrySetResult(false));
-                    currentThread?.Abort();
+                    //currentThread?.Abort(); // not supported on net core
                     currentThread = null;
                     Builder.Logger.OnAbort();
                 }

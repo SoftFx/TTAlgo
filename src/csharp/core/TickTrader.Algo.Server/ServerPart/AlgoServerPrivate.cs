@@ -43,6 +43,8 @@ namespace TickTrader.Algo.Server
 
         internal void OnRuntimeStopped(string runtimeId) => _server.Tell(new RuntimeStoppedMsg(runtimeId));
 
+        internal void OnRuntimeInvalid(string pkgId, string runtimeId) => _server.Tell(new PkgRuntimeInvalidMsg(pkgId, runtimeId));
+
         internal Task<IActorRef> GetRuntime(string id) => _server.Ask<IActorRef>(new RuntimeRequest(id));
 
         internal Task<string> GetPkgRuntimeId(string pkgId) => _server.Ask<string>(new PkgRuntimeIdRequest(pkgId));
@@ -98,6 +100,19 @@ namespace TickTrader.Algo.Server
             public RuntimeStoppedMsg(string id)
             {
                 Id = id;
+            }
+        }
+
+        internal class PkgRuntimeInvalidMsg
+        {
+            public string PkgId { get; }
+
+            public string RuntimeId { get; }
+
+            public PkgRuntimeInvalidMsg(string pkgId, string runtimeId)
+            {
+                PkgId = pkgId;
+                RuntimeId = runtimeId;
             }
         }
 
