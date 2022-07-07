@@ -380,6 +380,9 @@ namespace TickTrader.Algo.Server
             _faultMsg = faultMsg;
 
             _server.SendUpdate(new PluginStateUpdate(_id, newState, faultMsg));
+
+            if (_state.IsStopped())
+                _ = UpdateRuntime();
         }
 
         private ExecutorConfig CreateDefaultExecutorConfig()
