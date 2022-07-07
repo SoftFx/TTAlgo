@@ -13,7 +13,7 @@
     "Password": "Password to required to open PKCS#12 file."
   },
   "Protocol": {
-    "ListeningPort": "Port that is used for AlgoTerminal connection. It should be different from web server ports.",
+    "ListeningPort": "Port that is used for AlgoTerminal connection. Also web server will listen to certain port.",
     "LogDirectoryName": "Directory where AlgoTerminal connection logs will be stored.",
     "LogMessages": "Enables writing messages sent over AlgoTerminal connection to logs. Only for troubleshooting, has severe impact on performance."
   },
