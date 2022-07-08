@@ -182,7 +182,7 @@ namespace TickTrader.Algo.CoreV1
                 {
                     var update = new Domain.PluginStatusUpdate(_context.InstanceId, status);
 
-                    _logWriter.OnStatusUpdate(update);
+                    _logWriter?.OnStatusUpdate(update);
                     _context.SendNotification(update);
                 }
                 catch(Exception ex)

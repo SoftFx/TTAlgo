@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Backtester
             _exStartAction = executor.Start;
             _extStopAction = executor.EmulateStop;
 
-            executor.OnExitRequest += _ => Cancel();
+            executor.OnExitRequest = _ => Cancel();
         }
 
         public DateTime UnsafeVirtualTimePoint { get { return _timePoint; } }

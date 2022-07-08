@@ -479,6 +479,9 @@ namespace TickTrader.Algo.CoreV1
                 _builder.SetStopped();
 
                 await iStrategy.Stop(quick).ConfigureAwait(false);
+                OnUpdate = _ => { };
+                OnNotification = _ => { };
+                OnExitRequest = _ => { };
                 if (_pluginLoggerFixture != null)
                     await _pluginLoggerFixture.Stop();
 
