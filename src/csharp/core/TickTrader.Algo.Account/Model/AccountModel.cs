@@ -440,6 +440,9 @@ namespace TickTrader.Algo.Account
                             // StopLimit orders get new order id and opened as limit orders after activation
                             if ((order.Type == OrderInfo.Types.Type.Limit || order.Type == OrderInfo.Types.Type.Stop) && report.Type == OrderInfo.Types.Type.Position)
                                 return OnOrderUpdated(report, OrderExecReport.Types.ExecAction.Opened);
+                            // Another exception is partially closed positions, we receive commission update for remaining volume
+                            else if (report.Type == OrderInfo.Types.Type.Position && report.OrderStatus == OrderStatus.Calculated && order.Commission != report.Commission)
+                                return OnOrderUpdated(report, OrderExecReport.Types.ExecAction.None);
                             else break;
                         }
                         else
@@ -493,8 +496,9 @@ namespace TickTrader.Algo.Account
                     {
                         if (report.OrderStatus == OrderStatus.Calculated)
                         {
-                            // For partially closed positions, we receive commission update for remaining volume
-                            return OnOrderUpdated(report, OrderExecReport.Types.ExecAction.None);
+                            // fix ExecutionType to match order state diagram on old tts version
+                            report.ExecutionType = ExecutionType.Calculated;
+                            return GetOrderUpdate(report);
                         }
 
                         if (report.OrderStatus == OrderStatus.PartiallyFilled)
