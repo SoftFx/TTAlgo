@@ -62,8 +62,8 @@ namespace TickTrader.Algo.Account
 
             _stateControl.AddScheduledEvent(States.OfflineRetry, Events.OnRetry, 5000);
 
-            _stateControl.OnEnter(States.Connecting, DoConnect);
-            _stateControl.OnEnter(States.Disconnecting, () => DoDisconnect(canRecconect()));
+            _stateControl.OnEnter(States.Connecting, () => _ = DoConnect());
+            _stateControl.OnEnter(States.Disconnecting, () => _ = DoDisconnect(canRecconect()));
 
             _stateControl.StateChanged += (f, t) =>
             {
@@ -187,67 +187,71 @@ namespace TickTrader.Algo.Account
             });
         }
 
-        private async void DoConnect()
+        private async Task DoConnect()
         {
-            ContextCheck();
-
-            var request = connectRequest;
-            if (request == null)
-            {
-                // using old request
-                IsReconnecting = true;
-                request = lastConnectRequest;
-            }
-            else
-            {
-                // new request
-                wasConnected = false;
-                IsReconnecting = false;
-                lastConnectRequest = connectRequest;
-                connectRequest = null;
-            }
-
-            connectCancelSrc = new CancellationTokenSource();
-            LastError = null;
-
-            CurrentLogin = request.Usermame;
-            CurrentServer = request.Address;
-            CurrentProtocol = "SFX";
-
             try
             {
-                var options = _options.WithNewLogsFolder(Path.Combine(_options.LogsFolder, CurrentProtocol, $"{request.Address} - {request.Usermame}"));
-                _interop = _accFactory(options, _loggerId);
+                ContextCheck();
 
-                _interop.Disconnected += _interop_Disconnected;
-
-                InitProxies?.Invoke();
-
-                var result = await _interop.Connect(request.Address, request.Usermame, request.Password, connectCancelSrc.Token);
-                if (result.Code != ConnectionErrorInfo.Types.ErrorCode.NoConnectionError)
+                var request = connectRequest;
+                if (request == null)
                 {
-                    await Deinitialize();
-                    OnFailedConnect(request, result);
-                    return;
+                    // using old request
+                    IsReconnecting = true;
+                    request = lastConnectRequest;
                 }
                 else
                 {
-                    wasInitFired = true;
-                    await AsyncInitalizing.InvokeAsync(this, connectCancelSrc.Token);
-                    await _initListeners.Invoke();
+                    // new request
+                    wasConnected = false;
+                    IsReconnecting = false;
+                    lastConnectRequest = connectRequest;
+                    connectRequest = null;
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-                await Deinitialize();
-                OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
-                return;
-            }
 
-            wasConnected = true;
-            _stateControl.PushEvent(Events.Connected);
-            request.Complete(ConnectionErrorInfo.Ok);
+                connectCancelSrc = new CancellationTokenSource();
+                LastError = null;
+
+                CurrentLogin = request.Usermame;
+                CurrentServer = request.Address;
+                CurrentProtocol = "SFX";
+
+                try
+                {
+                    var options = _options.WithNewLogsFolder(Path.Combine(_options.LogsFolder, CurrentProtocol, $"{request.Address} - {request.Usermame}"));
+                    _interop = _accFactory(options, _loggerId);
+
+                    _interop.Disconnected += _interop_Disconnected;
+
+                    InitProxies?.Invoke();
+
+                    var result = await _interop.Connect(request.Address, request.Usermame, request.Password, connectCancelSrc.Token);
+                    if (result.Code != ConnectionErrorInfo.Types.ErrorCode.NoConnectionError)
+                    {
+                        await Deinitialize();
+                        OnFailedConnect(request, result);
+                        return;
+                    }
+                    else
+                    {
+                        wasInitFired = true;
+                        await AsyncInitalizing.InvokeAsync(this, connectCancelSrc.Token);
+                        await _initListeners.Invoke();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                    await Deinitialize();
+                    OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
+                    return;
+                }
+
+                wasConnected = true;
+                _stateControl.PushEvent(Events.Connected);
+                request.Complete(ConnectionErrorInfo.Ok);
+            }
+            catch (Exception ex) { logger.Error(ex); }
         }
 
         private void OnFailedConnect(ConnectRequest requets, ConnectionErrorInfo erroInfo)
@@ -302,19 +306,23 @@ namespace TickTrader.Algo.Account
             wasInitFired = false;
         }
 
-        private async void DoDisconnect(bool canRecconect)
+        private async Task DoDisconnect(bool canRecconect)
         {
-            await Deinitialize();
-
-            if (disconnectRequest != null)
+            try
             {
-                disconnectRequest.Complete(ConnectionErrorInfo.Ok);
-                disconnectRequest = null;
-                wasConnected = false;
-                IsReconnecting = false;
-            };
+                await Deinitialize();
 
-            _stateControl.PushEvent(Events.DoneDisconnecting);
+                if (disconnectRequest != null)
+                {
+                    disconnectRequest.Complete(ConnectionErrorInfo.Ok);
+                    disconnectRequest = null;
+                    wasConnected = false;
+                    IsReconnecting = false;
+                };
+
+                _stateControl.PushEvent(Events.DoneDisconnecting);
+            }
+            catch (Exception ex) { logger.Error(ex); }
         }
 
         #region IStateMachineSync

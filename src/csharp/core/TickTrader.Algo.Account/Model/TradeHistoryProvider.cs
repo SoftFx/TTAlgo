@@ -94,7 +94,7 @@ namespace TickTrader.Algo.Account
         {
             _isStarted = true;
 
-            UpdateLoop();
+            _ = UpdateLoop();
 
             _logger.Debug("Started.");
 
@@ -117,27 +117,34 @@ namespace TickTrader.Algo.Account
             _logger.Debug("Stopped.");
         }
 
-        private async void UpdateLoop()
+        private async Task UpdateLoop()
         {
-            _logger.Debug("UpdateLoop() enter");
-
-            using (await _updateLock.GetLock("loop"))
+            try
             {
-                while (await _updateQueue.Dequeue())
-                {
-                    var update = _updateQueue.Item;
+                _logger.Debug("UpdateLoop() enter");
 
-                    foreach (var channel in _listeners.Values)
-                        await channel.Write(update);
+                using (await _updateLock.GetLock("loop"))
+                {
+                    while (await _updateQueue.Dequeue())
+                    {
+                        var update = _updateQueue.Item;
+
+                        foreach (var channel in _listeners.Values)
+                            await channel.Write(update);
+                    }
+
+                    _logger.Debug("UpdateLoop() stopped, flushing...");
+
+                    foreach (var channel in _listeners.Values) // flush all channels
+                        await channel.ConfirmRead();
                 }
 
-                _logger.Debug("UpdateLoop() stopped, flushing...");
-
-                foreach (var channel in _listeners.Values) // flush all channels
-                    await channel.ConfirmRead();
+                _logger.Debug("UpdateLoop() exit");
             }
-
-            _logger.Debug("UpdateLoop() exit");
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "UpdateLoop() failed");
+            }
         }
 
         public class Handler : Handler<TradeHistoryProvider>
@@ -164,7 +171,7 @@ namespace TickTrader.Algo.Account
                 AlgoAdapter = new PagedEnumeratorAdapter(Actor);
                 var reportStream = ActorChannel.NewOutput<object>(1000);
                 await Actor.OpenChannel(reportStream, (a, c) => a._listeners.Add(_ref, c));
-                ReadUpdatesLoop(reportStream);
+                _ = ReadUpdatesLoop(reportStream);
             }
 
             public Channel<Domain.TradeReportInfo> GetTradeHistory(bool skipCancelOrders)
@@ -201,7 +208,7 @@ namespace TickTrader.Algo.Account
                 return channel;
             }
 
-            private async void ReadUpdatesLoop(ActorChannel<object> updateStream)
+            private async Task ReadUpdatesLoop(ActorChannel<object> updateStream)
             {
                 while (await updateStream.ReadNext())
                 {

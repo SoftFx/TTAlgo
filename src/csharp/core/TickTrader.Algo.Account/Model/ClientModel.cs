@@ -243,11 +243,11 @@ namespace TickTrader.Algo.Account
 
                 var updateStream = ActorChannel.NewOutput<EntityCacheUpdate>(1000);
                 var snapshot = await Actor.OpenChannel(updateStream, (a, c) => a.AddListener(Ref, c));
-                ApplyUpdates(updateStream);
+                _ = ApplyUpdates(updateStream);
 
                 var quoteStream = ActorChannel.NewOutput<QuoteInfo>(1000);
                 await Actor.OpenChannel(quoteStream, (a, c) => a._feedListeners.Add(Ref, c));
-                ApplyQuotes(quoteStream);
+                _ = ApplyQuotes(quoteStream);
             }
 
             public async Task Deinit()
@@ -257,34 +257,48 @@ namespace TickTrader.Algo.Account
                 await Connection.CloseHandler();
             }
 
-            private async void ApplyUpdates(ActorChannel<EntityCacheUpdate> updateStream)
+            private async Task ApplyUpdates(ActorChannel<EntityCacheUpdate> updateStream)
             {
-                while (await updateStream.ReadNext())
+                try
                 {
-                    try
+                    while (await updateStream.ReadNext())
                     {
-                        updateStream.Current.Apply(Cache);
+                        try
+                        {
+                            updateStream.Current.Apply(Cache);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex, "Failed to apply cache update");
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(ex, "Failed to apply cache update");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "ApplyUpdates loop failed");
                 }
             }
 
-            private async void ApplyQuotes(ActorChannel<QuoteInfo> updateStream)
+            private async Task ApplyQuotes(ActorChannel<QuoteInfo> updateStream)
             {
-                while (await updateStream.ReadNext())
+                try
                 {
-                    try
+                    while (await updateStream.ReadNext())
                     {
-                        var quote = updateStream.Current;
-                        Cache.ApplyQuote(quote);
+                        try
+                        {
+                            var quote = updateStream.Current;
+                            Cache.ApplyQuote(quote);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex, "Failed to apply quote update");
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(ex, "Failed to apply quote update");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "ApplyQuotes loop failed");
                 }
             }
         }

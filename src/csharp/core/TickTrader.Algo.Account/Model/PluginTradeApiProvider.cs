@@ -90,24 +90,24 @@ namespace TickTrader.Algo.Account
                 _ref = aRef;
             }
 
-            public async void SendCancelOrder(Domain.CancelOrderRequest request)
+            public void SendCancelOrder(Domain.CancelOrderRequest request)
             {
-                await _ref.Call(a => a.SendCancelOrder(request));
+                _ = _ref.Call(a => a.SendCancelOrder(request));
             }
 
-            public async void SendCloseOrder(Domain.CloseOrderRequest request)
+            public void SendCloseOrder(Domain.CloseOrderRequest request)
             {
-                await _ref.Call(a => a.SendCloseOrder(request));
+                _ = _ref.Call(a => a.SendCloseOrder(request));
             }
 
-            public async void SendModifyOrder(Domain.ModifyOrderRequest request)
+            public void SendModifyOrder(Domain.ModifyOrderRequest request)
             {
-                await _ref.Call(a => a.SendModifyOrder(request));
+                _ = _ref.Call(a => a.SendModifyOrder(request));
             }
 
-            public async void SendOpenOrder(Domain.OpenOrderRequest request)
+            public void SendOpenOrder(Domain.OpenOrderRequest request)
             {
-                await _ref.Call(a => a.SendOpenOrder(request));
+                _ = _ref.Call(a => a.SendOpenOrder(request));
             }
         }
     }
