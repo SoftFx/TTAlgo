@@ -51,10 +51,15 @@ namespace TickTrader.Algo.CoreV1.Metadata
                 else if (Descriptor.EnumValues.Count > 0)
                     DefaultValue = Descriptor.EnumValues[0].ToString();
 
-                _isDefaultValueDirectlyAssignable = DefaultValue != null; 
+                _isDefaultValueDirectlyAssignable = DefaultValue != null;
             }
 
-            Descriptor.DataType = reflectionInfo.PropertyType.FullName;
+            if (reflectionInfo.PropertyType == typeof(double?))
+                Descriptor.DataType = ParameterDescriptor.NullableDoubleTypeName;
+            else if (reflectionInfo.PropertyType == typeof(int?))
+                Descriptor.DataType = ParameterDescriptor.NullableIntTypeName;
+            else
+                Descriptor.DataType = reflectionInfo.PropertyType.FullName;
             Descriptor.DefaultValue = DefaultValue?.ToString() ?? string.Empty;
             Descriptor.IsRequired = attribute.IsRequired;
 

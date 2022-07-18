@@ -9,15 +9,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
     public static class ToDtoExtensions
     {
-        private static readonly string nIntTypeName;
-        private static readonly string nDoubleTypeName;
-
-        static ToDtoExtensions()
-        {
-            nIntTypeName = typeof(int?).GetTypeInfo().FullName;
-            nDoubleTypeName = typeof(double?).GetTypeInfo().FullName;
-        }
-
         public static AccountInfoDto ToDto(this AccountMetadataInfo info)
         {
             return new AccountInfoDto
@@ -157,9 +148,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             if (parameter.IsEnum)
                 return ParameterTypes.Enumeration;
-            else if (parameter.DataType == nDoubleTypeName)
+            else if (parameter.DataType == ParameterDescriptor.NullableDoubleTypeName)
                 return ParameterTypes.NullableDouble;
-            else if (parameter.DataType == nIntTypeName)
+            else if (parameter.DataType == ParameterDescriptor.NullableIntTypeName)
                 return ParameterTypes.NullableInteger;
             else
                 switch (parameter.DataType)
@@ -182,12 +173,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                     defEnumVal = parameter.EnumValues.FirstOrDefault();
                 return defEnumVal;
             }
-            else if (parameter.DataType == nDoubleTypeName)
+            else if (parameter.DataType == ParameterDescriptor.NullableDoubleTypeName)
             {
                 UiConverter.NullableDouble.FromObject(parameter.DefaultValue, out var defNullDoubleVal);
                 return defNullDoubleVal;
             }
-            else if (parameter.DataType == nIntTypeName)
+            else if (parameter.DataType == ParameterDescriptor.NullableIntTypeName)
             {
                 UiConverter.NullableInt.FromObject(parameter.DefaultValue, out var defNullIntVal);
                 return defNullIntVal;
