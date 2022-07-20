@@ -1288,7 +1288,7 @@ namespace TickTrader.Algo.Backtester
             {
                 if (_calcFixture.IsCalculated)
                 {
-                    if (_acc.Margin > 0 && _acc.MarginLevel < _stopOutLevel)
+                    if (_acc.Margin.Gt(0.0) && _acc.MarginLevel < _stopOutLevel)
                         OnStopOut();
                 }
             }
