@@ -278,7 +278,11 @@ namespace TickTrader.Algo.Backtester
                     if (State == EmulatorStates.Stopping)
                         ChangeState(EmulatorStates.Stopped);
                     else
+                    {
                         ChangeState(EmulatorStates.Stopping);
+                        // can be true if plugin calls Exit() right before fatal error is thrown
+                        _cancelRequested = false;
+                    }
                 }
                 throw;
             }
