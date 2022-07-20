@@ -33,7 +33,10 @@ namespace TickTrader.FeedStorage.StorageBase
 
         protected override void PreloadLogic(StreamWriter writer)
         {
-            _formatter.WriteTickL2FileHeader(writer);
+            if (_isL2Tick)
+                _formatter.WriteTickL2FileHeader(writer);
+            else
+                _formatter.WriteTickFileHeader(writer);
         }
 
         protected override void PostloadLogic(StreamWriter writer) { }
