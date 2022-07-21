@@ -10,11 +10,11 @@ namespace TickTrader.Algo.Server.PublicAPI
         public ApiMessageFormatter(FileDescriptor serviceDescriptor) : base(serviceDescriptor) { }
 
 
-        public void LogClientUpdate(ILogger logger, IMessage update)
+        public void LogUpdateFromServer(ILogger logger, IMessage update, int packedSize, bool compressed)
         {
             if (LogMessages && logger != null)
             {
-                logger.Info($"client < {update.Descriptor.Name}: {Format(update)}");
+                logger.Info($"server > {update.Descriptor.Name}({packedSize} bytes{(compressed ? ", compressed" : "")}): {Format(update)}");
             }
         }
 
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             if (LogMessages && logger != null)
             {
-                logger.Info($"client < {HeartbeatUpdate.Descriptor.Name}");
+                logger.Info($"server < {HeartbeatUpdate.Descriptor.Name}");
             }
         }
     }

@@ -60,18 +60,18 @@ namespace TickTrader.FeedStorage.StorageBase
 
             return new BarData(time, time) // need a timeframe to init bars correctly
             {
-                Open = double.Parse(parts[1]),
-                High = double.Parse(parts[2]),
-                Low = double.Parse(parts[3]),
-                Close = double.Parse(parts[4]),
-                RealVolume = double.Parse(parts[5])
+                Open = ReadDouble(parts[1]),
+                High = ReadDouble(parts[2]),
+                Low = ReadDouble(parts[3]),
+                Close = ReadDouble(parts[4]),
+                RealVolume = ReadDouble(parts[5])
             };
         }
 
         protected override async Task WritePageToStorage(ActorChannel<ISliceInfo> buffer, BarData[] values)
         {
             var from = values[0].OpenTime.ToUtcDateTime();
-            var to = values[values.Length - 1].CloseTime.ToUtcDateTime();
+            var to = values[^1].CloseTime.ToUtcDateTime();
 
             _storage.Put(_key, from, to, values);
 

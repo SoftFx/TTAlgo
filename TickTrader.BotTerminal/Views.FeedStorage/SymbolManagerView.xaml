@@ -33,6 +33,14 @@
         </Setter>
     </Style>
 
+    <Style x:Key="TreeSymbolItemStyle" TargetType="{x:Type TreeViewItem}">
+        <Setter Property="IsExpanded" Value="True"/>
+    </Style>
+
+    <Style x:Key="TreeGroupHeaderStyle" TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource TreeSymbolItemStyle}" >
+        <Setter Property="Focusable" Value="False"/>
+    </Style>
+
 
     <ControlTemplate x:Key="SymbolManagerView.Template.Classic">
         <Grid Background="{TemplateBinding Background}">
@@ -51,14 +59,9 @@
             </Grid.RowDefinitions>
 
             <!--TreeView with grouped Symbols-->
-            <TreeView Grid.Column="0" Grid.RowSpan="4" Margin="6,6,0,6" ItemsSource="{Binding AllSymbolsView.Groups}">
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="{x:Type TreeViewItem}">
-                        <Setter Property="IsExpanded" Value="True"/>
-                    </Style>
-                </TreeView.ItemContainerStyle>
+            <TreeView Grid.Column="0" Grid.RowSpan="4" Margin="6,6,0,6" ItemsSource="{Binding AllSymbolsView.Groups}" ItemContainerStyle="{StaticResource TreeGroupHeaderStyle}">
                 <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate ItemsSource="{Binding Items}" HierarchicalDataTemplate.ItemTemplate="{x:Null}">
+                    <HierarchicalDataTemplate ItemsSource="{Binding Items}" HierarchicalDataTemplate.ItemTemplate="{x:Null}" ItemContainerStyle="{StaticResource TreeSymbolItemStyle}">
                         <TextBlock Text="{Binding Name}"/>
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>

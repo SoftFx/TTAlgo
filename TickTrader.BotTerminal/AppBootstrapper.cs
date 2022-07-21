@@ -14,12 +14,10 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
-using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Server.Common;
-using TickTrader.FeedStorage;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.Lmdb;
 using TickTrader.WpfWindowsSupportLibrary;
@@ -31,19 +29,20 @@ namespace TickTrader.BotTerminal
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private static readonly AutoViewManager autoViewLocator = new AutoViewManager();
 
+        private readonly AppInstanceRestrictor _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
+        private readonly SimpleContainer _container = new();
+
+        private readonly bool _hasWriteAccess;
+
+        private ShellViewModel _shell;
+
+
         public static CultureInfo CultureCache { get; private set; }
 
-        private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor(EnvService.Instance.AppLockFilePath);
-        private SimpleContainer _container = new SimpleContainer();
-        private ShellViewModel _shell;
-        private bool _hasWriteAccess;
 
         public AppBootstrapper()
         {
             CultureCache = CultureInfo.CurrentCulture;
-
-            //CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            //CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
             LocaleSelector.Instance.ActivateDefault();
 
@@ -56,8 +55,8 @@ namespace TickTrader.BotTerminal
                 ConfigurateLogger();
                 ConfigureGlobalExceptionHandling();
 
-                PackageLoadContext.Init(PackageLoadContextProvider.Create);
-                PackageExplorer.Init(PackageV1Explorer.Create());
+                PackageLoadContext.Init(Algo.Isolation.PackageLoadContextProvider.Create);
+                PackageExplorer.Init<PackageV1Explorer>();
                 PluginLogWriter.Init(NLogPluginLogWriter.Create);
                 BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
             }
@@ -65,7 +64,7 @@ namespace TickTrader.BotTerminal
 
         public static AutoViewManager AutoViewLocator => autoViewLocator;
 
-        private void ConfigureCaliburn()
+        private static void ConfigureCaliburn()
         {
             ViewLocator.AddDefaultTypeMapping("Page");
             ViewLocator.AddDefaultTypeMapping("Dialog");
@@ -195,17 +194,19 @@ namespace TickTrader.BotTerminal
         {
             if (!_hasWriteAccess || EnvService.Instance.InitFailed)
             {
-                Application.Current.Shutdown();
+                App.Current.Shutdown();
                 return;
             }
 
             if (!_instanceRestrictor.EnsureSingleInstace())
-                Application.Current.Shutdown();
+                App.Current.Shutdown();
             else
             {
                 CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());
 
-                var connectionOptions = ConnectionOptions.CreateForTerminal(Properties.Settings.Default.EnableConnectionLogs, EnvService.Instance.LogFolder);
+                var enableLogs = Properties.Settings.Default.EnableConnectionLogs;
+
+                var connectionOptions = ConnectionOptions.CreateForTerminal(enableLogs, EnvService.Instance.LogFolder);
 
                 var accountSettings = new AccountModelSettings("0")
                 {
@@ -220,18 +221,7 @@ namespace TickTrader.BotTerminal
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 
-                //OnlineStorageSettings = new OnlineStorageSettings
-                //{
-                //    FolderPath = EnvService.Instance.FeedHistoryCacheFolder,
-                //    Options = FeedHistoryFolderOptions.ServerHierarchy,
-                //},
-
-                //var customStorage = new CustomFeedStorage.Handler(ActorSharp.Actor.SpawnLocal<CustomFeedStorage>());
-                //await customStorage.SyncData();
-                //await customStorage.Start(EnvService.Instance.CustomFeedCacheFolder);
-
                 _container.RegisterInstance(typeof(ClientModel.Data), null, dataHandler);
-                //_container.RegisterInstance(typeof(CustomFeedStorage.Handler), null, customStorage);
                 _container.Singleton<IWindowManager, Caliburn.Micro.WindowManager>();
                 _container.Singleton<IEventAggregator, EventAggregator>();
                 _container.Singleton<ShellViewModel>();
@@ -239,7 +229,7 @@ namespace TickTrader.BotTerminal
                 _shell = _container.GetInstance<ShellViewModel>();
                 _shell.Deactivated += Shell_Deactivated; ;
 
-                await DisplayRootViewFor<ShellViewModel>();
+                await DisplayRootViewForAsync<ShellViewModel>();
             }
         }
 
@@ -253,17 +243,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        //private async void Shell_Deactivated(object sender, DeactivationEventArgs e)
-        //{
-        //    if (e.WasClosed)
-        //    {
-        //        await _shell.Shutdown();
-        //        _instanceRestrictor.Dispose();
-        //        App.Current.Shutdown();
-        //    }
-        //}
 
-        private bool HasWriteAccess()
+        private static bool HasWriteAccess()
         {
             if (Execute.InDesignMode)
                 return true;

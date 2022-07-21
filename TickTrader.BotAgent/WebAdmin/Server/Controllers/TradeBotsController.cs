@@ -16,6 +16,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
+    [ApiController]
     [Authorize]
     public class TradeBotsController : Controller
     {
@@ -220,9 +221,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var botId = setup.InstanceId;
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(botId));
 
-                var tradeBot = await _algoServer.GetPluginInfo(botId);
-
-                return Ok(tradeBot.ToDto());
+                return Ok();
             }
             catch (AlgoException algoEx)
             {

@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using System.Threading;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -11,7 +12,7 @@ namespace TickTrader.BotTerminal
     internal interface IShell : IViewAware, IWindowModel
     {
         void OpenChart(string smb);
-        void ShowChart(string smb, ChartPeriods period);
+        void ShowChart(string smb, Feed.Types.Timeframe period);
         DialogResult ShowDialog(DialogButton buttons, DialogMode mode, string title = null, string message = null, string error = null);
         void Connect(AccountAuthEntry creds);
         UiLock ConnectionLock { get; }

@@ -16,6 +16,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
+    [ApiController]
     [Authorize]
     public class PackagesController : Controller
     {

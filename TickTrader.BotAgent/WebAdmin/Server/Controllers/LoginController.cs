@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Adapter;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
@@ -10,6 +10,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
+    [ApiController]
     public class LoginController : Controller
     {
         private readonly IAuthManager _authManager;

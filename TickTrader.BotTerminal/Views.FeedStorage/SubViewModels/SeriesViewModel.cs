@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal.SymbolManager
 {
-    internal sealed class SeriesViewModel : ObservableObject
+    internal sealed class SeriesViewModel : PropertyChangedBase
     {
         private readonly SymbolManagerViewModel _parent;
         private readonly IStorageSeries _series;

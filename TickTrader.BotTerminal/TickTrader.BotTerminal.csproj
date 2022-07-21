@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <AssemblyName>TickTrader.AlgoTerminal</AssemblyName>
     <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
@@ -10,60 +9,40 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
     <Deterministic>false</Deterministic>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
+    <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
+    <ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
+    <SatelliteResourceLanguages>en-gb,ru-ru</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AvalonDock" Version="2.0.2000" />
-    <PackageReference Include="Caliburn.Micro" Version="4.0.173" />
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="3.8.1" />
-    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
-    <PackageReference Include="Grpc.Core" Version="2.36.1" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
-    <PackageReference Include="NLog" Version="4.7.7" />
+    <PackageReference Include="Caliburn.Micro" Version="4.0.209" />
+    <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
+    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.60.0" />
+    <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
+    <PackageReference Include="FontAwesome.Sharp" Version="5.15.4" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.300" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+    <PackageReference Include="NLog" Version="4.7.15" />
+    <PackageReference Include="System.Management" Version="6.0.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
     <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
     <ProjectReference Include="..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\TickTrader.Algo.BacktesterV1Host.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Client\TickTrader.Algo.Server.PublicAPI.Client.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Converters\TickTrader.Algo.Server.PublicAPI.Converters.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj" />
     <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
     <ProjectReference Include="..\TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="SciChart.Charting">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Charting.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Core">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Data">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Drawing">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Drawing.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Drawing.DirectX">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Drawing.DirectX.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Management" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Windows" />
   </ItemGroup>
 
   <ItemGroup>
@@ -112,8 +91,25 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Update="Resx\Locales\gui.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>gui.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Update="Resx\Locales\gui.en-GB.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resx\Locales\gui.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>gui.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resx\Locales\gui.ru-ru.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -130,8 +126,8 @@
     <Copy SourceFiles="@(EnGbLocale)" DestinationFolder="$(TargetDir)Resources\en-gb" />
     <Copy SourceFiles="@(RuRuLocale)" DestinationFolder="$(TargetDir)Resources\ru-ru" />
     <Copy SourceFiles="@(RuLocale)" DestinationFolder="$(TargetDir)Resources\ru" />
-    <RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
-    <RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />
+    <!--<RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
+		<RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />-->
   </Target>
 
   <Target Name="RemoveLinuxLibs" AfterTargets="Build">
@@ -140,8 +136,8 @@
 
   <Target Name="CopyBinaries" AfterTargets="Build">
     <ItemGroup>
-      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
-      <BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net472\*.*" />
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host\bin\$(Configuration)\net6.0\*.*" />
+      <BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net6.0\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\" SkipUnchangedFiles="true" />
@@ -152,5 +148,4 @@
     <RemoveDir Directories="$(TargetDir)bin\" />
     <RemoveDir Directories="$(TargetDir)Resources\" />
   </Target>
-
 </Project>

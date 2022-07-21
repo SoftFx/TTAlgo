@@ -1,14 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net472</TargetFramework>
-    <PlatformTarget>x64</PlatformTarget>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\core\TickTrader.Algo.Backtester\TickTrader.Algo.Backtester.csproj" />
-    <ProjectReference Include="..\..\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj" />
     <ProjectReference Include="..\..\lib\TickTrader.Algo.Logging\TickTrader.Algo.Logging.csproj" />

@@ -101,9 +101,13 @@ namespace TickTrader.BotAgent.Configurator
                 AppSettingPath = Path.Combine(FolderPath, appSetting);
                 ExePath = Path.Combine(FolderPath, $"TickTrader.{NodeName}.exe");
 
-                var assemblyName = AssemblyName.GetAssemblyName(ExePath);
+                var assemblyPath = Path.Combine(FolderPath, $"TickTrader.{NodeName}.dll");
+                if (!File.Exists(assemblyPath))
+                    assemblyPath = ExePath;
+
+                var assemblyName = AssemblyName.GetAssemblyName(assemblyPath);
                 Version = assemblyName.Version.ToString();
-                BuildDate = assemblyName.GetLinkerTime().ToString("yyyy.MM.dd");
+                BuildDate = Algo.Core.Lib.AssemblyExtensions.GetLinkerTime(assemblyPath).ToString("yyyy.MM.dd");
             }
             catch (Exception ex)
             {

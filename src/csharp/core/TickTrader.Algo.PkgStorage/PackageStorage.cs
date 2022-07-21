@@ -277,6 +277,7 @@ namespace TickTrader.Algo.PkgStorage
                     _pkgIdToRefMap.Remove(pkgId);
                     _pkgRefMap.Remove(pkgRef?.Id);
                     _eventBus.Tell(PackageUpdate.Removed(pkgId));
+                    _pkgRefUpdateCallback?.Invoke(new PackageVersionUpdate(pkgId, null));
                     break;
             }
         }

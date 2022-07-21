@@ -302,7 +302,7 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                _algoEnv.Shell.ShowChart(bot.Config.MainSymbol.Name, bot.Config.Timeframe.Convert());
+                _algoEnv.Shell.ShowChart(bot.Config.MainSymbol.Name, bot.Config.Timeframe);
             }
             catch (Exception ex)
             {

@@ -15,8 +15,8 @@ namespace TickTrader.FeedStorage.StorageBase
     {
         private const string CustomSymbolsCollectionName = "customSymbols";
 
-        private readonly ActorEvent<DictionaryUpdateArgs<string, CustomSymbolInfo>> _symbolListeners = new ActorEvent<DictionaryUpdateArgs<string, CustomSymbolInfo>>();
-        private readonly VarDictionary<string, CustomSymbolInfo> _customSymbols = new VarDictionary<string, CustomSymbolInfo>();
+        private readonly ActorEvent<DictionaryUpdateArgs<string, CustomSymbolInfo>> _symbolListeners = new();
+        private readonly VarDictionary<string, CustomSymbolInfo> _customSymbols = new();
 
         private ICollectionStorage<Guid, CustomSymbolInfo> _customSymbolsCollection;
 
@@ -154,15 +154,17 @@ namespace TickTrader.FeedStorage.StorageBase
                         _symbols.Remove(update.OldItem.Name);
                         break;
                     case DLinqAction.Insert:
-                    case DLinqAction.Replace:
                         AddNewCustomSymbol(update.NewItem);
+                        break;
+                    case DLinqAction.Replace:
+                        _symbols[update.NewItem.Name] = _symbols[update.NewItem.Name].UpdateInfo(update.NewItem);
                         break;
                     default:
                         break;
                 }
             }
 
-            private void AddNewCustomSymbol(CustomSymbolInfo data) => _symbols[data.Name] = new CustomSymbol(data, this);
+            private void AddNewCustomSymbol(CustomSymbolInfo info) => _symbols[info.Name] = new CustomSymbol(info, this);
         }
     }
 }

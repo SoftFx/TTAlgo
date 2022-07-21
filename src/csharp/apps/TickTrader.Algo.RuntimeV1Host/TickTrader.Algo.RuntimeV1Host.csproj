@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NLog" Version="4.7.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Runtime\TickTrader.Algo.Runtime.csproj" />
+    <ProjectReference Include="..\..\lib\TickTrader.Algo.Logging\TickTrader.Algo.Logging.csproj" />
+  </ItemGroup>
+
+</Project>

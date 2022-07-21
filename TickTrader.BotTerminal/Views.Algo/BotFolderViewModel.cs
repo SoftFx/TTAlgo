@@ -8,7 +8,7 @@ using System.Linq;
 using System.Windows.Data;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server.Common;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
 
 

@@ -73,7 +73,6 @@ export class ApiService {
 
     AddBot(setup: SetupModel) {
         return this._http.post(this._tradeBotsUrl, setup.Payload, { headers: this.headers })
-            .map(res => new TradeBotModel().Deserialize(res.json()))
             .catch(err => this.handleServerError(err));
     }
 

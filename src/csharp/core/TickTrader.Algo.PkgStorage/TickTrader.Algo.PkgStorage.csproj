@@ -1,16 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net472;net5.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net472;net6.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Server.PublicAPI.Converters\TickTrader.Algo.Server.PublicAPI.Converters.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Server.PublicAPI\TickTrader.Algo.Server.PublicAPI.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
-    <ProjectReference Condition="'$(TargetFramework)' == 'net472'" Include="..\..\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
-    <ProjectReference Condition="'$(TargetFramework)' == 'net5.0'" Include="..\..\core\TickTrader.Algo.Isolation.NetCore\TickTrader.Algo.Isolation.NetCore.csproj" />
+    <ProjectReference Condition="'$(TargetFramework)' != 'netstandard2.0'" Include="..\..\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
   </ItemGroup>
 
 </Project>

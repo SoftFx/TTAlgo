@@ -26,7 +26,7 @@
             Goto _InstallServiceEnd
         ${EndIf}
     ${EndIf}
-    
+
     SimpleSC::InstallService "${Name}" "${DisplayName}" "${ServiceType}" "${StartType}" ${BinPath} "" "" ""
     Pop $0
     ${If} $0 != 0
@@ -105,7 +105,7 @@ _InstallServiceEnd:
                 Goto _UninstallServiceEnd
             ${EndIf}
         ${EndIf}
-     
+
         SimpleSC::RemoveService ${Name}
         Pop $0
         ${If} $0 != 0
@@ -152,7 +152,7 @@ _UninstallServiceEnd:
 
 !define SECTION_ENABLE 0xFFFFFFEF # remove read-only flag
 !define GROUP_REMOVE 0xFFFFFFFD # remove group flag
- 
+
 !macro SecSelect SecId
     Push $7
     SectionGetFlags ${SecId} $7
@@ -238,7 +238,7 @@ _UninstallServiceEnd:
     Push $0
     Push $1
     Push $2
-    
+
     StrCpy ${RetVar} ${EMPTY_APPID}
     StrCpy $0 0
     loop_${LabelId}:
@@ -287,7 +287,7 @@ _UninstallServiceEnd:
 !macroend
 
 !macro _UninstallApp Path
-    
+
     ; Copy previous uninstaller to temp location
     CreateDirectory "${Path}\tmp"
     CopyFiles /SILENT /FILESONLY "${Path}\uninstall.exe" "${Path}\tmp"
@@ -336,69 +336,93 @@ var LogFile
 ;---END Logging functions---
 
 ;--------------------------------------------
-;-----.NET Framework installation-----
+;-----.NET SDK installation-----
 
-!define FRAMEWORK_LINK "http://go.microsoft.com/fwlink/?LinkId=863262"
+!define SDK_LINK "https://download.visualstudio.microsoft.com/download/pr/15ab772d-ce5c-46e5-a90e-57df11adabfb/4b1b1330b6279a50c398f94cf716c71e/dotnet-sdk-6.0.301-win-x64.exe"
 
-var Framework_InstallNeeded
-var Framework_Installed
-var Framework_Checked
-var Framework_RebootNeeded
+var SDK_InstallNeeded
+var SDK_Installed
+var SDK_Checked
+var SDK_RebootNeeded
 
-!macro _CheckFramework
+!macro _CheckSDK
 
-    ${If} $Framework_Checked == ${FALSE}
-
+    ${If} $SDK_Checked == ${FALSE}
+        Push $0
+        Push $1
         Push $7
 
-        StrCpy $Framework_InstallNeeded ${FALSE}
-        StrCpy $Framework_Installed ${TRUE}
-        StrCpy $Framework_Checked ${TRUE}
+        StrCpy $SDK_InstallNeeded ${FALSE}
+        StrCpy $SDK_Installed ${TRUE}
+        StrCpy $SDK_Checked ${TRUE}
 
         StrCpy $7 "not found"
-        ReadRegDWORD $7 HKLM "SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" "Release"
-        ${Log} "Installed .NET Framework build $7"
-        ${If} $7 >= 461808
-            ${Log} "No need to install new .NET Framework"
+
+        ReadRegStr $7 HKLM "SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost" "Path"
+        ${Log} "Dotnet path = $7"
+        ${If} $7 == ""
+            ${Log} "Dotnet package should be installed"
+            StrCpy $SDK_InstallNeeded ${TRUE}
+            StrCpy $SDK_Installed ${FALSE}
         ${Else}
-            ${Log} ".NET Framework 4.7.2 should be installed"
-            StrCpy $Framework_InstallNeeded ${TRUE}
-            StrCpy $Framework_Installed ${FALSE}
+            nsExec::ExecToStack '"$7\dotnet.exe" --version'
+            Pop $0 ; Return
+            Pop $1 ; Output
+
+            ${If} $0 != "error"
+                ${Log} "Dotnet version = $1"
+
+                ${If} $1 >= "6.0.0"
+                    ${Log} "No need to install new .NET SDK"
+                ${Else}
+                    ${Log} ".NET should be updated to .NET 6"
+                    StrCpy $SDK_InstallNeeded ${TRUE}
+                    StrCpy $SDK_Installed ${FALSE}
+                ${EndIf}
+            ${Else}
+                ${Log} "Coudn't get dotnet version. New dotnet package should be installed"
+                StrCpy $SDK_InstallNeeded ${TRUE}
+                StrCpy $SDK_Installed ${FALSE}
+            ${EndIf}
+
+
+
         ${EndIf}
 
         Pop $7
-
+        Pop $1
+        Pop $0
     ${EndIf}
 
 !macroend
 
-!macro _InstallFramework
+!macro _InstallSDK
 
-    ${If} $Framework_InstallNeeded == ${TRUE}
+    ${If} $SDK_InstallNeeded == ${TRUE}
 
         Push $7
 
-        DetailPrint "Installing .NET Framework"
-        StrCpy $Framework_InstallNeeded ${FALSE}
-        StrCpy $Framework_Installed ${FALSE}
-        StrCpy $Framework_RebootNeeded ${FALSE}
-        NSISdl::download ${FRAMEWORK_LINK} "$TEMP\dotNET472Web.exe"
-        ${If} ${FileExists} "$TEMP\dotNET472Web.exe"
+        DetailPrint "Installing .NET SDK"
+        StrCpy $SDK_InstallNeeded ${FALSE}
+        StrCpy $SDK_Installed ${FALSE}
+        StrCpy $SDK_RebootNeeded ${FALSE}
+        NSISdl::download ${SDK_LINK} "$TEMP\dotnetSDK6.exe"
+        ${If} ${FileExists} "$TEMP\dotnetSDK6.exe"
             ${Log} ".NET installation loaded successfully"
-            StrCpy $Framework_Installed ${TRUE}
+            StrCpy $SDK_Installed ${TRUE}
             ${If} ${Silent}
-                ExecWait "$TEMP\dotNET472Web.exe /q /norestart" $7
+                ExecWait "$TEMP\dotnetSDK6.exe /q /norestart" $7
             ${Else}
-                ExecWait "$TEMP\dotNET472Web.exe /showrmui /passive /norestart" $7
+                ExecWait "$TEMP\dotnetSDK6.exe /showrmui /passive /norestart" $7
             ${EndIf}
             ${Log} ".NET installation exit code $7"
             ${If} $7 == 1641
             ${OrIf} $7 == 3010
-                StrCpy $Framework_RebootNeeded ${TRUE}
+                StrCpy $SDK_RebootNeeded ${TRUE}
             ${EndIf}
         ${Else}
-            ${Log} "Unable to load .NET installation. Installing app without framework"
-            MessageBox MB_OK|MB_ICONEXCLAMATION $(FrameworkInstallFailure)
+            ${Log} "Unable to load .NET installation. Installing app without SDK"
+            MessageBox MB_OK|MB_ICONEXCLAMATION $(SDKInstallFailure)
         ${EndIf}
 
         Pop $7
@@ -407,7 +431,7 @@ var Framework_RebootNeeded
 
 !macroend
 
-!define Framework_Check '!insertmacro _CheckFramework'
-!define Framework_Install '!insertmacro _InstallFramework'
+!define SDK_Check '!insertmacro _CheckSDK'
+!define SDK_Install '!insertmacro _InstallSDK'
 
-;-----.NET Framework installation-----
+;-----.NET SDK installation-----

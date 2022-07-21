@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 
@@ -7,10 +6,6 @@ namespace TickTrader.BotTerminal
 {
     public abstract class ParameterSetupViewModel : PropertySetupViewModel
     {
-        public static readonly string NullableIntTypeName = typeof(int?).GetTypeInfo().FullName;
-        public static readonly string NullableDoubleTypeName = typeof(double?).GetTypeInfo().FullName;
-
-
         public ParameterDescriptor Descriptor { get; }
 
         public string DataType { get; }

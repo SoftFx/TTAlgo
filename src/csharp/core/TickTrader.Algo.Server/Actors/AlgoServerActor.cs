@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
@@ -49,6 +50,7 @@ namespace TickTrader.Algo.Server
             Receive<AlgoServerPrivate.RuntimeRequest, IActorRef>(r => _runtimes.GetRuntime(r.Id));
             Receive<AlgoServerPrivate.PkgRuntimeIdRequest, string>(r => _runtimes.GetPkgRuntimeId(r.PkgId));
             Receive<AlgoServerPrivate.RuntimeStoppedMsg>(msg => _runtimes.OnRuntimeStopped(msg.Id));
+            Receive<AlgoServerPrivate.PkgRuntimeInvalidMsg>(OnPkgRuntimeInvalid);
             Receive<AlgoServerPrivate.AccountControlRequest, AccountControlModel>(r => _accounts.GetAccountControl(r.Id));
 
             Receive<LocalAlgoServer.PkgFileExistsRequest, bool>(r => _pkgStorage.PackageFileExists(r.PkgName));
@@ -68,7 +70,7 @@ namespace TickTrader.Algo.Server
             Receive<LocalAlgoServer.GeneratePluginIdRequest, string>(r => _plugins.GeneratePluginId(r.PluginDisplayName));
             Receive<AddPluginRequest>(r => _plugins.AddPlugin(r));
             Receive<ChangePluginConfigRequest>(r => _plugins.UpdateConfig(r));
-            Receive<RemovePluginRequest>(r => _plugins.RemovePlugin(r));
+            Receive<RemovePluginRequest>(RemovePlugin);
             Receive<StartPluginRequest>(r => _plugins.StartPlugin(r));
             Receive<StopPluginRequest>(r => _plugins.StopPlugin(r));
             Receive<PluginLogsRequest, PluginLogsResponse>(r => _plugins.GetPluginLogs(r));
@@ -166,31 +168,54 @@ namespace TickTrader.Algo.Server
             var pkgId = update.PkgId;
             var pkgRefId = update.LatestPkgRefId;
 
-            var oldRuntime = _runtimes.GetPkgRuntime(pkgId);
-            if (oldRuntime != null)
-                RuntimeControlModel.MarkObsolete(oldRuntime);
+            _runtimes.MarkPkgRuntimeObsolete(pkgId);
 
             if (string.IsNullOrEmpty(pkgRefId))
-                return;
+            {
+                _plugins.TellAllPlugins(new PkgRuntimeUpdate(pkgId, null));
+            }
+            else
+            {
+                var runtimeId = CreatePkgRuntime(pkgId);
+                _plugins.TellAllPlugins(new PkgRuntimeUpdate(pkgId, runtimeId));
+            }
+        }
 
-            var runtimeId = CreatePkgRuntime(pkgId);
-            _plugins.TellAllPlugins(new PkgRuntimeUpdate(pkgId, runtimeId));
+        private void OnPkgRuntimeInvalid(AlgoServerPrivate.PkgRuntimeInvalidMsg msg)
+        {
+            var pkgId = msg.PkgId;
+
+            // Runtime can be marked obsolete after sending notification about invalid state
+            // We need to check if sender runtime is still package runtime
+            if (_runtimes.GetPkgRuntimeId(pkgId) == msg.RuntimeId)
+            {
+                _runtimes.MarkPkgRuntimeObsolete(pkgId);
+
+                var runtimeId = CreatePkgRuntime(pkgId);
+                _plugins.TellAllPlugins(new PkgRuntimeUpdate(pkgId, runtimeId));
+            }
         }
 
         private string CreatePkgRuntime(string pkgId)
         {
             var pkgRef = _pkgStorage.GetPkgRef(pkgId);
 
-            var pkgInfo = pkgRef.PkgInfo;
-            if (!pkgInfo.IsValid)
+            if (pkgRef == null)
             {
-                _logger.Debug($"Skipped creating runtime for pkg ref '{pkgRef.Id}'");
+                _logger.Debug($"Skipped creating runtime for package '{pkgId}': no package");
                 return null;
             }
-
-            var runtimeId = pkgRef.Id.Replace('/', '-');
-            _runtimes.CreateRuntime(runtimeId, pkgRef);
-            return runtimeId;
+            else if (!pkgRef.PkgInfo.IsValid)
+            {
+                _logger.Debug($"Skipped creating runtime for pkg ref '{pkgRef.Id}': invalid package");
+                return null;
+            }
+            else
+            {
+                var runtimeId = _runtimes.CreatePkgRuntime(pkgRef);
+                _logger.Debug($"Package '{pkgId}' current runtime: {runtimeId}");
+                return runtimeId;
+            }
         }
 
         private async Task RemoveAccount(RemoveAccountRequest request)
@@ -201,6 +226,30 @@ namespace TickTrader.Algo.Server
             await _plugins.RemoveAllPluginsFromAccount(accId);
 
             await _accounts.RemoveAccountInternal(accId, account);
+        }
+
+        private async Task RemovePlugin(RemovePluginRequest request)
+        {
+            var pluginId = request.PluginId;
+
+            await _plugins.RemovePlugin(request);
+
+            if (request.CleanAlgoData)
+            {
+                try
+                {
+                    _pluginFiles.ClearFolder(new ClearPluginFolderRequest(pluginId, PluginFolderInfo.Types.PluginFolderId.AlgoData));
+                }
+                catch (Exception) { }
+            }
+            if (request.CleanLog)
+            {
+                try
+                {
+                    _pluginFiles.ClearFolder(new ClearPluginFolderRequest(pluginId, PluginFolderInfo.Types.PluginFolderId.BotLogs));
+                }
+                catch (Exception) { }
+            }
         }
 
 

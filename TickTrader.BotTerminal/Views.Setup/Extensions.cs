@@ -67,7 +67,6 @@ namespace TickTrader.BotTerminal
     {
         public StorageSymbolKey(string name, SymbolConfig.Types.SymbolOrigin origin) : base(name, origin) { }
 
-
         int IComparable<ISymbolKey>.CompareTo(ISymbolKey other)
         {
             if (Origin == other.Origin)

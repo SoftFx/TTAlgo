@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
         private LocaleSelector()
         {
             Locales = new ObservableCollection<Locale> {
-                new Locale() { Code="en-gb", Name="English" },
+                new Locale() { Code="en-GB", Name="English" },
                 new Locale() { Code="ru-ru", Name="Русский" }
             };
 

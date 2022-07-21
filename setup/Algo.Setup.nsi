@@ -97,7 +97,7 @@ Function .onInit
     ${Terminal_Init}
     ${AlgoServer_Init}
 
-    StrCpy $Framework_Checked ${FALSE}
+    StrCpy $SDK_Checked ${FALSE}
 
 FunctionEnd
 
@@ -124,8 +124,8 @@ Section "Core files" TerminalCore
     CreateDirectory $Terminal_InstDir
     ${SetLogFile} "$Terminal_InstDir\install.log"
 
-    ${Framework_Check}
-    ${Framework_Install}
+    ${SDK_Check}
+    ${SDK_Install}
 
     ${Print} "Installing AlgoTerminal"
     ${Log} "AlgoTerminal Id: $Terminal_Id"
@@ -194,8 +194,8 @@ Section "Core files" AlgoServerCore
     CreateDirectory $AlgoServer_InstDir
     ${SetLogFile} "$AlgoServer_InstDir\install.log"
 
-    ${Framework_Check}
-    ${Framework_Install}
+    ${SDK_Check}
+    ${SDK_Install}
 
     ${Print} "Installing AlgoServer"
     ${Log} "AlgoServer Id: $AlgoServer_Id"

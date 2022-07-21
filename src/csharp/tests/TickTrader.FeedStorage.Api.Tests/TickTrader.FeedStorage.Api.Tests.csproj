@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
-
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
-
     <SignAssembly>true</SignAssembly>
-
     <AssemblyOriginatorKeyFile>algo.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0-preview-20220131-20" />
+    <PackageReference Include="TeamCity.VSTest.TestAdapter" Version="1.0.36" />
     <PackageReference Include="xunit" Version="2.4.2-pre.12" />
     <PackageReference Include="xunit.analyzers" Version="0.12.0-pre.19" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -21,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\TickTrader.BotTerminal\TickTrader.BotTerminal.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.FeedStorage\TickTrader.FeedStorage.csproj" />
     <ProjectReference Include="..\TestEnviroment\TestEnviroment.csproj" />
   </ItemGroup>

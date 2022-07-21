@@ -26,7 +26,7 @@ namespace TickTrader.FeedStorage
         public virtual bool IsDownloadAvailable => true;
 
 
-        public ISymbolInfo Info { get; }
+        public ISymbolInfo Info { get; private set; }
 
         public abstract SymbolConfig.Types.SymbolOrigin Origin { get; }
 
@@ -42,9 +42,16 @@ namespace TickTrader.FeedStorage
             _series = new ConcurrentDictionary<ISeriesKey, IStorageSeries>();
             _storage = storage;
 
-            Info = info;
+            UpdateInfo(info);
         }
 
+
+        internal BaseSymbol UpdateInfo(ISymbolInfo info)
+        {
+            Info = info;
+
+            return this;
+        }
 
         public abstract Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
 
@@ -115,22 +122,6 @@ namespace TickTrader.FeedStorage
 
         string ISymbolKey.Name => Name; // protection for correct object serialization
 
-        public override int GetHashCode()
-        {
-            return HashCode.GetComposite(Name, Origin);
-        }
-
-        int IComparable<ISymbolKey>.CompareTo(ISymbolKey other)
-        {
-            if (Origin == other.Origin)
-                return Name.CompareTo(other.Name);
-            else
-                return Origin.CompareTo(other.Origin);
-        }
-
-        public bool Equals(ISymbolKey other)
-        {
-            return Origin == other.Origin && Name == other.Name;
-        }
+        public override int GetHashCode() => ((ISymbolKey)this).GetHashCode();
     }
 }

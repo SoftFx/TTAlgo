@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
         xmlns:c="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
-        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
         mc:Ignorable="d"
         Title="{Binding Title}"
         Height="600" Width="1000"
@@ -24,7 +24,7 @@
             <ToolBar Height="33">
                 <Button Style="{StaticResource ToolBarButton}" Command="{Binding CancelChanges}" IsEnabled="{Binding RefreshCounter.Update, UpdateSourceTrigger=PropertyChanged}">
                     <Button.Content>
-                        <fa:ImageAwesome Icon="Share" Style="{StaticResource ToolBarIcon}"/>
+                        <fa:IconBlock Icon="Share" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>
                     <Button.ToolTip>
                         <TextBlock Text="Reset Changes"/>
@@ -32,7 +32,7 @@
                 </Button>
                 <Button Style="{StaticResource ToolBarSaveButton}" Command="{Binding SaveChanges}">
                     <Button.Content>
-                        <fa:ImageAwesome Icon="Save" Style="{StaticResource ToolBarIcon}"/>
+                        <fa:IconBlock Icon="Save" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>
                     <Button.ToolTip>
                         <TextBlock Text="Save Changes"/>
@@ -40,19 +40,19 @@
                 </Button>
                 <Button Style="{StaticResource ToolBarAgentStartButton}" Command="{Binding StartAgent}">
                     <Button.Content>
-                        <fa:ImageAwesome Style="{StaticResource StartAndRestartToolBarIcon}"/>
+                        <fa:IconBlock Style="{StaticResource StartAndRestartToolBarIcon}"/>
                     </Button.Content>
                 </Button>
 
                 <Button Style="{StaticResource ToolBarStopButton}" Command="{Binding StopAgent}">
                     <Button.Content>
-                        <fa:ImageAwesome Icon="StopCircleOutline" Style="{StaticResource ToolBarIcon}"/>
+                        <fa:IconBlock Icon="StopCircle" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>
                 </Button>
             </ToolBar>
         </ToolBarTray>
 
-        <fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>
+        <fa:IconBlock x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>
 
         <TabControl Grid.Row="1" Style="{StaticResource MainTabControl}">
             <TabControl.Resources>
@@ -64,7 +64,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome x:Name="iconUserTab" Icon="AddressCardOutline" Style="{StaticResource UserTabIconErrorStyle}"/>
+                        <fa:IconBlock x:Name="iconUserTab" Icon="AddressCard" Style="{StaticResource UserTabIconErrorStyle}"/>
                         <TextBlock x:Name="textUserTab" Text="User credentials" Style="{StaticResource UserTabItemErrorStyle}"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -87,7 +87,7 @@
             <TabItem DataContext="{Binding ProtocolModel}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome Icon="Desktop"/>
+                        <fa:IconBlock Icon="Desktop"/>
                         <TextBlock Text="Terminal connection" Style="{StaticResource TabName}"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -106,7 +106,7 @@
             <TabItem DataContext="{Binding ServerModel}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome Icon="Server"/>
+                        <fa:IconBlock Icon="Server"/>
                         <TextBlock Text="WEB Admin"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -126,7 +126,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome Icon="PlusSquareOutline"/>
+                        <fa:IconBlock Icon="PlusSquare"/>
                         <TextBlock Text="Advanced settings"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -168,7 +168,7 @@
                 <TextBlock Text="Logs" Style="{StaticResource LogsHeader}" />
                 <Button Grid.Column="1" Style="{StaticResource OpenLogsFolderButton}" Command="{Binding OpenLogsFolder}">
                     <Button.Content>
-                        <fa:ImageAwesome Icon="FolderOutlinepenOutline" Style="{x:Null}"/>
+                        <fa:IconBlock Icon="Folder" FontSize="18" Style="{x:Null}"/>
                     </Button.Content>
                     <Button.ToolTip>
                         <TextBlock Text="Show in folder"/>

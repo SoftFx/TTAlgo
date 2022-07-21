@@ -117,6 +117,18 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Assets_AvailableVolume" xml:space="preserve">
+    <value>Available Volume</value>
+  </data>
+  <data name="Assets_Currency" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="Assets_LockedVolume" xml:space="preserve">
+    <value>Locked Volume</value>
+  </data>
+  <data name="Assets_Volume" xml:space="preserve">
+    <value>Volume</value>
+  </data>
   <data name="ChartType_Candle" xml:space="preserve">
     <value>Candle</value>
   </data>
@@ -149,6 +161,9 @@
   </data>
   <data name="ConnectionErrorCode_NetworkError" xml:space="preserve">
     <value>Cannot connect server, please check your network connection</value>
+  </data>
+  <data name="ConnectionErrorCode_RejectedByServer" xml:space="preserve">
+    <value>Incorrect throttling setting</value>
   </data>
   <data name="ConnectionErrorCode_ServerError" xml:space="preserve">
     <value>Server returned error, please contact the support service</value>
@@ -183,194 +198,11 @@
   <data name="ContextMenu_Timeline" xml:space="preserve">
     <value>Timeline</value>
   </data>
-  <data name="Journal_Message" xml:space="preserve">
-    <value>Message</value>
-  </data>
-  <data name="Journal_Time" xml:space="preserve">
-    <value>Time</value>
-  </data>
-  <data name="Menu_BotTrader" xml:space="preserve">
-    <value>AlgoTerminal</value>
-  </data>
-  <data name="Menu_ExitBotTrader" xml:space="preserve">
-    <value>Exit</value>
-  </data>
-  <data name="Menu_Language" xml:space="preserve">
-    <value>Language</value>
-  </data>
-  <data name="Menu_LogIn" xml:space="preserve">
-    <value>Log In...</value>
-  </data>
-  <data name="Menu_LogOut" xml:space="preserve">
-    <value>Log Out</value>
-  </data>
-  <data name="Menu_ManageAccounts" xml:space="preserve">
-    <value>Manage accounts</value>
-  </data>
-  <data name="Menu_NewChart" xml:space="preserve">
-    <value>New Chart</value>
-  </data>
-  <data name="Menu_NewOrder" xml:space="preserve">
-    <value>New Order</value>
-  </data>
-  <data name="Menu_Preferences" xml:space="preserve">
-    <value>Preferences</value>
-  </data>
-  <data name="Menu_Theme" xml:space="preserve">
-    <value>Theme</value>
-  </data>
-  <data name="OrderDialog_Title" xml:space="preserve">
-    <value>Open order</value>
-  </data>
-  <data name="Order_Amount" xml:space="preserve">
-    <value>Amount</value>
-  </data>
-  <data name="Order_OrderType" xml:space="preserve">
-    <value>Order type</value>
-  </data>
-  <data name="Order_Price" xml:space="preserve">
-    <value>Price</value>
-  </data>
-  <data name="Order_Side" xml:space="preserve">
-    <value>Side</value>
-  </data>
-  <data name="Order_Symbol" xml:space="preserve">
-    <value>Symbol</value>
-  </data>
-  <data name="Order_Volume" xml:space="preserve">
-    <value>Volume</value>
-  </data>
-  <data name="Position_Amount" xml:space="preserve">
-    <value>Amount</value>
-  </data>
-  <data name="Position_Side" xml:space="preserve">
-    <value>Side</value>
-  </data>
-  <data name="Position_Symbol" xml:space="preserve">
-    <value>Symbol</value>
-  </data>
-  <data name="SymbolDetails_Buy" xml:space="preserve">
-    <value>Buy</value>
-  </data>
-  <data name="SymbolDetails_Sell" xml:space="preserve">
-    <value>Sell</value>
-  </data>
-  <data name="Tab_Algo" xml:space="preserve">
-    <value>Algo Repository</value>
-  </data>
-  <data name="Tab_Assets" xml:space="preserve">
-    <value>Assets</value>
-  </data>
-  <data name="Tab_BotJournal" xml:space="preserve">
-    <value>Bot Log</value>
-  </data>
-  <data name="Tab_History" xml:space="preserve">
-    <value>History</value>
-  </data>
-  <data name="Tab_Journal" xml:space="preserve">
-    <value>Journal</value>
-  </data>
-  <data name="Tab_Orders" xml:space="preserve">
-    <value>Orders</value>
-  </data>
-  <data name="Tab_Positions" xml:space="preserve">
-    <value>Positions</value>
-  </data>
-  <data name="Tab_Symbols" xml:space="preserve">
-    <value>Symbols</value>
-  </data>
-  <data name="Tab_Trade" xml:space="preserve">
-    <value>Trade</value>
-  </data>
-  <data name="Theme_Dark" xml:space="preserve">
-    <value>Dark</value>
-  </data>
-  <data name="Theme_Light" xml:space="preserve">
-    <value>Light</value>
-  </data>
-  <data name="TimelineType_Real" xml:space="preserve">
-    <value>Real</value>
-  </data>
-  <data name="TimelineType_Uniform" xml:space="preserve">
-    <value>Uniform</value>
-  </data>
-  <data name="TimePeriod_All" xml:space="preserve">
-    <value>All</value>
-  </data>
-  <data name="TimePeriod_CurrentMonth" xml:space="preserve">
-    <value>Current month</value>
-  </data>
-  <data name="TimePeriod_PreviousMonth" xml:space="preserve">
-    <value>Previous month</value>
-  </data>
-  <data name="TimePeriod_Today" xml:space="preserve">
-    <value>Today</value>
-  </data>
-  <data name="TimePeriod_Yesterday" xml:space="preserve">
-    <value>Yesterday</value>
-  </data>
-  <data name="TimePeriod_Custom" xml:space="preserve">
-    <value>Custom</value>
-  </data>
-  <data name="TimePeriod_LastSixMonths" xml:space="preserve">
-    <value>Last 6 months</value>
-  </data>
-  <data name="TimePeriod_LastThreeMonths" xml:space="preserve">
-    <value>Last 3 months</value>
-  </data>
-  <data name="TimePeriod_LastYear" xml:space="preserve">
-    <value>Last 12 months</value>
-  </data>
-  <data name="TradeDirection_All" xml:space="preserve">
-    <value>All directions</value>
-  </data>
-  <data name="TradeDirection_Buy" xml:space="preserve">
-    <value>Buy</value>
-  </data>
-  <data name="TradeDirection_Sell" xml:space="preserve">
-    <value>Sell</value>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
   </data>
   <data name="DownloadingTradeHistoryError" xml:space="preserve">
     <value>An error occurred while loading history</value>
-  </data>
-  <data name="Menu_InstallVSPackage" xml:space="preserve">
-    <value>Install or update Visual Studio plug-in...</value>
-  </data>
-  <data name="Menu_Tools" xml:space="preserve">
-    <value>Tools</value>
-  </data>
-  <data name="Theme_Classic" xml:space="preserve">
-    <value>Classic</value>
-  </data>
-  <data name="PluginError_IncompatibleApiNewerVersion" xml:space="preserve">
-    <value>This indicator or bot uses incompatible (newer) API version. Please update Algo Terminal to be able to run this indicator/bot.</value>
-  </data>
-  <data name="PluginError_HasInvalidProperties" xml:space="preserve">
-    <value />
-  </data>
-  <data name="TimePeriod_LastHour" xml:space="preserve">
-    <value>Last Hour</value>
-  </data>
-  <data name="Menu_About" xml:space="preserve">
-    <value>About</value>
-  </data>
-  <data name="Menu_Help" xml:space="preserve">
-    <value>Help</value>
-  </data>
-  <data name="Menu_LoadProfile" xml:space="preserve">
-    <value>Load profile</value>
-  </data>
-  <data name="Menu_SaveProfile" xml:space="preserve">
-    <value>Save profile</value>
-  </data>
-  <data name="Menu_Profile" xml:space="preserve">
-    <value>Profile</value>
-  </data>
-  <data name="Order_StopPrice" xml:space="preserve">
-    <value>Stop Price</value>
-  </data>
-  <data name="Tab_Bots" xml:space="preserve">
-    <value>Bot Instances</value>
   </data>
   <data name="FeedEmulationModel_D" xml:space="preserve">
     <value>Close prices only (based on D bars)</value>
@@ -411,23 +243,83 @@
   <data name="FeedEmulationModel_W" xml:space="preserve">
     <value>Open prices only (based on W bars)</value>
   </data>
-  <data name="Order_OpenPrice" xml:space="preserve">
-    <value>Open Price</value>
+  <data name="Journal_Message" xml:space="preserve">
+    <value>Message</value>
   </data>
-  <data name="Assets_AvailableVolume" xml:space="preserve">
-    <value>Available Volume</value>
+  <data name="Journal_Time" xml:space="preserve">
+    <value>Time</value>
   </data>
-  <data name="Assets_Currency" xml:space="preserve">
-    <value>Currency</value>
+  <data name="Menu_About" xml:space="preserve">
+    <value>About</value>
   </data>
-  <data name="Assets_LockedVolume" xml:space="preserve">
-    <value>Locked Volume</value>
+  <data name="Menu_BotTrader" xml:space="preserve">
+    <value>AlgoTerminal</value>
   </data>
-  <data name="Assets_Volume" xml:space="preserve">
-    <value>Volume</value>
+  <data name="Menu_ExitBotTrader" xml:space="preserve">
+    <value>Exit</value>
   </data>
-  <data name="Copy" xml:space="preserve">
-    <value>Copy</value>
+  <data name="Menu_Help" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="Menu_InstallVSPackage" xml:space="preserve">
+    <value>Install or update Visual Studio plug-in...</value>
+  </data>
+  <data name="Menu_Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Menu_LoadProfile" xml:space="preserve">
+    <value>Load profile</value>
+  </data>
+  <data name="Menu_LogIn" xml:space="preserve">
+    <value>Log In...</value>
+  </data>
+  <data name="Menu_LogOut" xml:space="preserve">
+    <value>Log Out</value>
+  </data>
+  <data name="Menu_ManageAccounts" xml:space="preserve">
+    <value>Manage accounts</value>
+  </data>
+  <data name="Menu_NewChart" xml:space="preserve">
+    <value>New Chart</value>
+  </data>
+  <data name="Menu_NewOrder" xml:space="preserve">
+    <value>New Order</value>
+  </data>
+  <data name="Menu_Preferences" xml:space="preserve">
+    <value>Preferences</value>
+  </data>
+  <data name="Menu_Profile" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="Menu_SaveProfile" xml:space="preserve">
+    <value>Save profile</value>
+  </data>
+  <data name="Menu_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Menu_Tools" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="OptMetric_Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="OptMetric_Equity" xml:space="preserve">
+    <value>max Balance</value>
+  </data>
+  <data name="OptMode_Annealing" xml:space="preserve">
+    <value>Simulated Annealing (fast)</value>
+  </data>
+  <data name="OptMode_Bruteforce" xml:space="preserve">
+    <value>Brute-force (slow)</value>
+  </data>
+  <data name="OptMode_Genetic" xml:space="preserve">
+    <value>Genetic (fast)</value>
+  </data>
+  <data name="OrderDialog_Title" xml:space="preserve">
+    <value>Open order</value>
+  </data>
+  <data name="Order_Amount" xml:space="preserve">
+    <value>Amount</value>
   </data>
   <data name="Order_Comment" xml:space="preserve">
     <value>Comment</value>
@@ -438,23 +330,53 @@
   <data name="Order_CurrentPrice" xml:space="preserve">
     <value>Current Price</value>
   </data>
-  <data name="Order_OpenTime" xml:space="preserve">
-    <value>Time</value>
-  </data>
   <data name="Order_Id" xml:space="preserve">
     <value>ID</value>
   </data>
   <data name="Order_InstanceId" xml:space="preserve">
     <value>Instance Id</value>
   </data>
+  <data name="Order_ModifiedTime" xml:space="preserve">
+    <value>Modified</value>
+  </data>
   <data name="Order_Net_P_L" xml:space="preserve">
     <value>Net P/L</value>
+  </data>
+  <data name="Order_OpenPrice" xml:space="preserve">
+    <value>Open Price</value>
+  </data>
+  <data name="Order_OpenTime" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Order_OrderType" xml:space="preserve">
+    <value>Order type</value>
+  </data>
+  <data name="Order_ParentOrderId" xml:space="preserve">
+    <value>Parent ID</value>
+  </data>
+  <data name="Order_Price" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Order_PriceDeviation" xml:space="preserve">
+    <value>Price Deviation</value>
   </data>
   <data name="Order_P_L" xml:space="preserve">
     <value>P/L</value>
   </data>
+  <data name="Order_ReqOpenPrice" xml:space="preserve">
+    <value>Req Open Price</value>
+  </data>
+  <data name="Order_Side" xml:space="preserve">
+    <value>Side</value>
+  </data>
+  <data name="Order_StopPrice" xml:space="preserve">
+    <value>Stop Price</value>
+  </data>
   <data name="Order_Swap" xml:space="preserve">
     <value>Swap</value>
+  </data>
+  <data name="Order_Symbol" xml:space="preserve">
+    <value>Symbol</value>
   </data>
   <data name="Order_S_L" xml:space="preserve">
     <value>S/L</value>
@@ -464,6 +386,21 @@
   </data>
   <data name="Order_T_P" xml:space="preserve">
     <value>T/P</value>
+  </data>
+  <data name="Order_Volume" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="PluginError_HasInvalidProperties" xml:space="preserve">
+    <value />
+  </data>
+  <data name="PluginError_IncompatibleApiNewerVersion" xml:space="preserve">
+    <value>This indicator or bot uses incompatible (newer) API version. Please update Algo Terminal to be able to run this indicator/bot.</value>
+  </data>
+  <data name="PluginError_IncompatibleApiOlderVersion" xml:space="preserve">
+    <value>This indicator/bot uses incompatible (older) API version. Please update indicator/bot.</value>
+  </data>
+  <data name="Position_Amount" xml:space="preserve">
+    <value>Amount</value>
   </data>
   <data name="Position_CurrentPrice" xml:space="preserve">
     <value>Current Price</value>
@@ -483,8 +420,14 @@
   <data name="Position_PriceDeviation" xml:space="preserve">
     <value>Price Deviation</value>
   </data>
+  <data name="Position_Side" xml:space="preserve">
+    <value>Side</value>
+  </data>
   <data name="Position_Swap" xml:space="preserve">
     <value>Swap</value>
+  </data>
+  <data name="Position_Symbol" xml:space="preserve">
+    <value>Symbol</value>
   </data>
   <data name="Position_Volume" xml:space="preserve">
     <value>Volume</value>
@@ -495,40 +438,97 @@
   <data name="ShowSwap" xml:space="preserve">
     <value>Show Swap</value>
   </data>
-  <data name="OptMetric_Custom" xml:space="preserve">
-    <value>Custom</value>
+  <data name="SymbolDetails_Buy" xml:space="preserve">
+    <value>Buy</value>
   </data>
-  <data name="OptMetric_Equity" xml:space="preserve">
-    <value>max Balance</value>
-  </data>
-  <data name="OptMode_Bruteforce" xml:space="preserve">
-    <value>Brute-force (slow)</value>
-  </data>
-  <data name="OptMode_Genetic" xml:space="preserve">
-    <value>Genetic (fast)</value>
+  <data name="SymbolDetails_Sell" xml:space="preserve">
+    <value>Sell</value>
   </data>
   <data name="Tab_Alert" xml:space="preserve">
     <value>Alerts</value>
   </data>
-  <data name="Order_ModifiedTime" xml:space="preserve">
-    <value>Modified</value>
+  <data name="Tab_Algo" xml:space="preserve">
+    <value>Algo Repository</value>
   </data>
-  <data name="Order_ParentOrderId" xml:space="preserve">
-    <value>Parent ID</value>
+  <data name="Tab_Assets" xml:space="preserve">
+    <value>Assets</value>
   </data>
-  <data name="Order_ReqOpenPrice" xml:space="preserve">
-    <value>Req Open Price</value>
+  <data name="Tab_BotJournal" xml:space="preserve">
+    <value>Bot Log</value>
   </data>
-  <data name="Order_PriceDeviation" xml:space="preserve">
-    <value>Price Deviation</value>
+  <data name="Tab_Bots" xml:space="preserve">
+    <value>Bot Instances</value>
   </data>
-  <data name="ConnectionErrorCode_RejectedByServer" xml:space="preserve">
-    <value>Incorrect throttling setting</value>
+  <data name="Tab_History" xml:space="preserve">
+    <value>History</value>
   </data>
-  <data name="OptMode_Annealing" xml:space="preserve">
-    <value>Simulated Annealing (fast)</value>
+  <data name="Tab_Journal" xml:space="preserve">
+    <value>Journal</value>
   </data>
-  <data name="PluginError_IncompatibleApiOlderVersion" xml:space="preserve">
-    <value>This indicator/bot uses incompatible (older) API version. Please update indicator/bot.</value>
+  <data name="Tab_Orders" xml:space="preserve">
+    <value>Orders</value>
+  </data>
+  <data name="Tab_Positions" xml:space="preserve">
+    <value>Positions</value>
+  </data>
+  <data name="Tab_Symbols" xml:space="preserve">
+    <value>Symbols</value>
+  </data>
+  <data name="Tab_Trade" xml:space="preserve">
+    <value>Trade</value>
+  </data>
+  <data name="Theme_Classic" xml:space="preserve">
+    <value>Classic</value>
+  </data>
+  <data name="Theme_Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Theme_Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="TimelineType_Real" xml:space="preserve">
+    <value>Real</value>
+  </data>
+  <data name="TimelineType_Uniform" xml:space="preserve">
+    <value>Uniform</value>
+  </data>
+  <data name="TimePeriod_All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="TimePeriod_CurrentMonth" xml:space="preserve">
+    <value>Current month</value>
+  </data>
+  <data name="TimePeriod_Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="TimePeriod_LastHour" xml:space="preserve">
+    <value>Last Hour</value>
+  </data>
+  <data name="TimePeriod_LastSixMonths" xml:space="preserve">
+    <value>Last 6 months</value>
+  </data>
+  <data name="TimePeriod_LastThreeMonths" xml:space="preserve">
+    <value>Last 3 months</value>
+  </data>
+  <data name="TimePeriod_LastYear" xml:space="preserve">
+    <value>Last 12 months</value>
+  </data>
+  <data name="TimePeriod_PreviousMonth" xml:space="preserve">
+    <value>Previous month</value>
+  </data>
+  <data name="TimePeriod_Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="TimePeriod_Yesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="TradeDirection_All" xml:space="preserve">
+    <value>All directions</value>
+  </data>
+  <data name="TradeDirection_Buy" xml:space="preserve">
+    <value>Buy</value>
+  </data>
+  <data name="TradeDirection_Sell" xml:space="preserve">
+    <value>Sell</value>
   </data>
 </root>

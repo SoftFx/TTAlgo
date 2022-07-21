@@ -40,17 +40,17 @@ namespace TickTrader.Algo.CoreV1
             return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(null, to, options.ToDomainEnum())));
         }
 
-        public IAsyncEnumerator<TradeReport> GetAsync(ThQueryOptions options = ThQueryOptions.None)
+        public Api.IAsyncEnumerator<TradeReport> GetAsync(ThQueryOptions options = ThQueryOptions.None)
         {
             return AdaptAsync(Provider?.GetTradeHistory(null, null, options.ToDomainEnum()));
         }
 
-        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None)
+        public Api.IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
             return AdaptAsync(Provider?.GetTradeHistory(from, to, options.ToDomainEnum()));
         }
 
-        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, ThQueryOptions options = ThQueryOptions.None)
+        public Api.IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
             return AdaptAsync(Provider?.GetTradeHistory(null, to, options.ToDomainEnum()));
         }
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.CoreV1
             return src.Select(e => new TradeReportAdapter(e, _symbols.GetOrNull(e.Symbol)?.Info));
         }
 
-        private IAsyncEnumerator<TradeReport> AdaptAsync(IAsyncPagedEnumerator<Domain.TradeReportInfo> src)
+        private Api.IAsyncEnumerator<TradeReport> AdaptAsync(IAsyncPagedEnumerator<Domain.TradeReportInfo> src)
         {
             return src.AsAsync().Select(e => (TradeReport)new TradeReportAdapter(e, _symbols.GetOrNull(e.Symbol)?.Info));
         }
@@ -86,17 +86,17 @@ namespace TickTrader.Algo.CoreV1
             return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTriggerHistory(null, to, options.ToDomainEnum())));
         }
 
-        IAsyncEnumerator<TriggerReport> TriggerHistory.GetAsync(ThQueryOptions options)
+        Api.IAsyncEnumerator<TriggerReport> TriggerHistory.GetAsync(ThQueryOptions options)
         {
             return AdaptAsync(Provider?.GetTriggerHistory(null, null, options.ToDomainEnum()));
         }
 
-        IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options)
+        Api.IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options)
         {
             return AdaptAsync(Provider?.GetTriggerHistory(from, to, options.ToDomainEnum()));
         }
 
-        IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime to, ThQueryOptions options)
+        Api.IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime to, ThQueryOptions options)
         {
             return AdaptAsync(Provider?.GetTriggerHistory(null, to, options.ToDomainEnum()));
         }
@@ -111,7 +111,7 @@ namespace TickTrader.Algo.CoreV1
             return src.Select(e => new TriggerReportAdapter(e, _symbols.GetOrNull(e.Symbol)?.Info));
         }
 
-        private IAsyncEnumerator<TriggerReport> AdaptAsync(IAsyncPagedEnumerator<Domain.TriggerReportInfo> src)
+        private Api.IAsyncEnumerator<TriggerReport> AdaptAsync(IAsyncPagedEnumerator<Domain.TriggerReportInfo> src)
         {
             return src.AsAsync().Select(e => (TriggerReport)new TriggerReportAdapter(e, _symbols.GetOrNull(e.Symbol)?.Info));
         }

@@ -9,8 +9,7 @@ using System.Linq;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
-using TickTrader.Algo.ServerControl;
-using TickTrader.FeedStorage.Api;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 using AlgoApi = TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.BotTerminal
@@ -427,9 +426,9 @@ namespace TickTrader.BotTerminal
 
             if (descriptor.IsEnum)
                 return new EnumParamSetupViewModel(descriptor);
-            if (descriptor.DataType == ParameterSetupViewModel.NullableIntTypeName)
+            if (descriptor.DataType == ParameterDescriptor.NullableIntTypeName)
                 return new NullableIntParamSetupViewModel(descriptor);
-            if (descriptor.DataType == ParameterSetupViewModel.NullableDoubleTypeName)
+            if (descriptor.DataType == ParameterDescriptor.NullableDoubleTypeName)
                 return new NullableDoubleParamSetupViewModel(descriptor);
 
             switch (descriptor.DataType)

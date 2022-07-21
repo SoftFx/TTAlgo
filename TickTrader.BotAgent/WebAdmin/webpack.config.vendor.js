@@ -4,7 +4,7 @@ var isDevBuild = environment === "development";
 var path = require('path');
 var webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const Uglify = require("uglifyjs-webpack-plugin");
 
 module.exports = {
     resolve: {
@@ -69,6 +69,6 @@ module.exports = {
             name: '[name]_[hash]'
         })
     ].concat(isDevBuild ? [] : [
-        new UglifyJsPlugin(),
+        new Uglify(),
     ])
 };

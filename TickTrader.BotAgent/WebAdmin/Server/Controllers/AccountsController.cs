@@ -13,6 +13,7 @@ using TickTrader.Algo.Server;
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
+    [ApiController]
     [Authorize]
     public class AccountsController : Controller
     {

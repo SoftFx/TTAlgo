@@ -5,6 +5,7 @@ using TickTrader.Algo.Core.Lib;
 using System.Diagnostics;
 using System.Windows;
 using TickTrader.Algo.Domain;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
 {
@@ -100,7 +101,7 @@ namespace TickTrader.BotTerminal
 
         public void OpenFolder()
         {
-            Process.Start(PackageDirectory);
+            WinExplorerHelper.ShowFolder(PackageDirectory);
         }
 
         public void CopyPath()

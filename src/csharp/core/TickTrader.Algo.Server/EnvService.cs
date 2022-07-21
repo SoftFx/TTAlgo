@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Server
             AppDataFolder = Path.Combine(appFolder, "Settings");
             ServerStateFilePath = Path.Combine(AppDataFolder, "server.state.json");
 
-            RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AlgoRuntime", "TickTrader.Algo.RuntimeV1Host.NetFx.exe");
+            RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
 
             PathHelper.EnsureDirectoryCreated(appFolder);
             PathHelper.EnsureDirectoryCreated(AlgoRepositoryFolder);

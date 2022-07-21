@@ -30,7 +30,7 @@ var serverProjectPath = sourcesDirPath.CombineWithFilePath("TickTrader.BotAgent/
 var serverBinPath = outputPath.Combine("server");
 var configuratorProjectPath = sourcesDirPath.CombineWithFilePath("TickTrader.BotAgent.Configurator/TickTrader.BotAgent.Configurator.csproj");
 var configuratorBinPath = outputPath.Combine("configurator");
-var publicApiProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.Server.PublicAPI/TickTrader.Algo.Server.PublicAPI.csproj");
+var publicApiProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.Server.PublicAPI.Client/TickTrader.Algo.Server.PublicAPI.Client.csproj");
 var publicApiBinPath = outputPath.Combine("public-api");
 var symbolStorageProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.FeedStorage/TickTrader.FeedStorage.csproj");
 var symbolStorageBinPath = outputPath.Combine("symbol-storage");
@@ -263,11 +263,19 @@ Task("PublishPublicApi")
          Configuration = configuration,
          Verbosity = details,
          NoBuild = true,
-         OutputDirectory = publicApiBinPath,
+         OutputDirectory = publicApiBinPath.Combine("net472"),
          Framework = "net472"
       });
 
-      DeleteFiles(publicApiBinPath.CombineWithFilePath("libgrpc_csharp_ext*").ToString());
+      DeleteFiles(publicApiBinPath.Combine("net472").CombineWithFilePath("libgrpc_csharp_ext*").ToString());
+
+      DotNetPublish(publicApiProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = publicApiBinPath.Combine("net6.0"),
+         Framework = "net6.0"
+      });
    }
    finally
    {
@@ -390,8 +398,7 @@ Task("PrepareArtifacts")
       CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").FullPath, repoPath);
 
       var configuratorInstallPath = serverBinPath.Combine("Configurator");
-      CreateDirectory(configuratorInstallPath);
-      CopyFiles(configuratorBinPath.Combine("**/*.*").ToString(), configuratorInstallPath);
+      CopyDirectory(configuratorBinPath, configuratorInstallPath);
    }
    finally
    {
@@ -410,7 +417,7 @@ Task("ZipArtifacts")
       Zip(terminalBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.zip"));
       Zip(serverBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
       Zip(configuratorBinPath, artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
-      Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.net472.zip"));
+      Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.zip"));
       Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
       Zip(backtesterApiBinPath, artifactsPath.CombineWithFilePath($"BacktesterApi {buildId}.zip"));
       Zip(backtesterHostBinPath, artifactsPath.CombineWithFilePath($"BacktesterV1Host {buildId}.x64.zip"));

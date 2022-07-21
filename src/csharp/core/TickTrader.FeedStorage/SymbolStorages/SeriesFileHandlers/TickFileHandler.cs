@@ -33,7 +33,10 @@ namespace TickTrader.FeedStorage.StorageBase
 
         protected override void PreloadLogic(StreamWriter writer)
         {
-            _formatter.WriteTickL2FileHeader(writer);
+            if (_isL2Tick)
+                _formatter.WriteTickL2FileHeader(writer);
+            else
+                _formatter.WriteTickFileHeader(writer);
         }
 
         protected override void PostloadLogic(StreamWriter writer) { }
@@ -110,9 +113,8 @@ namespace TickTrader.FeedStorage.StorageBase
                 ThrowFormatError(lineNumber);
 
             var time = ParseDate(parts[0]);
-
-            double.TryParse(parts[1], out var bid);
-            double.TryParse(parts[2], out var ask);
+            var bid = ReadDouble(parts[1]);
+            var ask = ReadDouble(parts[2]);
 
             return new QuoteInfo(string.Empty, time, bid, ask);
         }
@@ -121,7 +123,7 @@ namespace TickTrader.FeedStorage.StorageBase
         private QuoteInfo ReadL2Slice(string line, int lineNumber)
         {
             var parts = line.Split(_separator);
-            var maxDepth = (parts.Length - 1) / 4;
+            var maxDepth = (parts.Length - 1) / 4; //bid.price, bid.volume, ask.price, ask.volume
 
             if (parts.Length < 5 || ((parts.Length - 1) % 4 != 0))
                 ThrowFormatError(lineNumber);
@@ -146,10 +148,10 @@ namespace TickTrader.FeedStorage.StorageBase
                 int bandNumber = i * 4;
 
                 if (!string.IsNullOrEmpty(partsSpan[bandNumber + 1]))
-                    bids[bidCnt++] = new QuoteBand(double.Parse(partsSpan[bandNumber]), double.Parse(partsSpan[bandNumber + 1]));
+                    bids[bidCnt++] = new QuoteBand(ReadDouble(partsSpan[bandNumber]), ReadDouble(partsSpan[bandNumber + 1]));
 
                 if (!string.IsNullOrEmpty(partsSpan[bandNumber + 3]))
-                    asks[askCnt++] = new QuoteBand(double.Parse(partsSpan[bandNumber + 2]), double.Parse(partsSpan[bandNumber + 3]));
+                    asks[askCnt++] = new QuoteBand(ReadDouble(partsSpan[bandNumber + 2]), ReadDouble(partsSpan[bandNumber + 3]));
             }
 
             var data = new QuoteData

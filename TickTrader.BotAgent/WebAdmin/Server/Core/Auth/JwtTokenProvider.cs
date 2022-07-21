@@ -6,17 +6,17 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Server.PublicAPI;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Core.Auth
 {
     public interface ISecurityTokenProvider
     {
-        string CreateProtocolToken(Algo.ServerControl.JwtPayload payload);
+        string CreateProtocolToken(Algo.Server.PublicAPI.Adapter.JwtPayload payload);
 
-        Algo.ServerControl.JwtPayload ValidateProtocolToken(string token);
+        Algo.Server.PublicAPI.Adapter.JwtPayload ValidateProtocolToken(string token);
 
         string CreateWebToken(ClaimsIdentity identity, out SecurityToken securityToken);
 
@@ -63,7 +63,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Core.Auth
         }
 
 
-        public string CreateProtocolToken(Algo.ServerControl.JwtPayload payload)
+        public string CreateProtocolToken(Algo.Server.PublicAPI.Adapter.JwtPayload payload)
         {
             var claims = new Claim[]
             {
@@ -84,7 +84,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Core.Auth
             return WriteToken(securityToken);
         }
 
-        public Algo.ServerControl.JwtPayload ValidateProtocolToken(string token)
+        public Algo.Server.PublicAPI.Adapter.JwtPayload ValidateProtocolToken(string token)
         {
             try
             {
@@ -105,7 +105,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Core.Auth
                 if (accessLevel == null)
                     throw new ArgumentException($"Missing claim '{nameof(accessLevel)}'");
 
-                return new Algo.ServerControl.JwtPayload
+                return new Algo.Server.PublicAPI.Adapter.JwtPayload
                 {
                     Username = username.Value,
                     SessionId = sessionId.Value,

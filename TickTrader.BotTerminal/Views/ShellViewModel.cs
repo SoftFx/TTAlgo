@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.SymbolManager;
 using TickTrader.FeedStorage.Api;
 using TickTrader.SeriesStorage.Lmdb;
@@ -30,13 +31,10 @@ namespace TickTrader.BotTerminal
         private AlgoEnvironment algoEnv;
         private SymbolManagerViewModel _smbManager;
         private ISymbolCatalog _symbolsCatalog;
-        //private CustomFeedStorage.Handler _userSymbols;
         private BotAgentManager _botAgentManager;
 
         public ShellViewModel(ClientModel.Data commonClient)
         {
-            //_userSymbols = customFeedStorage;
-
             DisplayName = EnvService.Instance.ApplicationName;
 
             eventJournal = new EventJournal(1000);
@@ -71,7 +69,7 @@ namespace TickTrader.BotTerminal
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager, storage.ProfileManager);
 
-            Charts = new ChartCollectionViewModel(clientModel, this, algoEnv);
+            Charts = new ChartCollectionViewModel(clientModel, algoEnv);
 
             BotList = new BotListViewModel(algoEnv);
 
@@ -114,18 +112,6 @@ namespace TickTrader.BotTerminal
         {
             if (clientModel.Symbols.Snapshot.Count > 0 && Charts.Items.Count == 0)
             {
-                //var defaultSymbol = string.Empty;
-                //switch (clientModel.Account.Type)
-                //{
-                //    case AccountTypes.Gross:
-                //    case AccountTypes.Cash:
-                //        defaultSymbol = "EURUSD";
-                //        break;
-                //    case AccountTypes.Net:
-                //        defaultSymbol = "EUR/USD";
-                //        break;
-                //}
-
                 Charts.Open(clientModel.Cache.GetDefaultSymbol()?.Name ?? clientModel.Symbols.Snapshot.First().Key);
                 //clientModel.Connected -= OpenDefaultChart;
             }
@@ -139,9 +125,9 @@ namespace TickTrader.BotTerminal
 
         private void UpdateCommandStates()
         {
-            var state = cManager.State;
             CanDisconnect = cManager.IsLoggedIn;
             ProfileManager.CanLoadProfile = !ConnectionLock.IsLocked;
+
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }
@@ -279,7 +265,7 @@ namespace TickTrader.BotTerminal
             Charts.Open(smb);
         }
 
-        public void ShowChart(string smb, ChartPeriods period)
+        public void ShowChart(string smb, Feed.Types.Timeframe period)
         {
             Charts.OpenOrActivate(smb, period);
         }
@@ -294,8 +280,8 @@ namespace TickTrader.BotTerminal
 
         public TradeInfoViewModel Trade { get; }
         public TradeHistoryViewModel TradeHistory { get; }
-        public AlgoListViewModel AlgoList { get; set; }
-        public SymbolListViewModel SymbolList { get; private set; }
+        public AlgoListViewModel AlgoList { get; }
+        public SymbolListViewModel SymbolList { get; }
         public ChartCollectionViewModel Charts { get; private set; }
         public AccountPaneViewModel AccountPane { get; private set; }
         public JournalViewModel Journal { get; set; }

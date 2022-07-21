@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.PublicAPI.Adapter;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Settings;
 
@@ -92,12 +92,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             if (protocolConfig == null)
                 throw new ArgumentException("Protocol configuration not found");
 
-            if (protocolConfig.ListeningPort < 0 || protocolConfig.ListeningPort > 65535)
+            if (protocolConfig.ListeningPort > 65535)
                 throw new ArgumentException("Invalid port number");
 
             var logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, protocolConfig.LogDirectoryName);
 
-            var serverSettings = new ServerSettings("AlgoServer", protocolConfig.ListeningPort, logDirectory, protocolConfig.LogMessages);
+            var serverSettings = new ServerSettings(logDirectory, protocolConfig.LogMessages);
 
             return serverSettings;
         }
