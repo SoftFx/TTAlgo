@@ -83,6 +83,7 @@ namespace TickTrader.Algo.Server
             Receive<UploadPluginFileRequest, string>(r => _pluginFiles.GetFileWritePath(r));
 
             Receive<PluginAlertsRequest, AlertRecordInfo[]>(r => _alerts.GetAlerts(r));
+            Receive<LocalAlgoServer.SubscribeToAlertsCmd>(cmd => _alerts.AttachAlertChannel(cmd.AlertSink));
         }
 
 

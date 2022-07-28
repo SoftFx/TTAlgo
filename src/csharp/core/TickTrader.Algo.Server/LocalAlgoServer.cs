@@ -88,6 +88,7 @@ namespace TickTrader.Algo.Server
         public Task<string> GetPluginFileWritePath(UploadPluginFileRequest request) => _server.Ask<string>(request);
 
         public Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request) => _server.Ask<AlertRecordInfo[]>(request);
+        public Task SubscribeToAlerts(ChannelWriter<AlertRecordInfo> channel) => _server.Ask(new SubscribeToAlertsCmd(channel));
 
         public Task SubscribeToUpdates(ChannelWriter<IMessage> channel) => EventBus.SubscribeToUpdates(channel, true);
 
@@ -142,6 +143,16 @@ namespace TickTrader.Algo.Server
             public GeneratePluginIdRequest(string pluginDisplayName)
             {
                 PluginDisplayName = pluginDisplayName;
+            }
+        }
+
+        internal class SubscribeToAlertsCmd
+        {
+            public ChannelWriter<AlertRecordInfo> AlertSink { get; }
+
+            public SubscribeToAlertsCmd(ChannelWriter<AlertRecordInfo> alertSink)
+            {
+                AlertSink = alertSink;
             }
         }
     }

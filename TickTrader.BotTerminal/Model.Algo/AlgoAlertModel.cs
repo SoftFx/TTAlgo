@@ -44,6 +44,15 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void AddAlert(AlertRecordInfo record)
+        {
+            lock (_locker)
+            {
+                _buffer.Add(new AlertUpdateEventArgsImpl(record.PluginId, Name, record.TimeUtc, record.Message, _remoteAgent != null));
+                _newAlerts = true;
+            }
+        }
+
         public void AddAlerts(List<IAlertUpdateEventArgs> records)
         {
             lock (_locker)
@@ -104,6 +113,8 @@ namespace TickTrader.BotTerminal
         event Action<IEnumerable<IAlertUpdateEventArgs>> AlertUpdateEvent;
 
         void AddAlert(string instanceId, PluginLogRecord record);
+
+        void AddAlert(AlertRecordInfo record);
 
         void AddAlerts(List<IAlertUpdateEventArgs> records);
 
