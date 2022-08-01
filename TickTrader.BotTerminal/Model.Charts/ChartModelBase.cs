@@ -90,9 +90,9 @@ namespace TickTrader.BotTerminal
             _stateController.StateChanged += (o, n) => _logger.Debug("Chart [" + Model.Name + "] " + o + " => " + n);
         }
 
-        protected LocalAlgoAgent Agent => AlgoEnv.LocalAgent;
+        protected LocalAlgoAgent2 Agent => AlgoEnv.LocalAgent;
         protected SymbolInfo Model { get; private set; }
-        protected TraderClientModel ClientModel => Agent.ClientModel;
+        protected TraderClientModel ClientModel => AlgoEnv.ClientModel;
         protected AlgoEnvironment AlgoEnv { get; }
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
         //protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
@@ -217,7 +217,7 @@ namespace TickTrader.BotTerminal
         {
             if (indicators.Remove(i))
             {
-                Agent.IdProvider.UnregisterPlugin(i.InstanceId);
+                //Agent.IdProvider.UnregisterPlugin(i.InstanceId);
                 i.Dispose();
             }
         }

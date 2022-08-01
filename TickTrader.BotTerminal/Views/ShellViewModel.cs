@@ -49,11 +49,11 @@ namespace TickTrader.BotTerminal
 
             _soundCenter = new SoundsNotificationCenter(cManager, storage);
 
-            Agent = new LocalAlgoAgent(this, clientModel, storage);
+            Agent = new LocalAlgoAgent2(storage);
 
             _botAgentManager = new BotAgentManager(storage, this);
 
-            algoEnv = new AlgoEnvironment(this, Agent, _botAgentManager);
+            algoEnv = new AlgoEnvironment(this, clientModel, Agent, _botAgentManager);
 
             AlgoList = new AlgoListViewModel(algoEnv);
             SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
@@ -166,9 +166,9 @@ namespace TickTrader.BotTerminal
 
         public void Connect()
         {
-            ShootBots(out var isConfirmed);
+            //ShootBots(out var isConfirmed);
 
-            if (isConfirmed)
+            //if (isConfirmed)
                 Connect(null);
         }
 
@@ -176,9 +176,9 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                ShootBots(out var isConfirmed);
+                //ShootBots(out var isConfirmed);
 
-                if (isConfirmed)
+                //if (isConfirmed)
                     cManager.TriggerDisconnect();
             }
             catch (Exception ex)
@@ -187,23 +187,23 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void ShootBots(out bool isConfirmed)
-        {
-            isConfirmed = true;
+        //public void ShootBots(out bool isConfirmed)
+        //{
+        //    isConfirmed = true;
 
-            if (ConnectionLock.IsLocked)
-            {
-                bool hasRunningBots = algoEnv.LocalAgent.HasRunningBots;
+        //    if (ConnectionLock.IsLocked)
+        //    {
+        //        bool hasRunningBots = algoEnv.LocalAgent.HasRunningBots;
 
-                var exit = new ConfirmationDialogViewModel(DialogButton.YesNo, hasRunningBots ? DialogMode.Warning : DialogMode.Question, DialogMessages.LogoutTitle, DialogMessages.LogoutMessage, hasRunningBots ? DialogMessages.BotsWorkError : null);
-                wndManager.ShowDialog(exit, this);
+        //        var exit = new ConfirmationDialogViewModel(DialogButton.YesNo, hasRunningBots ? DialogMode.Warning : DialogMode.Question, DialogMessages.LogoutTitle, DialogMessages.LogoutMessage, hasRunningBots ? DialogMessages.BotsWorkError : null);
+        //        wndManager.ShowDialog(exit, this);
 
-                isConfirmed = exit.DialogResult == DialogResult.OK;
+        //        isConfirmed = exit.DialogResult == DialogResult.OK;
 
-                if (isConfirmed)
-                    StopTerminal(false);
-            }
-        }
+        //        if (isConfirmed)
+        //            StopTerminal(false);
+        //    }
+        //}
 
         public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
@@ -215,17 +215,17 @@ namespace TickTrader.BotTerminal
             var isConfirmed = exit.DialogResult == DialogResult.OK;
 
             if (isConfirmed)
-                StopTerminal(true);
+                StopTerminal();
 
             return Task.FromResult(isConfirmed);
         }
 
-        private async void StopTerminal(bool stopAlgoServer)
+        private async void StopTerminal()
         {
             //await storage.ProfileManager.Stop();
             await storage.ProfileManager.StopCurrentProfile();
 
-            var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent, stopAlgoServer);
+            var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
 
             if (IsActive)
                 await wndManager.ShowDialog(shutdown, this);
@@ -294,7 +294,7 @@ namespace TickTrader.BotTerminal
         public BotListViewModel BotList { get; }
         public WindowManager ToolWndManager => wndManager;
         public DockManagerService DockManagerService { get; set; }
-        public LocalAlgoAgent Agent { get; }
+        public LocalAlgoAgent2 Agent { get; }
         public ConnectionManager ConnectionManager => cManager;
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;
@@ -436,7 +436,6 @@ namespace TickTrader.BotTerminal
             try
             {
                 Charts.SaveChartsSnapshot(profileStorage);
-                Agent.SaveBotsSnapshot(profileStorage);
                 DockManagerService.SaveLayoutSnapshot(profileStorage);
             }
             catch (Exception ex)

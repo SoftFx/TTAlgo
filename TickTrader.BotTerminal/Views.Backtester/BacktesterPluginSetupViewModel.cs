@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
 
         public event Action<BacktesterPluginSetupViewModel, bool> Closed = delegate { };
 
-        private BacktesterPluginSetupViewModel(LocalAlgoAgent agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext, PluginSetupMode mode)
+        private BacktesterPluginSetupViewModel(LocalAlgoAgent2 agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext, PluginSetupMode mode)
         {
             Agent = agent;
             Info = info;
@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
             Agent.Catalog.PluginList.Updated += AllPlugins_Updated;
         }
 
-        public BacktesterPluginSetupViewModel(LocalAlgoAgent agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext)
+        public BacktesterPluginSetupViewModel(LocalAlgoAgent2 agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext)
             : this(agent, info, setupMetadata, setupContext, PluginSetupMode.New)
         {
             DisplayName = $"Setting - {info.Descriptor_.DisplayName}";
@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
             UpdateSetup();
         }
 
-        public BacktesterPluginSetupViewModel(LocalAlgoAgent agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext, PluginConfig config)
+        public BacktesterPluginSetupViewModel(LocalAlgoAgent2 agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext, PluginConfig config)
             : this(agent, info, setupMetadata, setupContext, PluginSetupMode.Edit)
         {
             Config = config;

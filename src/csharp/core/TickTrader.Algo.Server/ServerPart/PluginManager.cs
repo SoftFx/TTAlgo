@@ -173,6 +173,14 @@ namespace TickTrader.Algo.Server
             }
         }
 
+        public async Task<PluginModelProxy> GetProxy(string id)
+        {
+            if (!_plugins.TryGetValue(id, out var plugin))
+                throw Errors.PluginNotFound(id);
+
+            return await PluginModelProxy.Create(plugin);
+        }
+
 
         private IActorRef CreatePluginIntenal(string id, PluginSavedState savedState)
         {

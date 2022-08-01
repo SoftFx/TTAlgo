@@ -119,15 +119,7 @@ namespace TickTrader.BotTerminal
 
         private async Task StartServer(PersistModel storage)
         {
-            var settings = new AlgoServerSettings();
-            settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
-            settings.EnableAccountLogs = Properties.Settings.Default.EnableConnectionLogs;
-            settings.RuntimeSettings.EnableDevMode = Properties.Settings.Default.EnableDevMode;
-            settings.PkgStorage.Assemblies.Add(typeof(MovingAverage).Assembly);
-            settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder);
-            settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
-            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                settings.PkgStorage.AddLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder);
+            var settings = GetSettings();
 
             await AlgoServer.Init(settings);
             if (await AlgoServer.NeedLegacyState())
@@ -140,7 +132,22 @@ namespace TickTrader.BotTerminal
             Mappings = await AlgoServer.GetMappingsInfo(new MappingsInfoRequest());
         }
 
-        private ServerSavedState BuildServerSavedState(PersistModel model)
+        public static AlgoServerSettings GetSettings()
+        {
+            var settings = new AlgoServerSettings();
+            settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
+            settings.EnableAccountLogs = Properties.Settings.Default.EnableConnectionLogs;
+            settings.RuntimeSettings.EnableDevMode = Properties.Settings.Default.EnableDevMode;
+            settings.PkgStorage.Assemblies.Add(typeof(MovingAverage).Assembly);
+            settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder);
+            settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
+            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
+                settings.PkgStorage.AddLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder);
+
+            return settings;
+        }
+
+        public static ServerSavedState BuildServerSavedState(PersistModel model)
         {
             var state = new ServerSavedState();
 
@@ -159,6 +166,7 @@ namespace TickTrader.BotTerminal
                     Id = AccountId.Pack(acc.ServerAddress, acc.Login),
                     UserId = acc.Login,
                     Server = acc.ServerAddress,
+                    DisplayName = $"{acc.ServerAddress} - {acc.Login}",
                 };
 
                 if (acc.HasPassword)
@@ -385,7 +393,7 @@ namespace TickTrader.BotTerminal
             if (_accounts.TryGetValue(accountId, out var account))
             {
                 account.ConnectionState = ClientModel.Connection.State.ToInfo();
-                account.LastError = ClientModel.Connection.LastError;
+                account.LastError = ClientModel.Connection.LastError ?? ConnectionErrorInfo.Ok;
                 OnAccountStateChanged(account);
             }
             else
@@ -395,7 +403,7 @@ namespace TickTrader.BotTerminal
                 {
                     AccountId = accountId,
                     ConnectionState = ClientModel.Connection.State.ToInfo(),
-                    LastError = ClientModel.Connection.LastError,
+                    LastError = ClientModel.Connection.LastError ?? ConnectionErrorInfo.Ok,
                     DisplayName = $"{server} - {userId}"
                 };
                 _accounts.Add(accountId, account);

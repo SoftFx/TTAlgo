@@ -2,9 +2,11 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
@@ -55,6 +57,12 @@ namespace TickTrader.BotTerminal
 
         public IAlertModel AlertModel { get; }
 
+        public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !b.State.IsStopped());
+
+        public bool HasRunningBots => _bots.Snapshot.Values.Any(b => !b.State.IsStopped());
+
+        public MappingCollectionInfo Mappings => _mappings;
+
 
         public event Action<PackageInfo> PackageStateChanged = delegate { };
 
@@ -67,7 +75,7 @@ namespace TickTrader.BotTerminal
         public event Action AccessLevelChanged = delegate { };
 
 
-        public LocalAlgoAgent2(LocalAlgoServer server)
+        public LocalAlgoAgent2(PersistModel storage)
         {
             _syncContext = new DispatcherSync();
 
@@ -83,8 +91,7 @@ namespace TickTrader.BotTerminal
             AlertModel = new AlgoAlertModel(Name);
             AccessManager = new AlgoServerPublicApi.ApiAccessManager(AlgoServerPublicApi.ClientClaims.Types.AccessLevel.Admin);
 
-            _server = server;
-            _ = Init(server);
+            _ = Init(storage);
         }
 
 
@@ -103,15 +110,38 @@ namespace TickTrader.BotTerminal
             });
         }
 
-
-        private async Task Init(LocalAlgoServer server)
+        public async Task Shutdown()
         {
+            try
+            {
+                await Task.Run(() => _server.Stop());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to stop AlgoServer");
+            }
+        }
+
+
+        private async Task Init(PersistModel storage)
+        {
+            var settings = LocalAlgoAgent.GetSettings();
+
+            _server = new LocalAlgoServer();
+            await _server.Init(settings);
+            if (await _server.NeedLegacyState())
+            {
+                var serverSavedState = LocalAlgoAgent.BuildServerSavedState(storage);
+                await _server.LoadLegacyState(serverSavedState);
+            }
+            await _server.Start();
+
             _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
-            _mappings = await server.GetMappingsInfo(new MappingsInfoRequest());
+            _mappings = await _server.GetMappingsInfo(new MappingsInfoRequest());
             _setupContext = new SetupContextInfo(Feed.Types.Timeframe.M1,
                 new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
-            await InitServerListener(server);
+            await InitServerListener(_server);
         }
 
         public Task SubscribeToPluginStatus(string instanceId)
@@ -268,20 +298,27 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void ProcessServerUpdates(IMessage update)
+        private async Task ProcessServerUpdates(IMessage update)
         {
-            switch (update)
+            try
             {
-                case PackageListSnapshot pkgSnapshot: InitPackageList(pkgSnapshot); break;
-                case AccountListSnapshot accSnapshot: InitAccountList(accSnapshot); break;
-                case PluginListSnapshot pluginSnapshot: InitPluginList(pluginSnapshot); break;
-                case PackageUpdate pkgUpdate: OnPackageUpdate(pkgUpdate); break;
-                case AccountModelUpdate accUpdate: OnAccountModelUpdate(accUpdate); break;
-                case PluginModelUpdate pluginUpdate: OnPluginModelUpdate(pluginUpdate); break;
-                case PackageStateUpdate pkgStateUpdate: OnPackageStateUpdate(pkgStateUpdate); break;
-                case AccountStateUpdate accStateUpdate: OnAccountStateUpdate(accStateUpdate); break;
-                case PluginStateUpdate pluginStateUpdate: OnPluginStateUpdate(pluginStateUpdate); break;
-                default: _logger.Error($"Failed to proccess update of type '{update.GetType().FullName}'"); break;
+                switch (update)
+                {
+                    case PackageListSnapshot pkgSnapshot: InitPackageList(pkgSnapshot); break;
+                    case AccountListSnapshot accSnapshot: InitAccountList(accSnapshot); break;
+                    case PluginListSnapshot pluginSnapshot: await InitPluginList(pluginSnapshot); break;
+                    case PackageUpdate pkgUpdate: OnPackageUpdate(pkgUpdate); break;
+                    case AccountModelUpdate accUpdate: OnAccountModelUpdate(accUpdate); break;
+                    case PluginModelUpdate pluginUpdate: OnPluginModelUpdate(pluginUpdate); break;
+                    case PackageStateUpdate pkgStateUpdate: OnPackageStateUpdate(pkgStateUpdate); break;
+                    case AccountStateUpdate accStateUpdate: OnAccountStateUpdate(accStateUpdate); break;
+                    case PluginStateUpdate pluginStateUpdate: OnPluginStateUpdate(pluginStateUpdate); break;
+                    default: _logger.Error($"Failed to proccess update of type '{update.GetType().FullName}'"); break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Failed to proccess update of type '{update.GetType().FullName}'");
             }
         }
 
@@ -315,16 +352,23 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void InitPluginList(PluginListSnapshot snapshot)
+        private async Task InitPluginList(PluginListSnapshot snapshot)
         {
+            var plugins = new List<PluginModelProxy>(snapshot.Plugins.Count);
+            foreach (var plugin in snapshot.Plugins)
+            {
+                plugins.Add(await _server.GetPluginProxy(plugin.InstanceId));
+            }
+
             _syncContext.Invoke(() =>
             {
                 _bots.Clear();
                 _idProvider.Reset();
-                foreach (var bot in snapshot.Plugins)
+                foreach (var bot in plugins)
                 {
-                    _idProvider.RegisterPluginId(bot.InstanceId);
-                    _bots.Add(bot.InstanceId, new LocalTradeBot(bot, this));
+                    var id = bot.Info.InstanceId;
+                    _idProvider.RegisterPluginId(id);
+                    _bots.Add(id, new LocalTradeBot(bot, this));
                 }
             });
         }
@@ -371,15 +415,19 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void OnPluginModelUpdate(PluginModelUpdate update)
+        private async Task OnPluginModelUpdate(PluginModelUpdate update)
         {
+            PluginModelProxy proxy = null;
+            if (update.Action == Update.Types.Action.Added)
+                proxy = await _server.GetPluginProxy(update.Id);
+
             _syncContext.Invoke(() =>
             {
                 switch (update.Action)
                 {
                     case Update.Types.Action.Added:
                         _idProvider.RegisterPluginId(update.Id);
-                        _bots.Add(update.Id, new LocalTradeBot(update.Plugin, this));
+                        _bots.Add(update.Id, new LocalTradeBot(proxy, this));
                         break;
                     case Update.Types.Action.Updated:
                         _bots[update.Id].Update(update.Plugin);

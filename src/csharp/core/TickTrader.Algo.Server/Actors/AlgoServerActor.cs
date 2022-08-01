@@ -84,6 +84,7 @@ namespace TickTrader.Algo.Server
 
             Receive<PluginAlertsRequest, AlertRecordInfo[]>(r => _alerts.GetAlerts(r));
             Receive<LocalAlgoServer.SubscribeToAlertsCmd>(cmd => _alerts.AttachAlertChannel(cmd.AlertSink));
+            Receive<LocalAlgoServer.PluginProxyRequest, PluginModelProxy>(r => _plugins.GetProxy(r.PluginId));
         }
 
 

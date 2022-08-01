@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
 
         public event Action<LocalPluginSetupViewModel, bool> Closed = delegate { };
 
-        private LocalPluginSetupViewModel(LocalAlgoAgent agent, PluginKey key, Metadata.Types.PluginType type, SetupContextInfo setupContext, PluginSetupMode mode)
+        private LocalPluginSetupViewModel(LocalAlgoAgent2 agent, PluginKey key, Metadata.Types.PluginType type, SetupContextInfo setupContext, PluginSetupMode mode)
         {
             Agent = agent;
             Mode = mode;
@@ -97,7 +97,7 @@ namespace TickTrader.BotTerminal
             RunBot = true;
         }
 
-        public LocalPluginSetupViewModel(LocalAlgoAgent agent, PluginKey key, Metadata.Types.PluginType type, SetupContextInfo setupContext)
+        public LocalPluginSetupViewModel(LocalAlgoAgent2 agent, PluginKey key, Metadata.Types.PluginType type, SetupContextInfo setupContext)
             : this(agent, key, type, setupContext, PluginSetupMode.New)
         {
             DisplayName = $"Setting New {PluginType}";
@@ -105,7 +105,7 @@ namespace TickTrader.BotTerminal
             Agent.Catalog.PluginList.Updated += AllPlugins_Updated;
         }
 
-        public LocalPluginSetupViewModel(LocalAlgoAgent agent, ITradeBot bot)
+        public LocalPluginSetupViewModel(LocalAlgoAgent2 agent, ITradeBot bot)
             : this(agent, bot.Config.Key, Metadata.Types.PluginType.TradeBot, null, PluginSetupMode.Edit)
         {
             Bot = bot;

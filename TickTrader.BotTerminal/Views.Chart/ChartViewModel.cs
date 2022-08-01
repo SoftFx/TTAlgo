@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
             ChartWindowId = chartId;
 
             _shell = _algoEnv.Shell;
-            smb = _algoEnv.LocalAgent.ClientModel.Symbols.GetOrDefault(symbol);
+            smb = _algoEnv.ClientModel.Symbols.GetOrDefault(symbol);
 
             this.BarChart = new BarChartModel(smb, _algoEnv);
 
@@ -145,7 +145,7 @@ namespace TickTrader.BotTerminal
         {
             var task = base.TryCloseAsync(dialogResult);
 
-            Indicators.ForEach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
+            //Indicators.ForEach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
 
             _algoEnv.LocalAgent.BotUpdated -= BotOnUpdated;
             _algoEnv.LocalAgentVM.Bots.Updated -= BotsOnUpdated;

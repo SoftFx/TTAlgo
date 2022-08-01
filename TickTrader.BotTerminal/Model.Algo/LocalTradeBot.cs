@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {
     internal sealed class LocalTradeBot : ITradeBot
     {
+        private readonly PluginModelProxy _proxy;
         private readonly LocalAlgoAgent2 _agent;
 
         private int _statusSubscriptionCnt;
@@ -16,7 +18,7 @@ namespace TickTrader.BotTerminal
         private bool _subscribeLogsEnable = false;
 
 
-        public PluginModelInfo Info { get; private set; }
+        public PluginModelInfo Info => _proxy.Info;
 
 
         public bool IsRemote => true;
@@ -43,15 +45,15 @@ namespace TickTrader.BotTerminal
         public event Action<ITradeBot> StatusChanged;
 
 
-        public LocalTradeBot(PluginModelInfo info, LocalAlgoAgent2 agent)
+        public LocalTradeBot(PluginModelProxy proxy, LocalAlgoAgent2 agent)
         {
-            Info = info;
+            _proxy = proxy;
 
             _agent = agent;
 
             _statusSubscriptionCnt = 0;
             _logsSubscriptionCnt = 0;
-            Journal = new BotJournal(info.InstanceId);
+            Journal = new BotJournal(proxy.Info.InstanceId);
 
             Journal.Clear();
         }
@@ -59,14 +61,14 @@ namespace TickTrader.BotTerminal
 
         public void Update(PluginModelInfo info)
         {
-            Info = info;
+            //Info = info;
             Updated?.Invoke(this);
         }
 
         public void UpdateState(PluginStateUpdate update)
         {
-            Info.State = update.State;
-            Info.FaultMessage = update.FaultMessage;
+            //Info.State = update.State;
+            //Info.FaultMessage = update.FaultMessage;
             StateChanged?.Invoke(this);
         }
 

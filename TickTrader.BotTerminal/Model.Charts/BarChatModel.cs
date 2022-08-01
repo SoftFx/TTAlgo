@@ -60,7 +60,7 @@ namespace TickTrader.BotTerminal
 
         protected override IndicatorModel CreateIndicator(PluginConfig config)
         {
-            return new IndicatorModel(config, Agent, this, this);
+            return new IndicatorModel(config, null, this, this);
         }
 
         public override void InitializePlugin(ExecutorConfig config)

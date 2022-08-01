@@ -9,6 +9,8 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoBotViewModel> LocalBots { get; }
 
+        public AlgoAgentViewModel LocalAgent { get; }
+
         public IObservableList<BotAgentViewModel> BotAgents { get; }
 
 
@@ -17,6 +19,7 @@ namespace TickTrader.BotTerminal
             _algoEnv = algoEnv;
 
             LocalBots = _algoEnv.LocalAgentVM.Bots.AsObservable();
+            LocalAgent = _algoEnv.LocalAgentVM;
             BotAgents = _algoEnv.BotAgents.AsObservable();
         }
 

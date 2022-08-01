@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Server
         private readonly ActorEventSource<PluginLogRecord> _logEventSrc = new ActorEventSource<PluginLogRecord>();
         private readonly ActorEventSource<PluginStatusUpdate> _statusEventSrc = new ActorEventSource<PluginStatusUpdate>();
         private readonly ActorEventSource<DataSeriesUpdate> _outputEventSrc = new ActorEventSource<DataSeriesUpdate>();
+        private readonly ActorEventSource<object> _proxyDownlinkSrc = new ActorEventSource<object>();
 
         private PluginSavedState _savedState;
         private IAlgoLogger _logger;
@@ -59,6 +60,8 @@ namespace TickTrader.Algo.Server
             Receive<RuntimeCrashedMsg>(OnRuntimeCrashed);
             Receive<RuntimeInvalidMsg>(OnRuntimeInvalid);
             Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdated);
+
+            Receive<PluginModelProxy.AttachProxyDownlinkCmd>(AttachProxyDownlink);
         }
 
 
@@ -132,7 +135,9 @@ namespace TickTrader.Algo.Server
             await _server.SavedState.UpdatePlugin(_savedState);
             _config = cmd.NewConfig;
 
-            _server.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
+            var infoCopy = GetInfoCopy();
+            _server.SendUpdate(PluginModelUpdate.Updated(_id, infoCopy));
+            _proxyDownlinkSrc.DispatchEvent(infoCopy);
         }
 
         private void AttachLogsChannel(AttachLogsChannelCmd cmd)
@@ -175,6 +180,7 @@ namespace TickTrader.Algo.Server
         {
             _logsCache.Add(log);
             _logEventSrc.DispatchEvent(log);
+            _proxyDownlinkSrc.DispatchEvent(log);
             if (log.Severity == PluginLogRecord.Types.LogSeverity.Alert)
                 _server.Alerts.SendPluginAlert(_id, log);
         }
@@ -183,6 +189,7 @@ namespace TickTrader.Algo.Server
         {
             _lastStatus = update;
             _statusEventSrc.DispatchEvent(update);
+            _proxyDownlinkSrc.DispatchEvent(update);
         }
 
         private void OnExecutorStateUpdated(ExecutorStateUpdate update)
@@ -248,6 +255,21 @@ namespace TickTrader.Algo.Server
 
             _newestRuntimeId = update.RuntimeId;
             var _ = UpdateRuntime();
+        }
+
+        private void AttachProxyDownlink(PluginModelProxy.AttachProxyDownlinkCmd cmd)
+        {
+            var downlink = cmd.Sink;
+
+            downlink.TryWrite(GetInfoCopy());
+            downlink.TryWrite(_lastStatus);
+            foreach (var log in _logsCache)
+            {
+                downlink.TryWrite(log);
+            }
+            downlink.TryWrite(PluginModelProxy.EndProxyInitMsg.Instance);
+
+            _proxyDownlinkSrc.Subscribe(downlink);
         }
 
 
@@ -360,7 +382,9 @@ namespace TickTrader.Algo.Server
             if (_state == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
 
-            _server.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
+            var infoCopy = GetInfoCopy();
+            _server.SendUpdate(PluginModelUpdate.Updated(_id, infoCopy));
+            _proxyDownlinkSrc.DispatchEvent(infoCopy);
 
             return true;
         }
@@ -379,7 +403,9 @@ namespace TickTrader.Algo.Server
             _state = newState;
             _faultMsg = faultMsg;
 
-            _server.SendUpdate(new PluginStateUpdate(_id, newState, faultMsg));
+            var stateUpdate = new PluginStateUpdate(_id, newState, faultMsg);
+            _server.SendUpdate(stateUpdate);
+            _proxyDownlinkSrc.DispatchEvent(stateUpdate);
 
             if (_state.IsStopped())
                 _ = UpdateRuntime();
