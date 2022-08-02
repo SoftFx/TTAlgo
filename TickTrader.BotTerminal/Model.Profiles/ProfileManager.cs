@@ -87,6 +87,17 @@ namespace TickTrader.BotTerminal
             OpenCachedProfile();
         }
 
+        public ProfileStorageModel LoadCachedProfileOnce(string server, string login)
+        {
+            if (string.IsNullOrEmpty(server))
+                throw new ArgumentException("Invalid server name");
+
+            if (string.IsNullOrEmpty(login))
+                throw new ArgumentException("Invalid login");
+
+            return _storageController.LoadOnce($"{server}_{login}.profile");
+        }
+
         public void LoadUserProfile(string profileName)
         {
             OpenUserProfile(Path.Combine(EnvService.Instance.UserProfilesFolder, $"{profileName}.profile"));

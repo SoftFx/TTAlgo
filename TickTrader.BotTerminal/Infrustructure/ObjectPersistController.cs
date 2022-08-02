@@ -89,6 +89,25 @@ namespace TickTrader.BotTerminal
             _fileName = newFilename;
         }
 
+        public T LoadOnce(string fileName)
+        {
+            try
+            {
+                return _storage.Load<T>(fileName);
+            }
+            catch (System.IO.FileNotFoundException) { /* normal case */ }
+            catch (Exception ex)
+            {
+                if (TryResolveFormatError(_fileName))
+                {
+                    return LoadOnce(fileName);
+                }
+                _logger.Error("ObjectPersistController.LoadOnce() FAILED " + ex.Message);
+            }
+
+            return default;
+        }
+
 
         private void Load()
         {

@@ -152,7 +152,6 @@ namespace TickTrader.BotTerminal
             var state = new ServerSavedState();
 
             state = AddAccountsSavedStates(state, model);
-            state = AddPluginsSavedStates(state, model);
 
             return state;
         }
@@ -173,24 +172,27 @@ namespace TickTrader.BotTerminal
                     accState.PackCreds(new AccountCreds(acc.Password));
 
                 state.Accounts.Add(accState.Id, accState);
+
+                AddPluginsSavedStates(state, model, acc.ServerAddress, acc.Login);
             }
 
             return state;
         }
 
-        private static ServerSavedState AddPluginsSavedStates(ServerSavedState state, PersistModel model)
+        private static ServerSavedState AddPluginsSavedStates(ServerSavedState state, PersistModel model, string accServer, string accLogin)
         {
-            model.ProfileManager.Stop(); // stop stub.profile
-
-            var accLogin = model.AuthSettingsStorage.LastLogin;
-            var accServer = model.AuthSettingsStorage.LastServer;
+            //var accLogin = model.AuthSettingsStorage.LastLogin;
+            //var accServer = model.AuthSettingsStorage.LastServer;
 
             if (string.IsNullOrEmpty(accLogin) || string.IsNullOrEmpty(accServer))
                 return state;
 
-            model.ProfileManager.LoadCachedProfile(accServer, accLogin);
+            var profile = model.ProfileManager.LoadCachedProfileOnce(accServer, accLogin);
 
-            foreach (var config in model.ProfileManager.CurrentProfile.Bots.Select(u => u.Config))
+            if (profile?.Bots == null)
+                return state;
+
+            foreach (var config in profile.Bots.Select(u => u.Config))
             {
                 var pluginState = new PluginSavedState
                 {
@@ -203,8 +205,6 @@ namespace TickTrader.BotTerminal
 
                 state.Plugins.Add(pluginState.Id, pluginState);
             }
-
-            model.ProfileManager.Stop();
 
             return state;
         }
