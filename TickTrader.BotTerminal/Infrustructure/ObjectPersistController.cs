@@ -95,7 +95,6 @@ namespace TickTrader.BotTerminal
             {
                 return _storage.Load<T>(fileName);
             }
-            catch (System.IO.FileNotFoundException) { /* normal case */ }
             catch (Exception ex)
             {
                 if (TryResolveFormatError(_fileName))
@@ -115,7 +114,6 @@ namespace TickTrader.BotTerminal
             {
                 Value = _storage.Load<T>(_fileName);
             }
-            catch (System.IO.FileNotFoundException) { /* normal case */ }
             catch (Exception ex)
             {
                 if (TryResolveFormatError(_fileName))
