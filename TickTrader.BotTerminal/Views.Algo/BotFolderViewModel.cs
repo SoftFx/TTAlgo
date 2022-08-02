@@ -267,7 +267,7 @@ namespace TickTrader.BotTerminal
 
             DisplayName = "Manage Bot Files";
 
-            Agents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
+            Agents = _algoEnv.Agents.AsObservable();
             _botFiles = new VarList<BotFileViewModel>();
             BotFiles = CollectionViewSource.GetDefaultView(_botFiles.AsObservable());
             BotFiles.SortDescriptions.Add(new SortDescription { PropertyName = "Name", Direction = ListSortDirection.Ascending });

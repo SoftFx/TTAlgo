@@ -126,66 +126,65 @@
         <l:DropBehavior/>
     </l:Behaviors>
 
+    <HierarchicalDataTemplate x:Key="AgentAccountServerTemplate" ItemsSource="{Binding Accounts}">
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding Server}"/>
+
+            <StackPanel.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Add account..." 
+                        cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                        cal:Message.Attach="AddAccount"/>
+                </ContextMenu>
+            </StackPanel.ContextMenu>
+        </StackPanel>
+
+        <HierarchicalDataTemplate.ItemContainerStyle>
+            <Style TargetType="TreeViewItem" BasedOn="{StaticResource ExpandedTreeViewItem}">
+                <Setter Property="ToolTip" Value="{Binding AccountTooltip}"/>
+                <Setter Property="ContextMenu" Value="{StaticResource RemoteAccountContextMenu}" />
+                <Setter Property="l:StyleInteraction.Behaviors" Value="{StaticResource TreeViewItemBehaviors}" />
+            </Style>
+        </HierarchicalDataTemplate.ItemContainerStyle>
+
+        <HierarchicalDataTemplate.ItemTemplate>
+            <HierarchicalDataTemplate ItemsSource="{Binding Bots}">
+
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Style="{DynamicResource AccountStatusEllipseStyle}" />
+                    <TextBlock Text="{Binding DisplayName}"/>
+                </StackPanel>
+
+                <HierarchicalDataTemplate.ItemContainerStyle>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="ContextMenu" Value="{StaticResource BotContextMenu}" />
+                        <!--Mode=OneTime is there for a reason. Thanks to virtualization we have {DisconnectedItem} in DataContext during runtime. This work around seems to fix the issue-->
+                        <Setter Property="cal:Bind.ModelWithoutContext" Value="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Mode=OneTime}" />
+                        <Setter Property="cal:Message.Attach" Value="[Event MouseDoubleClick] = [Action OpenState()]" />
+                    </Style>
+                </HierarchicalDataTemplate.ItemContainerStyle>
+
+                <HierarchicalDataTemplate.ItemTemplate>
+                    <DataTemplate DataType="{x:Type l:AlgoBotViewModel}">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Style="{DynamicResource BotStateEllipseStyle}" />
+                            <TextBlock Text="{Binding InstanceId}" ToolTip="{Binding State}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </HierarchicalDataTemplate.ItemTemplate>
+
+            </HierarchicalDataTemplate>
+        </HierarchicalDataTemplate.ItemTemplate>
+
+    </HierarchicalDataTemplate>
+
     <ControlTemplate x:Key="BotListView.Classic">
         <Border BorderThickness="0">
             <TreeView BorderThickness="0" ItemContainerStyle="{StaticResource ExpandedTreeViewItem}">
 
-                <TreeView.Resources>
-                    <HierarchicalDataTemplate x:Key="AgentAccountServerTemplate" ItemsSource="{Binding Accounts}">
-
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Server}"/>
-
-                            <StackPanel.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Add account..." 
-                                                    cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
-                                                    cal:Message.Attach="AddAccount"/>
-                                </ContextMenu>
-                            </StackPanel.ContextMenu>
-                        </StackPanel>
-
-                        <HierarchicalDataTemplate.ItemContainerStyle>
-                            <Style TargetType="TreeViewItem" BasedOn="{StaticResource ExpandedTreeViewItem}">
-                                <Setter Property="ToolTip" Value="{Binding AccountTooltip}"/>
-                                <Setter Property="ContextMenu" Value="{StaticResource RemoteAccountContextMenu}" />
-                                <Setter Property="l:StyleInteraction.Behaviors" Value="{StaticResource TreeViewItemBehaviors}" />
-                            </Style>
-                        </HierarchicalDataTemplate.ItemContainerStyle>
-
-                        <HierarchicalDataTemplate.ItemTemplate>
-                            <HierarchicalDataTemplate ItemsSource="{Binding Bots}">
-
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse Style="{DynamicResource AccountStatusEllipseStyle}" />
-                                    <TextBlock Text="{Binding DisplayName}"/>
-                                </StackPanel>
-
-                                <HierarchicalDataTemplate.ItemContainerStyle>
-                                    <Style TargetType="TreeViewItem">
-                                        <Setter Property="ContextMenu" Value="{StaticResource BotContextMenu}" />
-                                        <!--Mode=OneTime is there for a reason. Thanks to virtualization we have {DisconnectedItem} in DataContext during runtime. This work around seems to fix the issue-->
-                                        <Setter Property="cal:Bind.ModelWithoutContext" Value="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Mode=OneTime}" />
-                                        <Setter Property="cal:Message.Attach" Value="[Event MouseDoubleClick] = [Action OpenState()]" />
-                                    </Style>
-                                </HierarchicalDataTemplate.ItemContainerStyle>
-
-                                <HierarchicalDataTemplate.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type l:AlgoBotViewModel}">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Ellipse Style="{DynamicResource BotStateEllipseStyle}" />
-                                            <TextBlock Text="{Binding InstanceId}" ToolTip="{Binding State}" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </HierarchicalDataTemplate.ItemTemplate>
-
-                            </HierarchicalDataTemplate>
-                        </HierarchicalDataTemplate.ItemTemplate>
-
-                    </HierarchicalDataTemplate>
-                </TreeView.Resources>
-
-                <TreeViewItem Header="Algo Terminal" ItemsSource="{Binding LocalAgent.AccountServerList}"
+                <TreeViewItem Header="Algo Terminal" ItemsSource="{Binding Agent.AccountServerList}"
+                              DataContext="{Binding LocalAgent}"
                               ItemTemplate="{StaticResource AgentAccountServerTemplate}"
                               ItemContainerStyle="{StaticResource ExpandedTreeViewItem}"
                               ContextMenu="{StaticResource BotAgentContextMenu}" Tag="{Binding LocalAgent}"
