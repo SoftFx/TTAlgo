@@ -8,17 +8,14 @@ namespace TickTrader.BotTerminal
 {
     internal sealed class LocalTradeBot : ITradeBot
     {
-        private readonly PluginModelProxy _proxy;
         private readonly LocalAlgoAgent2 _agent;
 
         private int _statusSubscriptionCnt;
         private int _logsSubscriptionCnt;
-
-        private bool _subscribeStatusEnable = false;
-        private bool _subscribeLogsEnable = false;
+        private PluginListenerProxy _listener;
 
 
-        public PluginModelInfo Info => _proxy.Info;
+        public PluginModelInfo Info { get; private set; }
 
 
         public bool IsRemote => true;
@@ -45,15 +42,15 @@ namespace TickTrader.BotTerminal
         public event Action<ITradeBot> StatusChanged;
 
 
-        public LocalTradeBot(PluginModelProxy proxy, LocalAlgoAgent2 agent)
+        public LocalTradeBot(PluginModelInfo info, LocalAlgoAgent2 agent)
         {
-            _proxy = proxy;
+            Info = info;
 
             _agent = agent;
 
             _statusSubscriptionCnt = 0;
             _logsSubscriptionCnt = 0;
-            Journal = new BotJournal(proxy.Info.InstanceId);
+            Journal = new BotJournal(Info.InstanceId);
 
             Journal.Clear();
         }
@@ -61,99 +58,77 @@ namespace TickTrader.BotTerminal
 
         public void Update(PluginModelInfo info)
         {
-            //Info = info;
+            Info = info;
             Updated?.Invoke(this);
         }
 
         public void UpdateState(PluginStateUpdate update)
         {
-            //Info.State = update.State;
-            //Info.FaultMessage = update.FaultMessage;
+            Info.State = update.State;
+            Info.FaultMessage = update.FaultMessage;
             StateChanged?.Invoke(this);
         }
 
-        public void UpdateStatus(string status)
-        {
-            if (status != Status)
-            {
-                Status = status;
-                StatusChanged?.Invoke(this);
-            }
-        }
-
-        public void UpdateLogs(List<LogRecordInfo> logs)
-        {
-            if (_subscribeLogsEnable)
-                Journal.Add(logs.Where(ApplyNewRecordsFilter).Select(Convert).ToList());
-        }
 
         public void SubscribeToStatus()
         {
             _statusSubscriptionCnt++;
-            ManageSubscribeToStatus();
+            ManagePluginListener();
         }
 
         public void UnsubscribeFromStatus()
         {
             _statusSubscriptionCnt--;
-            ManageSubscribeToStatus();
+            ManagePluginListener();
         }
 
         public void SubscribeToLogs()
         {
             _logsSubscriptionCnt++;
-            ManageSubscribeToLogs();
+            ManagePluginListener();
         }
 
         public void UnsubscribeFromLogs()
         {
             _logsSubscriptionCnt--;
-            ManageSubscribeToLogs();
+            ManagePluginListener();
         }
 
-        private async void ManageSubscribeToStatus()
+
+        private void ManagePluginListener()
         {
-            if (_statusSubscriptionCnt < 0)
-                _statusSubscriptionCnt = 0;
+            var needListener = _statusSubscriptionCnt > 0 || _logsSubscriptionCnt > 0;
 
-            if (_statusSubscriptionCnt > 0 && !_subscribeStatusEnable)
+            if (needListener && _listener == null)
             {
-                _subscribeStatusEnable = true;
-
-                await _agent.SubscribeToPluginStatus(InstanceId);
+                _listener = _agent.GetPluginListener(InstanceId);
+                _listener.StatusUpdateCallback = UpdateStatus;
+                _listener.LogUpdateCallback = UpdateLogs;
+                _ = _listener.Init();
             }
-            else
-            if (_statusSubscriptionCnt == 0 && _subscribeStatusEnable)
+            else if (!needListener && _listener != null)
             {
-                _subscribeStatusEnable = false;
-
-                await _agent.UnsubscribeToPluginStatus(InstanceId);
+                _listener.Dispose();
+                _listener = null;
             }
         }
 
-        private async void ManageSubscribeToLogs()
+        private void UpdateStatus(PluginStatusUpdate update)
         {
-            if (_logsSubscriptionCnt < 0)
-                _logsSubscriptionCnt = 0;
-
-            if (_logsSubscriptionCnt > 0 && !_subscribeLogsEnable)
+            if (update.Message != Status)
             {
-                _subscribeLogsEnable = true;
-
-                await _agent.SubscribeToPluginLogs(InstanceId);
-            }
-            else
-            if (_logsSubscriptionCnt == 0 && _subscribeLogsEnable)
-            {
-                _subscribeLogsEnable = false;
-
-                await _agent.UnsubscribeToPluginLogs(InstanceId);
-
-                Journal.Clear();
+                Status = update.Message;
+                StatusChanged?.Invoke(this);
             }
         }
 
-        private BotMessage Convert(LogRecordInfo record)
+        private void UpdateLogs(PluginLogRecord log)
+        {
+            if (ApplyNewRecordsFilter(new TimeKey(log.TimeUtc)))
+                Journal.Add(Convert(log));
+        }
+
+        private BotMessage Convert(PluginLogRecord record)
         {
             return new BotMessage(record.TimeUtc, InstanceId, record.Message, Convert(record.Severity));
         }
@@ -173,10 +148,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private bool ApplyNewRecordsFilter(LogRecordInfo info)
+        private bool ApplyNewRecordsFilter(TimeKey timeKey)
         {
-            var timeKey = new TimeKey(info.TimeUtc);
-
             var isTailMessage = true;
             var isClearedMessage = timeKey.CompareTo(Journal.TimeLastClearedMessage) != 1;
 

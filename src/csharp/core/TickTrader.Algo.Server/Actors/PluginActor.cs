@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Server
             Receive<RuntimeInvalidMsg>(OnRuntimeInvalid);
             Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdated);
 
-            Receive<PluginModelProxy.AttachProxyDownlinkCmd>(AttachProxyDownlink);
+            Receive<PluginListenerProxy.AttachProxyDownlinkCmd>(AttachProxyDownlink);
         }
 
 
@@ -137,7 +137,7 @@ namespace TickTrader.Algo.Server
 
             var infoCopy = GetInfoCopy();
             _server.SendUpdate(PluginModelUpdate.Updated(_id, infoCopy));
-            _proxyDownlinkSrc.DispatchEvent(infoCopy);
+            //_proxyDownlinkSrc.DispatchEvent(infoCopy);
         }
 
         private void AttachLogsChannel(AttachLogsChannelCmd cmd)
@@ -257,17 +257,16 @@ namespace TickTrader.Algo.Server
             var _ = UpdateRuntime();
         }
 
-        private void AttachProxyDownlink(PluginModelProxy.AttachProxyDownlinkCmd cmd)
+        private void AttachProxyDownlink(PluginListenerProxy.AttachProxyDownlinkCmd cmd)
         {
             var downlink = cmd.Sink;
 
-            downlink.TryWrite(GetInfoCopy());
             downlink.TryWrite(_lastStatus);
             foreach (var log in _logsCache)
             {
                 downlink.TryWrite(log);
             }
-            downlink.TryWrite(PluginModelProxy.EndProxyInitMsg.Instance);
+            downlink.TryWrite(PluginListenerProxy.EndProxyInitMsg.Instance);
 
             _proxyDownlinkSrc.Subscribe(downlink);
         }
@@ -384,7 +383,7 @@ namespace TickTrader.Algo.Server
 
             var infoCopy = GetInfoCopy();
             _server.SendUpdate(PluginModelUpdate.Updated(_id, infoCopy));
-            _proxyDownlinkSrc.DispatchEvent(infoCopy);
+            //_proxyDownlinkSrc.DispatchEvent(infoCopy);
 
             return true;
         }
@@ -405,7 +404,7 @@ namespace TickTrader.Algo.Server
 
             var stateUpdate = new PluginStateUpdate(_id, newState, faultMsg);
             _server.SendUpdate(stateUpdate);
-            _proxyDownlinkSrc.DispatchEvent(stateUpdate);
+            //_proxyDownlinkSrc.DispatchEvent(stateUpdate);
 
             if (_state.IsStopped())
                 _ = UpdateRuntime();

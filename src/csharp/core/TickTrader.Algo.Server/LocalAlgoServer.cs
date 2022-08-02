@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Server
 
         public Task SubscribeToUpdates(ChannelWriter<IMessage> channel) => EventBus.SubscribeToUpdates(channel, true);
 
-        public Task<PluginModelProxy> GetPluginProxy(string pluginId) => _server.Ask<PluginModelProxy>(new PluginProxyRequest(pluginId));
+        public PluginListenerProxy GetPluginListenerProxy(string pluginId) => new PluginListenerProxy(_server, pluginId);
 
 
         internal class PkgFileExistsRequest
@@ -158,13 +158,16 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        internal class PluginProxyRequest
+        internal class ExecPluginCmd
         {
             public string PluginId { get; }
 
-            public PluginProxyRequest(string pluginId)
+            public object Command { get; }
+
+            public ExecPluginCmd(string pluginId, object command)
             {
                 PluginId = pluginId;
+                Command = command;
             }
         }
     }

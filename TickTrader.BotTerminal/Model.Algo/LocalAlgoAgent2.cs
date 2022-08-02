@@ -144,29 +144,7 @@ namespace TickTrader.BotTerminal
             await InitServerListener(_server);
         }
 
-        public Task SubscribeToPluginStatus(string instanceId)
-        {
-            return Task.CompletedTask;
-            //return _server.SubscribeToPluginStatus(new PluginStatusSubscribeRequest { PluginId = instanceId });
-        }
-
-        public Task SubscribeToPluginLogs(string instanceId)
-        {
-            return Task.CompletedTask;
-            //return _server.SubscribeToPluginLogs(new PluginLogsSubscribeRequest { PluginId = instanceId });
-        }
-
-        public Task UnsubscribeToPluginStatus(string instanceId)
-        {
-            return Task.CompletedTask;
-            //return _server.UnsubscribeToPluginStatus(new PluginStatusUnsubscribeRequest { PluginId = instanceId });
-        }
-
-        public Task UnsubscribeToPluginLogs(string instanceId)
-        {
-            return Task.CompletedTask;
-            //return _server.UnsubscribeToPluginLogs(new PluginLogsUnsubscribeRequest { PluginId = instanceId });
-        }
+        public PluginListenerProxy GetPluginListener(string pluginId) => _server.GetPluginListenerProxy(pluginId);
 
 
         #region IAlgoAgent implementation
@@ -298,7 +276,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private async Task ProcessServerUpdates(IMessage update)
+        private void ProcessServerUpdates(IMessage update)
         {
             try
             {
@@ -306,7 +284,7 @@ namespace TickTrader.BotTerminal
                 {
                     case PackageListSnapshot pkgSnapshot: InitPackageList(pkgSnapshot); break;
                     case AccountListSnapshot accSnapshot: InitAccountList(accSnapshot); break;
-                    case PluginListSnapshot pluginSnapshot: await InitPluginList(pluginSnapshot); break;
+                    case PluginListSnapshot pluginSnapshot: InitPluginList(pluginSnapshot); break;
                     case PackageUpdate pkgUpdate: OnPackageUpdate(pkgUpdate); break;
                     case AccountModelUpdate accUpdate: OnAccountModelUpdate(accUpdate); break;
                     case PluginModelUpdate pluginUpdate: OnPluginModelUpdate(pluginUpdate); break;
@@ -352,21 +330,21 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private async Task InitPluginList(PluginListSnapshot snapshot)
+        private void InitPluginList(PluginListSnapshot snapshot)
         {
-            var plugins = new List<PluginModelProxy>(snapshot.Plugins.Count);
-            foreach (var plugin in snapshot.Plugins)
-            {
-                plugins.Add(await _server.GetPluginProxy(plugin.InstanceId));
-            }
+            //var plugins = new List<PluginModelProxy>(snapshot.Plugins.Count);
+            //foreach (var plugin in snapshot.Plugins)
+            //{
+            //    plugins.Add(await _server.GetPluginProxy(plugin.InstanceId));
+            //}
 
             _syncContext.Invoke(() =>
             {
                 _bots.Clear();
                 _idProvider.Reset();
-                foreach (var bot in plugins)
+                foreach (var bot in snapshot.Plugins)
                 {
-                    var id = bot.Info.InstanceId;
+                    var id = bot.InstanceId;
                     _idProvider.RegisterPluginId(id);
                     _bots.Add(id, new LocalTradeBot(bot, this));
                 }
@@ -415,11 +393,11 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private async Task OnPluginModelUpdate(PluginModelUpdate update)
+        private void OnPluginModelUpdate(PluginModelUpdate update)
         {
-            PluginModelProxy proxy = null;
-            if (update.Action == Update.Types.Action.Added)
-                proxy = await _server.GetPluginProxy(update.Id);
+            //PluginModelProxy proxy = null;
+            //if (update.Action == Update.Types.Action.Added)
+            //    proxy = await _server.GetPluginProxy(update.Id);
 
             _syncContext.Invoke(() =>
             {
@@ -427,7 +405,7 @@ namespace TickTrader.BotTerminal
                 {
                     case Update.Types.Action.Added:
                         _idProvider.RegisterPluginId(update.Id);
-                        _bots.Add(update.Id, new LocalTradeBot(proxy, this));
+                        _bots.Add(update.Id, new LocalTradeBot(update.Plugin, this));
                         break;
                     case Update.Types.Action.Updated:
                         _bots[update.Id].Update(update.Plugin);
