@@ -44,12 +44,12 @@ namespace TickTrader.BotTerminal
             ConnectionLock = new UiLock();
             wndManager = new WindowManager(this);
 
-            cManager = new ConnectionManager(commonClient, storage, eventJournal);
+            Agent = new LocalAlgoAgent2(storage);
+
+            cManager = new ConnectionManager(commonClient, storage, eventJournal, Agent);
             clientModel = new TraderClientModel(commonClient);
 
             _soundCenter = new SoundsNotificationCenter(cManager, storage);
-
-            Agent = new LocalAlgoAgent2(storage);
 
             _botAgentManager = new BotAgentManager(storage, this);
 
