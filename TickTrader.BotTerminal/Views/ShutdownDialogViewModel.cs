@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using NLog;
 using System;
 using System.Threading.Tasks;
 
@@ -9,8 +10,11 @@ namespace TickTrader.BotTerminal
         public const int Delay = 500;
 
         public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(120);
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private LocalAlgoAgent2 _algoAgent;
+        private readonly LocalAlgoAgent2 _algoAgent;
+        private readonly Task _shutdownTask;
+
         private int _totalBots;
         private int _stoppedBots;
 
@@ -43,6 +47,16 @@ namespace TickTrader.BotTerminal
             DisplayName = $"Shutting down - {EnvService.Instance.ApplicationName}";
             TotalBots = _algoAgent.RunningBotsCnt;
             StoppedBots = 0;
+            _shutdownTask = algoAgent.Shutdown();
+        }
+
+
+        public async Task WaitShutdownBackground()
+        {
+            await Task.WhenAny(Task.Delay(WaitTimeout), _shutdownTask);
+
+            if (!_shutdownTask.IsCompleted)
+                _logger.Error("Wait timeout during algo server shutdown");
         }
 
 
@@ -50,23 +64,21 @@ namespace TickTrader.BotTerminal
         {
             base.OnViewLoaded(view);
 
-            Task.Run(() => StopBots());
+            Task.Run(() => WaitBotsStop());
         }
 
 
-        private async Task StopBots()
+        private async Task WaitBotsStop()
         {
-            var shutdownTask = _algoAgent.Shutdown();
-
             StoppedBots = TotalBots - _algoAgent.RunningBotsCnt;
-            var startTime = DateTime.Now;
-            while (!shutdownTask.IsCompleted && DateTime.Now - startTime < WaitTimeout)
+            var waitTask = WaitShutdownBackground();
+            while (!waitTask.IsCompleted)
             {
                 await Task.Delay(Delay);
                 StoppedBots = TotalBots - _algoAgent.RunningBotsCnt;
             }
 
-            await TryCloseAsync ();
+            await TryCloseAsync();
         }
     }
 }

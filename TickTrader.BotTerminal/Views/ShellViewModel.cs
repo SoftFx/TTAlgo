@@ -205,22 +205,22 @@ namespace TickTrader.BotTerminal
         //    }
         //}
 
-        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
+        public override async Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
             bool hasRunningBots = algoEnv.LocalAgent.HasRunningBots;
 
             var exit = new ConfirmationDialogViewModel(DialogButton.YesNo, hasRunningBots ? DialogMode.Warning : DialogMode.Question, DialogMessages.ExitTitle, DialogMessages.ExitMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
-            wndManager.ShowDialog(exit, this);
+            await wndManager.ShowDialog(exit, this);
 
             var isConfirmed = exit.DialogResult == DialogResult.OK;
 
             if (isConfirmed)
-                StopTerminal();
+                await StopTerminal();
 
-            return Task.FromResult(isConfirmed);
+            return isConfirmed;
         }
 
-        private async void StopTerminal()
+        private async Task StopTerminal()
         {
             //await storage.ProfileManager.Stop();
             await storage.ProfileManager.StopCurrentProfile();
@@ -229,6 +229,8 @@ namespace TickTrader.BotTerminal
 
             if (IsActive)
                 await wndManager.ShowDialog(shutdown, this);
+            else
+                await shutdown.WaitShutdownBackground();
         }
 
         public async void Connect(AccountAuthEntry creds = null)

@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
         private SetupContextInfo _setupContext;
 
 
-        public string Name => "AlgoTerminalServer";
+        public string Name => "AlgoTerminal";
 
         public bool IsRemote => true;
 
