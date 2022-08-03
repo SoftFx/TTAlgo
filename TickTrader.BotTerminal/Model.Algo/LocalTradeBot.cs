@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
 
@@ -101,9 +102,8 @@ namespace TickTrader.BotTerminal
             if (needListener && _listener == null)
             {
                 _listener = _agent.GetPluginListener(InstanceId);
-                _listener.StatusUpdateCallback = UpdateStatus;
-                _listener.LogUpdateCallback = UpdateLogs;
                 _ = _listener.Init();
+                _ = PullListenerUpdates();
             }
             else if (!needListener && _listener != null)
             {
@@ -112,19 +112,30 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private async Task PullListenerUpdates()
+        {
+            var listener = _listener;
+            while (_listener == listener)
+            {
+                UpdateStatus(_listener.GetLastStatus());
+                UpdateLogs(_listener.GetLastLogs());
+
+                await Task.Delay(200);
+            }
+        }
+
         private void UpdateStatus(PluginStatusUpdate update)
         {
-            if (update.Message != Status)
+            if (update != null && update.Message != Status)
             {
                 Status = update.Message;
                 StatusChanged?.Invoke(this);
             }
         }
 
-        private void UpdateLogs(PluginLogRecord log)
+        private void UpdateLogs(PluginLogRecord[] logs)
         {
-            if (ApplyNewRecordsFilter(new TimeKey(log.TimeUtc)))
-                Journal.Add(Convert(log));
+            Journal.Add(logs.Where(l => ApplyNewRecordsFilter(new TimeKey(l.TimeUtc))).Select(Convert).ToList());
         }
 
         private BotMessage Convert(PluginLogRecord record)
