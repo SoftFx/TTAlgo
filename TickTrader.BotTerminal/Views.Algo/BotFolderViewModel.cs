@@ -9,6 +9,7 @@ using System.Windows.Data;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server.Common;
 using TickTrader.Algo.Server.PublicAPI.Converters;
+using TickTrader.WpfWindowsSupportLibrary;
 using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
 
 
@@ -52,8 +53,14 @@ namespace TickTrader.BotTerminal
                 InitAlgoAgent(_selectedAgent);
                 NotifyOfPropertyChange(nameof(SelectedAgent));
                 NotifyOfPropertyChange(nameof(Bots));
+                NotifyOfPropertyChange(nameof(IsLocalAgent));
+                NotifyOfPropertyChange(nameof(IsRemoteAgent));
             }
         }
+
+        public bool IsLocalAgent => !SelectedAgent?.Model.IsRemote ?? false;
+
+        public bool IsRemoteAgent => SelectedAgent?.Model.IsRemote ?? true;
 
         public IObservableList<AlgoBotViewModel> Bots { get; private set; }
 
@@ -67,6 +74,7 @@ namespace TickTrader.BotTerminal
 
                 _selectedBot = value;
                 NotifyOfPropertyChange(nameof(SelectedBot));
+                NotifyOfPropertyChange(nameof(CanShowFolder));
                 NotifyOfPropertyChange(nameof(CanUploadFile));
                 NotifyOfPropertyChange(nameof(CanStartLoading));
                 NotifyOfPropertyChange(nameof(CanRefreshFolderInfo));
@@ -137,6 +145,8 @@ namespace TickTrader.BotTerminal
                 UpdateLoadingPaths();
             }
         }
+
+        public bool CanShowFolder => SelectedBot != null && !SelectedAgent.Model.IsRemote;
 
         public bool CanUploadFile => SelectedBot != null && SelectedFolderId == PluginFolderInfo.Types.PluginFolderId.AlgoData && SelectedAgent.Model.AccessManager.CanUploadBotFile();
 
@@ -290,6 +300,11 @@ namespace TickTrader.BotTerminal
             SelectedBot = Bots.FirstOrDefault(b => b.InstanceId == botId);
         }
 
+
+        public void ShowFolder()
+        {
+            WinExplorerHelper.ShowFolder(Path);
+        }
 
         public void UploadFile()
         {

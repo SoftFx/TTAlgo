@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
 
         public string Name => "AlgoTerminal";
 
-        public bool IsRemote => true;
+        public bool IsRemote => false;
 
         public IVarSet<string, PackageInfo> Packages => _packages;
 
