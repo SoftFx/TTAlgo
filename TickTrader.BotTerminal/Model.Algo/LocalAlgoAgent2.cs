@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
@@ -216,10 +217,12 @@ namespace TickTrader.BotTerminal
             return _server.RemovePackage(new RemovePackageRequest(packageId));
         }
 
-        public Task DownloadPackage(string packageId, string dstFilePath, AlgoServerPublicApi.IFileProgressListener progressListener)
+        public async Task DownloadPackage(string packageId, string dstFilePath, AlgoServerPublicApi.IFileProgressListener progressListener)
         {
-            throw new NotSupportedException();
-            //await Task.Run(() => _server.DownloadPackage(new DownloadPackageRequest(packageId), dstFilePath, progressListener));
+            progressListener.Init(1);
+            var pkgBin = await _server.GetPackageBinary(packageId);
+            File.WriteAllBytes(dstFilePath, pkgBin);
+            progressListener.IncrementProgress(1);
         }
 
         public Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
@@ -237,16 +240,20 @@ namespace TickTrader.BotTerminal
             return _server.DeletePluginFile(new DeletePluginFileRequest(botId, folderId, fileName));
         }
 
-        public Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, AlgoServerPublicApi.IFileProgressListener progressListener)
+        public async Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, AlgoServerPublicApi.IFileProgressListener progressListener)
         {
-            throw new NotSupportedException();
-            //await Task.Run(() => _server.DownloadPluginFile(new DownloadPluginFileRequest(botId, folderId, fileName), dstPath, progressListener));
+            progressListener.Init(1);
+            var readPath = await _server.GetPluginFileReadPath(new DownloadPluginFileRequest(botId, folderId, fileName));
+            File.Copy(readPath, dstPath, true);
+            progressListener.IncrementProgress(1);
         }
 
-        public Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerPublicApi.IFileProgressListener progressListener)
+        public async Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerPublicApi.IFileProgressListener progressListener)
         {
-            throw new NotSupportedException();
-            //await Task.Run(() => _server.UploadPluginFile(new UploadPluginFileRequest(botId, folderId, fileName), srcPath, progressListener));
+            progressListener.Init(1);
+            var writePath = await _server.GetPluginFileWritePath(new UploadPluginFileRequest(botId, folderId, fileName));
+            File.Copy(srcPath, writePath, true);
+            progressListener.IncrementProgress(1);
         }
 
         #endregion
