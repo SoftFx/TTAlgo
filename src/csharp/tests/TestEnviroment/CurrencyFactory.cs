@@ -1,5 +1,4 @@
-﻿using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Domain;
+﻿using TickTrader.Algo.Domain;
 
 namespace TestEnviroment
 {
@@ -13,7 +12,7 @@ namespace TestEnviroment
 
         public static CurrencyInfo BuildCurrency(string name)
         {
-            var currency = _prototype.DeepCopy();
+            var currency = _prototype.Clone();
 
             currency.Name = name;
 

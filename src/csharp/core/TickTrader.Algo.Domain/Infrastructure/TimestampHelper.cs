@@ -1,8 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
-using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Lib
+namespace TickTrader.Algo.Domain
 {
     public static class TimestampHelper
     {
@@ -40,30 +39,6 @@ namespace TickTrader.Algo.Core.Lib
                 seconds -= 1;
             }
             return new Timestamp { Seconds = seconds, Nanos = (int)nanos };
-        }
-    }
-
-    public static class UtcTicksHelper
-    {
-        public static UtcTicks ParseLocalDateTime(string dateTimeString)
-        {
-            return new UtcTicks(DateTime.Parse(dateTimeString, null, System.Globalization.DateTimeStyles.AssumeLocal));
-        }
-
-        public static UtcTicks ParseUtcDateTime(string dateTimeString)
-        {
-            return new UtcTicks(DateTime.Parse(dateTimeString, null, System.Globalization.DateTimeStyles.AssumeUniversal));
-        }
-
-        public static UtcTicks FromDate(int year, int month, int day)
-        {
-            return FromDateAndTime(year, month, day, 0, 0, 0);
-        }
-
-        public static UtcTicks FromDateAndTime(int year, int month, int day, int hour, int minute, int second)
-        {
-            var dt = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc);
-            return new UtcTicks(dt);
         }
     }
 }

@@ -51,7 +51,7 @@ namespace TickTrader.FeedStorage.Api.Tests
 
         internal ISymbolInfo GetUpdatedSymbol(ISymbolInfo smb)
         {
-            return GetUpdatedSymbol(((SymbolInfo)smb).DeepCopy());
+            return GetUpdatedSymbol(((SymbolInfo)smb).Clone());
         }
 
         internal void GenerateBarsFeed(string symbol, Feed.Types.Timeframe timeframe, int count)

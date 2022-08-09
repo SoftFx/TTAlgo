@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\lib\TickTrader.Algo.Async\TickTrader.Algo.Async.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
   </ItemGroup>
 
