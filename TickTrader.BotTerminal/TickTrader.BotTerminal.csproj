@@ -32,7 +32,6 @@
   <ItemGroup>
     <ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
     <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
-    <ProjectReference Include="..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\TickTrader.Algo.BacktesterV1Host.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
