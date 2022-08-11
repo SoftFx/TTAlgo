@@ -7,7 +7,15 @@ using TickTrader.BotTerminal.Controls.Chart.Markers;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {
-    public sealed class TradeEventsWriter
+    public interface ITradeEventsWriter
+    {
+        List<ISeries> Markers { get; }
+
+        event Action InitNewDataEvent;
+    }
+
+
+    internal sealed class TradeEventsWriter : ITradeEventsWriter
     {
         private readonly Dictionary<EventType, TradeEventSettings> _settings = new()
         {
@@ -30,17 +38,8 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         public List<ISeries> Markers { get; } = new();
 
-        public Action InitNewDataEvent;
+        public event Action InitNewDataEvent;
 
-
-        static TradeEventsWriter()
-        {
-            LiveCharts.Configure(config => config.HasMap<TradeEventPoint>((tradeEvent, point) =>
-            {
-                point.PrimaryValue = (double)tradeEvent?.Price;
-                point.SecondaryValue = (double)tradeEvent?.Time;
-            }));
-        }
 
         public TradeEventsWriter()
         {

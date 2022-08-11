@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         private readonly ObservablePoint _xCoordinate = new();
         private readonly ObservablePoint _yCoordinate = new();
-        private readonly ChartTradeSettings _settings;
+        private readonly TradeChartSettings _settings;
         private readonly CartesianChart _chart;
         private bool _isEnable;
 
@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         }
 
 
-        internal Crosshair(CartesianChart chart, ChartTradeSettings settings, int yAxisIndex = 0)
+        internal Crosshair(CartesianChart chart, TradeChartSettings settings, int yAxisIndex = 0)
         {
             _settings = settings;
             _chart = chart;
@@ -70,7 +70,6 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 StrokeThickness = 0.5f,
                 ZIndex = ZIndex,
             };
-
 
             XLine = new LineSection(stroke);
             YLine = new LineSection(stroke);

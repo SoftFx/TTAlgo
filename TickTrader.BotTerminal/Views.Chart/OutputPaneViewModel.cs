@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
     internal class OutputPaneViewModel : PropertyChangedBase
     {
         private ISymbolInfo _symbol;
-        private VarList<OutputSeriesModel> _outputs;
+        private VarList<OutputModel> _outputs;
 
         public IPluginModel Model { get; }
 
@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
 
         //public AxisBase TimeAxis { get; private set; }
 
-        public IVarList<OutputSeriesModel> Outputs => _outputs;
+        public IVarList<OutputModel> Outputs => _outputs;
 
         //public IObservableList<IRenderableSeriesViewModel> Series { get; private set; }
 
@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
 
         public BoolVar IsCrosshairEnabled { get; }
 
-        public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, IPluginDataChartModel chart,
+        public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputModel> ouputModels, string windowId, IPluginDataChartModel chart,
             ISymbolInfo symbol, Metadata.Types.OutputTarget target, BoolVar isCrosshairEnabled)
         {
             Model = plugin;
@@ -45,10 +45,10 @@ namespace TickTrader.BotTerminal
             _symbol = symbol;
             IsCrosshairEnabled = isCrosshairEnabled;
 
-            _outputs = new VarList<OutputSeriesModel>();
+            _outputs = new VarList<OutputModel>();
             //Series = _outputs.Select(SeriesViewModel.FromOutputSeries).Chain().AsObservable();
 
-            ouputModels.Where(o => o.Descriptor.Target == target).ForEach(_outputs.Add);
+            //ouputModels.Where(o => o.Descriptor.Target == target).ForEach(_outputs.Add);
 
             UpdateAxis();
             UpdatePrecision();
@@ -69,10 +69,10 @@ namespace TickTrader.BotTerminal
         private void UpdatePrecision()
         {
             Precision = 0;
-            foreach (var output in _outputs.Values)
-            {
-                Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Digits : output.Descriptor.Precision);
-            }
+            //foreach (var output in _outputs.Values)
+            //{
+            //    Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Digits : output.Descriptor.Precision);
+            //}
             UpdateLabelFormat();
         }
 

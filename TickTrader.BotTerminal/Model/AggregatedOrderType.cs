@@ -8,19 +8,14 @@ namespace TickTrader.BotTerminal
     {
         public static AggregatedOrderType Aggregate(this OrderInfo.Types.Side side, OrderInfo.Types.Type type)
         {
-            switch (type)
+            return type switch
             {
-                case OrderInfo.Types.Type.Market:
-                case OrderInfo.Types.Type.Position:
-                    return side == OrderInfo.Types.Side.Buy ? AggregatedOrderType.Buy : AggregatedOrderType.Sell;
-                case OrderInfo.Types.Type.Limit:
-                    return side == OrderInfo.Types.Side.Buy ? AggregatedOrderType.BuyLimit : AggregatedOrderType.SellLimit;
-                case OrderInfo.Types.Type.Stop:
-                    return side == OrderInfo.Types.Side.Buy ? AggregatedOrderType.BuyStop : AggregatedOrderType.SellStop;
-                case OrderInfo.Types.Type.StopLimit:
-                    return side == OrderInfo.Types.Side.Buy ? AggregatedOrderType.BuyStopLimit : AggregatedOrderType.SellStopLimit;
-                default: return AggregatedOrderType.Unknown;
-            }
+                OrderInfo.Types.Type.Market or OrderInfo.Types.Type.Position => side.IsBuy() ? AggregatedOrderType.Buy : AggregatedOrderType.Sell,
+                OrderInfo.Types.Type.Limit => side.IsBuy() ? AggregatedOrderType.BuyLimit : AggregatedOrderType.SellLimit,
+                OrderInfo.Types.Type.Stop => side.IsBuy() ? AggregatedOrderType.BuyStop : AggregatedOrderType.SellStop,
+                OrderInfo.Types.Type.StopLimit => side.IsBuy() ? AggregatedOrderType.BuyStopLimit : AggregatedOrderType.SellStopLimit,
+                _ => AggregatedOrderType.Unknown,
+            };
         }
     }
 }

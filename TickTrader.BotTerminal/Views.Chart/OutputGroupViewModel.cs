@@ -13,9 +13,9 @@ namespace TickTrader.BotTerminal
     internal class OutputGroupViewModel
     {
         private IPluginDataChartModel _chart;
-        private List<OutputSeriesModel> _outputModels;
+        private List<OutputModel> _outputModels;
         private ISymbolInfo _symbol;
-        private VarList<OutputSeriesModel> _overlayOutputs;
+        private VarList<OutputModel> _overlayOutputs;
         //private VarList<IRenderableSeriesViewModel> _overlaySeries;
         private VarList<OutputPaneViewModel> _panes;
         private BoolVar _isCrosshairEnabled;
@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
 
         public string ChartWindowId { get; }
 
-        public IVarList<OutputSeriesModel> OverlayOutputs => _overlayOutputs;
+        public IVarList<OutputModel> OverlayOutputs => _overlayOutputs;
 
         public IVarList<OutputPaneViewModel> Panes => _panes;
 
@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
             _symbol = symbol;
             _isCrosshairEnabled = isCrosshairEnabled;
 
-            _overlayOutputs = new VarList<OutputSeriesModel>();
+            _overlayOutputs = new VarList<OutputModel>();
             _panes = new VarList<OutputPaneViewModel>();
             //_overlaySeries = new VarList<IRenderableSeriesViewModel>();
 
@@ -65,19 +65,19 @@ namespace TickTrader.BotTerminal
         {
             //_outputModels = CreateOutputModels(Model).ToList();
 
-            _outputModels.Where(o => o.Descriptor.Target == Metadata.Types.OutputTarget.Overlay).ForEach(_overlayOutputs.Add);
-            //_overlayOutputs.Values.ForEach(o => _overlaySeries.Add(SeriesViewModel.FromOutputSeries(o)));
+            //_outputModels.Where(o => o.Descriptor.Target == Metadata.Types.OutputTarget.Overlay).ForEach(_overlayOutputs.Add);
+            ////_overlayOutputs.Values.ForEach(o => _overlaySeries.Add(SeriesViewModel.FromOutputSeries(o)));
 
-            foreach (Metadata.Types.OutputTarget target in Enum.GetValues(typeof(Metadata.Types.OutputTarget)))
-            {
-                if (target != Metadata.Types.OutputTarget.Overlay)
-                {
-                    if (_outputModels.Any(o => o.Descriptor.Target == target))
-                    {
-                        _panes.Add(new OutputPaneViewModel(Model, _outputModels, ChartWindowId, _chart, _symbol, target, _isCrosshairEnabled));
-                    }
-                }
-            }
+            //foreach (Metadata.Types.OutputTarget target in Enum.GetValues(typeof(Metadata.Types.OutputTarget)))
+            //{
+            //    if (target != Metadata.Types.OutputTarget.Overlay)
+            //    {
+            //        if (_outputModels.Any(o => o.Descriptor.Target == target))
+            //        {
+            //            _panes.Add(new OutputPaneViewModel(Model, _outputModels, ChartWindowId, _chart, _symbol, target, _isCrosshairEnabled));
+            //        }
+            //    }
+            //}
 
             UpdatePrecision();
         }
@@ -119,12 +119,12 @@ namespace TickTrader.BotTerminal
 
         private void UpdatePrecision()
         {
-            Precision = 0;
-            foreach (var output in _overlayOutputs.Values)
-            {
-                Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Digits : output.Descriptor.Precision);
-            }
-            PrecisionUpdated?.Invoke();
+            //Precision = 0;
+            //foreach (var output in _overlayOutputs.Values)
+            //{
+            //    Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Digits : output.Descriptor.Precision);
+            //}
+            //PrecisionUpdated?.Invoke();
         }
 
         private void ModelOnOutputsChanged()

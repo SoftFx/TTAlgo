@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         }
 
 
-        internal SupportPriceLine(SKColor color, ChartTradeSettings settings, int labelAxisIndex = 0)
+        internal SupportPriceLine(SKColor color, TradeChartSettings settings, int labelAxisIndex = 0)
         {
             ZIndex = ZIndexConst;
 

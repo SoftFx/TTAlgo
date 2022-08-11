@@ -1,15 +1,50 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal"
-                    xmlns:lvc="clr-namespace:TickTrader.BotTerminal.Controls.Chart">
+                    xmlns:lvc="clr-namespace:TickTrader.BotTerminal.Controls.Chart"           
+                    xmlns:lv="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF">
 
     <!-- View Template -->
 
     <ControlTemplate x:Key="BacktesterChartPageTemplate.Classic">
-        <lvc:CartesianTradeChart BarsSource="{Binding BarVector}" 
-                                 Period="{l:UpdateBind Period.Value}"
-                                 PricePrecision="{l:UpdateBind PricePrecision.Value}"
-                                 TradeEventHandler="{Binding TradeEventHandler}"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ContextMenu>
+                <ContextMenu Style="{DynamicResource ContextMenu_Style}">
+                    <MenuItem x:Name="showLegendControl" Header="Legend" IsCheckable="True"/>
+                </ContextMenu>
+            </Grid.ContextMenu>
+
+
+            <lvc:CartesianTradeChart x:Name="mainChart"
+                                     Grid.Row="0"
+                                     BarsSource="{Binding BarVector}" 
+                                     Period="{l:UpdateBind Period.Value}"
+                                     PricePrecision="{l:UpdateBind PricePrecision.Value}"
+                                     TradeEventHandler="{Binding TradeEventHandler}"
+                                     IndicatorObserver="{Binding IndicatorObserver}"
+                                     ShowLegend="{Binding ElementName=showLegendControl, Path=IsChecked, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding IndicatorObserver.Targets}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <lvc:CartesianTargetIndicatorChart OutputTargetId="{Binding .}"
+                                                           XAxes="{Binding ElementName=mainChart, Path=XAxes}"
+                                                           ZoomMode="{Binding ElementName=mainChart, Path=ZoomMode}"
+                                                           IndicatorObserver="{Binding ElementName=mainChart, Path=IndicatorObserver}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="4" Columns="1"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </Grid>
     </ControlTemplate>
 
     <!-- View Style -->

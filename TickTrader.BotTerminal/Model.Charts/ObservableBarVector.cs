@@ -18,11 +18,14 @@ namespace TickTrader.BotTerminal
         private Feed.Types.Timeframe _timeFrame;
         private BarSampler _sampler;
 
+
+        internal string Symbol { get; private set; }
+
         internal Feed.Types.Timeframe Timeframe
         {
             get => _timeFrame;
 
-            set
+            private set
             {
                 if (_timeFrame == value)
                     return;
@@ -38,16 +41,17 @@ namespace TickTrader.BotTerminal
         internal event Action<double?, double?> ApplyNewTickEvent;
 
 
-        internal ObservableBarVector(Feed.Types.Timeframe timeFrame, int? size = null)
+        internal ObservableBarVector(int? size = null)
         {
             _maxVectorSize = size ?? DefaultBarVectorSize;
-
-            Timeframe = timeFrame;
         }
 
 
-        public void InitNewVector(IEnumerable<BarData> vector)
+        public void InitNewVector(string symbol, Feed.Types.Timeframe timeFrame, IEnumerable<BarData> vector)
         {
+            Timeframe = timeFrame;
+            Symbol = symbol;
+
             Clear();
             AddRange(vector.Select(b => b.ToPoint()));
 

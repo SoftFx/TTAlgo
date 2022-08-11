@@ -15,7 +15,10 @@ namespace TickTrader.BotTerminal.Controls.Chart
         private const int BarsOnWindow = 150;
 
         protected static readonly DependencyProperty _tradeEventHandlerSourceProperty = DependencyProperty.Register(nameof(TradeEventHandler),
-            typeof(TradeEventsWriter), typeof(CartesianTradeChart), new PropertyMetadata(ChangeTradeEventHandlerSource));
+            typeof(ITradeEventsWriter), typeof(CartesianTradeChart), new PropertyMetadata(ChangeTradeEventHandlerSource));
+
+        protected static readonly DependencyProperty _indicatorObserverSourceProperty = DependencyProperty.Register(nameof(IndicatorObserver),
+            typeof(IIndicatorObserver), typeof(CartesianTradeChart), new PropertyMetadata(ChangeIndicatorObserverSource));
 
         protected static readonly DependencyProperty _barsSourceProperty = DependencyProperty.Register(nameof(BarsSource),
             typeof(ObservableBarVector), typeof(CartesianTradeChart), new PropertyMetadata(ChangeBarsSource));
@@ -26,8 +29,11 @@ namespace TickTrader.BotTerminal.Controls.Chart
         protected static readonly DependencyProperty _precisionSourceProperty = DependencyProperty.Register(nameof(PricePrecision),
             typeof(int), typeof(CartesianTradeChart), new PropertyMetadata(ChangePricePrecisionSource));
 
+        protected static readonly DependencyProperty _showLegendSourceProperty = DependencyProperty.Register(nameof(ShowLegend),
+            typeof(bool), typeof(CartesianTradeChart), new PropertyMetadata(ChangeShowLegendSource));
 
-        private protected readonly ChartTradeSettings _settings;
+
+        private protected readonly TradeChartSettings _settings;
         protected readonly Axis _xAxis, _yAxis;
 
         protected double _rightSeriesShift;
@@ -55,10 +61,22 @@ namespace TickTrader.BotTerminal.Controls.Chart
             set => SetValue(_precisionSourceProperty, value);
         }
 
-        public TradeEventsWriter TradeEventHandler
+        public ITradeEventsWriter TradeEventHandler
         {
-            get => (TradeEventsWriter)GetValue(_tradeEventHandlerSourceProperty);
+            get => (ITradeEventsWriter)GetValue(_tradeEventHandlerSourceProperty);
             set => SetValue(_tradeEventHandlerSourceProperty, value);
+        }
+
+        public IIndicatorObserver IndicatorObserver
+        {
+            get => (IIndicatorObserver)GetValue(_indicatorObserverSourceProperty);
+            set => SetValue(_indicatorObserverSourceProperty, value);
+        }
+
+        public bool ShowLegend
+        {
+            get => (bool)GetValue(_showLegendSourceProperty);
+            set => SetValue(_showLegendSourceProperty, value);
         }
 
 
@@ -66,9 +84,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             TooltipPosition = TooltipPosition.Right;
 
-            _settings = new ChartTradeSettings
+            _settings = new TradeChartSettings
             {
-                SymbolDigits = PricePrecision,
+                Precision = PricePrecision,
                 ChartType = ChartTypes.Candle,
                 Period = Period,
             };
@@ -121,13 +139,16 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             if (BarsSource != null)
             {
-                var series = new List<ISeries>
+                var series = new List<ISeries>()
                 {
                     Customizer.GetBarSeries(BarsSource, _settings),
                 };
 
                 if (TradeEventHandler is not null)
                     series.AddRange(TradeEventHandler.Markers);
+
+                if (IndicatorObserver is not null)
+                    series.AddRange(IndicatorObserver[Metadata.Types.OutputTarget.Overlay]);
 
                 Series = series;
             }
@@ -163,13 +184,25 @@ namespace TickTrader.BotTerminal.Controls.Chart
         private static void ChangePricePrecisionSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             if (obj is CartesianTradeChart chart)
-                chart._settings.SymbolDigits = chart.PricePrecision;
+                chart._settings.Precision = chart.PricePrecision;
         }
 
         private static void ChangeTradeEventHandlerSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             if (obj is CartesianTradeChart chart)
                 chart.TradeEventHandler.InitNewDataEvent += chart.UpdateDrawableSeries;
+        }
+
+        private static void ChangeIndicatorObserverSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        {
+            if (obj is CartesianTradeChart chart)
+                chart.IndicatorObserver.InitIndicatorsEvent += chart.UpdateDrawableSeries;
+        }
+
+        private static void ChangeShowLegendSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        {
+            if (obj is CartesianTradeChart chart)
+                chart.LegendPosition = chart.ShowLegend ? LegendPosition.Left : LegendPosition.Hidden;
         }
     }
 }

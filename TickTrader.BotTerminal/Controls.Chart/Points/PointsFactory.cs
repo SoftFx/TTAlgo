@@ -1,22 +1,15 @@
-﻿namespace TickTrader.BotTerminal.Controls.Chart
+﻿using System;
+using TickTrader.Algo.Domain;
+
+namespace TickTrader.BotTerminal.Controls.Chart
 {
-    internal sealed record TradeEventPoint
-    {
-        internal double? Price { get; init; }
-
-        internal double Time { get; init; }
-
-        internal string ToolTip { get; init; }
-    }
-
-
     internal static class TradePointsFactory
     {
-        internal static TradeEventPoint GetOpenMarker(BaseTransactionModel report)
+        internal static EventPoint GetOpenMarker(BaseTransactionModel report)
         {
             var price = report.OpenPrice;
 
-            return new TradeEventPoint
+            return new EventPoint
             {
                 Price = price,
                 Time = report.OpenTime.Ticks,
@@ -24,11 +17,11 @@
             };
         }
 
-        internal static TradeEventPoint GetCloseMarker(BaseTransactionModel report)
+        internal static EventPoint GetCloseMarker(BaseTransactionModel report)
         {
             var side = report.Side == BaseTransactionModel.TransactionSide.Sell ? "Buy" : "Sell";
 
-            return new TradeEventPoint
+            return new EventPoint
             {
                 Price = report.ClosePrice,
                 Time = report.CloseTime.Ticks,
@@ -36,15 +29,28 @@
             };
         }
 
-        internal static TradeEventPoint GetFillMarker(BaseTransactionModel report)
+        internal static EventPoint GetFillMarker(BaseTransactionModel report)
         {
             var price = report.OpenPrice;
 
-            return new TradeEventPoint
+            return new EventPoint
             {
                 Price = price,
                 Time = report.OpenTime.Ticks,
                 ToolTip = $"Fill #{report.OrderId} {report.Side} {report.OpenQuantity} at price {price}"
+            };
+        }
+    }
+
+
+    internal static class IndicatorPointsFactory
+    {
+        internal static IndicatorPoint GetDefaultPoint(OutputPoint point)
+        {
+            return new IndicatorPoint
+            {
+                Value = double.IsNaN(point.Value) ? 0.0 : point.Value,
+                Time = new DateTime(point.Time.Value),
             };
         }
     }

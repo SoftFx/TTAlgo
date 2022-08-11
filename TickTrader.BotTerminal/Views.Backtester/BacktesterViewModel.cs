@@ -360,8 +360,9 @@ namespace TickTrader.BotTerminal
             if (results.Feed.TryGetValue(mainSymbol, out var mainBars))
             {
                 observer.SetMessage("Loading feed chart data ...");
-                ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
-                //await ChartPage.LoadOutputs(config, results);
+
+                ChartPage.LoadMainChart(mainBars, tradeHistory);
+                ChartPage.LoadOutputs(config, results);
             }
 
             if (results.PluginInfo.IsTradeBot)

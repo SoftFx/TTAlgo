@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
     {
         internal const int BarsCount = 4000;
 
-        public ObservableBarVector BarVector { get; } = new(Feed.Types.Timeframe.M1);
+        public ObservableBarVector BarVector { get; } = new();
 
         public override IEnumerable<ChartTypes> AvailableChartTypes { get; }
 
@@ -33,7 +33,6 @@ namespace TickTrader.BotTerminal
         public void Activate(Feed.Types.Timeframe timeframe)
         {
             TimeFrame = timeframe;
-            BarVector.Timeframe = timeframe;
             base.Activate();
         }
 
@@ -52,7 +51,7 @@ namespace TickTrader.BotTerminal
 
             cToken.ThrowIfCancellationRequested();
 
-            BarVector.InitNewVector(barArray);
+            BarVector.InitNewVector(Model.Name, TimeFrame, barArray);
 
             if (barArray.Length > 0)
                 InitBoundaries(barArray.Length, barArray.First().OpenTime.ToUtcDateTime(), barArray.Last().OpenTime.ToUtcDateTime());
