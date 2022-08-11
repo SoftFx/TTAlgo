@@ -9,13 +9,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
     {
         private readonly Dictionary<Type, TimeSpan> _timeouts = new Dictionary<Type, TimeSpan>
         {
-            [OrderEvents.Open] = TimeSpan.FromSeconds(5),
-            [OrderEvents.Fill] = TimeSpan.FromSeconds(10),
-            [OrderEvents.Expire] = TimeSpan.FromSeconds(25),
-            [OrderEvents.Activate] = TimeSpan.FromSeconds(10),
-            [OrderEvents.Modify] = TimeSpan.FromSeconds(10),
-            [OrderEvents.Cancel] = TimeSpan.FromSeconds(5),
-            [OrderEvents.Close] = TimeSpan.FromSeconds(5),
+            [Events.Open] = TimeSpan.FromSeconds(5),
+            [Events.Fill] = TimeSpan.FromSeconds(10),
+            [Events.Expire] = TimeSpan.FromSeconds(25),
+            [Events.Activate] = TimeSpan.FromSeconds(10),
+            [Events.Modify] = TimeSpan.FromSeconds(10),
+            [Events.Cancel] = TimeSpan.FromSeconds(5),
+            [Events.Close] = TimeSpan.FromSeconds(5),
         };
 
         private readonly CompositeTradeApiTest _bot;

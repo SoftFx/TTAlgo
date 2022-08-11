@@ -79,7 +79,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             var orderId = args.Order.Id;
 
-            if (@event == OrderEvents.Open)
+            if (@event == Events.Open)
             {
                 var template = _expectedToOpenTemplates.First.Value;
                 _expectedToOpenTemplates.RemoveFirst();
@@ -88,7 +88,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 //_currentTemplates.Add(orderId, template.ToOpen(orderId));
             }
 
-            if (@event == OrderEvents.Activate)
+            if (@event == Events.Activate)
             {
                 var template = _currentTemplates[orderId];
                 _currentTemplates.Remove(orderId);
@@ -99,19 +99,25 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                     _expectedToOpenTemplates.AddFirst(template.ToActivate());
             }
 
-            if (@event == OrderEvents.Cancel)
+            if (@event == Events.Cancel)
             {
-                //if (!_currentTemplates.TryGetValue(orderId, out var template))
-                //    return;
                 var template = _currentTemplates[orderId];
                 _currentTemplates.Remove(orderId);
 
                 template.ToCancel();
             }
 
-            if (@event == OrderEvents.Close)
+            if (@event == Events.Close)
             {
                 _currentTemplates.Remove(orderId);
+            }
+
+            if (@event == Events.Expire)
+            {
+                var template = _currentTemplates[orderId];
+                _currentTemplates.Remove(orderId);
+
+                template.ToExpire();
             }
         }
 
@@ -119,7 +125,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             var oldOrderId = args.OldOrder.Id;
 
-            if (@event == OrderEvents.Fill)
+            if (@event == Events.Fill)
             {
                 var filledVolume = args.NewOrder.LastFillVolume;
 
@@ -133,7 +139,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                     _expectedToOpenTemplates.AddFirst(filledPart.ToGrossPosition());
             }
 
-            if (@event == OrderEvents.Modify)
+            if (@event == Events.Modify)
             {
                 var baseTemplate = _currentTemplates[oldOrderId];
                 baseTemplate.ToModified();

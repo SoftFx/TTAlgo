@@ -57,7 +57,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private Task ExpirationExecutionTest(OrderStateTemplate template)
         {
-            return TestOpenOrder(template.WithExpiration(4), OrderEvents.Expire);
+            return TestOpenOrder(template.WithExpiration(4), Events.Expire);
         }
 
         private async Task CancelExecutionTest(OrderStateTemplate template)
