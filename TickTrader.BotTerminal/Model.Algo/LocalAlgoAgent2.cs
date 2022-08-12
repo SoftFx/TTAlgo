@@ -151,7 +151,10 @@ namespace TickTrader.BotTerminal
 
         public async Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext)
         {
-            var accountMetadata = await _server.GetAccountMetadata(new AccountMetadataRequest { AccountId = accountId });
+            AccountMetadataInfo accountMetadata = default;
+            // backtester setup sends null accountId, we use that request to get other parts of metadata
+            if (!string.IsNullOrEmpty(accountId))
+                accountMetadata = await _server.GetAccountMetadata(new AccountMetadataRequest { AccountId = accountId });
             return new SetupMetadata(_apiMetadata, _mappings, accountMetadata, setupContext ?? _setupContext);
         }
 

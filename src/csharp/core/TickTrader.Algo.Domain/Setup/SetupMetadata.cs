@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Domain
             Account = account;
             Context = context;
 
-            DefaultSymbol = account.Symbols == null ? context.DefaultSymbol
+            DefaultSymbol = account?.Symbols == null ? context.DefaultSymbol
                 : (account.Symbols.Any(s => s.Equals(context.DefaultSymbol)) ? context.DefaultSymbol : account.DefaultSymbol);
         }
 
