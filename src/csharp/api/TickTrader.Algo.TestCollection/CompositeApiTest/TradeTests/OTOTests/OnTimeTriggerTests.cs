@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TriggerType = TickTrader.Algo.Api.ContingentOrderTrigger.TriggerType;
 
@@ -46,9 +45,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                     await _base.TestCancelOrder(order);
                 }
 
-                Task ActivateWithExpiration(OrderStateTemplate order)
+                async Task ActivateWithExpiration(OrderStateTemplate order)
                 {
-                    return _base.TestOpenOrder(order.WithExpiration(4), Events.Order.PendingOnTimeActivationExpire);
+                    await _base.TestOpenOrder(order.WithExpiration(4), Events.Order.PendingOnTimeActivationExpire);
+                    await order.Expired.Task;
                 }
 
                 await RunOnTimeTest(OpenCancelOnTime, set);
@@ -114,7 +114,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             private async Task RejectModifyTriggerTime(OrderStateTemplate order)
             {
                 await _base.TestOpenOrder(order);
-                await _base.TestModifyReject(order.WithOnTimeTrigger(DateTime.UtcNow.AddSeconds(-1)), OrderCmdResultCodes.IncorrectTriggerTime);
+                await _base.TestModifyReject(order.WithOnTimeTrigger(Bot.UtcNow.AddSeconds(-1)), OrderCmdResultCodes.IncorrectTriggerTime);
                 await _base.TestCancelOrder(order);
             }
 
@@ -137,21 +137,21 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             private async Task OpenOCOWithTriggerAndIncorrectType(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
             {
-                await _base.TestOpenOrder(mainOrder.WithOnTimeTrigger(WaitTriggerSec));
-                await _base.TestOpenReject(ocoOrder.WithOCO(mainOrder).WithOnTimeTrigger(mainOrder.TriggerTime), OrderCmdResultCodes.Unsupported);
+                await _base.TestOpenOrder(mainOrder);
+                await _base.TestOpenReject(ocoOrder.WithOCO(mainOrder), OrderCmdResultCodes.Unsupported);
                 await _base.TestCancelOrder(mainOrder);
             }
 
             private async Task OpenOCOWithoutTrigger(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
             {
-                await _base.TestOpenOrder(mainOrder.WithOnTimeTrigger(WaitTriggerSec));
-                await _base.TestOpenReject(ocoOrder.WithOCO(mainOrder), OrderCmdResultCodes.OCORelatedOrderIncorrectOptions);
+                await _base.TestOpenOrder(mainOrder);
+                await _base.TestOpenReject(ocoOrder.RemoveOnTimeTrigger().WithOCO(mainOrder), OrderCmdResultCodes.IncorrectTriggerOrderType); //before OCORelatedOrderIncorrectOptions
                 await _base.TestCancelOrder(mainOrder);
             }
 
             private Task OpenLinkedOCOWithTriggerAndIncorrectType(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
             {
-                return _base.TestOpenReject(mainOrder.WithOnTimeTrigger(WaitTriggerSec).WithLinkedOCO(ocoOrder), OrderCmdResultCodes.Unsupported);
+                return _base.TestOpenReject(mainOrder.WithLinkedOCO(ocoOrder), OrderCmdResultCodes.Unsupported);
             }
 
 
@@ -164,14 +164,26 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
                 await _base.TestModifyOrder(order.WithOnTimeTrigger(WaitTriggerSec));
 
-                order.FillAdditionalProperties();
+                order.FillAdditionalProperties(0.8);
                 order.Volume *= 0.9;
                 order.Comment = "Modified OnTime trigger comment";
 
                 if (order.WithOnTimeTrigger(ExecuteTriggerSec).IsInstantOrder)
-                    await OpenInstantOnTime(order);
+                {
+                    await _base.TestModifyOrder(order, Events.Order.InstantOnTimeActivation);
+                    await order.OnTimeTriggerReceived.Task;
+                    //   await OpenInstantOnTime(order);
+                }
                 else
-                    await OpenPendingOnTime(order.ForPending(5).WithExpiration(WaitTriggerSec));
+                {
+                    await _base.TestModifyOrder(order, Events.Order.PendingOnTimeActivation);
+
+                    await order.OnTimeTriggerReceived.Task;
+                    await order.Opened.Task;
+
+                    await _base.TestCancelOrder(order);
+                    //await OpenPendingOnTime(order.ForPending(5).WithExpiration(WaitTriggerSec));
+                }
             }
 
 

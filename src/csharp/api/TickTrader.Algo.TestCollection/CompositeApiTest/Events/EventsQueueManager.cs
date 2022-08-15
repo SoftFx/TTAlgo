@@ -61,8 +61,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal async Task WaitAllEvents()
         {
             var eventTask = _allEventsReceivedTask.Task;
+            var finishTask = await Task.WhenAny(eventTask, _bot.Delay(_totalWaitingTime));
 
-            if (ExpectedCount > 0 && await Task.WhenAny(eventTask, Task.Delay(_totalWaitingTime)) != eventTask)
+            if (ExpectedCount > 0 && finishTask != eventTask)
                 throw EventException.TimeoutException;
 
             VerifyOriginQueue();

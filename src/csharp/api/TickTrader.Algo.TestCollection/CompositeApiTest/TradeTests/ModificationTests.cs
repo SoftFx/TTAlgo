@@ -58,8 +58,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task RunExpirationModifyTests(OrderStateTemplate template)
         {
-            await ExpirationTest(template, TestAction.Add, DateTime.Now.AddYears(1));
-            await ExpirationTest(template, TestAction.Modify, DateTime.Now.AddYears(2));
+            await ExpirationTest(template, TestAction.Add, Bot.UtcNow.AddYears(1));
+            await ExpirationTest(template, TestAction.Modify, Bot.UtcNow.AddYears(2));
             await ExpirationTest(template, TestAction.Delete, DateTime.MinValue);
         }
 

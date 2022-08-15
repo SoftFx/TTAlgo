@@ -103,7 +103,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
         internal OrderStateTemplate WithOCO(OrderTemplate ocoOrder)
-        {
+       {
             void SetOCO(OrderTemplate main, OrderTemplate oco)
             {
                 if (!main.Options.HasFlag(OrderExecOptions.OneCancelsTheOther))
@@ -182,6 +182,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             TriggerType = TriggerTypes.OnTime;
             TriggerTime = triggerTime;
+
+            return (OrderStateTemplate)this;
+        }
+
+        internal OrderStateTemplate RemoveOnTimeTrigger()
+        {
+            TriggerType &= ~TriggerTypes.OnTime;
+            TriggerTime = null;
 
             return (OrderStateTemplate)this;
         }

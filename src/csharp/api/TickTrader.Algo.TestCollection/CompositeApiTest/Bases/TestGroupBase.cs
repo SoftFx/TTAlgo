@@ -59,7 +59,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 _statsManager.TestError(ex.Message);
 
                 if (ex is EventException)
-                    await Task.Delay(WaitAllFailedTestEvents);
+                    await Bot.Delay(WaitAllFailedTestEvents);
             }
         }
 
@@ -127,7 +127,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             if (template.IsGrossAcc)
             {
-                await Task.Delay(WaitToUpdateGrossPositions);
+                await Bot.Delay(WaitToUpdateGrossPositions);
                 await RemoveOrder(template);
             }
         }
@@ -290,7 +290,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 resultCode = result.ResultCode;
 
                 if (resultCode.IsServerError())
-                    await Task.Delay(DelayBetweenServerRequests);
+                    await Bot.Delay(DelayBetweenServerRequests);
                 else
                     throw new ServerRequestException(resultCode);
             }
@@ -313,7 +313,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 if (resultCode == expectedError)
                     return;
                 else if (resultCode.IsServerError())
-                    await Task.Delay(DelayBetweenServerRequests);
+                    await Bot.Delay(DelayBetweenServerRequests);
                 else
                     throw new ServerRequestException(resultCode);
             }

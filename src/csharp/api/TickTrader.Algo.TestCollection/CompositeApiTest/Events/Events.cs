@@ -15,7 +15,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal virtual Type[] PendingOnTimeActivation { get; } = new[] { Events.Activate, Events.Open };
 
-        internal virtual Type[] PendingOnTimeActivationExpire { get; } = new[] { Events.Activate, Events.Activate, Events.Open, Events.Expire };
+        internal virtual Type[] PendingOnTimeActivationExpire { get; } = new[] { Events.Activate, Events.Open, Events.Expire };
     }
 
 

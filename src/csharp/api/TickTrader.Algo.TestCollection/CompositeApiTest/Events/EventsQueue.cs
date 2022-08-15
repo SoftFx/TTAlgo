@@ -93,7 +93,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 var template = _currentTemplates[orderId];
                 _currentTemplates.Remove(orderId);
 
-                if (template.IsOnTimeTrigger && template.TriggerTime <= DateTime.UtcNow)
+                if (template.IsOnTimeTrigger)
                     _expectedToOpenTemplates.AddFirst(template.ToOnTimeTriggerReceived());
                 else
                     _expectedToOpenTemplates.AddFirst(template.ToActivate());
