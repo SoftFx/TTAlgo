@@ -122,7 +122,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal OrderStateTemplate WithExpiration(int seconds)
         {
-            Expiration = DateTime.UtcNow + TimeSpan.FromSeconds(seconds);
+            Expiration = UtcNow + TimeSpan.FromSeconds(seconds);
 
             return (OrderStateTemplate)this;
         }
@@ -173,7 +173,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal OrderStateTemplate WithOnTimeTrigger(int seconds)
         {
-            var utcNow = DateTime.UtcNow;
+            var utcNow = UtcNow;
 
             return WithOnTimeTrigger((utcNow + TimeSpan.FromSeconds(seconds)).AddMilliseconds(-utcNow.Millisecond));
         }
