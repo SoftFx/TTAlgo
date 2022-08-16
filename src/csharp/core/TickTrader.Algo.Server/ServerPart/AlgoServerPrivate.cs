@@ -1,14 +1,18 @@
 ﻿using Google.Protobuf;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Rpc;
+using TickTrader.Algo.Runtime;
 
 namespace TickTrader.Algo.Server
 {
-    internal class AlgoServerPrivate : IRpcHost
+    internal class AlgoServerPrivate : IRpcHost, IRuntimeOwner
     {
+        private static readonly int _serverProcId = Process.GetCurrentProcess().Id;
+
         private readonly IActorRef _server, _eventBus;
 
 
@@ -71,6 +75,23 @@ namespace TickTrader.Algo.Server
         }
 
         #endregion IRpcHost implementation
+
+
+        #region IRuntimeOwner implementation
+
+        string IRuntimeOwner.RuntimeExePath => Env.RuntimeExePath;
+
+        string IRuntimeOwner.WorkingDirectory => Env.AppFolder;
+
+        bool IRuntimeOwner.EnableDevMode => RuntimeSettings.EnableDevMode;
+
+        RpcProxyParams IRuntimeOwner.GetRpcParams() => new() { Address = Address, Port = BoundPort, ParentProcId = _serverProcId };
+
+        void IRuntimeOwner.OnRuntimeStopped(string runtimeId) => _server.Tell(new RuntimeStoppedMsg(runtimeId));
+
+        void IRuntimeOwner.OnRuntimeInvalid(string pkgId, string runtimeId) => _server.Tell(new PkgRuntimeInvalidMsg(pkgId, runtimeId));
+
+        #endregion IRuntimeOwner implementation
 
 
         internal class RuntimeRequest

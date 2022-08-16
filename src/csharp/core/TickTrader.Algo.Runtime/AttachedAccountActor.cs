@@ -7,7 +7,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Runtime
 {
-    internal class AttachedAccountActor : Actor
+    public class AttachedAccountActor : Actor
     {
         private readonly string _id;
         private readonly PluginRuntimeV1Handler _handler;
@@ -187,7 +187,7 @@ namespace TickTrader.Algo.Runtime
         }
 
 
-        internal class AddRefCmd
+        public class AddRefCmd
         {
             public string ExecutorId { get; }
 
@@ -200,7 +200,7 @@ namespace TickTrader.Algo.Runtime
             }
         }
 
-        internal class RemoveRefCmd
+        public class RemoveRefCmd
         {
             public string ExecutorId { get; }
 
@@ -212,6 +212,6 @@ namespace TickTrader.Algo.Runtime
 
         internal class ManageAttachCmd : Singleton<ManageAttachCmd> { }
 
-        internal class GetInfoProviderRequest : Singleton<GetInfoProviderRequest> { }
+        public class GetInfoProviderRequest : Singleton<GetInfoProviderRequest> { }
     }
 }

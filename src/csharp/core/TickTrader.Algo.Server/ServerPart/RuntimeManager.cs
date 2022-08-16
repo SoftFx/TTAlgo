@@ -6,6 +6,7 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.PkgStorage;
+using TickTrader.Algo.Runtime;
 
 namespace TickTrader.Algo.Server
 {
@@ -13,15 +14,15 @@ namespace TickTrader.Algo.Server
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<RuntimeManager>();
 
-        private readonly AlgoServerPrivate _server;
+        private readonly IRuntimeOwner _owner;
         private readonly Dictionary<string, IActorRef> _runtimeMap = new Dictionary<string, IActorRef>();
         private readonly Dictionary<string, string> _pkgRuntimeMap = new Dictionary<string, string>();
         private readonly Dictionary<string, int> _runtumeVersions = new Dictionary<string, int>();
 
 
-        public RuntimeManager(AlgoServerPrivate server)
+        public RuntimeManager(IRuntimeOwner owner)
         {
-            _server = server;
+            _owner = owner;
         }
 
 
@@ -72,7 +73,7 @@ namespace TickTrader.Algo.Server
             var config = new RuntimeConfig { Id = id, PackageId = pkgId, PackageBinary = pkgBin };
 
             _pkgRuntimeMap[pkgId] = id;
-            _runtimeMap[id] = RuntimeControlActor.Create(_server, config, pkgRef.PkgInfo);
+            _runtimeMap[id] = RuntimeControlActor.Create(_owner, config, pkgRef.PkgInfo);
 
             return id;
         }

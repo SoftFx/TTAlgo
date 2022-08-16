@@ -43,6 +43,7 @@
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Adapter\TickTrader.Algo.Server.PublicAPI.Adapter.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\TickTrader.Algo.Logging\TickTrader.Algo.Logging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

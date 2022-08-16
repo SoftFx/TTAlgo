@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.Runtime
 {
     public class RemoteRuntimeProxy : IRuntimeProxy
     {

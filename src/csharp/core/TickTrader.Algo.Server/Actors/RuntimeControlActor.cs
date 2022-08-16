@@ -9,6 +9,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
+using TickTrader.Algo.Runtime;
 
 namespace TickTrader.Algo.Server
 {
@@ -21,9 +22,8 @@ namespace TickTrader.Algo.Server
         public const int KillTimeout = 5000;
 
         private static readonly TimeSpan KeepAliveThreshold = TimeSpan.FromMinutes(2);
-        private static readonly int _serverProcId = Process.GetCurrentProcess().Id;
 
-        private readonly AlgoServerPrivate _server;
+        private readonly IRuntimeOwner _owner;
         private readonly RuntimeConfig _config;
         private readonly PackageInfo _pkgInfo;
         private readonly string _id, _pkgId;
@@ -44,9 +44,9 @@ namespace TickTrader.Algo.Server
         private ActorLock _controlLock;
         private IDisposable _startLockToken, _shutdownLockToken;
 
-        public RuntimeControlActor(AlgoServerPrivate server, RuntimeConfig config, PackageInfo pkgInfo)
+        public RuntimeControlActor(IRuntimeOwner owner, RuntimeConfig config, PackageInfo pkgInfo)
         {
-            _server = server;
+            _owner = owner;
             _config = config;
             _pkgInfo = pkgInfo;
             _id = config.Id;
@@ -69,9 +69,9 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public static IActorRef Create(AlgoServerPrivate server, RuntimeConfig config, PackageInfo pkgInfo)
+        public static IActorRef Create(IRuntimeOwner owner, RuntimeConfig config, PackageInfo pkgInfo)
         {
-            return ActorSystem.SpawnLocal(() => new RuntimeControlActor(server, config, pkgInfo), $"{nameof(RuntimeControlActor)} ({config.Id})");
+            return ActorSystem.SpawnLocal(() => new RuntimeControlActor(owner, config, pkgInfo), $"{nameof(RuntimeControlActor)} ({config.Id})");
         }
 
 
@@ -196,7 +196,7 @@ namespace TickTrader.Algo.Server
                 if (!_requestGate.IsClosed)
                     return;
 
-                var devModeStart = _pluginsMap.Count > 0 && _server.RuntimeSettings.EnableDevMode;
+                var devModeStart = _pluginsMap.Count > 0 && _owner.EnableDevMode;
                 var forcedStart = _requestGate.WatingCount > 0;
 
                 if (devModeStart || forcedStart)
@@ -207,7 +207,7 @@ namespace TickTrader.Algo.Server
             }
             else if (_state == RuntimeState.Running)
             {
-                var shouldBeRunning = _activeExecutorsCnt > 0 || (_pluginsMap.Count > 0 && _server.RuntimeSettings.EnableDevMode);
+                var shouldBeRunning = _activeExecutorsCnt > 0 || (_pluginsMap.Count > 0 && _owner.EnableDevMode);
                 var scheduledShutdown = !shouldBeRunning && _pendingShutdown < DateTime.UtcNow;
                 var obsoleteShutdown = !shouldBeRunning && _isObsolete;
 
@@ -268,11 +268,12 @@ namespace TickTrader.Algo.Server
 
         private bool StartProcess()
         {
-            var rpcParams = new RpcProxyParams { Address = _server.Address, Port = _server.BoundPort, ProxyId = _id, ParentProcId = _serverProcId };
-            var startInfo = new ProcessStartInfo(_server.Env.RuntimeExePath)
+            var rpcParams = _owner.GetRpcParams();
+            rpcParams.ProxyId = _id;
+            var startInfo = new ProcessStartInfo(_owner.RuntimeExePath)
             {
                 UseShellExecute = false,
-                WorkingDirectory = _server.Env.AppFolder,
+                WorkingDirectory = _owner.WorkingDirectory,
                 CreateNoWindow = true,
             };
             rpcParams.SaveAsEnvVars(startInfo.Environment);
@@ -519,7 +520,7 @@ namespace TickTrader.Algo.Server
         {
             if (_isObsolete && _state == RuntimeState.Stopped && _pluginsMap.Count == 0)
             {
-                _server.OnRuntimeStopped(_id);
+                _owner.OnRuntimeStopped(_id);
             }
         }
 
@@ -536,7 +537,7 @@ namespace TickTrader.Algo.Server
                 _logger.Debug($"Plugin '{msg.Id}' aborted. Entering invalid state");
 
                 _isInvalid = true;
-                _server.OnRuntimeInvalid(_pkgId, _id);
+                _owner.OnRuntimeInvalid(_pkgId, _id);
                 NotifyAttachedPlugins(PluginActor.RuntimeInvalidMsg.Instance);
             }
         }

@@ -2,13 +2,13 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
+using TickTrader.Algo.Runtime;
 
-namespace TickTrader.Algo.Runtime
+namespace TickTrader.Algo.RuntimeV1Host
 {
     public class RuntimeV1Loader : IRpcHost, IRuntimeProxy
     {

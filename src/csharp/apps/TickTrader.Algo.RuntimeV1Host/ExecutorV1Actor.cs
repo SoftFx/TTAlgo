@@ -6,8 +6,9 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Runtime;
 
-namespace TickTrader.Algo.Runtime
+namespace TickTrader.Algo.RuntimeV1Host
 {
     internal class ExecutorV1Actor : Actor
     {

@@ -11,7 +11,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Runtime
 {
-    internal class RuntimeInfoProvider : IPluginMetadata, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider, IFeedHistoryProvider
+    public class RuntimeInfoProvider : IPluginMetadata, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider, IFeedHistoryProvider
     {
         private class RuntimeContext : Actor { }
 

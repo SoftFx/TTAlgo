@@ -3,13 +3,12 @@ using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Runtime
 {
-    internal class PluginRuntimeV1Handler : IRpcHandler
+    public class PluginRuntimeV1Handler : IRpcHandler
     {
         private readonly IRuntimeProxy _runtime;
         private readonly ConcurrentDictionary<string, IRpcHandler> _knownProxies;
@@ -68,7 +67,7 @@ namespace TickTrader.Algo.Runtime
             await context.TaskSrc.Task;
         }
 
-        internal void SendNotification(string proxyId, IMessage msg)
+        public void SendNotification(string proxyId, IMessage msg)
         {
             _session.Tell(RpcMessage.Notification(proxyId, msg));
         }

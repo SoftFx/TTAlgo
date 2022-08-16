@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core
+namespace TickTrader.Algo.Runtime
 {
     public interface IRuntimeProxy
     {

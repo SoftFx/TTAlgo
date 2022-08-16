@@ -8,8 +8,9 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Ext;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.Runtime;
 
-namespace TickTrader.Algo.Runtime
+namespace TickTrader.Algo.RuntimeV1Host
 {
     internal class RuntimeV1Actor : Actor
     {
