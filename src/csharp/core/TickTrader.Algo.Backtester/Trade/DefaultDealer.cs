@@ -32,6 +32,8 @@ namespace TickTrader.Algo.Backtester
                 }
 
                 request.Reject();
+
+                return;
             }
 
             // Market

@@ -87,7 +87,8 @@
                     <l:ErrorIndicator Grid.Column="1" Grid.Row="0" Error="{l:ResxBinding PluginErrorProp.Value, Prefix=PluginError_}"
                                       VerticalAlignment="Center" HorizontalAlignment="Left"/>
                     <ComboBox Grid.Column="2" Grid.Row="0" ItemsSource="{Binding Source={StaticResource PluginsCollection}}"
-                      ItemTemplate="{StaticResource PluginComboItemTemplate}" SelectedValue="{Binding SelectedPlugin.Value}" >
+                              ItemTemplate="{StaticResource PluginComboItemTemplate}" SelectedValue="{Binding SelectedPlugin.Value}"
+                              IsEditable="True" IsTextSearchCaseSensitive="False" IsTextSearchEnabled="True" TextSearch.TextPath="DisplayName">
                         <ComboBox.GroupStyle>
                             <GroupStyle HeaderTemplate="{StaticResource PluginComboGroupTemplate}" />
                         </ComboBox.GroupStyle>

@@ -109,7 +109,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (@event == Events.Close)
             {
+                var template = _currentTemplates[orderId];
                 _currentTemplates.Remove(orderId);
+
+                template.ToClose();
             }
 
             if (@event == Events.Expire)

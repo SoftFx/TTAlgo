@@ -248,6 +248,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 _asyncMode ? await Bot.CloseOrderAsync(request) : Bot.CloseOrder(request);
 
             await WaitSuccServerRequest(CloseCommand, Events.Close);
+            await template.Closed.Task;
         }
 
         protected async Task<OrderStateTemplate> TestCloseByOrders(OrderStateTemplate first, OrderStateTemplate second)
