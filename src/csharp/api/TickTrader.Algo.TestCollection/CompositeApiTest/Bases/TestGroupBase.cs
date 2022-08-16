@@ -265,6 +265,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
 
             await WaitSuccServerRequest(CloseByCommand, Events.Close, Events.Close);
+            await first.Closed.Task;
+            await second.Closed.Task;
 
             return result;
         }

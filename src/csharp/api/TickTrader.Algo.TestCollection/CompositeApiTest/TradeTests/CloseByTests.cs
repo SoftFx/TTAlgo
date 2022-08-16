@@ -38,7 +38,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             var resultTemplate = await TestCloseByOrders(template, inversed);
 
             if (!resultTemplate.IsNull)
+            {
+                await resultTemplate.Opened.Task;
                 await RemoveOrder(resultTemplate);
+            }
         }
     }
 }

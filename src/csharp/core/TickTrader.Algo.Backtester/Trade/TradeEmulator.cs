@@ -374,7 +374,7 @@ namespace TickTrader.Algo.Backtester
                         }
                         else
                         {
-                            var byOrder = _acc.GetOrderOrThrow(request.OrderId);
+                            var byOrder = _acc.GetOrderOrThrow(request.ByOrderId);
 
                             // emulate server ping
                             await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
@@ -1007,6 +1007,8 @@ namespace TickTrader.Algo.Backtester
             OrderAccessor newPos = null;
             NetPositionOpenInfo netInfo = null;
 
+            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(copy, order)));
+
             if (_acc.Type == AccountInfo.Types.Type.Gross)
             {
                 newPos = CreatePositionFromOrder(TradeReportInfo.Types.Reason.PendingOrderActivation, order, fillPrice, fillAmount, !partialFill);
@@ -1022,12 +1024,6 @@ namespace TickTrader.Algo.Backtester
             //_acc.AfterFillOrder(order, this, fillPrice, fillAmount, partialFill, tradeReport, execReport, fillReport);
 
             //order.FireChanged();
-
-            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(copy, order)));
-
-            //fire API event for open Gross position
-            if (_acc.Type == AccountInfo.Types.Type.Gross)
-                _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(newPos)));
 
             if (tradeReport != null)
                 _history.Add(tradeReport);
@@ -1120,10 +1116,10 @@ namespace TickTrader.Algo.Backtester
         private OrderAccessor CreatePositionFromOrder(TradeReportInfo.Types.Reason trReason, OrderAccessor parentOrder,
            double openPrice, double posAmount, bool transformOrder)
         {
-            return CreatePosition(trReason, parentOrder, parentOrder.Info.Side, parentOrder.SymbolInfo, openPrice, posAmount, transformOrder);
+            return CreatePosition(parentOrder, parentOrder.Info.Side, parentOrder.SymbolInfo, openPrice, posAmount, transformOrder);
         }
 
-        private OrderAccessor CreatePosition(TradeReportInfo.Types.Reason trReason, OrderAccessor parentOrder, OrderInfo.Types.Side side, SymbolInfo smb, double openPrice, double posAmount, bool transformOrder)
+        private OrderAccessor CreatePosition(OrderAccessor parentOrder, OrderInfo.Types.Side side, SymbolInfo smb, double openPrice, double posAmount, bool transformOrder)
         {
             OrderAccessor position;
             //TradeChargesInfo charges = new TradeChargesInfo();
@@ -1218,6 +1214,8 @@ namespace TickTrader.Algo.Backtester
             // add position to accoun
             if (wasTmpOrder || !transformOrder)
                 _acc.Orders.Add(position);
+
+            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(position)));
 
             // calculate margin & profit
             //fCalc.UpdateMargin(position, _acc);
@@ -1603,7 +1601,9 @@ namespace TickTrader.Algo.Backtester
                     trReason = TradeReportInfo.Types.Reason.TakeProfitActivation;
 
                 var smb = _context.Builder.Symbols.GetOrNull(record.Order.Info.Symbol).Info;
-                ClosePosition(record.Order, trReason, null, null, record.Order.Info.RemainingAmount, record.Price, smb, 0, null);
+
+                if (_acc.Orders.Contains(record.Order)) //the order could have been closed before
+                    ClosePosition(record.Order, trReason, null, null, record.Order.Info.RemainingAmount, record.Price, smb, 0, null);
             }
         }
 
@@ -1762,7 +1762,7 @@ namespace TickTrader.Algo.Backtester
 
             // Reopen position with remaining amount.
             if (partialClose && reopenRemaining)
-                CreatePosition(trReason, position, position.Info.Side, smb, position.Info.Price ?? 0, position.Info.RemainingAmount, false);
+                CreatePosition(position, position.Info.Side, smb, position.Info.Price ?? 0, position.Info.RemainingAmount, false);
 
             // change balance
             var totalProfit = charges.Total + profit;
@@ -1869,8 +1869,8 @@ namespace TickTrader.Algo.Backtester
             ClosePositionOptions pos1options = 0;
             ClosePositionOptions pos2options = 0;
 
-            if (!usePartialClosing)
-                pos1options |= ClosePositionOptions.ReopenRemaining;
+            //if (!usePartialClosing)
+            //    pos1options |= ClosePositionOptions.ReopenRemaining;
 
             //if (grSecurity.CloseByMod == CloseByModifications.AllByCurrentPrice || acc.AccountingType == AccountingTypes.Net)
             //{
@@ -1880,8 +1880,12 @@ namespace TickTrader.Algo.Backtester
             //}
             //else
             //{
-            pos2options |= ClosePositionOptions.Nullify;
             pos2options |= ClosePositionOptions.DropCommision;
+            pos2options |= ClosePositionOptions.DropCommision;
+
+            if (position1.Info.RemainingAmount > position2.Info.RemainingAmount)
+                CreatePosition(position1, position1.Info.Side, smb, position1.Info?.Price ?? 0.0, position1.Info.RemainingAmount - position2.Info.RemainingAmount, false);
+
             ClosePosition(position1, trReason, null, null, closeAmount, (double)position2.Info.Price, smb, pos1options, position2.Info.Id);
             ClosePosition(position2, trReason, null, null, closeAmount, (double)position2.Info.Price, smb, pos2options, position1.Info.Id);
             //}
