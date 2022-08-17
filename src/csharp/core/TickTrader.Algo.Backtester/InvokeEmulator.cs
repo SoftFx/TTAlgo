@@ -43,6 +43,11 @@ namespace TickTrader.Algo.Backtester
             _exStartAction = executor.Start;
             _extStopAction = executor.EmulateStop;
 
+            // init time point in case we don't have any feed
+            var start = settings.CommonSettings.EmulationPeriodStart;
+            start = start.Ticks > TimeSpan.FromMilliseconds(1).Ticks ? start.AddMilliseconds(-1) : DateTime.MinValue;
+            _timePoint = start;
+
             executor.OnExitRequest = _ => Cancel();
         }
 

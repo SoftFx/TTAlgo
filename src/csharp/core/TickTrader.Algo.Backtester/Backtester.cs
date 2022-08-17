@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Backtester
         private readonly PluginExecutorCore _executorCore;
         private readonly EmulationControlFixture _control;
 
-        public Backtester(PluginKey pluginKey, DateTime? from, DateTime? to)
+        public Backtester(PluginKey pluginKey, DateTime from, DateTime to)
         {
             _pluginKey = pluginKey ?? throw new ArgumentNullException(nameof(pluginKey));
             var metadata = PackageMetadataCache.GetPlugin(pluginKey) ?? throw new ArgumentException("metadata not found", nameof(pluginKey));
