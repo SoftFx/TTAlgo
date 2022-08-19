@@ -21,7 +21,8 @@
                                                            MinHeight="100"
                                                            XAxes="{Binding ElementName=mainChart, Path=XAxes}"
                                                            ZoomMode="{Binding ElementName=mainChart, Path=ZoomMode}"
-                                                           IndicatorObserver="{Binding ElementName=mainChart, Path=IndicatorObserver}"/>
+                                                           IndicatorObserver="{Binding ElementName=mainChart, Path=IndicatorObserver}"
+                                                           ShowLegend="{Binding ElementName=showLegendControl, Path=IsChecked, UpdateSourceTrigger=PropertyChanged}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

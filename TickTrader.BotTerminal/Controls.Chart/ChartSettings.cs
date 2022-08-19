@@ -27,4 +27,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
     {
         internal ChartTypes ChartType { get; set; }
     }
+
+    public sealed class IndicatorChartSettings : ChartSettings
+    {
+        internal string Name { get; set; }
+    }
 }

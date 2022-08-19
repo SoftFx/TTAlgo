@@ -67,8 +67,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 var type = model.Descriptor.PlotType;
 
                 var mainColor = new SKColor(model.Config.LineColorArgb);
-                var settings = new ChartSettings
+                var settings = new IndicatorChartSettings
                 {
+                    Name = name,
                     Precision = precision == -1 ? digits : precision,
                     Period = output.Config.Timeframe,
                 };
