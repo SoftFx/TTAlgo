@@ -2,9 +2,11 @@
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.Painting.Effects;
+using Machinarium.Var;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using static TickTrader.Algo.Domain.Metadata.Types;
 
@@ -12,9 +14,11 @@ namespace TickTrader.BotTerminal.Controls.Chart
 {
     public interface IIndicatorObserver
     {
-        OutputTarget[] Targets { get; }
+        ObservableCollection<OutputTarget> Targets { get; }
 
         List<ISeries> this[OutputTarget target] { get; }
+
+        BoolProperty HasSubIndicators { get; }
 
 
         ChartSettings GetSettings(OutputTarget target);
@@ -30,23 +34,21 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         private readonly List<ISeries> _emptyList = Enumerable.Empty<ISeries>().ToList();
 
-
-        public OutputTarget[] Targets { get; } = new[]
-        {
-            OutputTarget.Window1,
-            OutputTarget.Window2,
-            OutputTarget.Window3,
-            OutputTarget.Window4,
-        };
+        private readonly VarContext _context = new();
 
         public List<ISeries> this[OutputTarget target] => _subIndicators.TryGetValue(target, out var source) ? source : _emptyList;
 
+        public ObservableCollection<OutputTarget> Targets { get; } = new();
+
+        public BoolProperty HasSubIndicators { get; }
 
         public event Action InitIndicatorsEvent;
 
 
         internal IndicatorObserver()
         {
+            HasSubIndicators = _context.AddBoolProperty();
+
             foreach (var key in Enum.GetValues<OutputTarget>())
                 _settings[key] = new ChartSettings();
         }
@@ -131,6 +133,14 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
                 AddTargetToWindow(target, series);
             }
+
+            Targets.Clear();
+
+            foreach (var targets in _subIndicators.Keys)
+                if (targets != OutputTarget.Overlay)
+                    Targets.Add(targets);
+
+            HasSubIndicators.Value = Targets.Count > 0;
 
             InitIndicatorsEvent?.Invoke();
         }

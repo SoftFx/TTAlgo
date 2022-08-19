@@ -42,7 +42,10 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         private void LoadIndicatorOutputs()
         {
-            Series = IndicatorObserver[OutputTargetId];
+            var points = IndicatorObserver[OutputTargetId];
+
+            Visibility = points.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+            Series = points;
         }
 
         private void UpdateAxis()
