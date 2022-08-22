@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
@@ -16,6 +17,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal virtual Type[] PendingOnTimeActivation { get; } = new[] { Events.Activate, Events.Open };
 
         internal virtual Type[] PendingOnTimeActivationExpire { get; } = new[] { Events.Activate, Events.Open, Events.Expire };
+
+        internal virtual Type[] ActivatePosition { get; } = Array.Empty<Type>();
+
+
+        internal virtual Type[] FullExecutionPath(OrderStateTemplate template)
+        {
+            return template.IsStopLimit ? Events.Order.FillStopLimit : Events.Order.Fill;
+        }
+
+        internal virtual Type[] FullActivationPath(OrderStateTemplate template) => FullExecutionPath(template);
     }
 
 
@@ -28,6 +39,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal override Type[] FillStopLimit { get; } = new[] { Events.Activate, Events.Open, Events.Fill, Events.Open };
 
         internal override Type[] InstantOnTimeActivation { get; } = new[] { Events.Activate, Events.Open, Events.Fill, Events.Open };
+
+        internal override Type[] ActivatePosition { get; } = new[] { Events.Close };
+
+
+        internal override Type[] FullActivationPath(OrderStateTemplate template)
+        {
+            return base.FullActivationPath(template).Concat(ActivatePosition).ToArray();
+        }
     }
 
 

@@ -52,6 +52,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool IsSupportedOTO => Type != OrderType.StopLimit;
 
+        public bool IsSupportedClose => Type == OrderType.Market || Type == OrderType.Position;
 
         public bool IsStopLimit => Type == OrderType.StopLimit;
 

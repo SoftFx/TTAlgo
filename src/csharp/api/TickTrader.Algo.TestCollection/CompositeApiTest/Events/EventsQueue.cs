@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
+using static TickTrader.Algo.Api.BaseCloseRequest;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
@@ -84,7 +85,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 var template = _expectedToOpenTemplates.First.Value;
                 _expectedToOpenTemplates.RemoveFirst();
 
-                RegisterExistingTemplate(template.ToOpen(orderId)); //for modify tests
+                if (template.IsGrossAcc && template.Opened.Task.IsCompleted)
+                    template.ToGrossPosition();
+                else
+                    template.ToOpen(orderId);
+
+                RegisterExistingTemplate(template); //for modify tests
                 //_currentTemplates.Add(orderId, template.ToOpen(orderId));
             }
 
@@ -139,7 +145,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                     _currentTemplates.Remove(oldOrderId);
 
                 if (baseTemplate.IsGrossAcc)
-                    _expectedToOpenTemplates.AddFirst(filledPart.ToGrossPosition());
+                    _expectedToOpenTemplates.AddFirst(filledPart);
             }
 
             if (@event == Events.Modify)

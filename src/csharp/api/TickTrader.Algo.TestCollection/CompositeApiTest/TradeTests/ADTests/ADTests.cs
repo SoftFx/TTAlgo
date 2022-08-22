@@ -57,16 +57,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             template.Options = Api.OrderExecOptions.ImmediateOrCancel;
             template.Comment = ADCommentsList.WithConfirm;
 
-            await OpenOrderAndWaitExecution(template);
-            await ClearTestEnviroment(template);
+            await OpenAndWaitExecution(template);
+            await RemoveOrder(template);
         }
 
         private async Task ADActivate(OrderStateTemplate template)
         {
             template.Comment = ADCommentsList.WithPartialToFullActivate(0.2 * OrderBaseSet.BaseOrderVolume);
 
-            await OpenOrderAndWaitExecution(template, Events.Order.PartialFill);
-            await ClearTestEnviroment(template);
+            await OpenAndWaitExecution(template, Events.Order.PartialFill);
+            await RemoveOrder(template);
         }
     }
 }

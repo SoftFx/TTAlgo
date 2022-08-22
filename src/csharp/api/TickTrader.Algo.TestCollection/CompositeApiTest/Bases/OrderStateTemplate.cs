@@ -10,8 +10,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
     {
         public Order RealOrder { get; private set; }
 
-        public bool CanCloseOrder => RealOrder.Type == OrderType.Position || RealOrder.Type == OrderType.Market;
-
 
         public TaskCompletionSource<bool> Opened { get; private set; }
 
@@ -29,7 +27,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public TaskCompletionSource<bool> Closed { get; private set; }
 
-        public TaskCompletionSource<bool> FinalExecution => IsGrossAcc ? OpenedGrossPosition : Filled;
+
+        public TaskCompletionSource<bool> IsExecuted => IsGrossAcc ? OpenedGrossPosition : Filled;
+
+        public TaskCompletionSource<bool> IsRemoved => IsGrossAcc ? Closed : Canceled;
 
 
         public List<OrderStateTemplate> FilledParts { get; private set; }
@@ -108,7 +109,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal OrderStateTemplate ToGrossPosition()
         {
-            Opened = new TaskCompletionSource<bool>();
+            RealOrder = Orders[Id];
             Type = OrderType.Position;
 
             OpenedGrossPosition.SetResult(true);

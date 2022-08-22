@@ -9,7 +9,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private const int MaxAttemptsCount = 5;
 
         private readonly TimeSpan DelayBetweenServerRequests = TimeSpan.FromSeconds(5);
-        private readonly TimeSpan WaitToUpdateGrossPositions = TimeSpan.FromSeconds(1);
         private readonly TimeSpan WaitAllFailedTestEvents = TimeSpan.FromSeconds(5);
 
         private readonly GroupStatManager _statsManager;
@@ -104,48 +103,37 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected async Task OpenExecutionOrder(OrderStateTemplate template)
         {
-            await OpenOrderAndWaitExecution(template.ForExecuting());
-            await ClearTestEnviroment(template);
+            await OpenAndWaitExecution(template.ForExecuting());
+            await RemoveOrder(template);
         }
 
-        protected async Task OpenOrderAndWaitExecution(OrderStateTemplate template, Type[] events = null)
+        protected async Task OpenTpSlExecutionOrder(OrderStateTemplate template)
         {
-            await TestOpenOrder(template, events ?? GetExecutionEvents(template));
-            await template.FinalExecution.Task;
+            await OpenAndWaitExecution(template.ForExecuting(), Events.Order.FullActivationPath(template));
+            await template.Closed.Task;
         }
 
-        protected async Task ModifyForExecutionOrder(OrderStateTemplate template)
+        protected async Task OpenAndWaitExecution(OrderStateTemplate template, Type[] events = null)
         {
-            await TestModifyOrder(template.ForExecuting());
-
-            _eventManager.AddExpectedEvents(GetExecutionEvents(template));
-
-            await ClearTestEnviroment(template);
+            await TestOpenOrder(template, events ?? Events.Order.FullExecutionPath(template));
+            await template.IsExecuted.Task;
         }
 
-        protected async Task ClearTestEnviroment(OrderStateTemplate template)
+        protected async Task ModifyAndWaitExecution(OrderStateTemplate template)
         {
-            if (template.IsGrossAcc)
-            {
-                await Bot.Delay(WaitToUpdateGrossPositions);
-                await RemoveOrder(template);
-            }
-        }
-
-        private static Type[] GetExecutionEvents(OrderStateTemplate template)
-        {
-            return template.IsStopLimit ? Events.Order.FillStopLimit : Events.Order.Fill;
+            await TestModifyOrder(template.ForExecuting(), Events.Order.FullExecutionPath(template));
+            await template.IsExecuted.Task;
         }
 
         protected async Task RemoveOrder(OrderStateTemplate template)
         {
-            if (template?.RealOrder?.IsNull ?? true)
+            if (template.IsRemoved.Task.IsCompleted)
                 return;
 
-            await template.Opened.Task;
-
-            if (template.CanCloseOrder)
+            if (template.IsSupportedClose)
             {
+                await template.OpenedGrossPosition.Task;
+
                 foreach (var filledPart in template.FilledParts)
                     await TestCloseOrder(filledPart);
 
@@ -153,6 +141,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
             else
             {
+                await template.Opened.Task;
+
                 if (template?.RelatedOcoTemplate?.RealOrder?.IsNull ?? true)
                     await TestCancelOrder(template);
                 else
@@ -216,11 +206,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        protected async Task TestCancelOrders(params OrderStateTemplate[] orders)
-        {
-            foreach (var order in orders)
-                await TestCancelOrder(order);
-        }
+        //protected async Task TestCancelOrders(params OrderStateTemplate[] orders)
+        //{
+        //    foreach (var order in orders)
+        //        await TestCancelOrder(order);
+        //}
 
         protected async Task TestCancelOrder(OrderStateTemplate template, params Type[] eventsAfterCancel)
         {
@@ -261,7 +251,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             if (!result.IsNull)
             {
                 _eventManager.AddExpectedEvent(Events.Open);
-                RegisterAdditionalTemplate(result);
+                RegisterAdditionalTemplate(result.ToGrossPosition());
             }
 
             await WaitSuccServerRequest(CloseByCommand, Events.Close, Events.Close);

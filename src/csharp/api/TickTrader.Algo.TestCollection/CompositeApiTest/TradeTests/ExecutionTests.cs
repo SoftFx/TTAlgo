@@ -51,7 +51,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private async Task FillByModifyExecutionTest(OrderStateTemplate template)
         {
             await TestOpenOrder(template);
-            await ModifyForExecutionOrder(template);
+            await ModifyAndWaitExecution(template);
+            await RemoveOrder(template);
         }
 
         private Task ExpirationExecutionTest(OrderStateTemplate template)
@@ -67,16 +68,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private Task TakeProfitExecutionTest(OrderStateTemplate template)
         {
-            template.TP = template.CalculatePrice(-2);
+            template.TP = template.CalculatePrice(5);
 
-            return OpenExecutionOrder(template);
+            return OpenTpSlExecutionOrder(template);
         }
 
         private Task StopLossExecutionTest(OrderStateTemplate template)
         {
-            template.SL = template.CalculatePrice(2);
+            template.SL = template.CalculatePrice(-5);
 
-            return OpenExecutionOrder(template);
+            return OpenTpSlExecutionOrder(template);
         }
     }
 }
