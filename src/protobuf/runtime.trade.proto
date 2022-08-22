@@ -190,6 +190,7 @@ message OrderExecReport {
         INCORRECT_CONDITIONS_FOR_TRIGGER = 136;
         OCO_RELATED_ORDER_INCORRECT_OPTIONS = 137;
         OCO_INCORRECT_RELATED_ID = 138;
+        INCORRECT_SIDE = 139;
     }
 
     google.protobuf.StringValue operation_id = 1;

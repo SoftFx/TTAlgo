@@ -1135,6 +1135,8 @@ namespace TickTrader.Algo.Account.Fdk2
                                 return Domain.OrderExecReport.Types.CmdResultCode.OcoRelatedOrderIncorrectOptions;
                             else if (message.StartsWith("OCO order cannot be related to itself"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.OcoIncorrectRelatedId;
+                            else if (message == "Positions have the same side.")
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectSide;
                         }
                         break;
                     }

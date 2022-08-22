@@ -90,5 +90,6 @@ namespace TickTrader.Algo.Api
         IncorrectConditionsForTrigger = 138,
         OCORelatedOrderIncorrectOptions = 139,
         OCOIncorrectRelatedId = 140,
+        IncorrectSide = 141,
     }
 }
