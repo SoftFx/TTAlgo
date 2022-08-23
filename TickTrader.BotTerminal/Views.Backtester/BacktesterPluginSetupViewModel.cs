@@ -184,7 +184,6 @@ namespace TickTrader.BotTerminal
 
             var accMetadata = new AccountMetadataInfo(AccMetadataTemplate);
             accMetadata.AccountId = AccountId.Pack("backtester", "backtester");
-            accMetadata.Symbols.AddRange(SetupMetadata.Symbols.Select(s => s.ToConfig()));
 
             return new SetupMetadata(agentMetadata, accMetadata, SetupContext);
         }
