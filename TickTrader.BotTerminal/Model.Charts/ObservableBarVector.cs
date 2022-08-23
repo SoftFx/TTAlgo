@@ -41,16 +41,17 @@ namespace TickTrader.BotTerminal
         internal event Action<double?, double?> ApplyNewTickEvent;
 
 
-        internal ObservableBarVector(int? size = null)
+        internal ObservableBarVector(string symbol = null, int? size = null)
         {
+            Symbol = symbol;
             _maxVectorSize = size ?? DefaultBarVectorSize;
         }
 
 
-        public void InitNewVector(string symbol, Feed.Types.Timeframe timeFrame, IEnumerable<BarData> vector)
+        public void InitNewVector(Feed.Types.Timeframe timeFrame, IEnumerable<BarData> vector, string symbol = null)
         {
             Timeframe = timeFrame;
-            Symbol = symbol;
+            Symbol = symbol ?? Symbol;
 
             Clear();
             AddRange(vector.Select(b => b.ToPoint()));

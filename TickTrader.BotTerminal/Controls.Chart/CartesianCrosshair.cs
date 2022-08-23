@@ -140,6 +140,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             label.ScalesYAt = yAxisIndex;
             label.DataLabelsSize = 13;
             label.ZIndex = ZIndex;
+            label.IsVisibleAtLegend = false;
 
             return label;
         }

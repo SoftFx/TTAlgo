@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
 
         public Property<int> PricePrecision { get; }
 
-        public ObservableBarVector BarVector { get; } = new(int.MaxValue);
+        public ObservableBarVector BarVector { get; } = new(size: int.MaxValue);
 
 
         public BacktesterChartPageViewModel()
@@ -117,7 +117,7 @@ namespace TickTrader.BotTerminal
             //ChartControlModel.SetTimeframe(timeframe);
             ////ChartControlModel.SymbolInfo.Value = mainSymbol;
 
-            BarVector.InitNewVector(_mainSymbol, Period.Value, bars);
+            BarVector.InitNewVector(Period.Value, bars, _mainSymbol);
             TradeEventHandler.LoadTradeEvents(tradeHistory);
 
 

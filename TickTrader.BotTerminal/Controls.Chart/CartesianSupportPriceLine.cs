@@ -50,7 +50,8 @@ namespace TickTrader.BotTerminal.Controls.Chart
             label.DataLabelsPaint = new SolidColorPaint(color);
             label.ScalesYAt = labelAxisIndex;
             label.ZIndex = ZIndexConst;
-            
+            label.IsVisibleAtLegend = false;
+
             Label = label;
         }
     }
