@@ -107,7 +107,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal static void Compare(Order originalOrder, OrderStateTemplate template) => new OrderComparator(originalOrder, template);
 
-        internal static void CompareWithRealOrder(OrderStateTemplate template) => new OrderComparator(template.RealOrder.DeepCopy(), template);
+        //internal static void CompareWithRealOrder(OrderStateTemplate template) => new OrderComparator(template.RealOrder.DeepCopy(), template);
 
 
         private void CheckOriginalValue<T>(T expectedValue, string propertyName)

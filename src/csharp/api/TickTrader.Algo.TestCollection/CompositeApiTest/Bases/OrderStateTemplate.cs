@@ -8,9 +8,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal class OrderStateTemplate : OrderTemplate
     {
-        public Order RealOrder { get; private set; }
-
-
         public TaskCompletionSource<bool> Opened { get; private set; }
 
         public TaskCompletionSource<bool> OpenedGrossPosition { get; private set; }
@@ -30,8 +27,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public TaskCompletionSource<bool> IsExecuted => IsGrossAcc ? OpenedGrossPosition : Filled;
 
-        public TaskCompletionSource<bool> IsRemoved => IsGrossAcc ? Closed : Canceled;
-
+        public bool IsRemoved
+        {
+            get
+            {
+                if (IsGrossAcc)
+                    return Closed.Task.IsCompleted;
+                else
+                    return Filled.Task.IsCompleted || Canceled.Task.IsCompleted;
+            }
+        }
 
         public List<OrderStateTemplate> FilledParts { get; private set; }
 
@@ -64,7 +69,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 Canceled = new TaskCompletionSource<bool>(); //for triggers
 
             Id = orderId;
-            RealOrder = Orders[Id];
             Opened.SetResult(true);
 
             return this;
@@ -95,7 +99,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
 
             Filled.SetResult(true);
-            RealOrder = null;
 
             return this;
         }
@@ -109,7 +112,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal OrderStateTemplate ToGrossPosition()
         {
-            RealOrder = Orders[Id];
             Type = OrderType.Position;
 
             OpenedGrossPosition.SetResult(true);
@@ -120,7 +122,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal OrderStateTemplate ToCancel()
         {
             Canceled.SetResult(true);
-            RealOrder = null;
 
             return this;
         }
@@ -128,7 +129,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal OrderStateTemplate ToClose()
         {
             Closed.SetResult(true);
-            RealOrder = null;
 
             return this;
         }
@@ -136,7 +136,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal OrderStateTemplate ToExpire()
         {
             Expired.SetResult(true);
-            RealOrder = null;
 
             return this;
         }
@@ -144,7 +143,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal OrderStateTemplate ToOnTimeTriggerReceived()
         {
             Opened = new TaskCompletionSource<bool>();
-            RealOrder = null;
             TriggerType = null;
 
             OnTimeTriggerReceived.SetResult(true);

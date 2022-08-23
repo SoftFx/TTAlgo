@@ -34,7 +34,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
     {
         internal override Type[] Fill { get; } = new[] { Events.Fill, Events.Open };
 
-        internal override Type[] PartialFill { get; } = new[] { Events.Fill, Events.Fill, Events.Open };
+        internal override Type[] PartialFill { get; } = new[] { Events.Fill, Events.Fill, Events.Open, Events.Open };
 
         internal override Type[] FillStopLimit { get; } = new[] { Events.Activate, Events.Open, Events.Fill, Events.Open };
 

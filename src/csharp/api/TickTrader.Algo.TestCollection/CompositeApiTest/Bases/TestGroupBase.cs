@@ -127,7 +127,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected async Task RemoveOrder(OrderStateTemplate template)
         {
-            if (template.IsRemoved.Task.IsCompleted)
+            if (template.IsRemoved)
                 return;
 
             if (template.IsSupportedClose)
@@ -135,7 +135,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 await template.OpenedGrossPosition.Task;
 
                 foreach (var filledPart in template.FilledParts)
-                    await TestCloseOrder(filledPart);
+                    if (!filledPart.IsRemoved)
+                        await TestCloseOrder(filledPart);
 
                 await TestCloseOrder(template);
             }
@@ -143,7 +144,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             {
                 await template.Opened.Task;
 
-                if (template?.RelatedOcoTemplate?.RealOrder?.IsNull ?? true)
+                if (template.RelatedOcoTemplate?.IsRemoved ?? true)
                     await TestCancelOrder(template);
                 else
                 {
