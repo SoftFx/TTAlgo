@@ -17,7 +17,7 @@ namespace TickTrader.Algo.TestCollection.Indicators
 
         protected override void Calculate(bool isNewBar)
         {
-            if (!isNewBar)
+            if (isNewBar)
             {
                 if (!UseCount || (UseCount && _count < Count))
                 {
