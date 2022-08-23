@@ -404,7 +404,7 @@ namespace TickTrader.Algo.Backtester
                 }
 
                 _collector.LogTradeFail($"Rejected close #{request.OrderId} reason={error}");
-                return new OrderResultEntity(OrderCmdResultCodes.Misconfiguration, null, ExecutionTime);
+                return new OrderResultEntity(error, null, ExecutionTime);
             });
         }
 
@@ -1886,8 +1886,8 @@ namespace TickTrader.Algo.Backtester
             if (position1.Info.RemainingAmount > position2.Info.RemainingAmount)
                 CreatePosition(position1, position1.Info.Side, smb, position1.Info?.Price ?? 0.0, position1.Info.RemainingAmount - position2.Info.RemainingAmount, false);
 
-            ClosePosition(position1, trReason, null, null, closeAmount, (double)position2.Info.Price, smb, pos1options, position2.Info.Id);
-            ClosePosition(position2, trReason, null, null, closeAmount, (double)position2.Info.Price, smb, pos2options, position1.Info.Id);
+            ClosePosition(position1, trReason, null, null, null, (double)position2.Info.Price, smb, pos1options, position2.Info.Id);
+            ClosePosition(position2, trReason, null, null, null, (double)position2.Info.Price, smb, pos2options, position1.Info.Id);
             //}
         }
 

@@ -154,8 +154,7 @@ namespace TickTrader.Algo.Backtester
 
         private FeedSeriesEmulator GetFeedSrcOrThrow(string symbol)
         {
-            FeedSeriesEmulator src;
-            if (!_feedSeries.TryGetValue(symbol, out src))
+            if (!_feedSeries.TryGetValue(symbol, out FeedSeriesEmulator src))
                 throw new MisconfigException("No feed source for symbol " + symbol);
             return src;
         }
