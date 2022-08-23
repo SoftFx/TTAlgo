@@ -25,7 +25,7 @@ namespace TickTrader.Algo.TestCollection.Indicators
         {
             while (true)
             {
-                await Task.Delay(DelayMc);
+                await Delay(DelayMc);
                 Alert.Print($"I'm alert indicator. {++_count}");
 
                 if (UseCount && _count >= Count)
