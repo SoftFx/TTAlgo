@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             {
                 Price = price,
                 Time = report.OpenTime.Ticks,
-                ToolTip = $"Open #{report.OrderNum} {report.Side} {report.OpenQuantity} at price {price}"
+                ToolTip = $"Open #{report.OrderNum} {report.Side} {report.OpenQuantity} at price {price?.ToString(GetDoubleFormat(report))}"
             };
         }
 
@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             {
                 Price = report.ClosePrice,
                 Time = report.CloseTime.Ticks,
-                ToolTip = $"Close #{report.OrderNum} {side} {report.CloseQuantity} at price {report.ClosePrice}"
+                ToolTip = $"Close #{report.OrderNum} {side} {report.CloseQuantity} at price {report.ClosePrice?.ToString(GetDoubleFormat(report))}"
             };
         }
 
@@ -37,9 +37,12 @@ namespace TickTrader.BotTerminal.Controls.Chart
             {
                 Price = price,
                 Time = report.OpenTime.Ticks,
-                ToolTip = $"Fill #{report.OrderNum} {report.Side} {report.OpenQuantity} at price {price}"
+                ToolTip = $"Fill #{report.OrderNum} {report.Side} {report.OpenQuantity} at price {price?.ToString(GetDoubleFormat(report))}"
             };
         }
+
+
+        private static string GetDoubleFormat(BaseTransactionModel model) => $"F{model.PriceDigits}";
     }
 
 
