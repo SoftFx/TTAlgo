@@ -192,7 +192,9 @@ namespace TickTrader.Algo.Backtester
             foreach (var output in descriptor.Outputs)
             {
                 var id = output.Id;
-                BacktesterResults.Internal.SaveOutputData(resultsDirPath, id, _control.Collector.LocalGetOutputData(id));
+                var precision = output.Precision == -1 ? CommonSettings.Symbols[CommonSettings.MainSymbol].Digits : output.Precision;
+
+                BacktesterResults.Internal.SaveOutputData(resultsDirPath, id, precision, _control.Collector.LocalGetOutputData(id));
             }
 
             if (descriptor.IsTradeBot)

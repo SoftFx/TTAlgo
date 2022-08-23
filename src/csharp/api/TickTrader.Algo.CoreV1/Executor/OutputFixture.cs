@@ -93,6 +93,4 @@ namespace TickTrader.Algo.CoreV1
         public event Action<int> Truncating;
         public event Action<int> Truncated;
     }
-
-    
 }

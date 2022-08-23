@@ -2,7 +2,17 @@
 
 namespace TickTrader.Algo.Domain
 {
-    public readonly struct OutputPoint
+    public interface IOutputPoint
+    { 
+        // X coordinate
+        UtcTicks Time { get; }
+
+        // Y coordinate
+        double Value { get; }
+    }
+
+
+    public readonly struct OutputPoint : IOutputPoint
     {
         // X coordinate
         public UtcTicks Time { get; }
