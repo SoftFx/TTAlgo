@@ -1,5 +1,4 @@
-﻿using LiveChartsCore;
-using LiveChartsCore.Kernel;
+﻿using LiveChartsCore.Kernel;
 using System;
 
 namespace TickTrader.BotTerminal.Controls.Chart

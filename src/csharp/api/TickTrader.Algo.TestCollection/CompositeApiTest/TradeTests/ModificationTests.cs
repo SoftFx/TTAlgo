@@ -52,7 +52,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private async Task RunMaxVisibleVolumeModifyTests(OrderStateTemplate template)
         {
             await MaxVisibleVolumeTest(template, TestAction.Add, OrderBaseSet.BaseOrderVolume);
-            await MaxVisibleVolumeTest(template, TestAction.Modify, OrderBaseSet.Symbol.MinTradeVolume);
+            await MaxVisibleVolumeTest(template, TestAction.Modify, Symbol.MinTradeVolume);
             await MaxVisibleVolumeTest(template, TestAction.Delete, -1);
         }
 
@@ -99,8 +99,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task RunSlippageModifyTest(OrderStateTemplate template)
         {
-            await SlippageTest(template, TestAction.Add, OrderBaseSet.Symbol.Slippage / 2);
-            await SlippageTest(template, TestAction.Modify, OrderBaseSet.Symbol.Slippage * 2);
+            await SlippageTest(template, TestAction.Add, Symbol.Slippage / 2);
+            await SlippageTest(template, TestAction.Modify, Symbol.Slippage * 2);
             await SlippageTest(template, TestAction.Delete, 0);
         }
 

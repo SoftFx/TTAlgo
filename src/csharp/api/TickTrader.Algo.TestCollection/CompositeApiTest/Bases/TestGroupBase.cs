@@ -18,6 +18,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal static CompositeTradeApiTest Bot { get; set; }
 
+        internal static Symbol Symbol => Bot.Symbol;
+
 
         protected abstract string GroupName { get; }
 
@@ -104,6 +106,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         protected async Task OpenExecutionOrder(OrderStateTemplate template)
         {
             await OpenAndWaitExecution(template.ForExecuting());
+            await RemoveOrder(template);
+        }
+
+        protected async Task ExecutionByModifyOrder(OrderStateTemplate template)
+        {
+            await ModifyAndWaitExecution(template);
             await RemoveOrder(template);
         }
 

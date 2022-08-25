@@ -26,16 +26,18 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task ADSlippageTests(OrderBaseSet set)
         {
-            await RunActivateWithSlippage(set, null);
-            await RunActivateWithSlippage(set, 0.0);
-            await RunActivateWithSlippage(set, OrderBaseSet.Symbol.Slippage / 2);
-            await RunActivateWithSlippage(set, OrderBaseSet.Symbol.Slippage * 2);
+            Task RunActivateWithSlippage(double? slippage)
+            {
+                return RunTest(t => ADActivateWithSlippage(t, slippage), set, testInfo: nameof(ADActivateWithSlippage));
+            }
+
+            await RunActivateWithSlippage(null);
+            await RunActivateWithSlippage(0.0);
+            await RunActivateWithSlippage(Symbol.Slippage / 2);
+            await RunActivateWithSlippage(Symbol.Slippage * 2);
         }
 
-        private async Task RunActivateWithSlippage(OrderBaseSet set, double? slippage)
-        {
-            await RunTest(t => ADActivateWithSlippage(t, slippage), set, testInfo: nameof(ADActivateWithSlippage));
-        }
+
 
         private async Task ADActivateWithSlippage(OrderStateTemplate template, double? slippage)
         {
@@ -51,14 +53,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await TestOpenReject(template.ForExecuting());
         }
 
-        private async Task ADConfirm(OrderStateTemplate template)
+        private Task ADConfirm(OrderStateTemplate template)
         {
             template.Price = template.CalculatePrice(10);
             template.Options = Api.OrderExecOptions.ImmediateOrCancel;
             template.Comment = ADCommentsList.WithConfirm;
 
-            await OpenAndWaitExecution(template);
-            await RemoveOrder(template);
+            return OpenExecutionOrder(template); //change wait event logic
         }
 
         private async Task ADActivate(OrderStateTemplate template)

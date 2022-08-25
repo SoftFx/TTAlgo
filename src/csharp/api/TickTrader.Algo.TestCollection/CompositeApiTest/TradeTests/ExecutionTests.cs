@@ -51,8 +51,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private async Task FillByModifyExecutionTest(OrderStateTemplate template)
         {
             await TestOpenOrder(template);
-            await ModifyAndWaitExecution(template);
-            await RemoveOrder(template);
+            await ExecutionByModifyOrder(template);
         }
 
         private Task ExpirationExecutionTest(OrderStateTemplate template)
