@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Account
@@ -13,12 +12,10 @@ namespace TickTrader.Algo.Account
         private event Action<Domain.OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
         private event Action<Domain.PositionExecReport> AlgoEvent_PositionUpdated = delegate { };
         private event Action<Domain.BalanceOperation> AlgoEvent_BalanceUpdated = delegate { };
-        private ISyncContext _sync;
 
-        public PluginTradeInfoProvider(EntityCache cache, ISyncContext sync)
+        public PluginTradeInfoProvider(EntityCache cache)
         {
             _cache = cache;
-            _sync = sync;
 
             _cache.Account.OrderUpdate += Account_OrderUpdate;
             _cache.Account.BalanceOperationUpdate += Account_BalanceUpdate;
@@ -75,11 +72,6 @@ namespace TickTrader.Algo.Account
         }
 
         #region IAccountInfoProvider
-
-        void IAccountInfoProvider.SyncInvoke(Action syncAction)
-        {
-            _sync.Invoke(syncAction);
-        }
 
         Domain.AccountInfo IAccountInfoProvider.GetAccountInfo()
         {

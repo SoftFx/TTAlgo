@@ -1,11 +1,9 @@
-﻿using ActorSharp;
-using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
@@ -13,10 +11,6 @@ namespace TickTrader.Algo.Runtime
 {
     public class RuntimeInfoProvider : IPluginMetadata, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider, IFeedHistoryProvider
     {
-        private class RuntimeContext : Actor { }
-
-        private readonly Ref<RuntimeContext> _context;
-        private readonly ISyncContext _sync;
         private readonly RemoteAccountProxy _account;
         private readonly IDisposable _orderUpdateSub, _positionUpdateSub, _balanceUpdateSub, _rateUpdateSub, _rateListUpdateSub;
 
@@ -31,10 +25,6 @@ namespace TickTrader.Algo.Runtime
         public RuntimeInfoProvider(RemoteAccountProxy account)
         {
             _account = account;
-
-            _context = Actor.SpawnLocal<RuntimeContext>(null, $"Runtime {Guid.NewGuid()}");
-            _sync = _context.GetSyncContext();
-
             _orderUpdateSub = _account.OrderUpdated.Subscribe(o => OrderUpdated?.Invoke(o));
             _positionUpdateSub = _account.PositionUpdated.Subscribe(p => PositionUpdated?.Invoke(p));
             _balanceUpdateSub = _account.BalanceUpdated.Subscribe(b => BalanceUpdated?.Invoke(b));
@@ -123,11 +113,6 @@ namespace TickTrader.Algo.Runtime
         public List<PositionInfo> GetPositions()
         {
             return _positions;
-        }
-
-        public void SyncInvoke(Action action)
-        {
-            _sync.Invoke(action);
         }
 
         #endregion IAccountInfoProvider

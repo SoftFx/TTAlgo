@@ -65,8 +65,6 @@ namespace TickTrader.Algo.Core
 
     public interface IAccountInfoProvider
     {
-        void SyncInvoke(Action action);
-
         AccountInfo GetAccountInfo();
         List<OrderInfo> GetOrders();
         List<PositionInfo> GetPositions();

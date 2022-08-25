@@ -10,6 +10,8 @@ namespace TickTrader.Algo.CoreV1
 {
     internal class TradingFixture : ITradeApi, IExecutorFixture
     {
+        private readonly object _syncObj = new object();
+
         private IFixtureContext context;
         private Dictionary<string, CurrencyInfo> currencies;
         private AccountAccessor _account;
@@ -65,7 +67,10 @@ namespace TickTrader.Algo.CoreV1
 
         private void LazyInitIniternal()
         {
-            _dataProvider.SyncInvoke(Init);
+            lock(_syncObj)
+            {
+                Init();
+            }
             context.MarketData.StartCalculators();
         }
 
@@ -95,7 +100,10 @@ namespace TickTrader.Algo.CoreV1
         {
             if (_dataProvider != null && _isInited)
             {
-                _dataProvider.SyncInvoke(Deinit);
+                lock(_syncObj)
+                {
+                    Deinit();
+                }
             }
         }
 

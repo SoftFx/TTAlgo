@@ -173,7 +173,7 @@ namespace TickTrader.Algo.Account
             }
 
             public Task<PluginTradeInfoProvider> CreateTradeProvider()
-                => Actor.Call(a => new PluginTradeInfoProvider(a._cache, a.GetSyncContext()));
+                => Actor.Call(a => new PluginTradeInfoProvider(a._cache));
 
             public async Task<PluginTradeApiProvider.Handler> CreateTradeApi()
             {
