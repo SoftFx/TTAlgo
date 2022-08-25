@@ -168,7 +168,7 @@ namespace TickTrader.Algo.Account
                 return Actor.Call(a =>
                 {
                     var historyHandler = new FeedHistoryProviderModel.Handler(a._feedHistory.Ref);
-                    return new PluginFeedProvider(a._cache, a._rootSubManager, historyHandler, a.GetSyncContext());
+                    return new PluginFeedProvider(a._cache, a._rootSubManager, historyHandler);
                 });
             }
 
