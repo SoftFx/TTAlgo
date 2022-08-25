@@ -175,8 +175,6 @@ namespace TickTrader.Algo.Runtime
         public event Action<QuoteInfo> RateUpdated;
         public event Action<List<QuoteInfo>> RatesUpdated;
 
-        public ISyncContext Sync => _sync;
-
         public List<QuoteInfo> GetSnapshot()
         {
             return GetSnapshotAsync().GetAwaiter().GetResult();

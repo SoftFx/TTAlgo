@@ -23,11 +23,9 @@ namespace TickTrader.Algo.Account
         public event Action<QuoteInfo> RateUpdated;
         public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
 
-        public ISyncContext Sync { get; }
 
-        public PluginFeedProvider(EntityCache cache, IQuoteSubManager subManager, FeedHistoryProviderModel.Handler history, ISyncContext sync)
+        public PluginFeedProvider(EntityCache cache, IQuoteSubManager subManager, FeedHistoryProviderModel.Handler history)
         {
-            Sync = sync;
             _symbols = cache.Symbols;
             _history = history;
             _currencies = cache.Currencies.Snapshot;

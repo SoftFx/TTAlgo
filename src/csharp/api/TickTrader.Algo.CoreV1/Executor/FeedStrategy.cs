@@ -14,7 +14,6 @@ namespace TickTrader.Algo.CoreV1
         private MarketStateFixture _marketFixture;
         private IQuoteSub _defaultSubscription;
         private readonly List<SetupAction> _setupActions = new List<SetupAction>();
-        private CrossDomainProxy _proxy;
         private string _mainSymbol;
         private BufferUpdateResult _mainSymbolUpdateResult;
 
@@ -59,17 +58,22 @@ namespace TickTrader.Algo.CoreV1
 
         internal virtual void Start()
         {
-            _proxy = new CrossDomainProxy(this);
-            FeedProvider.Sync.Invoke(_proxy.StartStrategy);
+            RateDispenser.Start();
+            InitDefaultSubscription();
+            FeedProvider.RateUpdated += Feed_RateUpdated;
+            FeedProvider.RatesUpdated += Feed_RatesUpdated;
+
             ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
             ExecContext.Builder.CustomFeedProvider = this;
         }
 
         internal virtual void Stop()
         {
-            FeedProvider.Sync.Invoke(_proxy.StopStrategy);
+            RateDispenser.Stop();
+            FeedProvider.RateUpdated -= Feed_RateUpdated;
+            FeedProvider.RatesUpdated -= Feed_RatesUpdated;
+
             CancelDefaultSubscription();
-            _proxy = null;
         }
 
         internal FeedStrategy Clone()
@@ -438,49 +442,6 @@ namespace TickTrader.Algo.CoreV1
 
         #endregion
 
-        private class CrossDomainProxy
-        {
-            private readonly FeedStrategy _strategy;
-
-            public CrossDomainProxy(FeedStrategy strategy)
-            {
-                _strategy = strategy;
-            }
-
-            public void StartStrategy()
-            {
-                _strategy.RateDispenser.IsSynchronized = true;
-                try
-                {
-                    _strategy.RateDispenser.Start();
-                    _strategy.InitDefaultSubscription();
-                    _strategy.FeedProvider.RateUpdated += Feed_RateUpdated;
-                    _strategy.FeedProvider.RatesUpdated += Feed_RatesUpdated;
-                }
-                finally
-                {
-                    _strategy.RateDispenser.IsSynchronized = false;
-                }
-            }
-
-            private void Feed_RatesUpdated(List<QuoteInfo> updates) => _strategy.Feed_RatesUpdated(updates);
-            private void Feed_RateUpdated(QuoteInfo upd) => _strategy.Feed_RateUpdated(upd);
-
-            public void StopStrategy()
-            {
-                _strategy.RateDispenser.IsSynchronized = true;
-                try
-                {
-                    _strategy.RateDispenser.Stop();
-                    _strategy.FeedProvider.RateUpdated -= Feed_RateUpdated;
-                    _strategy.FeedProvider.RatesUpdated -= Feed_RatesUpdated;
-                }
-                finally
-                {
-                    _strategy.RateDispenser.IsSynchronized = false;
-                }
-            }
-        }
 
         public abstract class SetupAction
         {

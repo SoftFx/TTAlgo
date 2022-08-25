@@ -16,8 +16,6 @@ namespace TickTrader.Algo.CoreV1
             _marketFixture = marketFixture;
         }
 
-        public bool IsSynchronized { get; set; }
-
         public void Start()
         {
             _subscription = _context.FeedProvider.GetSubscription();

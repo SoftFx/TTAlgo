@@ -24,13 +24,11 @@ namespace TickTrader.Algo.Backtester
     }
 
 
-    public class FeedEmulator : IFeedProvider, IFeedHistoryProvider, ISyncContext
+    public class FeedEmulator : IFeedProvider, IFeedHistoryProvider
     {
         private List<ICrossDomainStorage> _storages = new List<ICrossDomainStorage>();
         private Dictionary<string, SeriesReader> _feedReaders = new Dictionary<string, SeriesReader>();
         private Dictionary<string, FeedSeriesEmulator> _feedSeries = new Dictionary<string, FeedSeriesEmulator>();
-
-        ISyncContext IFeedProvider.Sync => this;
 
         public FeedEmulator()
         {
@@ -240,34 +238,5 @@ namespace TickTrader.Algo.Backtester
         public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
 
         #endregion
-
-        #region ISyncContext
-
-        public void Invoke(Action action)
-        {
-            action();
-        }
-
-        public void Send(Action action)
-        {
-            action();
-        }
-
-        public void Invoke<T>(Action<T> action, T arg)
-        {
-            action(arg);
-        }
-
-        public T Invoke<T>(Func<T> syncFunc)
-        {
-            return syncFunc();
-        }
-
-        public TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args)
-        {
-            return syncFunc(args);
-        }
-
-        #endregion ISyncContext
     }
 }

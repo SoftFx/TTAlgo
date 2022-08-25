@@ -50,7 +50,6 @@ namespace TickTrader.Algo.Core
 
     public interface IFeedProvider
     {
-        ISyncContext Sync { get; }
         List<QuoteInfo> GetSnapshot();
         Task<List<QuoteInfo>> GetSnapshotAsync();
         IQuoteSub GetSubscription();

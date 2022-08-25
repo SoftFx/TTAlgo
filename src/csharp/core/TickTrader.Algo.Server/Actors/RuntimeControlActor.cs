@@ -472,8 +472,8 @@ namespace TickTrader.Algo.Server
                 plugin.Tell(payload.Unpack<PluginLogRecord>());
             else if (payload.Is(PluginStatusUpdate.Descriptor))
                 plugin.Tell(payload.Unpack<PluginStatusUpdate>());
-            else if (payload.Is(DataSeriesUpdate.Descriptor))
-                plugin.Tell(payload.Unpack<DataSeriesUpdate>());
+            else if (payload.Is(OutputSeriesUpdate.Descriptor))
+                plugin.Tell(payload.Unpack<OutputSeriesUpdate>());
             else if (payload.Is(PluginExitedMsg.Descriptor))
                 plugin.Tell(payload.Unpack<PluginExitedMsg>());
             else if (payload.Is(PluginAbortedMsg.Descriptor))

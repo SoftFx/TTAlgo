@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Server
         private readonly string _id, _accId;
         private readonly ActorEventSource<PluginLogRecord> _logEventSrc = new ActorEventSource<PluginLogRecord>();
         private readonly ActorEventSource<PluginStatusUpdate> _statusEventSrc = new ActorEventSource<PluginStatusUpdate>();
-        private readonly ActorEventSource<DataSeriesUpdate> _outputEventSrc = new ActorEventSource<DataSeriesUpdate>();
+        private readonly ActorEventSource<OutputSeriesUpdate> _outputEventSrc = new ActorEventSource<OutputSeriesUpdate>();
         private readonly ActorEventSource<object> _proxyDownlinkSrc = new ActorEventSource<object>();
 
         private PluginSavedState _savedState;
@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Server
 
             Receive<PluginLogRecord>(OnLogUpdated);
             Receive<PluginStatusUpdate>(OnStatusUpdated);
-            Receive<DataSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
+            Receive<OutputSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
             Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
             Receive<PluginExitedMsg>(OnExited);
             Receive<RuntimeCrashedMsg>(OnRuntimeCrashed);
@@ -542,9 +542,9 @@ namespace TickTrader.Algo.Server
 
         internal class AttachOutputsChannelCmd
         {
-            public ChannelWriter<DataSeriesUpdate> OutputSink { get; }
+            public ChannelWriter<OutputSeriesUpdate> OutputSink { get; }
 
-            public AttachOutputsChannelCmd(ChannelWriter<DataSeriesUpdate> outputSink)
+            public AttachOutputsChannelCmd(ChannelWriter<OutputSeriesUpdate> outputSink)
             {
                 OutputSink = outputSink;
             }
