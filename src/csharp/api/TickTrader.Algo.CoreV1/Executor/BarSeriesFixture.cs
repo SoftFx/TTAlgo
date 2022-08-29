@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
@@ -241,7 +240,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public void LoadFeed(Timestamp from, Timestamp to)
+        public void LoadFeed(UtcTicks from, UtcTicks to)
         {
             var data = Context.FeedHistory.QueryBars(SymbolCode, _marketSide, Context.TimeFrame, from, to);
             AppendSnapshot(data);
@@ -249,21 +248,21 @@ namespace TickTrader.Algo.CoreV1
 
         public void LoadFeed(int size)
         {
-            var to = (DateTime.UtcNow + TimeSpan.FromDays(1)).ToTimestamp();
+            var to = UtcTicks.Now + TimeSpan.FromDays(1);
             var data = Context.FeedHistory.QueryBars(SymbolCode, _marketSide, Context.TimeFrame, to, -size);
             AppendSnapshot(data);
         }
 
-        public void LoadFeed(Timestamp from, int size)
+        public void LoadFeed(UtcTicks from, int size)
         {
             var data = Context.FeedHistory.QueryBars(SymbolCode, _marketSide, Context.TimeFrame, from, size);
             AppendSnapshot(data);
         }
 
-        public void LoadFeedFrom(Timestamp from)
+        public void LoadFeedFrom(UtcTicks from)
         {
             var data = from == null ? null
-                : Context.FeedHistory.QueryBars(SymbolCode, _marketSide, Context.TimeFrame, from, (DateTime.UtcNow + TimeSpan.FromDays(2)).ToTimestamp());
+                : Context.FeedHistory.QueryBars(SymbolCode, _marketSide, Context.TimeFrame, from, UtcTicks.Now + TimeSpan.FromDays(2));
             AppendSnapshot(data);
         }
     }

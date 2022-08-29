@@ -121,12 +121,12 @@ namespace TickTrader.BotTerminal
 
         void IClientFeedProvider.DownloadBars(ActorSharp.BlockingChannel<BarData> stream, string symbol, DateTime from, DateTime to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
         {
-            Connection.FeedProxy.DownloadBars(stream, symbol, from.ToTimestamp(), to.ToTimestamp(), marketSide, timeframe);
+            Connection.FeedProxy.DownloadBars(stream, symbol, from.ToUtcTicks(), to.ToUtcTicks(), marketSide, timeframe);
         }
 
         void IClientFeedProvider.DownloadQuotes(ActorSharp.BlockingChannel<QuoteInfo> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
-            Connection.FeedProxy.DownloadQuotes(stream, symbol, from.ToTimestamp(), to.ToTimestamp(), includeLevel2);
+            Connection.FeedProxy.DownloadQuotes(stream, symbol, from.ToUtcTicks(), to.ToUtcTicks(), includeLevel2);
         }
 
 

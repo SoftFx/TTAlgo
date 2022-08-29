@@ -179,27 +179,27 @@ namespace TickTrader.Algo.Runtime
 
         #region IFeedHistoryProvider
 
-        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
             return QueryBarsAsync(symbol, marketSide, timeframe, from, to).GetAwaiter().GetResult();
         }
 
-        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
             return QueryBarsAsync(symbol, marketSide, timeframe, from, count).GetAwaiter().GetResult();
         }
 
-        public List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2)
+        public List<QuoteInfo> QueryQuotes(string symbol, UtcTicks from, UtcTicks to, bool level2)
         {
             return QueryQuotesAsync(symbol, from, to, level2).GetAwaiter().GetResult();
         }
 
-        public List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, int count, bool level2)
+        public List<QuoteInfo> QueryQuotes(string symbol, UtcTicks from, int count, bool level2)
         {
             return QueryQuotesAsync(symbol, from, count, level2).GetAwaiter().GetResult();
         }
 
-        public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
             var request = new BarListRequest
             {
@@ -212,7 +212,7 @@ namespace TickTrader.Algo.Runtime
             return RunOnThreadPool(() => _account.GetBarListAsync(request));
         }
 
-        public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
             var request = new BarListRequest
             {
@@ -225,7 +225,7 @@ namespace TickTrader.Algo.Runtime
             return RunOnThreadPool(() => _account.GetBarListAsync(request));
         }
 
-        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2)
+        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, UtcTicks from, UtcTicks to, bool level2)
         {
             var request = new QuoteListRequest
             {
@@ -237,7 +237,7 @@ namespace TickTrader.Algo.Runtime
             return RunOnThreadPool(() => _account.GetQuoteListAsync(request));
         }
 
-        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2)
+        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, UtcTicks from, int count, bool level2)
         {
             var request = new QuoteListRequest
             {

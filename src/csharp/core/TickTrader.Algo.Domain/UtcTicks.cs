@@ -67,6 +67,19 @@ namespace TickTrader.Algo.Domain
         public static bool operator <=(UtcTicks t1, UtcTicks t2) => t1.Value <= t2.Value;
     }
 
+    public static class UtcTicksExtensions
+    {
+        public static UtcTicks ToUtcTicks(this DateTime dt) => new UtcTicks(dt);
+
+        public static UtcTicks? ToUtcTicks(this long? ticks) => ticks.HasValue ? new UtcTicks(ticks.Value) : default(UtcTicks?);
+
+        public static long? ToInt64(this UtcTicks? ticks) => ticks.HasValue ? ticks.Value.Value : default(long?);
+
+        public static UtcTicks? ToUtcTicks(this DateTime? dt) => dt.HasValue ? new UtcTicks(dt.Value) : default(UtcTicks?);
+
+        public static DateTime? ToDateTime(this UtcTicks? ticks) => ticks.HasValue ? ticks.Value.ToUtcDateTime() : default(DateTime?);
+    }
+
     public static class TimeTicks
     {
         private static readonly long UnixEpochOffset = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;

@@ -328,14 +328,14 @@ namespace TickTrader.Algo.Account.Fdk2
             return array.Select(Convert).ToArray();
         }
 
-        public void DownloadBars(BlockingChannel<Domain.BarData> stream, string symbol, Timestamp from, Timestamp to, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
+        public void DownloadBars(BlockingChannel<Domain.BarData> stream, string symbol, UtcTicks from, UtcTicks to, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
         {
             Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    var fromDt = from.ToDateTime();
-                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(marketSide), ToBarPeriod(timeframe), fromDt, to.ToDateTime(), DownloadTimeoutMs);
+                    var fromDt = from.ToUtcDateTime();
+                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(marketSide), ToBarPeriod(timeframe), fromDt, to.ToUtcDateTime(), DownloadTimeoutMs);
                     DateTime? timeEdge = null;
 
                     while (true)
@@ -370,13 +370,13 @@ namespace TickTrader.Algo.Account.Fdk2
             });
         }
 
-        public async Task<Domain.BarData[]> DownloadBarPage(string symbol, Timestamp from, int count, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
+        public async Task<Domain.BarData[]> DownloadBarPage(string symbol, UtcTicks from, int count, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
         {
             var result = new List<Domain.BarData>();
 
             try
             {
-                var bars = await _feedHistoryProxyAdapter.GetBarListAsync(symbol, ConvertBack(marketSide), ToBarPeriod(timeframe), from.ToDateTime(), count);
+                var bars = await _feedHistoryProxyAdapter.GetBarListAsync(symbol, ConvertBack(marketSide), ToBarPeriod(timeframe), from.ToUtcDateTime(), count);
                 return bars.Select(Convert).ToArray();
             }
             catch (Exception ex)
@@ -385,13 +385,13 @@ namespace TickTrader.Algo.Account.Fdk2
             }
         }
 
-        public void DownloadQuotes(BlockingChannel<Domain.QuoteInfo> stream, string symbol, Timestamp from, Timestamp to, bool includeLevel2)
+        public void DownloadQuotes(BlockingChannel<Domain.QuoteInfo> stream, string symbol, UtcTicks from, UtcTicks to, bool includeLevel2)
         {
             Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    var e = _feedHistoryProxy.DownloadQuotes(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToDateTime(), to.ToDateTime(), DownloadTimeoutMs);
+                    var e = _feedHistoryProxy.DownloadQuotes(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToUtcDateTime(), to.ToUtcDateTime(), DownloadTimeoutMs);
 
                     while (true)
                     {
@@ -411,13 +411,13 @@ namespace TickTrader.Algo.Account.Fdk2
             });
         }
 
-        public async Task<Domain.QuoteInfo[]> DownloadQuotePage(string symbol, Timestamp from, int count, bool includeLevel2)
+        public async Task<Domain.QuoteInfo[]> DownloadQuotePage(string symbol, UtcTicks from, int count, bool includeLevel2)
         {
             var result = new List<Domain.QuoteInfo>();
 
             try
             {
-                var quotes = await _feedHistoryProxyAdapter.GetQuoteListAsync(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToDateTime(), count);
+                var quotes = await _feedHistoryProxyAdapter.GetQuoteListAsync(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToUtcDateTime(), count);
                 return quotes.Select(Convert).ToArray();
             }
             catch (Exception ex)

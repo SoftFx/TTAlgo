@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Domain;
 
@@ -69,10 +68,10 @@ namespace TickTrader.Algo.CoreV1
         UtcTicks OpenTime { get; }
         int Count { get; }
 
-        void LoadFeedFrom(Timestamp from);
-        void LoadFeed(Timestamp from, Timestamp to);
+        void LoadFeedFrom(UtcTicks from);
+        void LoadFeed(UtcTicks from, UtcTicks to);
         void LoadFeed(int size);
-        void LoadFeed(Timestamp from, int size);
+        void LoadFeed(UtcTicks from, int size);
 
         void SyncByTime();
     }
@@ -91,7 +90,7 @@ namespace TickTrader.Algo.CoreV1
     public class SlidingBufferStrategy : FeedBufferStrategy
     {
         private int _size;
-        private Timestamp _mainBufferStartTime;
+        private UtcTicks _mainBufferStartTime;
 
         public SlidingBufferStrategy(int size)
         {
@@ -102,7 +101,7 @@ namespace TickTrader.Algo.CoreV1
         {
             buffer.LoadFeed(_size);
             if (buffer.Count > 0)
-                _mainBufferStartTime = buffer.OpenTime.ToTimestamp();
+                _mainBufferStartTime = buffer.OpenTime;
         }
 
         protected override void LoadAuxBuffer(ILoadableFeedBuffer buffer)
@@ -147,15 +146,12 @@ namespace TickTrader.Algo.CoreV1
     [Serializable]
     public class TimeSpanStrategy : FeedBufferStrategy
     {
-        private UtcTicks _fromTicks, _toTicks;
-        private Timestamp _from, _to;
+        private UtcTicks _from, _to;
 
         public TimeSpanStrategy(DateTime from, DateTime to)
         {
-            _from = from.ToUniversalTime().ToTimestamp();
-            _to = to.ToUniversalTime().ToTimestamp();
-            _fromTicks = new UtcTicks(from);
-            _toTicks = new UtcTicks(to);
+            _from = new UtcTicks(from);
+            _to = new UtcTicks(to);
         }
 
         protected override void LoadMainBuffer(ILoadableFeedBuffer buffer)
@@ -174,7 +170,7 @@ namespace TickTrader.Algo.CoreV1
 
         public override bool InBoundaries(UtcTicks timePoint)
         {
-            return timePoint >= _fromTicks || timePoint <= _toTicks;
+            return timePoint >= _from || timePoint <= _to;
         }
 
         public override void OnUserSetBufferSize(int newSize, out string error)

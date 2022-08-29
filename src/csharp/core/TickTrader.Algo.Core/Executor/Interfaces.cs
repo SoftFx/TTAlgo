@@ -37,15 +37,15 @@ namespace TickTrader.Algo.Core
 
     public interface IFeedHistoryProvider
     {
-        List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to);
-        List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count);
-        List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2);
-        List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, int count, bool level2);
+        List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to);
+        List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count);
+        List<QuoteInfo> QueryQuotes(string symbol, UtcTicks from, UtcTicks to, bool level2);
+        List<QuoteInfo> QueryQuotes(string symbol, UtcTicks from, int count, bool level2);
 
-        Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to);
-        Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count);
-        Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2);
-        Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2);
+        Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to);
+        Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count);
+        Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, UtcTicks from, UtcTicks to, bool level2);
+        Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, UtcTicks from, int count, bool level2);
     }
 
     public interface IFeedProvider

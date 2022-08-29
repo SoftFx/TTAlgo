@@ -57,12 +57,12 @@ namespace TickTrader.Algo.Account
         Task<QuoteInfo[]> SubscribeToQuotes(string[] symbols, int depth, int? frequency);
         Task<QuoteInfo[]> GetQuoteSnapshot(string[] symbols, int depth);
 
-        Task<BarData[]> DownloadBarPage(string symbol, Timestamp from, int count, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
-        Task<QuoteInfo[]> DownloadQuotePage(string symbol, Timestamp from, int count, bool includeLevel2);
+        Task<BarData[]> DownloadBarPage(string symbol, UtcTicks from, int count, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+        Task<QuoteInfo[]> DownloadQuotePage(string symbol, UtcTicks from, int count, bool includeLevel2);
 
-        void DownloadBars(BlockingChannel<BarData> stream, string symbol, Timestamp from, Timestamp to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+        void DownloadBars(BlockingChannel<BarData> stream, string symbol, UtcTicks from, UtcTicks to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
 
-        void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, Timestamp from, Timestamp to, bool includeLevel2);
+        void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, UtcTicks from, UtcTicks to, bool includeLevel2);
 
         Task<(DateTime?, DateTime?)> GetAvailableRange(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
     }

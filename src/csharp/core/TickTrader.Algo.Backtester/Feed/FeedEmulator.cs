@@ -194,42 +194,42 @@ namespace TickTrader.Algo.Backtester
             public void Modify(List<FeedSubscriptionUpdate> updates) { }
         }
 
-        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
             return GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, to).ToList() ?? new List<BarData>();
         }
 
-        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
             return GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, count).ToList() ?? new List<BarData>();
         }
 
-        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, UtcTicks from, UtcTicks to, bool level2)
         {
             return GetFeedSrcOrThrow(symbol).QueryTicks(from, to, level2) ?? new List<QuoteInfo>();
         }
 
-        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, int count, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, UtcTicks from, int count, bool level2)
         {
             return GetFeedSrcOrThrow(symbol).QueryTicks(from, count, level2) ?? new List<QuoteInfo>();
         }
 
-        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
             return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, to).ToList() ?? new List<BarData>());
         }
 
-        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
             return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, count).ToList() ?? new List<BarData>());
         }
 
-        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2)
+        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, UtcTicks from, UtcTicks to, bool level2)
         {
             return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryTicks(from, to, level2) ?? new List<QuoteInfo>());
         }
 
-        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2)
+        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, UtcTicks from, int count, bool level2)
         {
             return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryTicks(from, count, level2) ?? new List<QuoteInfo>());
         }
