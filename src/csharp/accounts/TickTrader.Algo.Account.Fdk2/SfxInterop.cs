@@ -470,18 +470,18 @@ namespace TickTrader.Algo.Account.Fdk2
                 .ContinueWith(t => t.Result.Select(Convert).ToArray());
         }
 
-        public void GetTradeHistory(ChannelWriter<Domain.TradeReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards)
+        public void GetTradeHistory(ChannelWriter<Domain.TradeReportInfo> rxStream, UtcTicks? from, UtcTicks? to, bool skipCancelOrders, bool backwards)
         {
             var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
 
-            _tradeHistoryProxyAdapter.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
+            _tradeHistoryProxyAdapter.DownloadTradesAsync(direction, from.ToDateTime(), to.ToDateTime(), skipCancelOrders, rxStream);
         }
 
-        public void GetTriggerReportsHistory(ChannelWriter<Domain.TriggerReportInfo> rxStream, DateTime? from, DateTime? to, bool skipFailedTriggers, bool backwards)
+        public void GetTriggerReportsHistory(ChannelWriter<Domain.TriggerReportInfo> rxStream, UtcTicks? from, UtcTicks? to, bool skipFailedTriggers, bool backwards)
         {
             var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
 
-            _tradeHistoryProxyAdapter.DownloadTriggerReportsAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipFailedTriggers, rxStream);
+            _tradeHistoryProxyAdapter.DownloadTriggerReportsAsync(direction, from.ToDateTime(), to.ToDateTime(), skipFailedTriggers, rxStream);
         }
 
         public Task<OrderInteropResult> SendOpenOrder(Domain.OpenOrderRequest request)

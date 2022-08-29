@@ -193,7 +193,7 @@ namespace TickTrader.Algo.Server
         private Task<Any> TradeHistoryRequestHandler(string callId, Any payload)
         {
             var request = payload.Unpack<TradeHistoryRequest>();
-            var enumerator = _account.TradeHistoryProvider.GetTradeHistory(request.From?.ToDateTime(), request.To?.ToDateTime(), request.Options);
+            var enumerator = _account.TradeHistoryProvider.GetTradeHistory(request.From, request.To, request.Options);
             if (enumerator != null)
             {
                 _pendingRequestHandlers.TryAdd(callId, enumerator);
@@ -232,7 +232,7 @@ namespace TickTrader.Algo.Server
         private Task<Any> TriggerHistoryRequestHandler(string callId, Any payload)
         {
             var request = payload.Unpack<TriggerHistoryRequest>();
-            var enumerator = _account.TradeHistoryProvider.GetTriggerHistory(request.From?.ToDateTime(), request.To?.ToDateTime(), request.Options);
+            var enumerator = _account.TradeHistoryProvider.GetTriggerHistory(request.From, request.To, request.Options);
             if (enumerator != null)
             {
                 _pendingRequestHandlers.TryAdd(callId, enumerator);

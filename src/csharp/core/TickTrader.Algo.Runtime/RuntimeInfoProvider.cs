@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -143,14 +142,14 @@ namespace TickTrader.Algo.Runtime
 
         #region ITradeHistoryProvider
 
-        public IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, HistoryRequestOptions options)
+        public IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(UtcTicks? from, UtcTicks? to, HistoryRequestOptions options)
         {
-            return _account.GetTradeHistory(new TradeHistoryRequest { From = from?.ToUniversalTime().ToTimestamp(), To = to?.ToUniversalTime().ToTimestamp(), Options = options });
+            return _account.GetTradeHistory(new TradeHistoryRequest { From = from, To = to, Options = options });
         }
 
-        public IAsyncPagedEnumerator<TriggerReportInfo> GetTriggerHistory(DateTime? from, DateTime? to, HistoryRequestOptions options)
+        public IAsyncPagedEnumerator<TriggerReportInfo> GetTriggerHistory(UtcTicks? from, UtcTicks? to, HistoryRequestOptions options)
         {
-            return _account.GetTriggerHistory(new TriggerHistoryRequest { From = from?.ToUniversalTime().ToTimestamp(), To = to?.ToUniversalTime().ToTimestamp(), Options = options });
+            return _account.GetTriggerHistory(new TriggerHistoryRequest { From = from, To = to, Options = options });
         }
 
         #endregion ITradeHistoryProvider
