@@ -43,6 +43,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public string FullPath => string.IsNullOrEmpty(FilePath) ? FileName : Path.Combine(FilePath, FileName);
+
 
         public FileParamSetupViewModel(ParameterDescriptor descriptor)
             : base(descriptor)
@@ -65,7 +67,7 @@ namespace TickTrader.BotTerminal
 
         public override string ToString()
         {
-            return $"{DisplayName}: {GetFullPath()}";
+            return $"{DisplayName}: {FullPath}";
         }
 
         public override void Reset()
@@ -84,14 +86,10 @@ namespace TickTrader.BotTerminal
             return new FileParameterConfig()
             {
                 PropertyId = Id,
-                FileName = GetFullPath(),
+                FileName = FullPath,
             };
         }
 
-        private string GetFullPath()
-        {
-            return string.IsNullOrEmpty(FilePath) ? FileName : Path.Combine(FilePath, FileName);
-        }
 
         private void CheckFileName()
         {
