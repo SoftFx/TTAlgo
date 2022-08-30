@@ -264,7 +264,7 @@ namespace TickTrader.Algo.Backtester
                         StopLoss = sl,
                         TakeProfit = tp,
                         Comment = comment,
-                        Expiration = request.Expiration?.ToUniversalTime().ToTimestamp(),
+                        Expiration = request.Expiration.ToUtcTicks(),
                         MaxVisibleAmount = (double?)orderMaxVisibleVolume,
                         ExecOptions = request.Options?.ToDomainEnum(),
                     };
@@ -491,7 +491,7 @@ namespace TickTrader.Algo.Backtester
             //order.TransferringCoefficient = request.TransferringCoefficient;
             order.Info.UserTag = tag;
             order.Info.InstanceId = _acc.InstanceId;
-            order.Info.Expiration = expiration.HasValue ? expiration.Value.ToUniversalTime().ToTimestamp() : null;
+            order.Info.Expiration = expiration.ToUtcTicks();
             order.Info.Options = execOptions.ToOrderOptions();
             //order.ReqOpenPrice = clientPrice;
             //order.ReqOpenAmount = clientAmount;
@@ -1639,7 +1639,7 @@ namespace TickTrader.Algo.Backtester
             //}
 
             OpenOrder(order.SymbolInfo, OrderInfo.Types.Type.Limit, order.Info.Side, order.Info.RemainingAmount, null, order.Info.Price,
-                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Info.UserTag, order.Info.Expiration?.ToDateTime(), OpenOrderOptions.SkipDealing);
+                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Info.UserTag, order.Info.Expiration.ToDateTime(), OpenOrderOptions.SkipDealing);
         }
 
         private void ClosePosition(OrderAccessor position, TradeReportInfo.Types.Reason trReason, double? reqAmount, double? reqPrice,

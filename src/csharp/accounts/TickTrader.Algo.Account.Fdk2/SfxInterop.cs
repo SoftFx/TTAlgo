@@ -517,17 +517,17 @@ namespace TickTrader.Algo.Account.Fdk2
                     return _tradeProxyAdapter.NewOcoOrdersAsync(r.Symbol, operationTimeout,
 
                            r.OperationId, Convert(r.Type), Convert(r.Side), r.Amount, r.MaxVisibleAmount, r.Price, r.StopPrice,
-                           timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, r.Slippage,
+                           timeInForce, r.Expiration.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, r.Slippage,
 
                            sub.OperationId, Convert(sub.Type), Convert(sub.Side), sub.Amount, sub.MaxVisibleAmount, sub.Price, sub.StopPrice,
-                           subTimeInForce, sub.Expiration?.ToDateTime(), sub.StopLoss, sub.TakeProfit, sub.Comment, sub.Tag, null, sub.Slippage,
+                           subTimeInForce, sub.Expiration.ToDateTime(), sub.StopLoss, sub.TakeProfit, sub.Comment, sub.Tag, null, sub.Slippage,
 
-                           ConvertToServer(r.OtoTrigger?.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(), otoTriggeredById);
+                           ConvertToServer(r.OtoTrigger?.Type), r.OtoTrigger?.TriggerTime.ToDateTime(), otoTriggeredById);
                 }
 
                 return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Amount, r.MaxVisibleAmount,
-                       r.Price, r.StopPrice, timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, isIoc, r.Slippage,
-                       isOco, r.OcoEqualVolume, ocoRelatedOrderId, ConvertToServer(r.OtoTrigger?.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(),
+                       r.Price, r.StopPrice, timeInForce, r.Expiration.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, isIoc, r.Slippage,
+                       isOco, r.OcoEqualVolume, ocoRelatedOrderId, ConvertToServer(r.OtoTrigger?.Type), r.OtoTrigger?.TriggerTime.ToDateTime(),
                        otoTriggeredById);
             });
         }
@@ -553,7 +553,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 if (request.OtoTrigger != null)
                 {
                     otoTriggerType = ConvertToServer(request.OtoTrigger.Type);
-                    otoTriggerTime = request.OtoTrigger?.TriggerTime?.ToDateTime();
+                    otoTriggerTime = request.OtoTrigger?.TriggerTime.ToDateTime();
 
                     if (!string.IsNullOrEmpty(request.OtoTrigger.OrderIdTriggeredBy))
                     {
@@ -564,14 +564,14 @@ namespace TickTrader.Algo.Account.Fdk2
 
                 return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
                     r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.AmountChange,
-                    r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration?.ToDateTime(),
+                    r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration.ToDateTime(),
                     r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.ExecOptions), r.Slippage,
                     GetOCOReplace(r.ExecOptions), r.OcoEqualVolume, ocoRelatedOrderId,
                     otoTriggerType, otoTriggerTime, otoTriggerById));
             }
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewAmount ?? r.CurrentAmount, r.CurrentAmount,
-                r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration?.ToDateTime(),
+                r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration.ToDateTime(),
                 r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.ExecOptions), r.Slippage));
         }
 
@@ -631,7 +631,7 @@ namespace TickTrader.Algo.Account.Fdk2
             }
         }
 
-        private OrderTimeInForce? GetTimeInForceReplace(Domain.OrderExecOptions? options, Timestamp expiration)
+        private OrderTimeInForce? GetTimeInForceReplace(Domain.OrderExecOptions? options, UtcTicks? expiration)
         {
             return expiration != null ? OrderTimeInForce.GoodTillDate
                 : (options != null ? OrderTimeInForce.GoodTillCancel : (OrderTimeInForce?)null);
@@ -647,7 +647,7 @@ namespace TickTrader.Algo.Account.Fdk2
             return options?.HasFlag(Domain.OrderExecOptions.OneCancelsTheOther);
         }
 
-        private OrderTimeInForce GetTimeInForce(Timestamp expiration)
+        private OrderTimeInForce GetTimeInForce(UtcTicks? expiration)
         {
             return expiration != null ? OrderTimeInForce.GoodTillDate : OrderTimeInForce.GoodTillCancel;
         }
@@ -907,7 +907,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 UserTag = record.Tag,
                 RemainingAmount = record.LeavesVolume,
                 RequestedAmount = record.InitialVolume ?? 0,
-                Expiration = record.Expiration?.ToUniversalTime().ToTimestamp(),
+                Expiration = record.Expiration.ToUtcTicks(),
                 MaxVisibleAmount = record.MaxVisibleVolume,
                 ExecPrice = record.AveragePrice,
                 RequestedOpenPrice = record.InitialPrice,
@@ -951,7 +951,7 @@ namespace TickTrader.Algo.Account.Fdk2
             return new Domain.ContingentOrderTrigger
             {
                 Type = ConvertToAlgo(report.TriggerType.Value),
-                TriggerTime = report.TriggerTime?.ToTimestamp(),
+                TriggerTime = report.TriggerTime.ToUtcTicks(),
                 OrderIdTriggeredBy = report.OrderIdTriggeredBy?.ToString(),
             };
         }

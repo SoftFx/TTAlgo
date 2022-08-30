@@ -32,6 +32,12 @@ namespace TickTrader.Algo.Domain
             set { ExecOptionsBitmask = (int)value; }
         }
 
+        public UtcTicks? Expiration
+        {
+            get => ExpirationTicks.ToUtcTicks();
+            set => ExpirationTicks = value.ToInt64();
+        }
+
         public string OrderId => string.Empty;
 
         public string LogDetails => string.Empty;
@@ -48,6 +54,12 @@ namespace TickTrader.Algo.Domain
         {
             get { return (OrderExecOptions?)ExecOptionsBitmask; }
             set { ExecOptionsBitmask = (int?)value; }
+        }
+
+        public UtcTicks? Expiration
+        {
+            get => ExpirationTicks.ToUtcTicks();
+            set => ExpirationTicks = value.ToInt64();
         }
 
         public string LogDetails => string.Empty;

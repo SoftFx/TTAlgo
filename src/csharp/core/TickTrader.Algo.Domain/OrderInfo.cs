@@ -24,6 +24,12 @@ namespace TickTrader.Algo.Domain
             set { OptionsBitmask = (int)value; }
         }
 
+        public UtcTicks? Expiration
+        {
+            get => ExpirationTicks.ToUtcTicks();
+            set => ExpirationTicks = value.ToInt64();
+        }
+
         public bool IsImmediateOrCancel => Options.HasFlag(OrderOptions.ImmediateOrCancel);
 
         public bool IsContingentOrder => Options.HasFlag(OrderOptions.ContingentOrder);
@@ -225,7 +231,7 @@ namespace TickTrader.Algo.Domain
 
         Timestamp Created { get; }
 
-        Timestamp Expiration { get; }
+        UtcTicks? Expiration { get; }
 
         string Comment { get; set; }
 

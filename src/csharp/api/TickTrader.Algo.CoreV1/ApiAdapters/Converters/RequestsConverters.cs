@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System.Linq;
+﻿using System.Linq;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
@@ -23,7 +22,7 @@ namespace TickTrader.Algo.CoreV1
                 Slippage = apiRequest.Slippage,
                 ExecOptions = apiRequest.Options.ToDomainEnum(),
                 Tag = CompositeTag.NewTag(isolationTag, apiRequest.Tag),
-                Expiration = apiRequest.Expiration?.ToUniversalTime().ToTimestamp(),
+                Expiration = apiRequest.Expiration.ToUtcTicks(),
                 OcoRelatedOrderId = apiRequest.OcoRelatedOrderId,
                 OcoEqualVolume = apiRequest.OcoEqualVolume,
                 OtoTrigger = apiRequest.OtoTrigger?.ToDomain(),
@@ -51,7 +50,7 @@ namespace TickTrader.Algo.CoreV1
                 Slippage = apiRequest.Slippage,
                 Comment = apiRequest.Comment,
                 Tag = apiRequest.Tag != null ? CompositeTag.NewTag(isolationTag, apiRequest.Tag) : null,
-                Expiration = apiRequest.Expiration?.ToUniversalTime().ToTimestamp(),
+                Expiration = apiRequest.Expiration.ToUtcTicks(),
                 ExecOptions = apiRequest.Options?.ToDomainEnum(),
                 OcoRelatedOrderId = apiRequest.OcoRelatedOrderId,
                 OcoEqualVolume = apiRequest.OcoEqualVolume,

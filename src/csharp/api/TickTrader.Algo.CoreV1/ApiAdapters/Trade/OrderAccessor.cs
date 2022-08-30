@@ -75,7 +75,7 @@ namespace TickTrader.Algo.CoreV1
 
         DateTime Order.Created => Info.Created?.ToDateTime().ToLocalTime() ?? DateTime.MinValue;
 
-        DateTime Order.Expiration => Info.Expiration?.ToDateTime().ToLocalTime() ?? DateTime.MinValue;
+        DateTime Order.Expiration => Info.Expiration?.ToLocalDateTime() ?? DateTime.MinValue;
 
         double Order.ExecPrice => Info.ExecPrice ?? double.NaN;
 

@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Account
 
         Timestamp IOrderUpdateInfo.Created => Created?.ToTimestamp();
 
-        Timestamp IOrderUpdateInfo.Expiration => Expiration?.ToTimestamp();
+        UtcTicks? IOrderUpdateInfo.Expiration => Expiration.ToUtcTicks();
 
         Timestamp IOrderUpdateInfo.Modified => Modified?.ToTimestamp();
 

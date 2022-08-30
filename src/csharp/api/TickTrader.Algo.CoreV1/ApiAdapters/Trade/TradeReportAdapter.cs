@@ -131,7 +131,7 @@ namespace TickTrader.Algo.CoreV1
             Info.OrderSide = orderInfo.Side;
             //Entity.SymbolRef = order.SymbolRef;
             //Entity.SymbolPrecision = order.SymbolPrecision;
-            Info.Expiration = orderInfo.Expiration;
+            Info.Expiration = orderInfo.Expiration?.ToTimestamp();
             //Entity.Magic = order.Magic;
             Info.StopLoss = orderInfo.StopLoss ?? double.NaN;
             Info.TakeProfit = orderInfo.TakeProfit ?? double.NaN;
