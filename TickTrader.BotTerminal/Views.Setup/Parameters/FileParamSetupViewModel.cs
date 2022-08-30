@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using TickTrader.Algo.Core.Setup;
@@ -17,7 +18,7 @@ namespace TickTrader.BotTerminal
 
         public string FileName
         {
-            get { return _fileName; }
+            get => _fileName;
             set
             {
                 if (FileName == value)
@@ -26,22 +27,12 @@ namespace TickTrader.BotTerminal
                 _fileName = value;
                 CheckFileName();
                 NotifyOfPropertyChange(nameof(FileName));
-
-                try
-                {
-                    if (FilePath != null)
-                    {
-                        _filePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(FilePath), _fileName);
-                        NotifyOfPropertyChange(nameof(FilePath));
-                    }
-                }
-                catch (ArgumentException) { }
             }
         }
 
         public string FilePath
         {
-            get { return _filePath; }
+            get => _filePath;
             set
             {
                 if (FilePath == value)
@@ -49,16 +40,6 @@ namespace TickTrader.BotTerminal
 
                 _filePath = value;
                 NotifyOfPropertyChange(nameof(FilePath));
-                try
-                {
-                    if (FilePath != null)
-                    {
-                        _fileName = System.IO.Path.GetFileName(FilePath);
-                        CheckFileName();
-                        NotifyOfPropertyChange(nameof(FileName));
-                    }
-                }
-                catch (ArgumentException) { }
             }
         }
 
@@ -71,7 +52,7 @@ namespace TickTrader.BotTerminal
             var filterEntries = descriptor.FileFilters
                .Where(s => !string.IsNullOrWhiteSpace(s.FileMask) && !string.IsNullOrWhiteSpace(s.FileTypeName));
 
-            var filterStrBuilder = new StringBuilder();
+            var filterStrBuilder = new StringBuilder(1 << 4);
             foreach (var entry in filterEntries)
             {
                 if (filterStrBuilder.Length > 0)
@@ -84,26 +65,32 @@ namespace TickTrader.BotTerminal
 
         public override string ToString()
         {
-            return $"{DisplayName}: {FilePath}";
+            return $"{DisplayName}: {GetFullPath()}";
         }
 
         public override void Reset()
         {
-            FilePath = DefaultFile;
+            FileName = DefaultFile;
         }
 
         public override void Load(IPropertyConfig srcProperty)
         {
-            var typedSrcProperty = srcProperty as FileParameterConfig;
-            if (typedSrcProperty != null)
-            {
-                FilePath = typedSrcProperty.FileName;
-            }
+            if (srcProperty is FileParameterConfig typedSrcProperty)
+                FileName = Path.GetFileName(typedSrcProperty.FileName);
         }
 
         public override IPropertyConfig Save()
         {
-            return new FileParameterConfig() { PropertyId = Id, FileName = FilePath };
+            return new FileParameterConfig()
+            {
+                PropertyId = Id,
+                FileName = GetFullPath(),
+            };
+        }
+
+        private string GetFullPath()
+        {
+            return string.IsNullOrEmpty(FilePath) ? FileName : Path.Combine(FilePath, FileName);
         }
 
         private void CheckFileName()
