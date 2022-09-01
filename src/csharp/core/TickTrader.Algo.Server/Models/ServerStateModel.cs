@@ -33,6 +33,6 @@ namespace TickTrader.Algo.Server
 
         public Task RemovePlugin(string pluginId) => _ref.Ask(new ServerStateManager.RemovePluginCmd(pluginId));
 
-        public Task SetPluginRunning(string pluginId, bool isRuning) => _ref.Ask(new ServerStateManager.SetPluginRunningCmd(pluginId, isRuning));
+        public Task SetPluginRunning(string pluginId, bool isRunning) => _ref.Ask(new ServerStateManager.SetPluginRunningCmd(pluginId, isRunning));
     }
 }

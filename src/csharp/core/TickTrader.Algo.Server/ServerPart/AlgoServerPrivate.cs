@@ -1,15 +1,19 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async.Actors;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Runtime;
+using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
 {
-    internal class AlgoServerPrivate : IRpcHost, IRuntimeOwner
+    internal class AlgoServerPrivate : IRpcHost, IRuntimeOwner, IPluginHost
     {
         private static readonly int _serverProcId = Process.GetCurrentProcess().Id;
 
@@ -92,6 +96,39 @@ namespace TickTrader.Algo.Server
         void IRuntimeOwner.OnRuntimeInvalid(string pkgId, string runtimeId) => _server.Tell(new PkgRuntimeInvalidMsg(pkgId, runtimeId));
 
         #endregion IRuntimeOwner implementation
+
+
+        #region IPluginHost implementation
+
+        Task IPluginHost.UpdateRunningState(string pluginId, bool isRunning) => SavedState.SetPluginRunning(pluginId, isRunning);
+
+        Task IPluginHost.UpdateSavedState(PluginSavedState savedState) => SavedState.UpdatePlugin(savedState);
+
+        void IPluginHost.OnPluginUpdated(PluginModelUpdate update) => SendUpdate(update);
+
+        void IPluginHost.OnPluginStateUpdated(PluginStateUpdate update) => SendUpdate(update);
+
+        void IPluginHost.OnPluginAlert(string pluginId, PluginLogRecord record) => Alerts.SendPluginAlert(pluginId, record);
+
+        void IPluginHost.OnGlobalAlert(string msg) => Alerts.SendServerAlert(msg);
+
+        Task<string> IPluginHost.GetPkgRuntimeId(string pkgId) => GetPkgRuntimeId(pkgId);
+
+        Task<IActorRef> IPluginHost.GetRuntime(string runtimeId) => GetRuntime(runtimeId);
+
+        ExecutorConfig IPluginHost.CreateExecutorConfig(string pluginId, string accId, PluginConfig pluginConfig)
+        {
+            var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(pluginConfig) };
+            config.WorkingDirectory = Env.GetPluginWorkingFolder(pluginId);
+            config.LogDirectory = Env.GetPluginLogsFolder(pluginId);
+            config.InitPriorityInvokeStrategy();
+            config.InitSlidingBuffering(4000);
+            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+
+            return config;
+        }
+
+        #endregion IPluginHost implementation
 
 
         internal class RuntimeRequest

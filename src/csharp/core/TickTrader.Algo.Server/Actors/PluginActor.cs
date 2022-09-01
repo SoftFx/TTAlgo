@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Server
 {
     internal class PluginActor : Actor
     {
-        private readonly AlgoServerPrivate _server;
+        private readonly IPluginHost _host;
         private readonly string _id, _accId;
         private readonly ActorEventSource<PluginLogRecord> _logEventSrc = new ActorEventSource<PluginLogRecord>();
         private readonly ActorEventSource<PluginStatusUpdate> _statusEventSrc = new ActorEventSource<PluginStatusUpdate>();
@@ -35,9 +35,9 @@ namespace TickTrader.Algo.Server
         private ActorLock _runtimeLock;
 
 
-        private PluginActor(AlgoServerPrivate server, PluginSavedState savedState)
+        private PluginActor(IPluginHost host, PluginSavedState savedState)
         {
-            _server = server;
+            _host = host;
             _savedState = savedState;
             _id = savedState.Id;
             _accId = savedState.AccountId;
@@ -65,9 +65,9 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public static IActorRef Create(AlgoServerPrivate server, PluginSavedState savedState)
+        public static IActorRef Create(IPluginHost host, PluginSavedState savedState)
         {
-            return ActorSystem.SpawnLocal(() => new PluginActor(server, savedState), $"{nameof(PluginActor)} ({savedState.Id})");
+            return ActorSystem.SpawnLocal(() => new PluginActor(host, savedState), $"{nameof(PluginActor)} ({savedState.Id})");
         }
 
 
@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Server
 
             _config = _savedState.UnpackConfig();
 
-            _server.SendUpdate(PluginModelUpdate.Added(_id, GetInfoCopy()));
+            _host.OnPluginUpdated(PluginModelUpdate.Added(_id, GetInfoCopy()));
             _runtimeLock = CreateLock();
 
             var _ = InitPkgRuntimeId();
@@ -132,11 +132,11 @@ namespace TickTrader.Algo.Server
                 throw Errors.PluginIsRunning(_id);
 
             _savedState.PackConfig(cmd.NewConfig);
-            await _server.SavedState.UpdatePlugin(_savedState);
+            await _host.UpdateSavedState(_savedState);
             _config = cmd.NewConfig;
 
             var infoCopy = GetInfoCopy();
-            _server.SendUpdate(PluginModelUpdate.Updated(_id, infoCopy));
+            _host.OnPluginUpdated(PluginModelUpdate.Updated(_id, infoCopy));
             //_proxyDownlinkSrc.DispatchEvent(infoCopy);
         }
 
@@ -182,7 +182,7 @@ namespace TickTrader.Algo.Server
             _logEventSrc.DispatchEvent(log);
             _proxyDownlinkSrc.DispatchEvent(log);
             if (log.Severity == PluginLogRecord.Types.LogSeverity.Alert)
-                _server.Alerts.SendPluginAlert(_id, log);
+                _host.OnPluginAlert(_id, log);
         }
 
         private void OnStatusUpdated(PluginStatusUpdate update)
@@ -203,7 +203,7 @@ namespace TickTrader.Algo.Server
             else if (newState.IsFaulted())
             {
                 ChangeState(PluginModelInfo.Types.PluginState.Faulted);
-                _server.SavedState.SetPluginRunning(_id, false).Forget();
+                _host.UpdateRunningState(_id, false).Forget();
             }
             else if (newState.IsRunning())
                 ChangeState(PluginModelInfo.Types.PluginState.Running);
@@ -219,7 +219,7 @@ namespace TickTrader.Algo.Server
         {
             _logger.Debug("Received exit notification");
 
-            _server.SavedState.SetPluginRunning(_id, false).Forget();
+            _host.UpdateRunningState(_id, false).Forget();
         }
 
         private void OnRuntimeCrashed(RuntimeCrashedMsg msg)
@@ -233,8 +233,8 @@ namespace TickTrader.Algo.Server
                 _startTaskSrc?.TrySetResult(false);
                 _stopTaskSrc?.TrySetResult(false);
 
-                _server.Alerts.SendServerAlert($"Process running plugin '{_id}' crashed");
-                _server.SavedState.SetPluginRunning(_id, false).Forget();
+                _host.OnGlobalAlert($"Process running plugin '{_id}' crashed");
+                _host.UpdateRunningState(_id, false).Forget();
             }
         }
 
@@ -244,7 +244,7 @@ namespace TickTrader.Algo.Server
             {
                 _logger.Info("Runtime reported invalid state");
 
-                _server.Alerts.SendServerAlert($"Restart required for '{_id}'");
+                _host.OnGlobalAlert($"Restart required for '{_id}'");
             }
         }
 
@@ -278,7 +278,7 @@ namespace TickTrader.Algo.Server
             {
                 using (await _runtimeLock.GetLock(nameof(InitPkgRuntimeId)))
                 {
-                    _newestRuntimeId = await _server.GetPkgRuntimeId(_config.Key.PackageId);
+                    _newestRuntimeId = await _host.GetPkgRuntimeId(_config.Key.PackageId);
                 }
 
                 var _ = UpdateRuntime(true);
@@ -347,7 +347,7 @@ namespace TickTrader.Algo.Server
                 return false;
             }
 
-            var runtime = await _server.GetRuntime(runtimeId);
+            var runtime = await _host.GetRuntime(runtimeId);
             if (runtime == null)
             {
                 BreakBot($"Runtime {runtimeId} is not found");
@@ -382,7 +382,7 @@ namespace TickTrader.Algo.Server
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
 
             var infoCopy = GetInfoCopy();
-            _server.SendUpdate(PluginModelUpdate.Updated(_id, infoCopy));
+            _host.OnPluginUpdated(PluginModelUpdate.Updated(_id, infoCopy));
             //_proxyDownlinkSrc.DispatchEvent(infoCopy);
 
             return true;
@@ -403,23 +403,11 @@ namespace TickTrader.Algo.Server
             _faultMsg = faultMsg;
 
             var stateUpdate = new PluginStateUpdate(_id, newState, faultMsg);
-            _server.SendUpdate(stateUpdate);
+            _host.OnPluginStateUpdated(stateUpdate);
             //_proxyDownlinkSrc.DispatchEvent(stateUpdate);
 
             if (_state.IsStopped())
                 _ = UpdateRuntime();
-        }
-
-        private ExecutorConfig CreateDefaultExecutorConfig()
-        {
-            var config = new ExecutorConfig { Id = _id, AccountId = _accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(_config) };
-            config.WorkingDirectory = _server.Env.GetPluginWorkingFolder(_id);
-            config.LogDirectory = _server.Env.GetPluginLogsFolder(_id);
-            config.InitPriorityInvokeStrategy();
-            config.InitSlidingBuffering(4000);
-            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
-
-            return config;
         }
 
         private async Task StartInternal()
@@ -439,9 +427,9 @@ namespace TickTrader.Algo.Server
                     return;
                 }
 
-                await _server.SavedState.SetPluginRunning(_id, true);
+                await _host.UpdateRunningState(_id, true);
 
-                var config = CreateDefaultExecutorConfig();
+                var config = _host.CreateExecutorConfig(_id, _accId, _config);
 
                 await RuntimeControlModel.StartExecutor(_runtime, config);
 
@@ -467,7 +455,7 @@ namespace TickTrader.Algo.Server
             {
                 ChangeState(PluginModelInfo.Types.PluginState.Stopping);
 
-                await _server.SavedState.SetPluginRunning(_id, false);
+                await _host.UpdateRunningState(_id, false);
 
                 await RuntimeControlModel.StopExecutor(_runtime, _id);
 
