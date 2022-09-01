@@ -182,14 +182,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await template.Opened.Task;
         }
 
-        protected async Task TestOpenReject(OrderStateTemplate template, OrderCmdResultCodes errorCode = OrderCmdResultCodes.DealerReject)
+        protected Task TestOpenReject(OrderStateTemplate template, OrderCmdResultCodes errorCode = OrderCmdResultCodes.DealerReject)
         {
             var request = template.GetOpenRequest();
 
             async Task<OrderCmdResult> OpenCommand() =>
                 _asyncMode ? await Bot.OpenOrderAsync(request) : Bot.OpenOrder(request);
 
-            await WaitRejectSeverRequest(OpenCommand, errorCode);
+            return WaitRejectSeverRequest(OpenCommand, errorCode).ContinueWith(_ => template.ToRejectOpen());
         }
 
 
@@ -204,14 +204,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await template.Modified.Task;
         }
 
-        protected async Task TestModifyReject(OrderStateTemplate template, OrderCmdResultCodes errorCode)
+        protected Task TestModifyReject(OrderStateTemplate template, OrderCmdResultCodes errorCode)
         {
             var request = template.GetModifyRequest();
 
             async Task<OrderCmdResult> ModifyCommand() =>
                 _asyncMode ? await Bot.ModifyOrderAsync(request) : Bot.ModifyOrder(request);
 
-            await WaitRejectSeverRequest(ModifyCommand, errorCode);
+            return WaitRejectSeverRequest(ModifyCommand, errorCode);
         }
 
 

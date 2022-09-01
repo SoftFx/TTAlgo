@@ -12,6 +12,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public TaskCompletionSource<bool> OpenedGrossPosition { get; private set; }
 
+        public TaskCompletionSource<bool> RejectOpened { get; private set; }
+
         public TaskCompletionSource<bool> OnTimeTriggerReceived { get; private set; }
 
         public TaskCompletionSource<bool> Filled { get; private set; }
@@ -31,10 +33,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             get
             {
+                if (!Opened.Task.IsCompleted || RejectOpened.Task.IsCompleted)
+                    return true;
+
                 if (IsGrossAcc)
-                    return Closed.Task.IsCompleted;
+                    return OpenedGrossPosition.Task.IsCompleted && Closed.Task.IsCompleted;
                 else
-                    return Filled.Task.IsCompleted || Canceled.Task.IsCompleted;
+                    return Filled.Task.IsCompleted || Canceled.Task.IsCompleted || Expired.Task.IsCompleted;
             }
         }
 
@@ -51,15 +56,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private void ResetTemplateStates()
         {
-            OpenedGrossPosition = new TaskCompletionSource<bool>();
-
             Opened = new TaskCompletionSource<bool>();
+            OpenedGrossPosition = new TaskCompletionSource<bool>();
+            RejectOpened = new TaskCompletionSource<bool>();
+
             Filled = new TaskCompletionSource<bool>();
             FilledParts = new List<OrderStateTemplate>();
             Canceled = new TaskCompletionSource<bool>();
             Modified = new TaskCompletionSource<bool>();
             Expired = new TaskCompletionSource<bool>();
             Closed = new TaskCompletionSource<bool>();
+
             OnTimeTriggerReceived = new TaskCompletionSource<bool>();
         }
 
@@ -70,6 +77,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             Id = orderId;
             Opened.SetResult(true);
+
+            return this;
+        }
+
+        internal OrderStateTemplate ToRejectOpen()
+        {
+            RejectOpened.SetResult(true);
 
             return this;
         }

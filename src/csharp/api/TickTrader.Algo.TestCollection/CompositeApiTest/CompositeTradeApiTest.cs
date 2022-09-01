@@ -44,7 +44,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         [Parameter]
         public bool UseCloseByTests { get; set; }
 
-        [Parameter]
+        //[Parameter]
         public bool UseADCases { get; set; }
 
 
