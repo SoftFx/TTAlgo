@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Server
         private readonly AlgoServerSettings _settings;
 
         private EnvService _env;
-        private IActorRef _eventBus, _stateManager;
+        private IActorRef _eventBus, _stateManager, _indicatorHost;
         private ServerStateModel _savedState;
         private AlertManagerModel _alerts;
         private AlgoServerPrivate _serverPrivate;
@@ -85,6 +85,7 @@ namespace TickTrader.Algo.Server
             Receive<PluginAlertsRequest, AlertRecordInfo[]>(r => _alerts.GetAlerts(r));
             Receive<LocalAlgoServer.SubscribeToAlertsCmd>(cmd => _alerts.AttachAlertChannel(cmd.AlertSink));
             Receive<LocalAlgoServer.ExecPluginCmd>(cmd => _plugins.ExecCmd(cmd.PluginId, cmd.Command));
+            Receive<LocalAlgoServer.IndicatorHostRequest, IndicatorHostModel>(_ => new IndicatorHostModel(_indicatorHost ?? throw new AlgoException("Indicator host not enabled")));
         }
 
 
@@ -119,6 +120,9 @@ namespace TickTrader.Algo.Server
             _pluginFiles = new PluginFileManager(_serverPrivate);
 
             _internalApiServer = new RpcServer(new TcpFactory(), _serverPrivate);
+
+            if (_settings.EnableIndicatorHost)
+                _indicatorHost = IndicatorHostActor.Create(_serverPrivate);
         }
 
 
@@ -153,6 +157,9 @@ namespace TickTrader.Algo.Server
 
             await _plugins.Shutdown();
 
+            if (_indicatorHost != null)
+                await _indicatorHost.Ask(IndicatorHostModel.ShutdownCmd.Instance);
+
             await _pkgStorage.Stop();
 
             await _runtimes.Shutdown();
@@ -172,15 +179,14 @@ namespace TickTrader.Algo.Server
 
             _runtimes.MarkPkgRuntimeObsolete(pkgId);
 
-            if (string.IsNullOrEmpty(pkgRefId))
+            string runtimeId = null;
+            if (!string.IsNullOrEmpty(pkgRefId))
             {
-                _plugins.TellAllPlugins(new PkgRuntimeUpdate(pkgId, null));
+                runtimeId = CreatePkgRuntime(pkgId);
             }
-            else
-            {
-                var runtimeId = CreatePkgRuntime(pkgId);
-                _plugins.TellAllPlugins(new PkgRuntimeUpdate(pkgId, runtimeId));
-            }
+            var pkgUpdate = new PkgRuntimeUpdate(pkgId, runtimeId);
+            _plugins.TellAllPlugins(pkgUpdate);
+            _indicatorHost.Tell(pkgUpdate);
         }
 
         private void OnPkgRuntimeInvalid(AlgoServerPrivate.PkgRuntimeInvalidMsg msg)

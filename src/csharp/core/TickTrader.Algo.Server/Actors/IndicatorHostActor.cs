@@ -12,26 +12,30 @@ namespace TickTrader.Algo.Server
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlgoServerActor>();
 
         private readonly Dictionary<int, IActorRef> _charts = new Dictionary<int, IActorRef>();
+        private readonly AlgoServerPrivate _server;
 
         private IAccountProxy _accProxy;
         private bool _isStarted;
         private int _freeChartId;
 
 
-        public IndicatorHostActor()
+        public IndicatorHostActor(AlgoServerPrivate server)
         {
+            _server = server;
+
             Receive<IndicatorHostModel.StartCmd>(Start);
             Receive<IndicatorHostModel.StopCmd>(Stop);
             Receive<IndicatorHostModel.ShutdownCmd>(Shutdown);
             Receive<IndicatorHostModel.SetAccountProxyCmd>(SetAccProxy);
             Receive<IndicatorHostModel.CreateChartRequest, ChartHostProxy>(CreateChart);
             Receive<IndicatorHostModel.RemoveChartCmd>(RemoveChart);
+            Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdate);
         }
 
 
-        public static IActorRef Create()
+        public static IActorRef Create(AlgoServerPrivate server)
         {
-            return ActorSystem.SpawnLocal(() => new IndicatorHostActor(), $"{nameof(IndicatorHostActor)}");
+            return ActorSystem.SpawnLocal(() => new IndicatorHostActor(server), $"{nameof(IndicatorHostActor)}");
         }
 
 
@@ -79,7 +83,7 @@ namespace TickTrader.Algo.Server
             info.Timeframe = request.Timeframe;
             info.MarketSide = request.MarketSide;
 
-            var chart = ChartBuilderActor.Create(Self, info);
+            var chart = ChartBuilderActor.Create(Self, info, _server);
             if (_isStarted)
                 await ChartBuilderModel.Start(chart);
 
@@ -98,6 +102,12 @@ namespace TickTrader.Algo.Server
             _charts.Remove(chartId);
 
             await ShutdownChart(chartId, chart);
+        }
+
+        private void OnPkgRuntimeUpdate(AlgoServerActor.PkgRuntimeUpdate update)
+        {
+            foreach (var chart in _charts.Values)
+                chart.Tell(update);
         }
 
 

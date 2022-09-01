@@ -8,14 +8,23 @@ namespace TickTrader.Algo.Server
 {
     public class IndicatorHostModel
     {
-        public static Task Start(IActorRef actor) => actor.Ask(StartCmd.Instance);
+        private readonly IActorRef _actor;
 
-        public static Task Stop(IActorRef actor) => actor.Ask(StopCmd.Instance);
 
-        public static Task SetAccountProxy(IActorRef actor, IAccountProxy accProxy) => actor.Ask(new SetAccountProxyCmd(accProxy));
+        public IndicatorHostModel(IActorRef actor)
+        {
+            _actor = actor;
+        }
 
-        public static Task<ChartHostProxy> CreateChart(IActorRef actor, string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide)
-            => actor.Ask<ChartHostProxy>(new CreateChartRequest(symbol, timeframe, marketSide));
+
+        public Task Start() => _actor.Ask(StartCmd.Instance);
+
+        public Task Stop() => _actor.Ask(StopCmd.Instance);
+
+        public Task SetAccountProxy(IAccountProxy accProxy) => _actor.Ask(new SetAccountProxyCmd(accProxy));
+
+        public Task<ChartHostProxy> CreateChart(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide)
+            => _actor.Ask<ChartHostProxy>(new CreateChartRequest(symbol, timeframe, marketSide));
 
 
         internal class StartCmd : Singleton<StartCmd> { }

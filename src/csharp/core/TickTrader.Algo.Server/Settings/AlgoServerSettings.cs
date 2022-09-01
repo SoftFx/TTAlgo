@@ -8,6 +8,8 @@ namespace TickTrader.Algo.Server
 
         public bool EnableAccountLogs { get; set; }
 
+        public bool EnableIndicatorHost { get; set; }
+
         public PkgStorageSettings PkgStorage { get; } = new PkgStorageSettings();
 
         public RuntimeSettings RuntimeSettings { get; } = new RuntimeSettings();

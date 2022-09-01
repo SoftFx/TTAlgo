@@ -9,6 +9,7 @@ namespace TickTrader.Algo.Server
     internal class ChartBuilderActor : Actor
     {
         private readonly IActorRef _parent;
+        private readonly AlgoServerPrivate _server;
         private readonly int _id;
         private readonly string _symbol;
         private readonly Feed.Types.Timeframe _timeframe;
@@ -19,9 +20,10 @@ namespace TickTrader.Algo.Server
         private bool _isStarted;
 
 
-        public ChartBuilderActor(IActorRef parent, ChartInfo info)
+        public ChartBuilderActor(IActorRef parent, ChartInfo info, AlgoServerPrivate server)
         {
             _parent = parent;
+            _server = server;
             _id = info.Id;
             _symbol = info.Symbol;
             _timeframe = info.Timeframe;
@@ -33,12 +35,13 @@ namespace TickTrader.Algo.Server
             Receive<ChartHostProxy.AddIndicatorRequest>(AddIndicator);
             Receive<ChartHostProxy.UpdateIndicatorRequest>(UpdateIndicator);
             Receive<ChartHostProxy.RemoveIndicatorRequest>(RemoveIndicator);
+            Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdate);
         }
 
 
-        public static IActorRef Create(IActorRef parent, ChartInfo info)
+        public static IActorRef Create(IActorRef parent, ChartInfo info, AlgoServerPrivate server)
         {
-            return ActorSystem.SpawnLocal(() => new ChartBuilderActor(parent, info), $"{nameof(ChartBuilderActor)} {info.Id}");
+            return ActorSystem.SpawnLocal(() => new ChartBuilderActor(parent, info, server), $"{nameof(ChartBuilderActor)} {info.Id}");
         }
 
 
@@ -75,8 +78,12 @@ namespace TickTrader.Algo.Server
 
             foreach (var pair in _indicators)
                 await ShutdownIndicator(pair.Key, pair.Value);
+        }
 
-
+        private void OnPkgRuntimeUpdate(AlgoServerActor.PkgRuntimeUpdate update)
+        {
+            foreach (var plugin in _indicators.Values)
+                plugin.Tell(update);
         }
 
         private async Task AddIndicator(ChartHostProxy.AddIndicatorRequest request)

@@ -2,6 +2,7 @@
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Package;
@@ -94,6 +95,8 @@ namespace TickTrader.Algo.Server
 
         public PluginListenerProxy GetPluginListenerProxy(string pluginId) => new PluginListenerProxy(_server, pluginId);
 
+        public Task<IndicatorHostModel> GetIndicatorHost() => _server.Ask<IndicatorHostModel>(IndicatorHostRequest.Instance);
+
 
         internal class PkgFileExistsRequest
         {
@@ -170,5 +173,7 @@ namespace TickTrader.Algo.Server
                 Command = command;
             }
         }
+
+        internal class IndicatorHostRequest : Singleton<IndicatorHostRequest> { }
     }
 }
