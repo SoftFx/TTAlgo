@@ -2,12 +2,15 @@
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Server
 {
     internal class IndicatorHostActor : Actor
     {
+        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlgoServerActor>();
+
         private readonly Dictionary<int, IActorRef> _charts = new Dictionary<int, IActorRef>();
 
         private IAccountProxy _accProxy;
@@ -19,6 +22,7 @@ namespace TickTrader.Algo.Server
         {
             Receive<IndicatorHostModel.StartCmd>(Start);
             Receive<IndicatorHostModel.StopCmd>(Stop);
+            Receive<IndicatorHostModel.ShutdownCmd>(Shutdown);
             Receive<IndicatorHostModel.SetAccountProxyCmd>(SetAccProxy);
             Receive<IndicatorHostModel.CreateChartRequest, ChartHostProxy>(CreateChart);
             Receive<IndicatorHostModel.RemoveChartCmd>(RemoveChart);
@@ -36,6 +40,9 @@ namespace TickTrader.Algo.Server
             if (_isStarted)
                 return;
 
+            foreach (var chart in _charts.Values)
+                ChartBuilderModel.Start(chart);
+
             _isStarted = true;
         }
 
@@ -44,7 +51,16 @@ namespace TickTrader.Algo.Server
             if (!_isStarted)
                 return;
 
+            foreach (var chart in _charts.Values)
+                ChartBuilderModel.Stop(chart);
+
             _isStarted = false;
+        }
+
+        private async Task Shutdown(IndicatorHostModel.ShutdownCmd cmd)
+        {
+            foreach (var pair in _charts)
+                await ShutdownChart(pair.Key, pair.Value);
         }
 
         private void SetAccProxy(IndicatorHostModel.SetAccountProxyCmd cmd)
@@ -63,7 +79,7 @@ namespace TickTrader.Algo.Server
             info.Timeframe = request.Timeframe;
             info.MarketSide = request.MarketSide;
 
-            var chart = ChartBuilderActor.Create(info);
+            var chart = ChartBuilderActor.Create(Self, info);
             if (_isStarted)
                 await ChartBuilderModel.Start(chart);
 
@@ -79,14 +95,18 @@ namespace TickTrader.Algo.Server
             if (!_charts.TryGetValue(chartId, out var chart))
                 throw new AlgoException($"Chart {chartId} not found");
 
-            try
-            {
-                await ChartBuilderModel.Stop(chart);
-            }
-            finally
-            {
-                _charts.Remove(chartId);
-            }
+            _charts.Remove(chartId);
+
+            await ShutdownChart(chartId, chart);
+        }
+
+
+        private async Task ShutdownChart(int chartId, IActorRef chart)
+        {
+            await ChartBuilderModel.Clear(chart)
+                .OnException(ex => _logger.Error(ex, $"Failed to clear chart {chartId}"));
+            await ActorSystem.StopActor(chart)
+                .OnException(ex => _logger.Error(ex, $"Failed to stop actor {chart.Name}"));
         }
     }
 }

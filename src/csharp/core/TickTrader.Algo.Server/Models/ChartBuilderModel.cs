@@ -10,9 +10,13 @@ namespace TickTrader.Algo.Server
 
         public static Task Stop(IActorRef actor) => actor.Ask(StopCmd.Instance);
 
+        public static Task Clear(IActorRef actor) => actor.Ask(ClearCmd.Instance);
+
 
         internal class StartCmd : Singleton<StartCmd> { }
 
         internal class StopCmd : Singleton<StopCmd> { }
+
+        internal class ClearCmd : Singleton<ClearCmd> { }
     }
 }

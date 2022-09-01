@@ -34,6 +34,8 @@ namespace TickTrader.Algo.Server
 
         public record AddIndicatorRequest(PluginConfig Config);
 
-        public record RemoveIndicatorRequest(string pluginId);
+        public record UpdateIndicatorRequest(PluginConfig Config);
+
+        public record RemoveIndicatorRequest(string PluginId);
     }
 }

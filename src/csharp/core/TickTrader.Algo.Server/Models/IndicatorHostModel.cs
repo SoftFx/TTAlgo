@@ -22,6 +22,8 @@ namespace TickTrader.Algo.Server
 
         internal class StopCmd : Singleton<StopCmd> { }
 
+        internal class ShutdownCmd : Singleton<ShutdownCmd> { }
+
         internal record SetAccountProxyCmd(IAccountProxy AccProxy);
 
         internal record CreateChartRequest(string Symbol, Feed.Types.Timeframe Timeframe, Feed.Types.MarketSide MarketSide);
