@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Server
 
         internal Task<string> GetPkgRuntimeId(string pkgId) => _server.Ask<string>(new PkgRuntimeIdRequest(pkgId));
 
-        internal Task<AccountControlModel> GetAccountControl(string accId) => _server.Ask<AccountControlModel>(new AccountControlRequest(accId));
+        internal Task<IActorRef> GetAccountControl(string accId) => _server.Ask<IActorRef>(new AccountControlRequest(accId));
 
 
         #region IRpcHost implementation

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -49,11 +48,6 @@ namespace TickTrader.Algo.Server
             }
 
             _logger.Debug("Restored saved state");
-        }
-
-        public AccountControlModel GetAccountControl(string accId)
-        {
-            return new AccountControlModel(GetAccountRefOrThrow(accId));
         }
 
         public async Task<string> AddAccount(AddAccountRequest request)

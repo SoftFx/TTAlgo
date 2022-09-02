@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Server
             Receive<AlgoServerPrivate.PkgRuntimeIdRequest, string>(r => _runtimes.GetPkgRuntimeId(r.PkgId));
             Receive<AlgoServerPrivate.RuntimeStoppedMsg>(msg => _runtimes.OnRuntimeStopped(msg.Id));
             Receive<AlgoServerPrivate.PkgRuntimeInvalidMsg>(OnPkgRuntimeInvalid);
-            Receive<AlgoServerPrivate.AccountControlRequest, AccountControlModel>(r => _accounts.GetAccountControl(r.Id));
+            Receive<AlgoServerPrivate.AccountControlRequest, IActorRef>(GetAccountControlInternal);
 
             Receive<LocalAlgoServer.PkgFileExistsRequest, bool>(r => _pkgStorage.PackageFileExists(r.PkgName));
             Receive<LocalAlgoServer.PkgBinaryRequest, byte[]>(r => _pkgStorage.GetPackageBinary(r.Id));
@@ -258,6 +258,15 @@ namespace TickTrader.Algo.Server
                 }
                 catch (Exception) { }
             }
+        }
+
+        private IActorRef GetAccountControlInternal(AlgoServerPrivate.AccountControlRequest request)
+        {
+            var accId = request.Id;
+            if (accId == IndicatorHostActor.AccId)
+                return _indicatorHost;
+
+            return _accounts.GetAccountRefOrThrow(accId);
         }
 
 

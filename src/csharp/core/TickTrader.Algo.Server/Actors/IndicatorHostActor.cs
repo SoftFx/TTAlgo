@@ -9,12 +9,15 @@ namespace TickTrader.Algo.Server
 {
     internal class IndicatorHostActor : Actor
     {
+        public const string AccId = "acc/indicators";
+
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlgoServerActor>();
 
-        private readonly Dictionary<int, IActorRef> _charts = new Dictionary<int, IActorRef>();
+        private readonly Dictionary<int, IActorRef> _charts = new();
         private readonly AlgoServerPrivate _server;
 
         private IAccountProxy _accProxy;
+        private AccountRpcController _accountRpcController;
         private bool _isStarted;
         private int _freeChartId;
 
@@ -30,12 +33,20 @@ namespace TickTrader.Algo.Server
             Receive<IndicatorHostModel.CreateChartRequest, ChartHostProxy>(CreateChart);
             Receive<IndicatorHostModel.RemoveChartCmd>(RemoveChart);
             Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdate);
+            Receive<AccountRpcController.AttachSessionCmd, AccountRpcHandler>(AttachSession);
+            Receive<AccountRpcController.DetachSessionCmd>(DetachSession);
         }
 
 
         public static IActorRef Create(AlgoServerPrivate server)
         {
             return ActorSystem.SpawnLocal(() => new IndicatorHostActor(server), $"{nameof(IndicatorHostActor)}");
+        }
+
+
+        protected override void ActorInit(object initMsg)
+        {
+            _accountRpcController = new AccountRpcController(_logger, AccId);
         }
 
 
@@ -73,6 +84,7 @@ namespace TickTrader.Algo.Server
                 throw new AlgoException("Indicator host should be stopped before changin account");
 
             _accProxy = cmd.AccProxy;
+            _accountRpcController.SetAccountProxy(cmd.AccProxy);
         }
 
         private async Task<ChartHostProxy> CreateChart(IndicatorHostModel.CreateChartRequest request)
@@ -108,6 +120,17 @@ namespace TickTrader.Algo.Server
         {
             foreach (var chart in _charts.Values)
                 chart.Tell(update);
+        }
+
+        private AccountRpcHandler AttachSession(AccountRpcController.AttachSessionCmd cmd)
+        {
+            var accState = _isStarted ? Domain.Account.Types.ConnectionState.Online : Domain.Account.Types.ConnectionState.Offline;
+            return _accountRpcController.AttachSession(cmd.Session, accState);
+        }
+
+        private void DetachSession(AccountRpcController.DetachSessionCmd cmd)
+        {
+            _accountRpcController.DetachSession(cmd.SessionId);
         }
 
 
