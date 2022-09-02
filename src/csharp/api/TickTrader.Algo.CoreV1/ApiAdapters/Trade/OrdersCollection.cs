@@ -1,6 +1,5 @@
 ﻿using System;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
@@ -15,6 +14,9 @@ namespace TickTrader.Algo.CoreV1
         {
             if (!_entities.TryAdd(order.Info.Id, order))
                 throw new ArgumentException("Order #" + order.Info.Id + " already exist!");
+
+            if (order.Info.Calculator == null)
+                order.Info.Calculator = _builder.Calculator.GetCalculator(order.SymbolInfo);
 
             Added?.Invoke(order);
             AddedInfo?.Invoke(order.Info);

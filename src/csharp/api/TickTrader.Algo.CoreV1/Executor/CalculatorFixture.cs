@@ -11,6 +11,7 @@ namespace TickTrader.Algo.CoreV1
 {
     public interface ICalculatorApi
     {
+        ISymbolCalculator GetCalculator(ISymbolInfoWithRate symbol);
         bool HasEnoughMarginToOpenOrder(SymbolInfo symbol, double orderVol, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, double? price, double? stopPrice, bool isHidden, out CalculationError error);
         bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, SymbolInfo smb, double newVolume, double? newPrice, double? newStopPrice, bool newIsHidden);
         double? GetSymbolMargin(string symbol, OrderInfo.Types.Side side);
@@ -254,6 +255,9 @@ namespace TickTrader.Algo.CoreV1
         #endregion
 
         #region CalculatorApi implementation
+
+
+        public ISymbolCalculator GetCalculator(ISymbolInfoWithRate symbol) => Market.GetCalculator(symbol);
 
         public bool HasEnoughMarginToOpenOrder(SymbolInfo symbol, double orderVol, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, double? price, double? stopPrice, bool isHidden, out CalculationError error)
         {

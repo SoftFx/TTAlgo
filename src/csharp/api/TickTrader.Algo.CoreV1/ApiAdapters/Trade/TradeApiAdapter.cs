@@ -68,7 +68,7 @@ namespace TickTrader.Algo.CoreV1
                 if (resCode != OrderCmdResultCodes.Ok)
                     resultEntity = new OrderResultEntity(resCode, null, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, orderResp.ResultingOrder), orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, _account.Orders[orderResp.ResultingOrder.Id], orderResp.TransactionTime);
             }
             else
             {
@@ -131,7 +131,7 @@ namespace TickTrader.Algo.CoreV1
                 var resCode = orderResp.ResultCode.ToApiEnum();
 
                 if (resCode == OrderCmdResultCodes.Ok)
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, orderResp.ResultingOrder), orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, _account.Orders[orderResp.ResultingOrder.Id], orderResp.TransactionTime);
                 else
                     resultEntity = new OrderResultEntity(resCode, orderToClose, orderResp.TransactionTime);
             }
@@ -170,7 +170,7 @@ namespace TickTrader.Algo.CoreV1
                 var resCode = orderResp.ResultCode.ToApiEnum();
 
                 if (resCode == OrderCmdResultCodes.Ok)
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, orderResp.ResultingOrder), orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, _account.Orders[orderResp.ResultingOrder.Id], orderResp.TransactionTime);
                 else
                     resultEntity = new OrderResultEntity(resCode, Null.Order, orderResp.TransactionTime);
             }
@@ -233,7 +233,7 @@ namespace TickTrader.Algo.CoreV1
 
                 if (resCode == OrderCmdResultCodes.Ok)
                 {
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, result.ResultingOrder), result.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, _account.Orders[result.ResultingOrder.Id], result.TransactionTime);
                 }
                 else
                 {
