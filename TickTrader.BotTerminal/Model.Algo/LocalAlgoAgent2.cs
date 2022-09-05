@@ -63,6 +63,8 @@ namespace TickTrader.BotTerminal
 
         public MappingCollectionInfo Mappings => _mappings;
 
+        public IndicatorHostModel IndicatorHost { get; private set; }
+
 
         public event Action<PackageInfo> PackageStateChanged = delegate { };
 
@@ -142,6 +144,8 @@ namespace TickTrader.BotTerminal
                 new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
             await InitServerListener(_server);
+
+            IndicatorHost = await _server.GetIndicatorHost();
         }
 
         public PluginListenerProxy GetPluginListener(string pluginId) => _server.GetPluginListenerProxy(pluginId);

@@ -91,8 +91,8 @@ namespace TickTrader.BotTerminal
             cManager.LoggedOut += () => UpdateCommandStates();
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
-            clientModel.Initializing += LoadConnectionProfile;
-            clientModel.Deinitializing += CloseCatalog;
+            clientModel.Initializing += OnClientInit;
+            clientModel.Deinitializing += OnClientDeinit;
             clientModel.Connected += OpenDefaultChart;
 
             storage.ProfileManager.SaveProfileSnapshot = SaveProfileSnapshot;
@@ -132,7 +132,7 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }
 
-        private async Task LoadConnectionProfile(object sender, CancellationToken token)
+        private async Task OnClientInit(object sender, CancellationToken token)
         {
             var login = cManager.Creds.Login;
             var server = cManager.Creds.Server.Address;
@@ -153,12 +153,17 @@ namespace TickTrader.BotTerminal
             await _symbolsCatalog.OpenCustomStorage(customStorageSettings);
             await _symbolsCatalog.ConnectClient(settings);
             await ProfileManager.LoadConnectionProfile(server, login, token);
+
+            await Agent.IndicatorHost.SetAccountProxy(clientModel.GetAccountProxy());
+            await Agent.IndicatorHost.Start();
         }
 
-        private Task CloseCatalog(object sender, CancellationToken token)
+        private async Task OnClientDeinit(object sender, CancellationToken token)
         {
             _smbManager = null;
-            return _symbolsCatalog?.CloseCatalog();
+            await _symbolsCatalog?.CloseCatalog();
+
+            await Agent.IndicatorHost.Stop();
         }
 
         public bool CanConnect { get; private set; }

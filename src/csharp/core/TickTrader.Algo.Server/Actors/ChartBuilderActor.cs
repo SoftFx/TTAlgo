@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Google.Protobuf.WellKnownTypes;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
 {
-    internal class ChartBuilderActor : Actor
+    internal class ChartBuilderActor : Actor, IPluginHost
     {
         private readonly IActorRef _parent;
         private readonly AlgoServerPrivate _server;
@@ -92,7 +94,15 @@ namespace TickTrader.Algo.Server
             if (_indicators.ContainsKey(pluginId))
                 throw new AlgoException("Indicator already exists");
 
-            var plugin = (IActorRef)null;// PluginActor.Create();
+            var savedState = new PluginSavedState
+            {
+                Id = pluginId,
+                AccountId = IndicatorHostActor.AccId,
+                IsRunning = _isStarted,
+            };
+            savedState.PackConfig(request.Config);
+
+            var plugin = PluginActor.Create(this, savedState);
             _indicators[pluginId] = plugin;
 
             if (_isStarted)
@@ -159,5 +169,38 @@ namespace TickTrader.Algo.Server
             foreach (var indicator in _indicators.Values)
                 await StopIndicator(indicator);
         }
+
+
+        #region IPluginHost implementation
+
+        Task IPluginHost.UpdateRunningState(string pluginId, bool isRunning) => Task.CompletedTask;// SavedState.SetPluginRunning(pluginId, isRunning);
+
+        Task IPluginHost.UpdateSavedState(PluginSavedState savedState) => Task.CompletedTask;// SavedState.UpdatePlugin(savedState);
+
+        void IPluginHost.OnPluginUpdated(PluginModelUpdate update) { }// => SendUpdate(update);
+
+        void IPluginHost.OnPluginStateUpdated(PluginStateUpdate update) => _logger.Debug($"'{update.Id}' state changed to {update.State}. {update.FaultMessage}");
+
+        void IPluginHost.OnPluginAlert(string pluginId, PluginLogRecord record) => _server.Alerts.SendPluginAlert(pluginId, record);
+
+        void IPluginHost.OnGlobalAlert(string msg) => _server.Alerts.SendServerAlert(msg);
+
+        Task<string> IPluginHost.GetPkgRuntimeId(string pkgId) => _server.GetPkgRuntimeId(pkgId);
+
+        Task<IActorRef> IPluginHost.GetRuntime(string runtimeId) => _server.GetRuntime(runtimeId);
+
+        ExecutorConfig IPluginHost.CreateExecutorConfig(string pluginId, string accId, PluginConfig pluginConfig)
+        {
+            var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(pluginConfig) };
+            config.WorkingDirectory = _server.Env.AlgoWorkingFolder;
+            config.LogDirectory = _server.Env.GetPluginLogsFolder(pluginId);
+            config.InitPriorityInvokeStrategy();
+            config.InitSlidingBuffering(4000);
+            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+
+            return config;
+        }
+
+        #endregion IPluginHost implementation
     }
 }

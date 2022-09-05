@@ -2,11 +2,11 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -22,6 +22,7 @@ namespace TickTrader.BotTerminal
         private VarDictionary<string, AlgoBotViewModel> _chartBots = new VarDictionary<string, AlgoBotViewModel>();
         private readonly IVarList<IndicatorModel> _allIndicators;
         private readonly IVarList<AlgoBotViewModel> _allBots;
+        private readonly ChartHostProxy _chartHost;
 
         public BarChartModel BarChart { get; }
 
@@ -35,6 +36,8 @@ namespace TickTrader.BotTerminal
 
             _shell = _algoEnv.Shell;
             smb = _algoEnv.ClientModel.Symbols.GetOrDefault(symbol);
+
+            _chartHost = algoEnv.LocalAgent.IndicatorHost.CreateChart(symbol, period, Feed.Types.MarketSide.Bid).Result;
 
             this.BarChart = new BarChartModel(smb, _algoEnv);
 
@@ -135,7 +138,7 @@ namespace TickTrader.BotTerminal
 
         public bool HasIndicators { get { return Indicators.Count() > 0; } }
         public bool CanAddBot => false; /*Chart.TimeFrame != Feed.Types.Timeframe.Ticks;*/
-        public bool CanAddIndicator => false;  /*Chart.TimeFrame != Feed.Types.Timeframe.Ticks;*/
+        public bool CanAddIndicator => Chart.TimeFrame != Feed.Types.Timeframe.Ticks;
 
 
         public string Symbol { get; private set; }
@@ -207,7 +210,8 @@ namespace TickTrader.BotTerminal
                 logger.Error("Indicator key missing!");
             }
 
-            Chart.AddIndicator(entry.Config.ToDomain());
+            //Chart.AddIndicator(entry.Config.ToDomain());
+            _chartHost.AddIndicator(entry.Config.ToDomain());
         }
 
         #region Algo
@@ -251,7 +255,8 @@ namespace TickTrader.BotTerminal
             switch (setupModel.Setup.Descriptor.Type)
             {
                 case Metadata.Types.PluginType.Indicator:
-                    Chart.AddIndicator(setupModel.GetConfig());
+                    //Chart.AddIndicator(setupModel.GetConfig());
+                    _chartHost.AddIndicator(setupModel.GetConfig());
                     break;
                 default:
                     throw new Exception($"Unknown plugin type '{setupModel.Setup.Descriptor.Type}'");

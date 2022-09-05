@@ -152,5 +152,22 @@ namespace TickTrader.BotTerminal
         public IVarSet<string, CurrencyInfo> Currencies => _core.Currencies;
         public IObservableList<CurrencyInfo> SortedCurrencies { get; }
         public IObservableList<string> SortedCurrenciesNames { get; }
+
+
+        public IAccountProxy GetAccountProxy()
+        {
+            var feedAdapter = new PluginFeedProvider(_core.Cache, _core.SubManager, FeedHistory);
+            var res = new LocalAccountProxy("")
+            {
+                Feed = feedAdapter,
+                FeedHistory = feedAdapter,
+                Metadata = feedAdapter,
+                AccInfoProvider = new PluginTradeInfoProvider(_core.Cache),
+                TradeExecutor = _core.TradeApi,
+                TradeHistoryProvider = _core.TradeHistory.AlgoAdapter,
+            };
+
+            return res;
+        }
     }
 }

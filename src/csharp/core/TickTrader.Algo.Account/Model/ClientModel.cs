@@ -210,6 +210,7 @@ namespace TickTrader.Algo.Account
             public QuoteDistributor Distributor { get; private set; }
             public IVarSet<string, SymbolInfo> Symbols => Cache.Symbols;
             public IVarSet<string, CurrencyInfo> Currencies => Cache.Currencies;
+            public IQuoteSubManager SubManager { get; private set; }
 
             protected override void ActorInit()
             {
@@ -228,7 +229,9 @@ namespace TickTrader.Algo.Account
 
             public async Task Init()
             {
-                Distributor = new QuoteDistributor(await Actor.Call(a => a._rootSubManager));
+                SubManager = await Actor.Call(a => a._rootSubManager);
+
+                Distributor = new QuoteDistributor(SubManager);
 
                 Connection = new ConnectionModel.Handler(await Actor.Call(a => a._connection.Ref));
                 await Connection.OpenHandler();
