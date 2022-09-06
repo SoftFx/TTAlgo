@@ -146,7 +146,7 @@ namespace TickTrader.BotTerminal
 
         public override Task TryCloseAsync(bool? dialogResult = null)
         {
-            var task = base.TryCloseAsync(dialogResult);
+            var task = Task.WhenAll(base.TryCloseAsync(dialogResult), _chartHost.DisposeAsync().AsTask());
 
             //Indicators.ForEach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
 

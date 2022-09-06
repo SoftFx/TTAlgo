@@ -101,7 +101,9 @@ namespace TickTrader.Algo.Server
 
             _charts[info.Id] = chart;
 
-            return new ChartHostProxy(chart, Self, info);
+            var res = new ChartHostProxy(chart, Self, info);
+            await res.Init();
+            return res;
         }
 
         private async Task RemoveChart(IndicatorHostModel.RemoveChartCmd cmd)

@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
@@ -16,7 +17,8 @@ namespace TickTrader.Algo.Server
         private readonly string _symbol;
         private readonly Feed.Types.Timeframe _timeframe;
         private readonly Feed.Types.MarketSide _marketSide;
-        private readonly Dictionary<string, IActorRef> _indicators = new Dictionary<string, IActorRef>();
+        private readonly Dictionary<string, IndicatorModel> _indicators = new();
+        private readonly ActorEventSource<object> _proxyDownlinkSrc = new();
 
         private IAlgoLogger _logger;
         private bool _isStarted;
@@ -34,10 +36,15 @@ namespace TickTrader.Algo.Server
             Receive<ChartBuilderModel.StartCmd>(Start);
             Receive<ChartBuilderModel.StopCmd>(Stop);
             Receive<ChartBuilderModel.ClearCmd>(Clear);
+            Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdate);
             Receive<ChartHostProxy.AddIndicatorRequest>(AddIndicator);
             Receive<ChartHostProxy.UpdateIndicatorRequest>(UpdateIndicator);
             Receive<ChartHostProxy.RemoveIndicatorRequest>(RemoveIndicator);
-            Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdate);
+            Receive<ChartHostProxy.AttachDownlinkCmd>(AttachProxyDownlink);
+
+            Receive<RunningStateChanged>(OnRunningStateChanged);
+            Receive<PluginModelUpdate>(OnPluginUpdated);
+            Receive<PluginStateUpdate>(OnPluginStateUpdated);
         }
 
 
@@ -79,13 +86,13 @@ namespace TickTrader.Algo.Server
                 await StopAllIndicators();
 
             foreach (var pair in _indicators)
-                await ShutdownIndicator(pair.Key, pair.Value);
+                await ShutdownIndicator(pair.Key, pair.Value.PluginRef);
         }
 
         private void OnPkgRuntimeUpdate(AlgoServerActor.PkgRuntimeUpdate update)
         {
-            foreach (var plugin in _indicators.Values)
-                plugin.Tell(update);
+            foreach (var indicator in _indicators.Values)
+                indicator.PluginRef.Tell(update);
         }
 
         private async Task AddIndicator(ChartHostProxy.AddIndicatorRequest request)
@@ -98,12 +105,12 @@ namespace TickTrader.Algo.Server
             {
                 Id = pluginId,
                 AccountId = IndicatorHostActor.AccId,
-                IsRunning = _isStarted,
+                IsRunning = false,
             };
             savedState.PackConfig(request.Config);
 
             var plugin = PluginActor.Create(this, savedState);
-            _indicators[pluginId] = plugin;
+            _indicators[pluginId] = new IndicatorModel(plugin);
 
             if (_isStarted)
                 await StartIndicator(plugin);
@@ -112,30 +119,61 @@ namespace TickTrader.Algo.Server
         private async Task UpdateIndicator(ChartHostProxy.UpdateIndicatorRequest request)
         {
             var pluginId = request.Config.InstanceId;
-            if (!_indicators.TryGetValue(pluginId, out var plugin))
+            if (!_indicators.TryGetValue(pluginId, out var indicator))
                 throw new AlgoException("Indicator not found");
 
             if (_isStarted)
-                await StopIndicator(plugin);
+                await StopIndicator(indicator.PluginRef);
 
-            await plugin.Ask(new PluginActor.UpdateConfigCmd(request.Config));
+            await indicator.PluginRef.Ask(new PluginActor.UpdateConfigCmd(request.Config));
 
             if (_isStarted)
-                await StartIndicator(plugin);
+                await StartIndicator(indicator.PluginRef);
         }
 
         private async Task RemoveIndicator(ChartHostProxy.RemoveIndicatorRequest request)
         {
             var pluginId = request.PluginId;
-            if (!_indicators.TryGetValue(pluginId, out var plugin))
+            if (!_indicators.TryGetValue(pluginId, out var indicator))
                 throw new AlgoException("Indicator not found");
 
             _indicators.Remove(pluginId);
 
             if (_isStarted)
-                await StopIndicator(plugin);
+                await StopIndicator(indicator.PluginRef);
 
-            await ShutdownIndicator(pluginId, plugin);
+            await ShutdownIndicator(pluginId, indicator.PluginRef);
+        }
+
+        private void AttachProxyDownlink(ChartHostProxy.AttachDownlinkCmd cmd)
+        {
+            var downlink = cmd.Sink;
+
+            _proxyDownlinkSrc.Subscribe(downlink);  
+        }
+
+        private void OnRunningStateChanged(RunningStateChanged stateChanged)
+        {
+            if (_indicators.TryGetValue(stateChanged.PluginId, out var indicator))
+            {
+                indicator.IsRunning = stateChanged.IsRunning;
+            }
+        }
+
+        private void OnPluginUpdated(PluginModelUpdate update)
+        {
+            if (_indicators.TryGetValue(update.Id, out var indicator))
+            {
+                indicator.OnModelUpdate(update);
+            }
+        }
+
+        private void OnPluginStateUpdated(PluginStateUpdate update)
+        {
+            if (_indicators.TryGetValue(update.Id, out var indicator))
+            {
+                indicator.OnStateUpdate(update);
+            }
         }
 
 
@@ -161,25 +199,30 @@ namespace TickTrader.Algo.Server
         private async Task StartAllIndicators()
         {
             foreach (var indicator in _indicators.Values)
-                await StartIndicator(indicator);
+                await StartIndicator(indicator.PluginRef);
         }
 
         private async Task StopAllIndicators()
         {
             foreach (var indicator in _indicators.Values)
-                await StopIndicator(indicator);
+                await StopIndicator(indicator.PluginRef);
         }
 
 
         #region IPluginHost implementation
 
-        Task IPluginHost.UpdateRunningState(string pluginId, bool isRunning) => Task.CompletedTask;// SavedState.SetPluginRunning(pluginId, isRunning);
+        Task IPluginHost.UpdateRunningState(string pluginId, bool isRunning)
+        {
+            Self.Tell(new RunningStateChanged(pluginId, isRunning));
 
-        Task IPluginHost.UpdateSavedState(PluginSavedState savedState) => Task.CompletedTask;// SavedState.UpdatePlugin(savedState);
+            return Task.CompletedTask;
+        }
 
-        void IPluginHost.OnPluginUpdated(PluginModelUpdate update) { }// => SendUpdate(update);
+        Task IPluginHost.UpdateSavedState(PluginSavedState savedState) => Task.CompletedTask;
 
-        void IPluginHost.OnPluginStateUpdated(PluginStateUpdate update) => _logger.Debug($"'{update.Id}' state changed to {update.State}. {update.FaultMessage}");
+        void IPluginHost.OnPluginUpdated(PluginModelUpdate update) => Self.Tell(update);
+
+        void IPluginHost.OnPluginStateUpdated(PluginStateUpdate update) => Self.Tell(update);
 
         void IPluginHost.OnPluginAlert(string pluginId, PluginLogRecord record) => _server.Alerts.SendPluginAlert(pluginId, record);
 
@@ -202,5 +245,67 @@ namespace TickTrader.Algo.Server
         }
 
         #endregion IPluginHost implementation
+
+
+        private record RunningStateChanged(string PluginId, bool IsRunning);
+
+
+        private class IndicatorModel
+        {
+            public IActorRef PluginRef { get; }
+
+            public bool IsRunning { get; set; }
+
+            public PluginModelUpdate LastUpdate { get; set; }
+
+            public PluginModelInfo Info { get; set; }
+
+            public string Id => Info.InstanceId;
+
+            public PluginConfig Config => Info.Config;
+
+            public PluginDescriptor Descriptor => Info.Descriptor_;
+
+            public List<OutputInfo> Outputs { get; set; }
+
+
+            public IndicatorModel(IActorRef plugin)
+            {
+                PluginRef = plugin;
+            }
+
+
+            public void OnModelUpdate(PluginModelUpdate update)
+            {
+                LastUpdate = update;
+                Info = update.Plugin;
+            }
+
+            public void OnStateUpdate(PluginStateUpdate update)
+            {
+                if (Info != null)
+                {
+                    Info.State = update.State;
+                    Info.FaultMessage = update.FaultMessage;
+                }
+            }
+
+            public void UpdateOutputs()
+            {
+                var properties = Config.UnpackProperties();
+                var newOutputs = new List<OutputInfo>(Descriptor.Outputs.Count);
+                foreach (var info in Descriptor.Outputs)
+                {
+                    var output = new OutputInfo
+                    {
+                        PluginId = Id,
+                        SeriesId = info.Id,
+                        Descriptor = info,
+                        Config = properties.FirstOrDefault(c => c.PropertyId == info.Id) as IOutputConfig,
+                    };
+                }
+                Outputs = newOutputs;
+            }
+        }
     }
 }
