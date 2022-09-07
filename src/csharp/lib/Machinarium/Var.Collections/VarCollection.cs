@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
@@ -241,6 +243,19 @@ namespace Machinarium.Qnil
             where TValue : IDisposable
         {
             return new ListItemDisposeWrapper<TValue>(src);
+        }
+
+        public static IVarList<TValue> UseSyncContext<TValue>(this IVarList<TValue> src)
+        {
+            return UseSyncContext(src, SynchronizationContext.Current);
+        }
+
+        public static IVarList<TValue> UseSyncContext<TValue>(this IVarList<TValue> src, SynchronizationContext syncContext)
+        {
+            if (syncContext == null)
+                return src;
+
+            return new ListSyncToken<TValue>(src, syncContext);
         }
 
         public static void EnableAutodispose<TKey, TVal>(this IVarSet<TKey, TVal> src)

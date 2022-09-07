@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Machinarium.Qnil;
+using System;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
@@ -12,14 +13,12 @@ namespace TickTrader.Algo.Server
         private readonly IActorRef _actor, _parent;
         private readonly ChartInfo _info;
         private readonly Channel<object> _downlink;
+        private readonly VarDictionary<string, PluginOutputModel> _indicators = new();
 
 
         public IChartInfo Info => _info;
 
-
-        public event Action<OutputInfo> OutputAdded;
-        public event Action<OutputInfo> OutputRemoved;
-        public event Action<OutputDataUpdate> OutputUpdated;
+        public IVarSet<string, PluginOutputModel> Indicators => _indicators;
 
 
         public ChartHostProxy(IActorRef actor, IActorRef parent, ChartInfo info)
@@ -34,6 +33,7 @@ namespace TickTrader.Algo.Server
         public async ValueTask DisposeAsync()
         {
             _downlink.Writer.TryComplete();
+            _indicators.Clear();
             await _parent.Ask(new IndicatorHostModel.RemoveChartCmd(_info.Id));
         }
 
@@ -53,10 +53,46 @@ namespace TickTrader.Algo.Server
         {
             switch (msg)
             {
-                case OutputAddedMsg addedEvent: OutputAdded?.Invoke(addedEvent.Output); break;
-                case OutputRemovedMsg removedEvent: OutputRemoved?.Invoke(removedEvent.Output); break;
-                case OutputUpdatedMsg updatedEvent: OutputUpdated?.Invoke(updatedEvent.Update); break;
+                case PluginModelUpdate pluginUpdate: OnPluginUpdate(pluginUpdate); break;
+                case PluginStateUpdate stateUpdate: OnPluginStateUpdate(stateUpdate); break;
+                case OutputDataUpdatedMsg updatedEvent: OnOutputDataUpdate(updatedEvent); break;
             }
+        }
+
+        private void OnPluginUpdate(PluginModelUpdate update)
+        {
+            switch (update.Action)
+            {
+                case Update.Types.Action.Added:
+                    var newModel = new PluginOutputModel();
+                    newModel.Update(update.Plugin);
+                    _indicators.Add(update.Id, newModel);
+                    break;
+                case Update.Types.Action.Updated:
+                    if (!_indicators.TryGetValue(update.Id, out var model))
+                        return;
+                    model.Update(update.Plugin);
+                    break;
+                case Update.Types.Action.Removed:
+                    _indicators.Remove(update.Id);
+                    break;
+            }
+        }
+
+        private void OnPluginStateUpdate(PluginStateUpdate update)
+        {
+            if (!_indicators.TryGetValue(update.Id, out var model))
+                return;
+
+            model.UpdateState(update);
+        }
+
+        private void OnOutputDataUpdate(OutputDataUpdatedMsg msg)
+        {
+            if (!_indicators.TryGetValue(msg.PluginId, out var model))
+                return;
+
+            model.OnOutputUpdate(msg.Update);
         }
 
 
@@ -68,10 +104,6 @@ namespace TickTrader.Algo.Server
 
         internal record AttachDownlinkCmd(ChannelWriter<object> Sink);
 
-        internal record OutputAddedMsg(OutputInfo Output);
-
-        internal record OutputRemovedMsg(OutputInfo Output);
-
-        internal record OutputUpdatedMsg(OutputDataUpdate Update);
+        internal record OutputDataUpdatedMsg(string PluginId, OutputSeriesUpdate Update);
     }
 }

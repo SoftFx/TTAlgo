@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
@@ -142,6 +141,8 @@ namespace TickTrader.Algo.Server
             if (_isStarted)
                 await StopIndicator(indicator.PluginRef);
 
+            _proxyDownlinkSrc.DispatchEvent(PluginModelUpdate.Removed(pluginId));
+
             await ShutdownIndicator(pluginId, indicator.PluginRef);
         }
 
@@ -166,6 +167,7 @@ namespace TickTrader.Algo.Server
             {
                 indicator.OnModelUpdate(update);
             }
+            _proxyDownlinkSrc.DispatchEvent(update);
         }
 
         private void OnPluginStateUpdated(PluginStateUpdate update)
@@ -174,6 +176,7 @@ namespace TickTrader.Algo.Server
             {
                 indicator.OnStateUpdate(update);
             }
+            _proxyDownlinkSrc.DispatchEvent(update);
         }
 
 
@@ -260,14 +263,6 @@ namespace TickTrader.Algo.Server
 
             public PluginModelInfo Info { get; set; }
 
-            public string Id => Info.InstanceId;
-
-            public PluginConfig Config => Info.Config;
-
-            public PluginDescriptor Descriptor => Info.Descriptor_;
-
-            public List<OutputInfo> Outputs { get; set; }
-
 
             public IndicatorModel(IActorRef plugin)
             {
@@ -288,23 +283,6 @@ namespace TickTrader.Algo.Server
                     Info.State = update.State;
                     Info.FaultMessage = update.FaultMessage;
                 }
-            }
-
-            public void UpdateOutputs()
-            {
-                var properties = Config.UnpackProperties();
-                var newOutputs = new List<OutputInfo>(Descriptor.Outputs.Count);
-                foreach (var info in Descriptor.Outputs)
-                {
-                    var output = new OutputInfo
-                    {
-                        PluginId = Id,
-                        SeriesId = info.Id,
-                        Descriptor = info,
-                        Config = properties.FirstOrDefault(c => c.PropertyId == info.Id) as IOutputConfig,
-                    };
-                }
-                Outputs = newOutputs;
             }
         }
     }

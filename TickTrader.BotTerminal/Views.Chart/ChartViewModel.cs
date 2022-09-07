@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
         private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolInfo smb;
         private VarDictionary<string, AlgoBotViewModel> _chartBots = new VarDictionary<string, AlgoBotViewModel>();
-        private readonly IVarList<IndicatorModel> _allIndicators;
+        private readonly IVarList<PluginOutputModel> _allIndicators;
         private readonly IVarList<AlgoBotViewModel> _allBots;
         private readonly ChartHostProxy _chartHost;
 
@@ -46,10 +46,10 @@ namespace TickTrader.BotTerminal
             //this.tickChart = new TickChartModel(smb, _algoEnv);
             this.UiLock = new UiLock();
 
-            _allIndicators = charts.SelectMany(c => c.Indicators);
+            _allIndicators = _chartHost.Indicators.TransformToList(); //charts.SelectMany(c => c.Indicators);
             _allBots = _chartBots.OrderBy((id, bot) => id);
 
-            Indicators = _allIndicators.Chain().Select(i => new IndicatorViewModel(Chart, i)).Chain().AsObservable();
+            Indicators = _allIndicators.Chain().Select(i => new IndicatorViewModel(_chartHost, i)).UseSyncContext().Chain().AsObservable();
             Bots = _allBots.Chain().AsObservable();
 
             //var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
@@ -182,7 +182,7 @@ namespace TickTrader.BotTerminal
                 CrosshairEnabled = EnableCrosshair,
                 Indicators = Indicators.Select(i => new IndicatorStorageEntry
                 {
-                    Config = Algo.Core.Config.PluginConfig.FromDomain(i.Model.Config),
+                    Config = Algo.Core.Config.PluginConfig.FromDomain(i.Model.Info.Config),
                 }).ToList(),
             };
         }
@@ -211,7 +211,7 @@ namespace TickTrader.BotTerminal
             }
 
             //Chart.AddIndicator(entry.Config.ToDomain());
-            _chartHost.AddIndicator(entry.Config.ToDomain());
+            _ = AddIndicator(entry.Config.ToDomain());
         }
 
         #region Algo
@@ -256,7 +256,7 @@ namespace TickTrader.BotTerminal
             {
                 case Metadata.Types.PluginType.Indicator:
                     //Chart.AddIndicator(setupModel.GetConfig());
-                    _chartHost.AddIndicator(setupModel.GetConfig());
+                    _ = AddIndicator(setupModel.GetConfig());
                     break;
                 default:
                     throw new Exception($"Unknown plugin type '{setupModel.Setup.Descriptor.Type}'");
@@ -321,7 +321,7 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(HasIndicators));
         }
 
-        private void AllIndicators_Updated(ListUpdateArgs<IndicatorModel> args)
+        private void AllIndicators_Updated(ListUpdateArgs<PluginOutputModel> args)
         {
             //var allOutputs = ChartControl.OutputGroups;
 
@@ -396,8 +396,8 @@ namespace TickTrader.BotTerminal
             {
                 if (plugin.IsIndicator && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
                     return true;
-                if (plugin.IsTradeBot && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
-                    return true;
+                //if (plugin.IsTradeBot && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
+                //    return true;
             }
             return false;
         }
@@ -458,6 +458,12 @@ namespace TickTrader.BotTerminal
                 var botVM = _algoEnv.LocalAgentVM.BotList.FirstOrDefault(b => b.InstanceId == bot.InstanceId);
                 AddChartBot(botVM);
             }
+        }
+
+        private async Task AddIndicator(PluginConfig config)
+        {
+            await _chartHost.AddIndicator(config);
+            _algoEnv.LocalAgent.IdProvider.RegisterPluginId(config.InstanceId);
         }
     }
 }

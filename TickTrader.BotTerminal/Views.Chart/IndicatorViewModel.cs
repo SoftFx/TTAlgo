@@ -1,16 +1,18 @@
-﻿namespace TickTrader.BotTerminal
+﻿using TickTrader.Algo.Server;
+
+namespace TickTrader.BotTerminal
 {
     internal class IndicatorViewModel
     {
-        private ChartModelBase _chart;
+        private readonly ChartHostProxy _chart;
 
 
-        public IndicatorModel Model { get; }
+        public PluginOutputModel Model { get; }
 
-        public string DisplayName => Model.InstanceId;
+        public string DisplayName => Model.Id;
 
 
-        public IndicatorViewModel(ChartModelBase chart, IndicatorModel indicator)
+        public IndicatorViewModel(ChartHostProxy chart, PluginOutputModel indicator)
         {
             _chart = chart;
             Model = indicator;
@@ -19,7 +21,7 @@
 
         public void Close()
         {
-            _chart.RemoveIndicator(Model);
+            _ = _chart.RemoveIndicator(Model.Id);
         }
     }
 }

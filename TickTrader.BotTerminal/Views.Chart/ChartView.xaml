@@ -107,11 +107,11 @@
                               Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=HasIndicators}">
                         <MenuItem.ItemTemplate>
                             <DataTemplate>
-                                <!--<StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
                                 <l:FlatButton Margin="5,0" Width="14" Height="14" Padding="0" Content="X" BorderThickness="0"
                                               VerticalAlignment="Center" cal:Message.Attach="Close" FontFamily="Consolas"/>
-                                </StackPanel>-->
+                                </StackPanel>
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>
@@ -133,9 +133,9 @@
                 Background="{DynamicResource ChartBackground}">
                 <l:BusyIndicator/>
             </Border>
-            <!--<i:Interaction.Behaviors>
+            <i:Interaction.Behaviors>
                 <l:DropBehavior/>
-            </i:Interaction.Behaviors>-->
+            </i:Interaction.Behaviors>
 
         </Grid>
 
