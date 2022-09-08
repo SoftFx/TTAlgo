@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             var points = IndicatorObserver[OutputTargetId];
 
-            Visibility = points.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+            //Visibility = points.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
             Series = points;
         }
 

@@ -41,6 +41,7 @@ namespace TickTrader.Algo.Server
             {
                 _outputs.Add(new OutputProxy
                 {
+                    PluginId = Id,
                     Descriptor = outputInfo,
                     Config = properties.FirstOrDefault(c => c.PropertyId == outputInfo.Id) as IOutputConfig,
                 });
@@ -74,6 +75,8 @@ namespace TickTrader.Algo.Server
 
             private List<OutputSeriesUpdate> _pendingUpdates = new(DefaultUpdateCount);
 
+
+            public string PluginId { get; init; }
 
             public OutputDescriptor Descriptor { get; set; }
 

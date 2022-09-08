@@ -122,17 +122,28 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <lvc:CartesianScrollBarChart BarsSource="{Binding BarChart.BarVector}" 
+            <lvc:CartesianScrollBarChart x:Name="mainChart" BarsSource="{Binding BarChart.BarVector}" 
                                          Period="{Binding SelectedTimeframe, UpdateSourceTrigger=PropertyChanged}"
                                          ChartType="{Binding Chart.SelectedChartType, UpdateSourceTrigger=PropertyChanged}"
                                          AutoScroll="{Binding ElementName=autoScrollControl, Path=IsChecked, UpdateSourceTrigger=PropertyChanged}"
                                          ShowLegend="{Binding ElementName=chartLegend, Path=IsChecked, UpdateSourceTrigger=PropertyChanged}"
                                          EnableCrosshair="{Binding EnableCrosshair, UpdateSourceTrigger=PropertyChanged}"
-                                         PricePrecision="{Binding PriceDigits, UpdateSourceTrigger=PropertyChanged}"/>
+                                         PricePrecision="{Binding PriceDigits, UpdateSourceTrigger=PropertyChanged}" />
             <Border Visibility="{Binding Path=Chart.IsLoading, Converter={StaticResource boolToVisibilityConverter}}"
                 Background="{DynamicResource ChartBackground}">
                 <l:BusyIndicator/>
             </Border>
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding IndicatorObserver.SubWindows}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <lvc:CartesianTargetIndicatorChart MinHeight="100"
+                                                           Series="{Binding Series}"
+                                                           XAxes="{Binding ElementName=mainChart, Path=XAxes}"
+                                                           ZoomMode="{Binding ElementName=mainChart, Path=ZoomMode}"
+                                                           ShowLegend="{Binding ElementName=chartLegend, Path=IsChecked, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
             <i:Interaction.Behaviors>
                 <l:DropBehavior/>
             </i:Interaction.Behaviors>
