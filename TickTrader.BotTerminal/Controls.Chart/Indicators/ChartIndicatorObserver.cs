@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         }
 
 
-        private void AddOutput(PluginOutputModel.OutputProxy output)
+        private void AddOutput(OutputSeriesProxy output)
         {
             lock (_syncObj)
             {
@@ -68,7 +68,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             }
         }
 
-        private void RemoveOutput(PluginOutputModel.OutputProxy output)
+        private void RemoveOutput(OutputSeriesProxy output)
         {
             lock (_syncObj)
             {
@@ -114,10 +114,10 @@ namespace TickTrader.BotTerminal.Controls.Chart
         private sealed class OutputWrapper : IDisposable
         {
             private readonly ChartIndicatorObserver _parent;
-            private readonly PluginOutputModel.OutputProxy _output;
+            private readonly OutputSeriesProxy _output;
 
 
-            public OutputWrapper(ChartIndicatorObserver parent, PluginOutputModel.OutputProxy output)
+            public OutputWrapper(ChartIndicatorObserver parent, OutputSeriesProxy output)
             {
                 _parent = parent;
                 _output = output;
@@ -155,12 +155,12 @@ namespace TickTrader.BotTerminal.Controls.Chart
         }
 
 
-        public void AddOutput(PluginOutputModel.OutputProxy output)
+        public void AddOutput(OutputSeriesProxy output)
         {
             _outputs.Add(output.SeriesId, new OutputSeriesViewModel(output));
         }
 
-        public void RemoveOutput(PluginOutputModel.OutputProxy output)
+        public void RemoveOutput(OutputSeriesProxy output)
         {
             if (_outputs.TryGetValue(output.SeriesId, out var outputVM))
             {
@@ -180,7 +180,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
     internal sealed class OutputSeriesViewModel : IDisposable
     {
-        private readonly PluginOutputModel.OutputProxy _output;
+        private readonly OutputSeriesProxy _output;
         private readonly VarDictionary<UtcTicks, OutputPoint> _points = new();
         private readonly IObservableList<IndicatorPoint> _observablePoints;
 
@@ -188,7 +188,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public ISeries Series { get; }
 
 
-        public OutputSeriesViewModel(PluginOutputModel.OutputProxy output)
+        public OutputSeriesViewModel(OutputSeriesProxy output)
         {
             _output = output;
             _observablePoints = _points.OrderBy((k, v) => k).Chain().Select(IndicatorPointsFactory.GetDefaultPoint).Chain().AsObservable();

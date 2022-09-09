@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Server
 {
     public class PluginOutputModel
     {
-        private readonly VarList<OutputProxy> _outputs = new();
+        private readonly VarList<OutputSeriesProxy> _outputs = new();
         private readonly Dictionary<string, int> _outputIndexLookup = new();
 
 
@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Server
 
         public PluginModelInfo.Types.PluginState State => Info.State;
 
-        public IVarList<OutputProxy> Outputs => _outputs;
+        public IVarList<OutputSeriesProxy> Outputs => _outputs;
 
 
         internal void Update(PluginModelInfo info)
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Server
             var properties = info.Config.UnpackProperties();
             foreach (var outputInfo in info.Descriptor_.Outputs)
             {
-                _outputs.Add(new OutputProxy
+                _outputs.Add(new OutputSeriesProxy
                 {
                     PluginId = Id,
                     Descriptor = outputInfo,
@@ -64,50 +64,6 @@ namespace TickTrader.Algo.Server
                 return;
 
             _outputs[index].AddUpdate(update);
-        }
-
-
-        public class OutputProxy
-        {
-            private const int DefaultUpdateCount = 16;
-
-            private readonly object _syncObj = new();
-
-            private List<OutputSeriesUpdate> _pendingUpdates = new(DefaultUpdateCount);
-
-
-            public string PluginId { get; init; }
-
-            public OutputDescriptor Descriptor { get; set; }
-
-            public IOutputConfig Config { get; set; }
-
-            public string SeriesId => Descriptor.Id;
-
-
-            public IEnumerable<OutputSeriesUpdate> TakePendingUpdates()
-            {
-                lock (_syncObj)
-                {
-                    var res = _pendingUpdates;
-                    _pendingUpdates = new List<OutputSeriesUpdate>(DefaultUpdateCount);
-                    return res;
-                }
-            }
-
-            internal void AddUpdate(OutputSeriesUpdate update)
-            {
-                //if (SeriesId != update.SeriesId)
-                //    return;
-
-                lock (_syncObj)
-                {
-                    if (update.UpdateAction == DataSeriesUpdate.Types.Action.Reset)
-                        _pendingUpdates.Clear();
-
-                    _pendingUpdates.Add(update);
-                }
-            }
         }
     }
 }
