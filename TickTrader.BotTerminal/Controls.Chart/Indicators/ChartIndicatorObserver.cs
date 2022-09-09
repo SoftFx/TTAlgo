@@ -214,14 +214,24 @@ namespace TickTrader.BotTerminal.Controls.Chart
                     case DataSeriesUpdate.Types.Action.Update:
                         foreach (var wirePoint in update.Points)
                         {
-                            var point = wirePoint.Unpack();
-                            _points[point.Time] = point;
+                            if (double.IsNaN(wirePoint.Value))
+                            {
+                                _points.Remove(new UtcTicks(wirePoint.Time));
+                            }
+                            else
+                            {
+                                var point = wirePoint.Unpack();
+                                _points[point.Time] = point;
+                            }
                         }
                         break;
                     case DataSeriesUpdate.Types.Action.Reset:
                         _points.Clear();
                         foreach (var wirePoint in update.Points)
                         {
+                            if (double.IsNaN(wirePoint.Value))
+                                continue; // NaN values don't exist on chart
+
                             var point = wirePoint.Unpack();
                             _points[point.Time] = point;
                         }
