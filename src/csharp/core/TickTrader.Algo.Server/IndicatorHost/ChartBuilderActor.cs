@@ -1,6 +1,8 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System.Collections.Generic;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -109,7 +111,10 @@ namespace TickTrader.Algo.Server
             savedState.PackConfig(request.Config);
 
             var plugin = PluginActor.Create(this, savedState);
-            _indicators[pluginId] = new IndicatorModel(plugin);
+            var indicator = new IndicatorModel(plugin);
+            _indicators[pluginId] = indicator;
+            await plugin.Ask(new PluginActor.AttachOutputsChannelCmd(indicator.OutputChannel));
+            _ = indicator.OutputChannel.Consume(update => _proxyDownlinkSrc.DispatchEvent(new ChartHostProxy.OutputDataUpdatedMsg(pluginId, update)));
 
             if (_isStarted)
                 await StartIndicator(plugin);
@@ -141,6 +146,7 @@ namespace TickTrader.Algo.Server
             if (_isStarted)
                 await StopIndicator(indicator.PluginRef);
 
+            indicator.OutputChannel.Writer.TryComplete();
             _proxyDownlinkSrc.DispatchEvent(PluginModelUpdate.Removed(pluginId));
 
             await ShutdownIndicator(pluginId, indicator.PluginRef);
@@ -263,10 +269,14 @@ namespace TickTrader.Algo.Server
 
             public PluginModelInfo Info { get; set; }
 
+            public Channel<OutputSeriesUpdate> OutputChannel { get; }
+
 
             public IndicatorModel(IActorRef plugin)
             {
                 PluginRef = plugin;
+
+                OutputChannel = DefaultChannelFactory.CreateForOneToOne<OutputSeriesUpdate>();
             }
 
 

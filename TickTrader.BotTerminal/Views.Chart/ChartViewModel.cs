@@ -161,6 +161,7 @@ namespace TickTrader.BotTerminal
 
             BarChart.Dispose();
             //tickChart.Dispose();
+            IndicatorObserver.Dispose();
 
             Indicators.Dispose();
             Bots.Dispose();

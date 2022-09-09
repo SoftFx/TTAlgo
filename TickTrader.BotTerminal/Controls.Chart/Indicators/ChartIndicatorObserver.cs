@@ -10,6 +10,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
 using static TickTrader.Algo.Domain.Metadata.Types;
 using LiveChartsCore.SkiaSharpView.Painting.Effects;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {
@@ -22,6 +23,8 @@ namespace TickTrader.BotTerminal.Controls.Chart
         private readonly VarDictionary<int, OutputWindowViewModel> _subWindows = new();
         private readonly IVarList<OutputWrapper> _outputWrappers;
 
+        private bool _disposed;
+
 
         public OutputWindowViewModel Overlay { get; } = new();
 
@@ -33,11 +36,14 @@ namespace TickTrader.BotTerminal.Controls.Chart
             _outputWrappers = chartHost.Indicators.TransformToList().Chain().SelectMany(m => m.Outputs).Chain().Select(o => new OutputWrapper(this, o)).DisposeItems();
 
             SubWindows = _subWindows.TransformToList().UseSyncContext().Chain().AsObservable();
+
+            _ = UpdateLoop();
         }
 
 
         public void Dispose()
         {
+            _disposed = true;
             _outputWrappers.Dispose();
         }
 
@@ -79,6 +85,27 @@ namespace TickTrader.BotTerminal.Controls.Chart
                     _subWindows.Remove(windowId);
 
                     outputWnd.Dispose();
+                }
+            }
+        }
+
+        private async Task UpdateLoop()
+        {
+            while (!_disposed)
+            {
+                UpdateOutputs();
+                await Task.Delay(250);
+            }
+        }
+
+        private void UpdateOutputs()
+        {
+            lock (_syncObj)
+            {
+                Overlay.UpdateOutputs();
+                foreach (var wnd in _subWindows.Values)
+                {
+                    wnd.UpdateOutputs();
                 }
             }
         }
@@ -135,13 +162,27 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         public void RemoveOutput(PluginOutputModel.OutputProxy output)
         {
-            _outputs.Remove(output.SeriesId);
+            if (_outputs.TryGetValue(output.SeriesId, out var outputVM))
+            {
+                _outputs.Remove(output.SeriesId);
+                outputVM.Dispose();
+            }
+        }
+
+        public void UpdateOutputs()
+        {
+            foreach (var output in _outputs.Values)
+            {
+                output.UpdatePoints();
+            }
         }
     }
 
-    internal sealed class OutputSeriesViewModel
+    internal sealed class OutputSeriesViewModel : IDisposable
     {
         private readonly PluginOutputModel.OutputProxy _output;
+        private readonly VarDictionary<UtcTicks, OutputPoint> _points = new();
+        private readonly IObservableList<IndicatorPoint> _observablePoints;
 
 
         public ISeries Series { get; }
@@ -150,11 +191,47 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public OutputSeriesViewModel(PluginOutputModel.OutputProxy output)
         {
             _output = output;
+            _observablePoints = _points.OrderBy((k, v) => k).Chain().Select(IndicatorPointsFactory.GetDefaultPoint).Chain().AsObservable();
             Series = CreateSeries(output.Descriptor, output.Config);
+            Series.Values = _observablePoints;
         }
 
 
-        private static ISeries CreateSeries(OutputDescriptor descriptor, IOutputConfig config)
+        public void Dispose()
+        {
+            _observablePoints.Dispose();
+        }
+
+
+        public void UpdatePoints()
+        {
+            var updates = _output.TakePendingUpdates();
+            foreach (var update in updates)
+            {
+                switch (update.UpdateAction)
+                {
+                    case DataSeriesUpdate.Types.Action.Append:
+                    case DataSeriesUpdate.Types.Action.Update:
+                        foreach (var wirePoint in update.Points)
+                        {
+                            var point = wirePoint.Unpack();
+                            _points[point.Time] = point;
+                        }
+                        break;
+                    case DataSeriesUpdate.Types.Action.Reset:
+                        _points.Clear();
+                        foreach (var wirePoint in update.Points)
+                        {
+                            var point = wirePoint.Unpack();
+                            _points[point.Time] = point;
+                        }
+                        break;
+                }
+            }
+        }
+
+
+        private static ISeries CreateSeries(OutputDescriptor descriptor, IOutputConfig config, int digits = 5)
         {
             var name = descriptor.DisplayName;
             var target = descriptor.Target;
@@ -165,7 +242,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             var settings = new IndicatorChartSettings
             {
                 Name = name,
-                //Precision = precision == -1 ? digits : precision,
+                Precision = precision == -1 ? digits : precision,
                 //Period = config.Timeframe,
             };
 
