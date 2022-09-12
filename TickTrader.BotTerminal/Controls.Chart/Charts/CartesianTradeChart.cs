@@ -2,8 +2,8 @@
 using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.WPF;
+using Machinarium.Qnil;
 using System;
-using System.Collections.Generic;
 using System.Windows;
 using TickTrader.Algo.Domain;
 
@@ -38,6 +38,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         protected double _rightSeriesShift;
         private int _currentPosition;
+
+        protected VarList<ISeries> _staticSeriesList = new();
+        protected IObservableList<ISeries> _observableSeries;
 
 
         private int MaxIndexBorder => BarsSource?.Count - 1 ?? 0;
@@ -139,18 +142,22 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             if (BarsSource != null)
             {
-                var series = new List<ISeries>()
-                {
-                    Customizer.GetBarSeries(BarsSource, _settings),
-                };
+                _observableSeries?.Dispose();
+                _staticSeriesList.Clear();
+
+                _staticSeriesList.Add(Customizer.GetBarSeries(BarsSource, _settings));
 
                 if (TradeEventHandler is not null)
-                    series.AddRange(TradeEventHandler.Markers);
+                {
+                    foreach (var item in TradeEventHandler.Markers)
+                        _staticSeriesList.Add(item);
+                }
 
-                if (IndicatorObserver is not null)
-                    series.AddRange(IndicatorObserver[Metadata.Types.OutputTarget.Overlay]);
+                _observableSeries = IndicatorObserver is not null
+                    ? VarCollection.Combine(_staticSeriesList, IndicatorObserver.Overlay.SeriesList).Chain().AsObservable()
+                    : _staticSeriesList.AsObservable();
 
-                Series = series;
+                Series = _observableSeries;
             }
         }
 
@@ -190,13 +197,19 @@ namespace TickTrader.BotTerminal.Controls.Chart
         private static void ChangeTradeEventHandlerSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             if (obj is CartesianTradeChart chart)
+            {
+                if (e.OldValue is ITradeEventsWriter oldTradeEvents)
+                    oldTradeEvents.InitNewDataEvent -= chart.UpdateDrawableSeries;
+
+                chart.UpdateDrawableSeries();
                 chart.TradeEventHandler.InitNewDataEvent += chart.UpdateDrawableSeries;
+            }
         }
 
         private static void ChangeIndicatorObserverSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             if (obj is CartesianTradeChart chart)
-                chart.IndicatorObserver.InitIndicatorsEvent += chart.UpdateDrawableSeries;
+                chart.UpdateDrawableSeries();
         }
 
         private static void ChangeShowLegendSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)

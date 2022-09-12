@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
 
         public TradeEventsWriter TradeEventHandler { get; } = new();
 
-        public IndicatorObserver IndicatorObserver { get; } = new();
+        public StaticIndicatorObserver IndicatorObserver { get; } = new();
 
         public Property<Feed.Types.Timeframe> Period { get; }
 

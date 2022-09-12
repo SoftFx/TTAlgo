@@ -1,6 +1,7 @@
 ﻿using LiveChartsCore;
 using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
+using Machinarium.Qnil;
 using System.Windows;
 using System.Windows.Input;
 
@@ -89,16 +90,24 @@ namespace TickTrader.BotTerminal.Controls.Chart
             _settings.ChartType = ChartType;
 
             if (BarsSource != null)
-                Series = new ISeries[]
-                {
-                    Customizer.GetBarSeries(BarsSource, _settings),
+            {
+                _observableSeries?.Dispose();
+                _staticSeriesList.Clear();
 
-                    _askSupportLine.Label,
-                    _bidSupportLine.Label,
+                _staticSeriesList.Add(Customizer.GetBarSeries(BarsSource, _settings));
 
-                    _crosshair.XLable,
-                    _crosshair.YLable,
-                };
+                _staticSeriesList.Add(_askSupportLine.Label);
+                _staticSeriesList.Add(_bidSupportLine.Label);
+
+                _staticSeriesList.Add(_crosshair.XLabel);
+                _staticSeriesList.Add(_crosshair.YLabel);
+
+                _observableSeries = IndicatorObserver is not null
+                    ? VarCollection.Combine(_staticSeriesList, IndicatorObserver.Overlay.SeriesList).Chain().AsObservable()
+                    : _staticSeriesList.AsObservable();
+
+                Series = _observableSeries;
+            }
         }
 
         protected override void InitializeBarsSource()

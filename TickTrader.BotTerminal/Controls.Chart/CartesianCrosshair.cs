@@ -22,9 +22,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
         private bool _isEnable;
 
 
-        internal ISeries XLable { get; }
+        internal ISeries XLabel { get; }
 
-        internal ISeries YLable { get; }
+        internal ISeries YLabel { get; }
 
 
         internal LineSection XLine { get; }
@@ -74,8 +74,8 @@ namespace TickTrader.BotTerminal.Controls.Chart
             XLine = new LineSection(stroke);
             YLine = new LineSection(stroke);
 
-            YLable = BuildLabel(_yCoordinate, yAxisIndex);
-            XLable = BuildLabel(_xCoordinate, yAxisIndex).SetPeriod(settings);
+            YLabel = BuildLabel(_yCoordinate, yAxisIndex);
+            XLabel = BuildLabel(_xCoordinate, yAxisIndex).SetPeriod(settings);
 
             SetVisibility(_isEnable);
         }
@@ -150,8 +150,8 @@ namespace TickTrader.BotTerminal.Controls.Chart
             XLine.IsVisible = value;
             YLine.IsVisible = value;
 
-            XLable.IsVisible = value;
-            YLable.IsVisible = value;
+            XLabel.IsVisible = value;
+            YLabel.IsVisible = value;
         }
     }
 }

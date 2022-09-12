@@ -6,7 +6,7 @@ using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {
-    internal sealed class OutputSubWindowViewModel : IDisposable
+    public sealed class OutputSubWindowViewModel : IDisposable
     {
         private readonly VarDictionary<string, IOutputSeriesViewModel> _outputs = new();
         private readonly IVarList<IOutputSeriesViewModel> _outputList;
@@ -57,24 +57,20 @@ namespace TickTrader.BotTerminal.Controls.Chart
             }
         }
 
-        public void AddOutput(OutputSeriesModel output)
-        {
-            var settings = GetSettings(output.Descriptor);
-
-            _outputs.Add(output.Descriptor.Id, new StaticOutputSeriesViewModel(output, settings));
-        }
-
-        public void ClearOutputs()
-        {
-            _outputs.Clear();
-        }
-
         public void UpdateOutputs()
         {
             foreach (var output in _outputs.Values)
             {
                 output.UpdatePoints();
             }
+        }
+
+
+        internal void AddOutput(OutputSeriesModel output)
+        {
+            var settings = GetSettings(output.Descriptor);
+
+            _outputs.Add(output.Descriptor.Id, new StaticOutputSeriesViewModel(output, settings));
         }
 
 

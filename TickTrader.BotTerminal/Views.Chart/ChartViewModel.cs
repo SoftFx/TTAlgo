@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             smb = _algoEnv.ClientModel.Symbols.GetOrDefault(symbol);
 
             _chartHost = algoEnv.LocalAgent.IndicatorHost.CreateChart(symbol, period, Feed.Types.MarketSide.Bid).Result;
-            IndicatorObserver = new ChartIndicatorObserver(_chartHost, smb.Digits);
+            IndicatorObserver = new DynamicIndicatorObserver(_chartHost, smb.Digits);
 
             this.BarChart = new BarChartModel(smb, _algoEnv);
 
@@ -138,7 +138,7 @@ namespace TickTrader.BotTerminal
         public IObservableList<AlgoBotViewModel> Bots { get; private set; }
         public GenericCommand CloseCommand { get; private set; }
 
-        public ChartIndicatorObserver IndicatorObserver { get; }
+        public DynamicIndicatorObserver IndicatorObserver { get; }
 
         public bool HasIndicators { get { return Indicators.Count() > 0; } }
         public bool CanAddBot => false; /*Chart.TimeFrame != Feed.Types.Timeframe.Ticks;*/

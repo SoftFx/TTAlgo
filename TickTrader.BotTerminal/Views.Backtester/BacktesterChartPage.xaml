@@ -14,14 +14,14 @@
                 </ContextMenu>
             </DockPanel.ContextMenu>
 
-            <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding IndicatorObserver.Targets}" Visibility="{l:UpdateBind IndicatorObserver.HasSubIndicators.Value, Converter={StaticResource BoolToVis}}">
+            <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding IndicatorObserver.SubWindows}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <lvc:CartesianTargetIndicatorChart OutputTargetId="{Binding .}"
+                        <lvc:CartesianTargetIndicatorChart Series="{Binding Series}"
+                                                           ChartSettings="{Binding Settings}"
                                                            MinHeight="100"
                                                            XAxes="{Binding ElementName=mainChart, Path=XAxes}"
                                                            ZoomMode="{Binding ElementName=mainChart, Path=ZoomMode}"
-                                                           IndicatorObserver="{Binding ElementName=mainChart, Path=IndicatorObserver}"
                                                            ShowLegend="{Binding ElementName=showLegendControl, Path=IsChecked, UpdateSourceTrigger=PropertyChanged}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {
-    internal sealed class ChartIndicatorObserver : IDisposable
+    internal sealed class DynamicIndicatorObserver : IIndicatorObserver
     {
         public static int FreeSubWindowId;
 
@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public IObservableList<OutputSubWindowViewModel> SubWindows { get; }
 
 
-        public ChartIndicatorObserver(ChartHostProxy chartHost, int digits)
+        public DynamicIndicatorObserver(ChartHostProxy chartHost, int digits)
         {
             _chartHost = chartHost;
             _digits = digits;
@@ -124,11 +124,11 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         private sealed class OutputWrapper : IDisposable
         {
-            private readonly ChartIndicatorObserver _parent;
+            private readonly DynamicIndicatorObserver _parent;
             private readonly OutputSeriesProxy _output;
 
 
-            public OutputWrapper(ChartIndicatorObserver parent, OutputSeriesProxy output)
+            public OutputWrapper(DynamicIndicatorObserver parent, OutputSeriesProxy output)
             {
                 _parent = parent;
                 _output = output;
