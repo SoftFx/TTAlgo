@@ -20,6 +20,8 @@ namespace TickTrader.Algo.Server
 
         public IVarSet<string, PluginOutputModel> Indicators => _indicators;
 
+        public IVarList<OutputSeriesProxy> Outputs { get; }
+
 
         public ChartHostProxy(IActorRef actor, IActorRef parent, ChartInfo info)
         {
@@ -27,12 +29,15 @@ namespace TickTrader.Algo.Server
             _parent = parent;
             _info = info;
             _downlink = DefaultChannelFactory.CreateForOneToOne<object>();
+
+            Outputs = _indicators.TransformToList().Chain().SelectMany(m => m.Outputs);
         }
 
 
         public async ValueTask DisposeAsync()
         {
             _downlink.Writer.TryComplete();
+            Outputs.Dispose();
             _indicators.Clear();
             await _parent.Ask(new IndicatorHostModel.RemoveChartCmd(_info.Id));
         }

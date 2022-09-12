@@ -7,7 +7,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 {
     internal static class CartesianExtensions
     {
-        internal static string ToCandelTooltipInfo(this FinancialPoint bar, ChartSettings settings)
+        internal static string ToCandleTooltipInfo(this FinancialPoint bar, ChartSettings settings)
         {
             var sb = new StringBuilder(1 << 5);
             var format = settings.PriceFormat;

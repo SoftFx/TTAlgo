@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             smb = _algoEnv.ClientModel.Symbols.GetOrDefault(symbol);
 
             _chartHost = algoEnv.LocalAgent.IndicatorHost.CreateChart(symbol, period, Feed.Types.MarketSide.Bid).Result;
-            IndicatorObserver = new ChartIndicatorObserver(_chartHost);
+            IndicatorObserver = new ChartIndicatorObserver(_chartHost, smb.Digits);
 
             this.BarChart = new BarChartModel(smb, _algoEnv);
 

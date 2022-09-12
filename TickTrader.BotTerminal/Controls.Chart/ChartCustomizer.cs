@@ -117,7 +117,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             var series = settings.ChartType switch
             {
-                ChartTypes.Candle => GetCandelSeries(settings),
+                ChartTypes.Candle => GetCandleSeries(settings),
                 ChartTypes.Line => GetLineSeries(settings),
                 ChartTypes.Mountain => GetLineSeries(settings, fill: true),
                 _ => throw new ArgumentException($"Unsupported type for bar chart {settings.ChartType}"),
@@ -130,7 +130,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             return series;
         }
 
-        internal static ISeries GetCandelSeries(TradeChartSettings settings)
+        internal static ISeries GetCandleSeries(TradeChartSettings settings)
         {
             return new CandlesticksSeries<FinancialPoint>
             {
@@ -139,7 +139,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 UpStroke = new SolidColorPaint(UpColor),
                 DownFill = new SolidColorPaint(DownColor),
                 DownStroke = new SolidColorPaint(DownColor),
-                TooltipLabelFormatter = p => p.Model.ToCandelTooltipInfo(settings),
+                TooltipLabelFormatter = p => p.Model.ToCandleTooltipInfo(settings),
             };
         }
 
