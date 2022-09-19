@@ -47,7 +47,7 @@ namespace TickTrader.Algo.CoreV1
 
         private static FileEntity CreateFileEntity(string filePath, string workingFolder)
         {
-            if (Path.GetFullPath(filePath) != filePath)
+            if (!string.IsNullOrEmpty(filePath) && Path.GetFullPath(filePath) != filePath)
                 filePath = Path.Combine(workingFolder, filePath);
             return new FileEntity(filePath);
         }

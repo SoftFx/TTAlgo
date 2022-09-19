@@ -9,6 +9,8 @@ namespace TickTrader.BotTerminal
 {
     public class FileParamSetupViewModel : ParameterSetupViewModel
     {
+        private readonly bool _isRequired;
+
         private string _filePath;
         private string _fileName;
 
@@ -49,7 +51,9 @@ namespace TickTrader.BotTerminal
         public FileParamSetupViewModel(ParameterDescriptor descriptor)
             : base(descriptor)
         {
-            DefaultFile = descriptor.DefaultValue as string ?? string.Empty;
+            _isRequired = descriptor.IsRequired;
+            DefaultFile = descriptor.DefaultValue ?? string.Empty;
+
 
             var filterEntries = descriptor.FileFilters
                .Where(s => !string.IsNullOrWhiteSpace(s.FileMask) && !string.IsNullOrWhiteSpace(s.FileTypeName));
@@ -93,20 +97,17 @@ namespace TickTrader.BotTerminal
 
         private void CheckFileName()
         {
-            if (string.IsNullOrEmpty(FileName))
+            if (_isRequired && string.IsNullOrEmpty(FileName))
             {
                 Error = new ErrorMsgModel(ErrorMsgCodes.RequiredButNotSet);
                 return;
             }
 
-            var incorrectSymbols = System.IO.Path.GetInvalidFileNameChars();
+            var incorrectSymbols = Path.GetInvalidFileNameChars();
 
-            bool ok = FileName.All(s => !incorrectSymbols.Contains(s));
+            bool hasInvalid = FileName.Any(s => incorrectSymbols.Contains(s));
 
-            if (!ok)
-                Error = new ErrorMsgModel(ErrorMsgCodes.InvalidCharacters);
-            else
-                Error = null;
+            Error = hasInvalid ? new ErrorMsgModel(ErrorMsgCodes.InvalidCharacters) : null;
         }
     }
 }
