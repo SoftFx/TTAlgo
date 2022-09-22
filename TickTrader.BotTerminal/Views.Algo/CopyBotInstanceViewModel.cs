@@ -356,28 +356,35 @@ namespace TickTrader.BotTerminal
                     _logger.Info($"Downloaded bot file to: {srcPath}");
                 }
 
-                if (!_selectedAgent.Model.IsRemote)
+                if (!File.Exists(srcPath))
                 {
-                    if (_fromAgent.Model.IsRemote || (!_fromAgent.Model.IsRemote && srcPath.StartsWith(srcAlgoDataDir.Path)))
-                    {
-                        if (!Directory.Exists(dstAlgoDataDir.Path))
-                            Directory.CreateDirectory(dstAlgoDataDir.Path);
-                        var dstPath = Path.Combine(dstAlgoDataDir.Path, fileName);
-                        File.Copy(srcPath, dstPath, true);
-                        _logger.Info($"Bot file {fileName} copied to: {dstPath}");
-                    }
-                    else
-                    {
-                        _logger.Info($"Bot file {fileName} uses original path: {srcPath}");
-                    }
+                    _logger.Info($"Bot file {fileName} not found. Skipping upload.");
                 }
                 else
                 {
-                    var fileInfo = new FileInfo(srcPath);
-                    CopyProgress.SetMessage($"Uploading bot file {fileName} to {_selectedAgent.Model.Name}");
-                    var progressListener = new FileProgressListenerAdapter(CopyProgress, fileInfo.Length);
-                    await _selectedAgent.Model.UploadBotFile(dstConfig.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData, fileName, srcPath, progressListener);
-                    _logger.Info($"Uploaded bot file {fileName} to {_selectedAgent.Model.Name}");
+                    if (!_selectedAgent.Model.IsRemote)
+                    {
+                        if (_fromAgent.Model.IsRemote || (!_fromAgent.Model.IsRemote && srcPath.StartsWith(srcAlgoDataDir.Path)))
+                        {
+                            if (!Directory.Exists(dstAlgoDataDir.Path))
+                                Directory.CreateDirectory(dstAlgoDataDir.Path);
+                            var dstPath = Path.Combine(dstAlgoDataDir.Path, fileName);
+                            File.Copy(srcPath, dstPath, true);
+                            _logger.Info($"Bot file {fileName} copied to: {dstPath}");
+                        }
+                        else
+                        {
+                            _logger.Info($"Bot file {fileName} uses original path: {srcPath}");
+                        }
+                    }
+                    else
+                    {
+                        var fileInfo = new FileInfo(srcPath);
+                        CopyProgress.SetMessage($"Uploading bot file {fileName} to {_selectedAgent.Model.Name}");
+                        var progressListener = new FileProgressListenerAdapter(CopyProgress, fileInfo.Length);
+                        await _selectedAgent.Model.UploadBotFile(dstConfig.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData, fileName, srcPath, progressListener);
+                        _logger.Info($"Uploaded bot file {fileName} to {_selectedAgent.Model.Name}");
+                    }
                 }
 
                 if (_fromAgent.Model.IsRemote)
