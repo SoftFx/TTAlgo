@@ -170,6 +170,8 @@ namespace TickTrader.BotTerminal
                 }
 
                 dstConfig.InstanceId = InstanceId;
+                if (_selectedAgent.Model.IsRemote)
+                    dstConfig.FixFileParametersForRemote();
                 await _selectedAgent.Model.AddBot(_selectedAccount.AccountId, dstConfig);
                 _logger.Info($"Created bot {dstConfig.InstanceId} on {_selectedAgent.Name}");
 
@@ -331,7 +333,7 @@ namespace TickTrader.BotTerminal
         {
             var srcAlgoDataDir = await _fromAgent.Model.GetBotFolderInfo(srcBot.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData);
             var dstAlgoDataDir = await _selectedAgent.Model.GetBotFolderInfo(dstConfig.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData);
-            foreach (var prop in dstConfig.Properties.Where(p => p.Is(FileParameterConfig.Descriptor)))
+            foreach (var prop in srcBot.Config.Properties.Where(p => p.Is(FileParameterConfig.Descriptor)))
             {
                 var fileParam = prop.Unpack<FileParameterConfig>();
                 var fileName = Path.GetFileName(fileParam.FileName);
@@ -375,7 +377,7 @@ namespace TickTrader.BotTerminal
                     CopyProgress.SetMessage($"Uploading bot file {fileName} to {_selectedAgent.Model.Name}");
                     var progressListener = new FileProgressListenerAdapter(CopyProgress, fileInfo.Length);
                     await _selectedAgent.Model.UploadBotFile(dstConfig.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData, fileName, srcPath, progressListener);
-                    _logger.Info($"Downloaded bot file {fileName} to {_selectedAgent.Model.Name}");
+                    _logger.Info($"Uploaded bot file {fileName} to {_selectedAgent.Model.Name}");
                 }
 
                 if (_fromAgent.Model.IsRemote)

@@ -29,6 +29,7 @@ namespace TickTrader.BotTerminal
                 _fileName = value;
                 CheckFileName();
                 NotifyOfPropertyChange(nameof(FileName));
+                NotifyOfPropertyChange(nameof(FullPath));
             }
         }
 
@@ -42,6 +43,7 @@ namespace TickTrader.BotTerminal
 
                 _filePath = value;
                 NotifyOfPropertyChange(nameof(FilePath));
+                NotifyOfPropertyChange(nameof(FullPath));
             }
         }
 
@@ -82,7 +84,10 @@ namespace TickTrader.BotTerminal
         public override void Load(IPropertyConfig srcProperty)
         {
             if (srcProperty is FileParameterConfig typedSrcProperty)
+            {
                 FileName = Path.GetFileName(typedSrcProperty.FileName);
+                FilePath = Path.GetDirectoryName(typedSrcProperty.FileName);
+            }
         }
 
         public override IPropertyConfig Save()
