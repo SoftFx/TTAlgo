@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Server
             _accProxy = accProxy;
         }
 
-        public void OnConnectionStateUpdate(ConnectionStateUpdate update) => _notificationBus.Writer.TryWrite(RpcMessage.Notification(_id, update));
+        public void OnConnectionStateUpdate(ConnectionStateUpdate update) => PushNotification(RpcMessage.Notification(_id, update));
 
         public AccountRpcHandler AttachSession(RpcSession session, Domain.Account.Types.ConnectionState currentState)
         {
@@ -94,6 +94,7 @@ namespace TickTrader.Algo.Server
             if (RefCnt == 0)
             {
                 _notificationBus.Writer.TryComplete();
+                _notificationBus = null;
 
                 var acc = _accProxy;
                 acc.AccInfoProvider.OrderUpdated -= OnOrderUpdated;
@@ -108,15 +109,17 @@ namespace TickTrader.Algo.Server
         }
 
 
-        private void OnOrderUpdated(OrderExecReport r) => _notificationBus.Writer.TryWrite(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
+        private void OnOrderUpdated(OrderExecReport r) => PushNotification(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
 
-        private void OnPositionUpdated(PositionExecReport r) => _notificationBus.Writer.TryWrite(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
+        private void OnPositionUpdated(PositionExecReport r) => PushNotification(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
 
-        private void OnBalanceUpdated(BalanceOperation r) => _notificationBus.Writer.TryWrite(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
+        private void OnBalanceUpdated(BalanceOperation r) => PushNotification(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
 
-        private void OnRateUpdated(QuoteInfo r) => _notificationBus.Writer.TryWrite(RpcMessage.Notification(_id, r.GetFullQuote())); // not actor thread. _id is safe since it is readonly
+        private void OnRateUpdated(QuoteInfo r) => PushNotification(RpcMessage.Notification(_id, r.GetFullQuote())); // not actor thread. _id is safe since it is readonly
 
-        private void OnRatesUpdated(List<QuoteInfo> r) => _notificationBus.Writer.TryWrite(RpcMessage.Notification(_id, QuotePage.Create(r))); // not actor thread. _id is safe since it is readonly
+        private void OnRatesUpdated(List<QuoteInfo> r) => PushNotification(RpcMessage.Notification(_id, QuotePage.Create(r))); // not actor thread. _id is safe since it is readonly
+
+        private void PushNotification(RpcMessage msg) => _notificationBus?.Writer.TryWrite(msg);
 
         private void DispatchNotification(RpcMessage msg)
         {
