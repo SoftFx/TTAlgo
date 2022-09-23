@@ -870,9 +870,9 @@ namespace TickTrader.Algo.CoreV1
             iStrategy.EnqueueQuote(update);
         }
 
-        public void EnqueueEvent(Action<PluginBuilder> action)
+        public void EnqueueEvent(IAccountApiEvent accEvent)
         {
-            iStrategy.EnqueueEvent(action);
+            iStrategy.EnqueueEvent(accEvent);
         }
 
         public void EnqueueCustomInvoke(Action<PluginBuilder> action)

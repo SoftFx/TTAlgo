@@ -42,7 +42,7 @@ namespace TickTrader.Algo.CoreV1
         public abstract void EnqueueQuote(Domain.QuoteInfo update);
         public abstract void EnqueueCustomInvoke(Action<PluginBuilder> a);
         public abstract void EnqueueTradeUpdate(Action<PluginBuilder> a);
-        public abstract void EnqueueEvent(Action<PluginBuilder> a);
+        public abstract void EnqueueEvent(IAccountApiEvent e);
         public abstract void ProcessNextTrade();
 
         protected virtual void OnInit() { }
@@ -69,6 +69,7 @@ namespace TickTrader.Algo.CoreV1
         private FeedQueue feedQueue;
         private Queue<Action<PluginBuilder>> tradeQueue;
         private Queue<Action<PluginBuilder>> eventQueue;
+        private Queue<IAccountApiEvent> _accEventQueue;
         private bool isStarted;
         private bool isProcessingTrades;
         private bool execStopFlag;
@@ -81,6 +82,7 @@ namespace TickTrader.Algo.CoreV1
             feedQueue = new FeedQueue(FStartegy);
             tradeQueue = new Queue<Action<PluginBuilder>>();
             eventQueue = new Queue<Action<PluginBuilder>>();
+            _accEventQueue = new Queue<IAccountApiEvent>();
         }
 
         protected override void OnReinit()
@@ -142,14 +144,14 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public override void EnqueueEvent(Action<PluginBuilder> a) // use only to fire events on plugin thread
+        public override void EnqueueEvent(IAccountApiEvent e) // use only to fire events on plugin thread
         {
             lock (syncObj)
             {
                 if (execStopFlag)
                     return;
 
-                eventQueue.Enqueue(a);
+                _accEventQueue.Enqueue(e);
                 WakeUpWorker();
             }
         }
@@ -239,6 +241,8 @@ namespace TickTrader.Algo.CoreV1
                     OnFeedUpdate(rateInfo);
                 else if (item is Action<PluginBuilder> action)
                     action(Builder);
+                else if (item is IAccountApiEvent accEvent)
+                    accEvent.Fire(Builder);
             }
             catch (ThreadAbortException) { }
             catch (Exception ex)
@@ -373,6 +377,7 @@ namespace TickTrader.Algo.CoreV1
         private void ClearQueues()
         {
             eventQueue.Clear();
+            _accEventQueue.Clear();
             tradeQueue.Clear();
             feedQueue.Clear();
         }
@@ -381,6 +386,8 @@ namespace TickTrader.Algo.CoreV1
         {
             if (eventQueue.Count > 0)
                 return eventQueue.Dequeue();
+            else if (_accEventQueue.Count > 0)
+                return _accEventQueue.Dequeue();
             else if (tradeQueue.Count > 0)
                 return tradeQueue.Dequeue();
             else if (feedQueue.Count > 0)

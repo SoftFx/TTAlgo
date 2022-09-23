@@ -540,7 +540,7 @@ namespace TickTrader.Algo.Backtester
 
             // fire API event
             if (order.Info.Type != OrderInfo.Types.Type.Position)
-                _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(order)));
+                _scheduler.EnqueueEvent(new OrderOpenedEventArgsImpl(order));
 
             if (order.Info.Type == OrderInfo.Types.Type.Market)
             {
@@ -877,7 +877,7 @@ namespace TickTrader.Algo.Backtester
             //order.FireChanged();
 
             // fire API event
-            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrderCopy, order)));
+            _scheduler.EnqueueEvent(new OrderModifiedEventArgsImpl(oldOrderCopy, order));
 
             RecalculateAccount();
 
@@ -1007,7 +1007,7 @@ namespace TickTrader.Algo.Backtester
             OrderAccessor newPos = null;
             NetPositionOpenInfo netInfo = null;
 
-            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(copy, order)));
+            _scheduler.EnqueueEvent(new OrderFilledEventArgsImpl(copy, order));
 
             if (_acc.Type == AccountInfo.Types.Type.Gross)
             {
@@ -1084,10 +1084,10 @@ namespace TickTrader.Algo.Backtester
             if (trReason == TradeReportInfo.Types.Reason.Expired)
             {
                 RecalculateAccount();
-                _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderExpired(new OrderExpiredEventArgsImpl(order)));
+                _scheduler.EnqueueEvent(new OrderExpiredEventArgsImpl(order));
             }
             else
-                _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderCanceled(new OrderCanceledEventArgsImpl(order)));
+                _scheduler.EnqueueEvent(new OrderCanceledEventArgsImpl(order));
 
             // update trade history
             var report = _history.Create(_scheduler.UnsafeVirtualTimePoint, order.SymbolInfo, trReason == TradeReportInfo.Types.Reason.Expired ? TradeReportInfo.Types.ReportType.OrderExpired : TradeReportInfo.Types.ReportType.OrderCanceled, trReason);
@@ -1215,7 +1215,7 @@ namespace TickTrader.Algo.Backtester
             if (wasTmpOrder || !transformOrder)
                 _acc.Orders.Add(position);
 
-            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(position)));
+            _scheduler.EnqueueEvent(new OrderOpenedEventArgsImpl(position));
 
             // calculate margin & profit
             //fCalc.UpdateMargin(position, _acc);
@@ -1618,7 +1618,7 @@ namespace TickTrader.Algo.Backtester
             _acc.Orders.Remove(order.Info);
 
             //fire API event
-            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderActivated(new OrderActivatedEventArgsImpl(order)));
+            _scheduler.EnqueueEvent(new OrderActivatedEventArgsImpl(order));
 
             // journal
             //LogTransactionDetails(() => $"Activate StopLimit Order #{order.OrderId}, reason={reason}", JournalEntrySeverities.Info, order.Clone());
@@ -1758,7 +1758,7 @@ namespace TickTrader.Algo.Backtester
             //    ResetOrderActivation(position);
 
             //fire API event for close Gross position
-            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderClosed(new OrderClosedEventArgsImpl(position)));
+            _scheduler.EnqueueEvent(new OrderClosedEventArgsImpl(position));
 
             // Reopen position with remaining amount.
             if (partialClose && reopenRemaining)

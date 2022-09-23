@@ -20,7 +20,7 @@ namespace TickTrader.Algo.CoreV1
 
         void EnqueueQuote(QuoteInfo update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
-        void EnqueueEvent(Action<PluginBuilder> action);
+        void EnqueueEvent(IAccountApiEvent apiEvent);
         void EnqueueCustomInvoke(Action<PluginBuilder> action);
         void ProcessNextOrderUpdate();
         void OnInternalException(Exception ex);

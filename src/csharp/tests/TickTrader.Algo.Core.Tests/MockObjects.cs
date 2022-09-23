@@ -97,7 +97,7 @@ namespace TickTrader.Algo.Core.Tests
         {
         }
 
-        public void EnqueueEvent(Action<PluginBuilder> action)
+        public void EnqueueEvent(IAccountApiEvent apiEvent)
         {
         }
 

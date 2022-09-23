@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Backtester
         private DelayedEventsQueue _delayedQueue = new DelayedEventsQueue();
         private Queue<Action<PluginBuilder>> _tradeQueue = new Queue<Action<PluginBuilder>>();
         private Queue<Action<PluginBuilder>> _eventQueue = new Queue<Action<PluginBuilder>>();
+        private Queue<IAccountApiEvent> _accEventQueue = new Queue<IAccountApiEvent>();
         private FeedEmulator _feed;
         private TimeSeriesAggregator _eventAggr = new TimeSeriesAggregator();
         private IBacktesterSettings _settings;
@@ -81,9 +82,9 @@ namespace TickTrader.Algo.Backtester
                 _eventQueue.Enqueue(a);
         }
 
-        public override void EnqueueEvent(Action<PluginBuilder> a)
+        public override void EnqueueEvent(IAccountApiEvent e)
         {
-            _eventQueue.Enqueue(a);
+            _accEventQueue.Enqueue(e);
         }
 
         public override void EnqueueQuote(Domain.QuoteInfo update)
@@ -404,14 +405,12 @@ namespace TickTrader.Algo.Backtester
 
         private void ExecItem(object item)
         {
-            var rate = item as IRateInfo;
-            if (rate != null)
+            if (item is IRateInfo rate)
                 EmulateRateUpdate(rate);
-            else
-            {
-                var action = (Action<PluginBuilder>)item;
+            else if (item is Action<PluginBuilder> action)
                 action(Builder);
-            }
+            else if (item is IAccountApiEvent accEvent)
+                accEvent.Fire(Builder);
         }
 
         public void EmulateDelayedInvoke(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTradeAction)
@@ -542,6 +541,8 @@ namespace TickTrader.Algo.Backtester
         {
             if (_eventQueue.Count > 0)
                 return _eventQueue.Dequeue();
+            else if (_accEventQueue.Count > 0)
+                return _accEventQueue.Dequeue();
             else if (_tradeQueue.Count > 0)
                 return _tradeQueue.Dequeue();
             else if (_feedQueue.Count > 0)
