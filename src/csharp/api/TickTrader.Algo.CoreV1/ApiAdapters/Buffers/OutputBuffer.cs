@@ -6,7 +6,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.CoreV1
 {
-    public class OutputBuffer<T> : IPluginDataBuffer<T>, IReaonlyDataBuffer, IReaonlyDataBuffer<T>, IBuffer
+    public class OutputBuffer<T> : IPluginDataBuffer<T>, IReadOnlyDataBuffer, IReadOnlyDataBuffer<T>, IBuffer
     {
         private CircularList<T> _data = new CircularList<T>();
         private BuffersCoordinator _coordinator;
@@ -57,7 +57,7 @@ namespace TickTrader.Algo.CoreV1
         public Action BeginBatchBuild { get; set; }
         public Action EndBatchBuild { get; set; }
 
-        object IReaonlyDataBuffer.this[int index] { get { return this[index]; } }
+        object IReadOnlyDataBuffer.this[int index] { get { return this[index]; } }
 
         public IEnumerator<T> GetEnumerator()
         {

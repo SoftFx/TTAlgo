@@ -162,10 +162,10 @@ namespace TickTrader.Algo.CoreV1
             return GetBuffer<BarData>(bufferId);
         }
 
-        public IReaonlyDataBuffer GetOutput(string outputName)
+        public IReadOnlyDataBuffer GetOutput(string outputName)
         {
             var outputProxy = PluginProxy.GetOutput(outputName);
-            return (IReaonlyDataBuffer)outputProxy.Buffer;
+            return (IReadOnlyDataBuffer)outputProxy.Buffer;
         }
 
         public OutputBuffer<T> GetOutput<T>(string outputName)

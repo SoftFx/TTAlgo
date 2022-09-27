@@ -36,12 +36,12 @@ namespace TickTrader.Algo.Core
         T this[int index] { get; set; }
     }
 
-    public interface IReaonlyDataBuffer : IEnumerable
+    public interface IReadOnlyDataBuffer : IEnumerable
     {
         object this[int index] { get; }
     }
 
-    public interface IReaonlyDataBuffer<T> : IEnumerable<T>
+    public interface IReadOnlyDataBuffer<T> : IEnumerable<T>
     {
         T this[int index] { get; }
     }
