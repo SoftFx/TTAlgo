@@ -26,9 +26,6 @@ namespace TickTrader.Algo.Account.Fdk2
 
             _feedProxy.DisconnectResultEvent += (c, d, t) => SfxTaskAdapter.SetCompleted(d, t);
 
-            _feedProxy.QuotesResultEvent += (c, d, r) => SfxTaskAdapter.SetCompleted(d, SfxInterop.Convert(r));
-            _feedProxy.QuotesErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed<Domain.QuoteInfo[]>(d, ex);
-
             _feedProxy.CurrencyListResultEvent += (c, d, r) => SfxTaskAdapter.SetCompleted(d, r);
             _feedProxy.CurrencyListErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed<FDK2.CurrencyInfo[]>(d, ex);
 
@@ -40,6 +37,12 @@ namespace TickTrader.Algo.Account.Fdk2
 
             _feedProxy.QuotesResultEvent += (c, d, r) => SfxTaskAdapter.SetCompleted(d, SfxInterop.Convert(r));
             _feedProxy.QuotesErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed<Domain.QuoteInfo[]>(d, ex);
+
+            _feedProxy.SubscribeBarsResultEvent += (c, d, b) => { SfxTaskAdapter.SetCompleted(d, SfxInterop.Convert(b)); };
+            _feedProxy.SubscribeBarsErrorEvent += (c, d, ex) => { SfxTaskAdapter.SetFailed<BarUpdateSummary[]>(d, ex); };
+
+            _feedProxy.UnsubscribeBarsResultEvent += (c, d, s) => { SfxTaskAdapter.SetCompleted(d, true); };
+            _feedProxy.UnsubscribeBarsErrorEvent += (c, d, ex) => { SfxTaskAdapter.SetFailed<bool>(d, ex); };
         }
 
 
@@ -114,6 +117,23 @@ namespace TickTrader.Algo.Account.Fdk2
             var res = await taskSrc.Task;
             _logger.Debug(taskSrc.MeasureRequestTime());
             return res;
+        }
+
+        public async Task<BarUpdateSummary[]> SubscribeBarsAsync(string symbol, Periodicity periodicity, PriceType priceType)
+        {
+            var taskSrc = new SfxTaskAdapter.RequestResultSource<BarUpdateSummary[]>("SubscribeBarsRequest");
+            _feedProxy.SubscribeBarsAsync(taskSrc, new[] { new BarSubscriptionSymbolEntry { Symbol = symbol, Params = new[] { new BarParameters(periodicity, priceType) } } });
+            var res = await taskSrc.Task;
+            _logger.Debug(taskSrc.MeasureRequestTime());
+            return res;
+        }
+
+        public async Task UnsubscribeBarsAsync(string symbol)
+        {
+            var taskSrc = new SfxTaskAdapter.RequestResultSource<bool>("UnsubscribeBarsRequest");
+            _feedProxy.UnsubscribeBarsAsync(taskSrc, new[] { symbol });
+            await taskSrc.Task;
+            _logger.Debug(taskSrc.MeasureRequestTime());
         }
     }
 }

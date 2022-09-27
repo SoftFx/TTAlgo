@@ -104,6 +104,7 @@ namespace TickTrader.Algo.Account.Fdk2
             _tradeHistoryProxyAdapter = new Fdk2TradeHistoryAdapter(_tradeHistoryProxy, logger);
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
+            _feedProxy.BarsUpdateEvent += (c, b) => BarUpdate?.Invoke(Convert(b));
             _feedProxy.LogoutEvent += (c, m) => OnLogout(m);
             _feedProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeProxy.LogoutEvent += (c, m) => OnLogout(m);
@@ -304,6 +305,7 @@ namespace TickTrader.Algo.Account.Fdk2
         #region IFeedServerApi
 
         public event Action<Domain.QuoteInfo> Tick;
+        public event Action<BarUpdateSummary> BarUpdate;
 
         public async Task<Domain.CurrencyInfo[]> GetCurrencies()
         {
@@ -439,6 +441,11 @@ namespace TickTrader.Algo.Account.Fdk2
                 var info = await _feedHistoryProxyAdapter.GetBarsHistoryInfoAsync(symbol, ToBarPeriod(timeframe), ConvertBack(marketSide));
                 return (info.AvailFrom, info.AvailTo);
             }
+        }
+
+        public Task<BarUpdateSummary[]> SubscribeToBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
+        {
+            return _feedProxyAdapter.SubscribeBarsAsync(symbol, ConvertBack(timeframe), ConvertBack(marketSide));
         }
 
         #endregion
@@ -1447,7 +1454,7 @@ namespace TickTrader.Algo.Account.Fdk2
             throw new NotImplementedException("Unsupported balance transaction type: " + type);
         }
 
-        public static PriceType ConvertBack(Domain.Feed.Types.MarketSide marketSide)
+        internal static PriceType ConvertBack(Domain.Feed.Types.MarketSide marketSide)
         {
             switch (marketSide)
             {
@@ -1471,6 +1478,123 @@ namespace TickTrader.Algo.Account.Fdk2
                 default: return ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError;
             }
         }
+
+        internal static BarUpdateSummary[] Convert(AggregatedBarUpdate[] fdkUpdates)
+        {
+            var res = new BarUpdateSummary[fdkUpdates.Length];
+            for (var i = 0; i < fdkUpdates.Length; i++)
+                res[i] = Convert(fdkUpdates[i]);
+            return res;
+        }
+
+        internal static BarUpdateSummary Convert(AggregatedBarUpdate fdkUpdate)
+        {
+            var res = new BarUpdateSummary
+            {
+                Symbol = fdkUpdate.Symbol,
+                AskClose = fdkUpdate.AskClose,
+                BidClose = fdkUpdate.BidClose,
+            };
+            if (fdkUpdate.Updates?.Count > 0)
+            {
+                res.Details = fdkUpdate.Updates.Select(Convert).ToArray();
+            }
+            return res;
+        }
+
+        internal static BarUpdateDetails Convert(KeyValuePair<BarParameters, BarUpdate> fdkUpdate)
+        {
+            var k = fdkUpdate.Key;
+            var v = fdkUpdate.Value;
+            return new BarUpdateDetails
+            {
+                Timeframe = Convert(k.Periodicity),
+                MarketSide = Convert(k.PriceType),
+                From = v.From,
+                Open = v.Open,
+                High = v.High,
+                Low = v.Low,
+            };
+        }
+
+        internal static Feed.Types.MarketSide Convert(PriceType priceType)
+        {
+            switch (priceType)
+            {
+                case PriceType.Ask: return Feed.Types.MarketSide.Ask;
+                case PriceType.Bid: return Feed.Types.MarketSide.Bid;
+            }
+            throw new NotImplementedException("Unsupported price type: " + priceType);
+        }
+
+        internal static Feed.Types.Timeframe Convert(Periodicity periodicity)
+        {
+            switch (periodicity.Interval)
+            {
+                case SFX.Time.TimeInterval.Second:
+                    switch (periodicity.IntervalsCount)
+                    {
+                        case 1: return Feed.Types.Timeframe.S1;
+                        case 10: return Feed.Types.Timeframe.S10;
+                    }
+                    break;
+                case SFX.Time.TimeInterval.Minute:
+                    switch (periodicity.IntervalsCount)
+                    {
+                        case 1: return Feed.Types.Timeframe.M1;
+                        case 5: return Feed.Types.Timeframe.M5;
+                        case 15: return Feed.Types.Timeframe.M15;
+                        case 30: return Feed.Types.Timeframe.M30;
+                    }
+                    break;
+                case SFX.Time.TimeInterval.Hour:
+                    switch (periodicity.IntervalsCount)
+                    {
+                        case 1: return Feed.Types.Timeframe.H1;
+                        case 4: return Feed.Types.Timeframe.H4;
+                    }
+                    break;
+                case SFX.Time.TimeInterval.Day:
+                    switch (periodicity.IntervalsCount)
+                    {
+                        case 1: return Feed.Types.Timeframe.D;
+                    }
+                    break;
+                case SFX.Time.TimeInterval.Week:
+                    switch (periodicity.IntervalsCount)
+                    {
+                        case 1: return Feed.Types.Timeframe.W;
+                    }
+                    break;
+                case SFX.Time.TimeInterval.Month:
+                    switch (periodicity.IntervalsCount)
+                    {
+                        case 1: return Feed.Types.Timeframe.MN;
+                    }
+                    break;
+            }
+            throw new NotImplementedException("Unsupported periodicity: " + periodicity);
+        }
+
+        internal static Periodicity ConvertBack(Feed.Types.Timeframe timeframe)
+        {
+            switch (timeframe)
+            {
+                case Feed.Types.Timeframe.S1: return new Periodicity(SFX.Time.TimeInterval.Second, 1);
+                case Feed.Types.Timeframe.S10: return new Periodicity(SFX.Time.TimeInterval.Second, 10);
+                case Feed.Types.Timeframe.M1: return new Periodicity(SFX.Time.TimeInterval.Minute, 1);
+                case Feed.Types.Timeframe.M5: return new Periodicity(SFX.Time.TimeInterval.Minute, 5);
+                case Feed.Types.Timeframe.M15: return new Periodicity(SFX.Time.TimeInterval.Minute, 15);
+                case Feed.Types.Timeframe.M30: return new Periodicity(SFX.Time.TimeInterval.Minute, 30);
+                case Feed.Types.Timeframe.H1: return new Periodicity(SFX.Time.TimeInterval.Hour, 1);
+                case Feed.Types.Timeframe.H4: return new Periodicity(SFX.Time.TimeInterval.Hour, 4);
+                case Feed.Types.Timeframe.D: return new Periodicity(SFX.Time.TimeInterval.Day, 1);
+                case Feed.Types.Timeframe.W: return new Periodicity(SFX.Time.TimeInterval.Week, 1);
+                case Feed.Types.Timeframe.MN: return new Periodicity(SFX.Time.TimeInterval.Month, 1);
+            }
+            throw new NotImplementedException("Unsupported timeframe: " + timeframe);
+        }
+
         #endregion
     }
 }

@@ -48,6 +48,7 @@ namespace TickTrader.Algo.Account
         bool AutoSymbols { get; }
 
         event Action<QuoteInfo> Tick;
+        event Action<BarUpdateSummary> BarUpdate;
         event Action<SymbolInfo[]> SymbolInfo;
         event Action<CurrencyInfo[]> CurrencyInfo;
 
@@ -64,5 +65,7 @@ namespace TickTrader.Algo.Account
         void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, UtcTicks from, UtcTicks to, bool includeLevel2);
 
         Task<(DateTime?, DateTime?)> GetAvailableRange(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+
+        Task<BarUpdateSummary[]> SubscribeToBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
     }
 }
