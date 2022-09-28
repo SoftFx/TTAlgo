@@ -443,9 +443,9 @@ namespace TickTrader.Algo.Account.Fdk2
             }
         }
 
-        public Task<BarUpdateSummary[]> SubscribeToBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
+        public Task<BarUpdateSummary[]> SubscribeToBars(string symbol, (Feed.Types.Timeframe, Feed.Types.MarketSide)[] barParams)
         {
-            return _feedProxyAdapter.SubscribeBarsAsync(symbol, ConvertBack(timeframe), ConvertBack(marketSide));
+            return _feedProxyAdapter.SubscribeBarsAsync(symbol, barParams.Select(p => new BarParameters(ConvertBack(p.Item1), ConvertBack(p.Item2))).ToArray());
         }
 
         #endregion

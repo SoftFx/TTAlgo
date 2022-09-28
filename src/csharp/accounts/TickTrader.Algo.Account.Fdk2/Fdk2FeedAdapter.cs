@@ -119,10 +119,10 @@ namespace TickTrader.Algo.Account.Fdk2
             return res;
         }
 
-        public async Task<BarUpdateSummary[]> SubscribeBarsAsync(string symbol, Periodicity periodicity, PriceType priceType)
+        public async Task<BarUpdateSummary[]> SubscribeBarsAsync(string symbol, BarParameters[] barParams)
         {
             var taskSrc = new SfxTaskAdapter.RequestResultSource<BarUpdateSummary[]>("SubscribeBarsRequest");
-            _feedProxy.SubscribeBarsAsync(taskSrc, new[] { new BarSubscriptionSymbolEntry { Symbol = symbol, Params = new[] { new BarParameters(periodicity, priceType) } } });
+            _feedProxy.SubscribeBarsAsync(taskSrc, new[] { new BarSubscriptionSymbolEntry { Symbol = symbol, Params = barParams } });
             var res = await taskSrc.Task;
             _logger.Debug(taskSrc.MeasureRequestTime());
             return res;

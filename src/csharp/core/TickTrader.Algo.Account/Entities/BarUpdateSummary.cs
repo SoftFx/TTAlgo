@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Account
@@ -12,6 +13,20 @@ namespace TickTrader.Algo.Account
         public double? BidClose { get; set; }
 
         public BarUpdateDetails[] Details { get; set; }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"{Symbol}, ask = {AskClose}, bid = {BidClose}");
+            if (Details?.Length > 0)
+            {
+                foreach(var d in Details)
+                {
+                    sb.AppendLine($"{d.Timeframe}, {d.MarketSide}: from={d.From}, open={d.Open}, high={d.High}, low={d.Low}");
+                }
+            }
+            return sb.ToString();
+        }
     }
 
 

@@ -66,6 +66,6 @@ namespace TickTrader.Algo.Account
 
         Task<(DateTime?, DateTime?)> GetAvailableRange(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
 
-        Task<BarUpdateSummary[]> SubscribeToBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+        Task<BarUpdateSummary[]> SubscribeToBars(string symbol, (Feed.Types.Timeframe, Feed.Types.MarketSide)[] barParams);
     }
 }
