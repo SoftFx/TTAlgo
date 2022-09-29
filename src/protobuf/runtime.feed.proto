@@ -187,3 +187,17 @@ message QuoteListRequest {
     int64 to_ticks = 4;
     google.protobuf.Int32Value count = 5;
 }
+
+message BarSubEntry {
+    Feed.MarketSide market_side = 1;
+    Feed.Timeframe timeframe = 2;
+}
+
+message BarSubUpdate {
+    string symbol = 1;
+    repeated BarSubEntry entries = 2;
+}
+
+message ModifyBarSubRequest { // returns BarPage
+    repeated BarSubUpdate updates = 1;
+}
