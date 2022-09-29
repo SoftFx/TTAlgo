@@ -118,7 +118,7 @@ namespace TickTrader.Algo.Account
             }
 
 
-            public void Modify(List<FeedSubscriptionUpdate> updates) => Actor.Call(a => a.ModifyAsync(updates));
+            public void Modify(List<QuoteSubUpdate> updates) => Actor.Call(a => a.ModifyAsync(updates));
         }
 
         public class ControlHandler : BlockingHandler<ClientModel>
@@ -545,7 +545,7 @@ namespace TickTrader.Algo.Account
             return new QuoteInfo[0];
         }
 
-        private async Task ModifyAsync(List<FeedSubscriptionUpdate> updates)
+        private async Task ModifyAsync(List<QuoteSubUpdate> updates)
         {
             var removes = updates.Where(u => u.IsRemoveAction);
             var upserts = updates.Where(u => u.IsUpsertAction).GroupBy(u => u.Depth);

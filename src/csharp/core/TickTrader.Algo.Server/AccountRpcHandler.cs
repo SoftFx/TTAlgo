@@ -70,10 +70,10 @@ namespace TickTrader.Algo.Server
                 return TriggerHistoryRequestNextPageHandler(callId);
             else if (payload.Is(TriggerHistoryRequestDispose.Descriptor))
                 return TriggerHistoryRequestDisposeHandler(callId);
-            else if (payload.Is(FeedSnapshotRequest.Descriptor))
-                return FeedSnapshotRequestHandler();
-            else if (payload.Is(ModifyFeedSubscriptionRequest.Descriptor))
-                return ModifyFeedSubscriptionRequestHandler(payload);
+            else if (payload.Is(QuoteSnapshotRequest.Descriptor))
+                return QuoteSnapshotRequestHandler();
+            else if (payload.Is(ModifyQuoteSubRequest.Descriptor))
+                return ModifyQuoteSubRequestHandler(payload);
             else if (payload.Is(BarListRequest.Descriptor))
                 return BarListRequestHandler(payload);
             else if (payload.Is(QuoteListRequest.Descriptor))
@@ -268,16 +268,16 @@ namespace TickTrader.Algo.Server
             return Task.FromResult<Any>(null);
         }
 
-        private Task<Any> FeedSnapshotRequestHandler()
+        private Task<Any> QuoteSnapshotRequestHandler()
         {
             var response = new QuotePage();
             response.Quotes.AddRange(_account.Feed.GetSnapshot().Select(q => q.GetFullQuote()));
             return Task.FromResult(Any.Pack(response));
         }
 
-        private Task<Any> ModifyFeedSubscriptionRequestHandler(Any payload)
+        private Task<Any> ModifyQuoteSubRequestHandler(Any payload)
         {
-            var request = payload.Unpack<ModifyFeedSubscriptionRequest>();
+            var request = payload.Unpack<ModifyQuoteSubRequest>();
             var response = new QuotePage();
             _quoteSub.Modify(request.Updates.ToList());
             return Task.FromResult(Any.Pack(response));

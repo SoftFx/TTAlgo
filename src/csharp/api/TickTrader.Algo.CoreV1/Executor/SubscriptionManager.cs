@@ -43,7 +43,7 @@ namespace TickTrader.Algo.CoreV1
 
             if (node != null)
             {
-                var update = FeedSubscriptionUpdate.Upsert(symbol, depth);
+                var update = QuoteSubUpdate.Upsert(symbol, depth);
                 node.UserSubscriptionInfo = update;
                 _subscription.Modify(update);
             }
@@ -56,7 +56,7 @@ namespace TickTrader.Algo.CoreV1
             if (node != null && node.UserSubscriptionInfo != null)
             {
                 node.UserSubscriptionInfo = null;
-                _subscription.Modify(FeedSubscriptionUpdate.Remove(symbol));
+                _subscription.Modify(QuoteSubUpdate.Remove(symbol));
             }
         }
 

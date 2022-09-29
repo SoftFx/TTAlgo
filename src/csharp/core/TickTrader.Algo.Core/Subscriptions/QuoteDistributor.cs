@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 {
     public class QuoteDistributor : IQuoteSubInternal, IDisposable
     {
-        private const string AllSymbolAlias = FeedSubscriptionUpdate.AllSymbolsAlias;
+        private const string AllSymbolAlias = QuoteSubUpdate.AllSymbolsAlias;
 
         private readonly ConcurrentDictionary<string, ListenerGroup> _symbolGroups = new ConcurrentDictionary<string, ListenerGroup>();
         private readonly ListenerGroup _allGroup = new ListenerGroup();
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core.Subscriptions
         {
             _quoteConsumer.Dispose();
             _manager.Remove(this);
-            _manager.Modify(this, _symbolGroups.Select(p => FeedSubscriptionUpdate.Remove(p.Key)).ToList());
+            _manager.Modify(this, _symbolGroups.Select(p => QuoteSubUpdate.Remove(p.Key)).ToList());
         }
 
 
@@ -98,9 +98,9 @@ namespace TickTrader.Algo.Core.Subscriptions
         private void ModifySourceSub(string symbol, int depth)
         {
             var update = depth != SubscriptionDepth.Ambient
-                ? FeedSubscriptionUpdate.Upsert(symbol, depth)
-                : FeedSubscriptionUpdate.Remove(symbol);
-            _manager.Modify(this, new List<FeedSubscriptionUpdate> { update });
+                ? QuoteSubUpdate.Upsert(symbol, depth)
+                : QuoteSubUpdate.Remove(symbol);
+            _manager.Modify(this, new List<QuoteSubUpdate> { update });
         }
 
 

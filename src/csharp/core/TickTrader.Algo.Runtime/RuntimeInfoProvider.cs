@@ -166,7 +166,7 @@ namespace TickTrader.Algo.Runtime
 
         public Task<List<QuoteInfo>> GetSnapshotAsync()
         {
-            return RunOnThreadPool(_account.GetFeedSnapshotAsync);
+            return RunOnThreadPool(_account.GetQuoteSnapshotAsync);
         }
 
         public IQuoteSub GetSubscription()

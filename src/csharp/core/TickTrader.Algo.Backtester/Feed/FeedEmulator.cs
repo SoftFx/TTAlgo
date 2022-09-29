@@ -191,7 +191,7 @@ namespace TickTrader.Algo.Backtester
 
             public void Dispose() { }
 
-            public void Modify(List<FeedSubscriptionUpdate> updates) { }
+            public void Modify(List<QuoteSubUpdate> updates) { }
         }
 
         List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)

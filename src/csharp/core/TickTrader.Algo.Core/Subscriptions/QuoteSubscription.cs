@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 {
     public interface IQuoteSub : IDisposable
     {
-        void Modify(List<FeedSubscriptionUpdate> updates);
+        void Modify(List<QuoteSubUpdate> updates);
 
         IDisposable AddHandler(Action<QuoteInfo> handler);
     }
@@ -37,13 +37,13 @@ namespace TickTrader.Algo.Core.Subscriptions
         {
             _quoteConsumer?.Dispose();
             _manager.Remove(this);
-            _manager.Modify(this, _bySymbol.Select(p => FeedSubscriptionUpdate.Remove(p.Key)).ToList());
+            _manager.Modify(this, _bySymbol.Select(p => QuoteSubUpdate.Remove(p.Key)).ToList());
         }
 
 
-        public void Modify(List<FeedSubscriptionUpdate> updates)
+        public void Modify(List<QuoteSubUpdate> updates)
         {
-            var validUpdates = new List<FeedSubscriptionUpdate>(updates.Count);
+            var validUpdates = new List<QuoteSubUpdate>(updates.Count);
 
             foreach (var update in updates)
             {

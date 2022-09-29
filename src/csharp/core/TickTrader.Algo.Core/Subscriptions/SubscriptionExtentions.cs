@@ -8,27 +8,27 @@ namespace TickTrader.Algo.Core.Subscriptions
     {
         public static void Modify(this IQuoteSub subscription, IEnumerable<string> symbols, int depth)
         {
-            var updates = symbols.Select(s => FeedSubscriptionUpdate.Upsert(s, depth));
+            var updates = symbols.Select(s => QuoteSubUpdate.Upsert(s, depth));
             subscription.Modify(updates.ToList());
         }
 
         public static void Modify(this IQuoteSub subscription, string symbol, int depth)
         {
-            var update = FeedSubscriptionUpdate.Upsert(symbol, depth);
+            var update = QuoteSubUpdate.Upsert(symbol, depth);
             subscription.Modify(ToList(update));
         }
 
-        public static void Modify(this IQuoteSub subscription, FeedSubscriptionUpdate update)
+        public static void Modify(this IQuoteSub subscription, QuoteSubUpdate update)
         {
             subscription.Modify(ToList(update));
         }
 
         public static void Remove(this IQuoteSub subscription, string symbol)
         {
-            var update = FeedSubscriptionUpdate.Remove(symbol);
+            var update = QuoteSubUpdate.Remove(symbol);
             subscription.Modify(ToList(update));
         }
 
-        private static List<FeedSubscriptionUpdate> ToList(FeedSubscriptionUpdate update) => new List<FeedSubscriptionUpdate> { update };
+        private static List<QuoteSubUpdate> ToList(QuoteSubUpdate update) => new List<QuoteSubUpdate> { update };
     }
 }

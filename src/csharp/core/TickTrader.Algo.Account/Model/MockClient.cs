@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Account
 
         void IQuoteSubManager.Remove(IQuoteSubInternal sub) { }
 
-        void IQuoteSubManager.Modify(IQuoteSubInternal sub, List<FeedSubscriptionUpdate> updates) { }
+        void IQuoteSubManager.Modify(IQuoteSubInternal sub, List<QuoteSubUpdate> updates) { }
 
         #endregion
     }

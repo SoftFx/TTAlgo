@@ -76,11 +76,11 @@ namespace TickTrader.Algo.Runtime
         }
 
 
-        void IQuoteSubProvider.Modify(List<FeedSubscriptionUpdate> updates)
+        void IQuoteSubProvider.Modify(List<QuoteSubUpdate> updates)
         {
-            var request = new ModifyFeedSubscriptionRequest();
+            var request = new ModifyQuoteSubRequest();
             request.Updates.AddRange(updates);
-            var _ = ModifyFeedSubscriptionAsync(request);
+            var _ = ModifyQuoteSubAsync(request);
         }
 
 
@@ -219,15 +219,15 @@ namespace TickTrader.Algo.Runtime
             return context;
         }
 
-        internal async Task<List<QuoteInfo>> GetFeedSnapshotAsync()
+        internal async Task<List<QuoteInfo>> GetQuoteSnapshotAsync()
         {
             var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(Id, new FeedSnapshotRequest()), context);
+            _session.Ask(RpcMessage.Request(Id, new QuoteSnapshotRequest()), context);
             var res = await context.TaskSrc.Task;
             return res.Quotes.Select(QuoteInfo.Create).ToList();
         }
 
-        internal async Task<List<QuoteInfo>> ModifyFeedSubscriptionAsync(ModifyFeedSubscriptionRequest request)
+        internal async Task<List<QuoteInfo>> ModifyQuoteSubAsync(ModifyQuoteSubRequest request)
         {
             var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(Id, request), context);

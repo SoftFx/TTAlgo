@@ -12,7 +12,7 @@
     }
 
 
-    public partial class FeedSubscriptionUpdate
+    public partial class QuoteSubUpdate
     {
         public const string AllSymbolsAlias = "";
 
@@ -23,13 +23,12 @@
 
         public bool IsAllSymbols => Symbol == AllSymbolsAlias;
 
+        public static QuoteSubUpdate Upsert(string symbol, int depth) => new QuoteSubUpdate { Symbol = symbol, Depth = depth };
 
-        public static FeedSubscriptionUpdate Upsert(string symbol, int depth) => new FeedSubscriptionUpdate { Symbol = symbol, Depth = depth };
+        public static QuoteSubUpdate Remove(string symbol) => new QuoteSubUpdate { Symbol = symbol, Depth = SubscriptionDepth.RemoveSub };
 
-        public static FeedSubscriptionUpdate Remove(string symbol) => new FeedSubscriptionUpdate { Symbol = symbol, Depth = SubscriptionDepth.RemoveSub };
+        public static QuoteSubUpdate UpsertAll(int depth = SubscriptionDepth.Ambient) => new QuoteSubUpdate { Symbol = AllSymbolsAlias, Depth = depth };
 
-        public static FeedSubscriptionUpdate UpsertAll(int depth = SubscriptionDepth.Ambient) => new FeedSubscriptionUpdate { Symbol = AllSymbolsAlias, Depth = depth };
-
-        public static FeedSubscriptionUpdate ResetAll() => new FeedSubscriptionUpdate { Symbol = AllSymbolsAlias, Depth = SubscriptionDepth.Ambient };
+        public static QuoteSubUpdate ResetAll() => new QuoteSubUpdate { Symbol = AllSymbolsAlias, Depth = SubscriptionDepth.Ambient };
     }
 }
