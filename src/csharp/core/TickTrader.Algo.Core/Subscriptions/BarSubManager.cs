@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         void Remove(IBarSubInternal sub);
 
-        void Modify(IBarSubInternal sub, BarSubUpdate updates);
+        void Modify(IBarSubInternal sub, BarSubUpdate update);
 
         void Modify(IBarSubInternal sub, List<BarSubUpdate> updates);
     }

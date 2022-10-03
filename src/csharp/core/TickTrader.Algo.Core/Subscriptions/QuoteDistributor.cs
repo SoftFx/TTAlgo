@@ -100,7 +100,7 @@ namespace TickTrader.Algo.Core.Subscriptions
             var update = depth != SubscriptionDepth.Ambient
                 ? QuoteSubUpdate.Upsert(symbol, depth)
                 : QuoteSubUpdate.Remove(symbol);
-            _manager.Modify(this, new List<QuoteSubUpdate> { update });
+            _manager.Modify(this, update);
         }
 
 

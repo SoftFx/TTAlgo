@@ -13,6 +13,8 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         void Remove(IQuoteSubInternal sub);
 
+        void Modify(IQuoteSubInternal sub, QuoteSubUpdate update);
+
         void Modify(IQuoteSubInternal sub, List<QuoteSubUpdate> updates);
     }
 
@@ -75,6 +77,20 @@ namespace TickTrader.Algo.Core.Subscriptions
             }
         }
 
+        public void Modify(IQuoteSubInternal sub, QuoteSubUpdate update)
+        {
+            if (_unwrappedSymbolsDepth != null)
+            {
+                Modify(sub, new List<QuoteSubUpdate> { update });
+            }
+            else
+            {
+                var groupUpdate = ModifyGroup(sub, update);
+                if (groupUpdate != null)
+                    _provider.Modify(new List<QuoteSubUpdate> { groupUpdate });
+            }
+        }
+
         public void Modify(IQuoteSubInternal sub, List<QuoteSubUpdate> updates)
         {
             var allChanged = false;
@@ -124,7 +140,8 @@ namespace TickTrader.Algo.Core.Subscriptions
                 }
             }
 
-            _provider.Modify(groupUpdates);
+            if (groupUpdates.Count > 0)
+                _provider.Modify(groupUpdates);
         }
 
 
