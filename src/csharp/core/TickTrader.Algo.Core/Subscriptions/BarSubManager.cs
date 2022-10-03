@@ -1,5 +1,5 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -10,6 +10,8 @@ namespace TickTrader.Algo.Core.Subscriptions
         void Add(IBarSubInternal sub);
 
         void Remove(IBarSubInternal sub);
+
+        void Modify(IBarSubInternal sub, BarSubUpdate updates);
 
         void Modify(IBarSubInternal sub, List<BarSubUpdate> updates);
     }
@@ -27,7 +29,8 @@ namespace TickTrader.Algo.Core.Subscriptions
 
     public class BarSubManager : IBarSubManager
     {
-        private readonly ConcurrentDictionary<string, SymbolGroup> _groups = new ConcurrentDictionary<string, SymbolGroup>();
+        private readonly object _syncObj = new object();
+        private readonly Dictionary<BarSubEntry, SubGroup> _groups = new Dictionary<BarSubEntry, SubGroup>();
         private readonly SubList<IBarSubInternal> _subList = new SubList<IBarSubInternal>();
         private readonly IBarSubProvider _provider;
 
@@ -53,72 +56,82 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         public void Remove(IBarSubInternal sub) => _subList.RemoveSub(sub);
 
+        public void Modify(IBarSubInternal sub, BarSubUpdate update)
+        {
+            var propagate = false;
+
+            lock (_syncObj)
+            {
+                propagate = ModifyGroup(sub, update);
+                if (propagate && update.IsRemoveAction)
+                    _groups.Remove(update.Entry); // cleanup empty group
+            }
+
+            if (propagate)
+                _provider.Modify(new List<BarSubUpdate> { update });
+        }
+
         public void Modify(IBarSubInternal sub, List<BarSubUpdate> updates)
         {
+            var groupUpdates = new List<BarSubUpdate>();
+
+            lock (_syncObj)
+            {
+                foreach (var update in updates)
+                {
+                    if (ModifyGroup(sub, update))
+                        groupUpdates.Add(update);
+                }
+
+                // clean up empty groups
+                foreach (var update in groupUpdates)
+                {
+                    if (update.IsRemoveAction)
+                        _groups.Remove(update.Entry);
+                }
+            }
+
+            if (groupUpdates.Count > 0)
+                _provider.Modify(groupUpdates);
+        }
+
+        public List<BarSubUpdate> GetCurrentSubs()
+        {
+            lock (_syncObj)
+            {
+                return _groups.Values.Where(g => !g.IsEmpty).Select(g => BarSubUpdate.Upsert(g.Entry)).ToList();
+            }
         }
 
 
-        private BarSubUpdate ModifyGroup(IBarSubInternal sub, BarSubUpdate update)
+        private bool ModifyGroup(IBarSubInternal sub, BarSubUpdate update)
         {
-            return update;
+            var entry = update.Entry;
+            var propagate = false;
 
+            if (update.IsUpsertAction)
+            {
+                var group = GetOrAddGroup(entry);
+                propagate = group.Upsert(sub);
+            }
+            else if (update.IsRemoveAction)
+            {
+                var group = GetGroupOrDefault(entry);
+                propagate = group?.Remove(sub) ?? false;
+            }
+
+            return propagate;
         }
 
-        private SymbolGroup GetOrAddGroup(string symbol)
+        private SubGroup GetOrAddGroup(BarSubEntry entry)
         {
-            return _groups.GetOrAdd(symbol, s => new SymbolGroup(s));
+            return _groups.GetOrAdd(entry, e => new SubGroup(e));
         }
 
-        private SymbolGroup GetGroupOrDefault(string symbol)
+        private SubGroup GetGroupOrDefault(BarSubEntry entry)
         {
-            _groups.TryGetValue(symbol, out var group);
+            _groups.TryGetValue(entry, out var group);
             return group;
-        }
-
-
-        private class SymbolGroup
-        {
-            private readonly object _syncObj = new object();
-            private readonly Dictionary<BarSubEntry, SubGroup> _groups = new Dictionary<BarSubEntry, SubGroup>();
-
-
-            public string Symbol { get; set; }
-
-
-            public SymbolGroup(string symbol)
-            {
-                Symbol = symbol;
-            }
-
-
-            public bool Upsert(IBarSubInternal sub, BarSubEntry entry)
-            {
-                lock (_syncObj)
-                {
-                    var added = false;
-                    if (!_groups.TryGetValue(entry, out var group))
-                    {
-                        group = new SubGroup(entry.Timeframe, entry.MarketSide);
-                        _groups.Add(entry, group);
-                        added = true;
-                    }
-                    group.Upsert(sub);
-                    return added;
-                }
-            }
-
-            public void Remove(IBarSubInternal sub, BarSubEntry entry)
-            {
-                lock (_syncObj)
-                {
-                    if (_groups.TryGetValue(entry, out var group))
-                    {
-                        group.Remove(sub);
-                        if (group.IsEmpty)
-                            _groups.Remove(entry);
-                    }
-                }
-            }
         }
 
 
@@ -127,30 +140,28 @@ namespace TickTrader.Algo.Core.Subscriptions
             private readonly Dictionary<IBarSubInternal, bool> _subs = new Dictionary<IBarSubInternal, bool>();
 
 
-            public Feed.Types.Timeframe Timeframe { get; set; }
-
-            public Feed.Types.MarketSide Side { get; set; }
+            public BarSubEntry Entry { get; }
 
             public bool IsEmpty => _subs.Count == 0;
 
 
-            public SubGroup(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide side)
+            public SubGroup(BarSubEntry entry)
             {
-                Timeframe = timeframe;
-                Side = side;
+                Entry = entry;
             }
 
 
             public bool Upsert(IBarSubInternal sub)
             {
-                var added = !_subs.ContainsKey(sub);
+                var propagate = IsEmpty;
                 _subs[sub] = false;
-                return added;
+                return propagate;
             }
 
-            public void Remove(IBarSubInternal sub)
+            public bool Remove(IBarSubInternal sub)
             {
                 _subs.Remove(sub);
+                return IsEmpty;
             }
         }
     }

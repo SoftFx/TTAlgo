@@ -189,13 +189,14 @@ message QuoteListRequest {
 }
 
 message BarSubEntry {
-    Feed.MarketSide market_side = 1;
-    Feed.Timeframe timeframe = 2;
+    string symbol = 1;
+    Feed.MarketSide market_side = 2;
+    Feed.Timeframe timeframe = 3;
 }
 
 message BarSubUpdate {
-    string symbol = 1;
-    repeated BarSubEntry entries = 2;
+    BarSubEntry entry = 1;
+    bool change_flag = 2; // true insert, false remove
 }
 
 message ModifyBarSubRequest { // returns BarPage

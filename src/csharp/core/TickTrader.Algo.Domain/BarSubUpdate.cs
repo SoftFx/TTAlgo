@@ -2,8 +2,13 @@
 {
     public partial class BarSubUpdate
     {
-        public bool IsUpsertAction => Entries.Count > 0;
+        public bool IsUpsertAction => ChangeFlag;
 
-        public bool IsRemoveAction => Entries.Count == 0;
+        public bool IsRemoveAction => !ChangeFlag;
+
+
+        public static BarSubUpdate Upsert(BarSubEntry entry) => new BarSubUpdate { Entry = entry, ChangeFlag = true };
+
+        public static BarSubUpdate Remove(BarSubEntry entry) => new BarSubUpdate { Entry = entry, ChangeFlag = false };
     }
 }
