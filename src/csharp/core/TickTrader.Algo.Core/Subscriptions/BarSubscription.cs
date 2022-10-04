@@ -49,10 +49,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 
             lock (_syncObj)
             {
-                if (update.IsUpsertAction)
-                    propagate = _subEntries.Add(update.Entry);
-                else if (update.IsRemoveAction)
-                    propagate = _subEntries.Remove(update.Entry);
+                propagate = ApplyUpdate(update);
             }
 
             if (propagate)
@@ -67,16 +64,8 @@ namespace TickTrader.Algo.Core.Subscriptions
             {
                 foreach (var update in updates)
                 {
-                    if (update.IsUpsertAction)
-                    {
-                        if (_subEntries.Add(update.Entry))
-                            validUpdates.Add(update);
-                    }
-                    else if (update.IsRemoveAction)
-                    {
-                        if (_subEntries.Remove(update.Entry))
-                            validUpdates.Add(update);
-                    }
+                    if (ApplyUpdate(update))
+                        validUpdates.Add(update);
                 }
             }
 
@@ -99,6 +88,16 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         void IBarSubInternal.Dispatch(BarInfo bar) => _barConsumer?.Add(bar);
 
+
+        private bool ApplyUpdate(BarSubUpdate update)
+        {
+            if (update.IsUpsertAction)
+                return _subEntries.Add(update.Entry);
+            else if (update.IsRemoveAction)
+                return _subEntries.Remove(update.Entry);
+
+            return false;
+        }
 
         private void DispatchBar(BarInfo bar)
         {

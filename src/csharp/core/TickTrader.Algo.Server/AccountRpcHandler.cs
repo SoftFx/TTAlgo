@@ -279,7 +279,9 @@ namespace TickTrader.Algo.Server
         {
             var request = payload.Unpack<ModifyQuoteSubRequest>();
             var response = new QuotePage();
-            _quoteSub.Modify(request.Updates.ToList());
+            if (request.Updates.Count == 1)
+                _quoteSub.Modify(request.Updates[0]);
+            else _quoteSub.Modify(request.Updates.ToList());
             return Task.FromResult(Any.Pack(response));
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Async;
@@ -10,6 +9,8 @@ namespace TickTrader.Algo.Core.Subscriptions
 {
     public interface IQuoteSub : IDisposable
     {
+        void Modify(QuoteSubUpdate update);
+
         void Modify(List<QuoteSubUpdate> updates);
 
         IDisposable AddHandler(Action<QuoteInfo> handler);
@@ -18,7 +19,8 @@ namespace TickTrader.Algo.Core.Subscriptions
 
     public class QuoteSubscription : IQuoteSub, IQuoteSubInternal
     {
-        private readonly ConcurrentDictionary<string, int> _bySymbol = new ConcurrentDictionary<string, int>();
+        private readonly object _syncObj = new object();
+        private readonly Dictionary<string, int> _bySymbol = new Dictionary<string, int>();
         private readonly IQuoteSubManager _manager;
 
         private ChannelConsumerWrapper<QuoteInfo> _quoteConsumer;
@@ -41,25 +43,34 @@ namespace TickTrader.Algo.Core.Subscriptions
         }
 
 
+        public void Modify(QuoteSubUpdate update)
+        {
+            var propagate = false;
+
+            lock (_syncObj)
+            {
+                propagate = ApplyUpdate(update);
+            }
+
+            if (propagate)
+                _manager.Modify(this, update);
+        }
+
         public void Modify(List<QuoteSubUpdate> updates)
         {
             var validUpdates = new List<QuoteSubUpdate>(updates.Count);
 
-            foreach (var update in updates)
+            lock (_syncObj)
             {
-                if (update.IsUpsertAction)
+                foreach (var update in updates)
                 {
-                    validUpdates.Add(update);
-                    _bySymbol.AddOrUpdate(update.Symbol, update.Depth, (key, value) => update.Depth);
-                }
-                else if (update.IsRemoveAction)
-                {
-                    if (_bySymbol.TryRemove(update.Symbol, out var _))
+                    if (ApplyUpdate(update))
                         validUpdates.Add(update);
                 }
             }
 
-            _manager.Modify(this, validUpdates);
+            if (validUpdates.Count > 0)
+                _manager.Modify(this, validUpdates);
         }
 
         public IDisposable AddHandler(Action<QuoteInfo> handler)
@@ -78,6 +89,28 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         void IQuoteSubInternal.Dispatch(QuoteInfo quote) => _quoteConsumer?.Add(quote);
 
+
+        private bool ApplyUpdate(QuoteSubUpdate update)
+        {
+            var smb = update.Symbol;
+
+            if (update.IsUpsertAction)
+            {
+                var hasValue = _bySymbol.TryGetValue(smb, out var currentDepth);
+                if (!hasValue || (hasValue && currentDepth != update.Depth))
+                {
+                    _bySymbol[smb] = update.Depth;
+                    return true;
+                }
+            }
+            else if (update.IsRemoveAction)
+            {
+                if (_bySymbol.Remove(update.Symbol))
+                    return true;
+            }
+
+            return false;
+        }
 
         private void DispatchQuote(QuoteInfo quote)
         {

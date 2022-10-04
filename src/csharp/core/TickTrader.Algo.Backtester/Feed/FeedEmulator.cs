@@ -191,6 +191,8 @@ namespace TickTrader.Algo.Backtester
 
             public void Dispose() { }
 
+            public void Modify(QuoteSubUpdate update) { }
+
             public void Modify(List<QuoteSubUpdate> updates) { }
         }
 
