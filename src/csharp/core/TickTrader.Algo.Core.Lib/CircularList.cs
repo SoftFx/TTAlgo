@@ -185,7 +185,7 @@ namespace TickTrader.Algo.Core.Lib
             {
                 var part1 = src.AsSpan(begin);
                 part1.CopyTo(dst);
-                dst.Slice(part1.Length);
+                dst = dst.Slice(part1.Length);
                 src.AsSpan(0, end + 1).CopyTo(dst);
             }
         }

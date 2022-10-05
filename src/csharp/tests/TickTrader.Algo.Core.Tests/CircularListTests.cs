@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core.Tests
             list.Add(17);
             list.Add(18);
 
-            Assert.IsTrue(list.SequenceEqual(new int[] { 13, 14, 15, 16, 17, 18}));
+            Assert.IsTrue(list.SequenceEqual(new int[] { 13, 14, 15, 16, 17, 18 }));
             Assert.AreEqual(13, list[0]);
             Assert.AreEqual(14, list[1]);
             Assert.AreEqual(15, list[2]);
@@ -86,6 +86,36 @@ namespace TickTrader.Algo.Core.Tests
             Assert.IsTrue(list.SequenceEqual(new int[] { 15 }));
             Assert.AreEqual(15, list[0]);
             Assert.AreEqual(1, list.Count);
+        }
+
+        [TestMethod]
+        public void CircularList_ToList_ToArray()
+        {
+            const int itemCnt = 150;
+            const int maxItems = 200;
+
+            var list = new CircularList<int>(maxItems);
+            for (var i = 0; i < itemCnt; i++)
+            {
+                if (list.Count >= maxItems)
+                    list.Dequeue();
+
+                list.Enqueue(i);
+            }
+
+            Assert.AreEqual(itemCnt, list.Count);
+            Assert.IsTrue(list.ToArray().SequenceEqual(Enumerable.Range(0, itemCnt)));
+
+            for (var i = itemCnt; i < 2 * itemCnt; i++)
+            {
+                if (list.Count >= maxItems)
+                    list.Dequeue();
+
+                list.Enqueue(i);
+            }
+
+            Assert.AreEqual(maxItems, list.Count);
+            Assert.IsTrue(list.ToArray().SequenceEqual(Enumerable.Range(2 * itemCnt - maxItems, maxItems)));
         }
     }
 }
