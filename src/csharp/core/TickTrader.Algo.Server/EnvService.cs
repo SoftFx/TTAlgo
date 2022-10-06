@@ -50,6 +50,9 @@ namespace TickTrader.Algo.Server
             PathHelper.EnsureDirectoryCreated(LogFolder);
             PathHelper.EnsureDirectoryCreated(FeedHistoryCacheFolder);
             PathHelper.EnsureDirectoryCreated(AppDataFolder);
+
+            //PathHelper.SetDirectoryCompression(BotLogFolder);
+            //PathHelper.SetDirectoryCompression(LogFolder);
         }
 
 
