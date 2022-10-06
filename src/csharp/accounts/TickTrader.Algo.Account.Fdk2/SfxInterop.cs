@@ -98,13 +98,13 @@ namespace TickTrader.Algo.Account.Fdk2
                     connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir, optimizationType: SoftFX.Net.Core.OptimizationType.Throughput2);
             }
 
-            _feedProxyAdapter = new Fdk2FeedAdapter(_feedProxy, logger);
+            _feedProxyAdapter = new Fdk2FeedAdapter(_feedProxy, logger, b => BarUpdate?.Invoke(b));
             _feedHistoryProxyAdapter = new Fdk2FeedHistoryAdapter(_feedHistoryProxy, logger);
             _tradeProxyAdapter = new Fdk2TradeAdapter(_tradeProxy, rep => ExecutionReport?.Invoke(ConvertToEr(rep)));
             _tradeHistoryProxyAdapter = new Fdk2TradeHistoryAdapter(_tradeHistoryProxy, logger);
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
-            _feedProxy.BarsUpdateEvent += (c, b) => BarUpdate?.Invoke(Convert(b));
+            //_feedProxy.BarsUpdateEvent += (c, b) => BarUpdate?.Invoke(Convert(b));
             _feedProxy.LogoutEvent += (c, m) => OnLogout(m);
             _feedProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeProxy.LogoutEvent += (c, m) => OnLogout(m);
@@ -305,7 +305,7 @@ namespace TickTrader.Algo.Account.Fdk2
         #region IFeedServerApi
 
         public event Action<Domain.QuoteInfo> Tick;
-        public event Action<BarUpdateSummary> BarUpdate;
+        public event Action<BarInfo> BarUpdate;
 
         public async Task<Domain.CurrencyInfo[]> GetCurrencies()
         {
@@ -443,9 +443,20 @@ namespace TickTrader.Algo.Account.Fdk2
             }
         }
 
-        public Task<BarUpdateSummary[]> SubscribeToBars(string symbol, (Feed.Types.Timeframe, Feed.Types.MarketSide)[] barParams)
+        public async Task SubscribeToBars(List<BarSubUpdate> updates)
         {
-            return _feedProxyAdapter.SubscribeBarsAsync(symbol, barParams.Select(p => new BarParameters(ConvertBack(p.Item1), ConvertBack(p.Item2))).ToArray());
+            var removes = updates.Where(u => u.IsRemoveAction);
+            var upserts = updates.Where(u => u.IsUpsertAction).GroupBy(u => u.Entry.Symbol);
+
+            if (removes.Count() > 0)
+                await _feedProxyAdapter.UnsubscribeBarsAsync(removes.Select(u => u.Entry.Symbol).ToArray());
+
+            if (upserts.Count() > 0)
+                await _feedProxyAdapter.SubscribeBarsAsync(upserts.Select(g => new BarSubscriptionSymbolEntry
+                {
+                    Symbol = g.Key,
+                    Params = g.Select(u => new BarParameters(ConvertBack(u.Entry.Timeframe), ConvertBack(u.Entry.MarketSide))).ToArray(),
+                }).ToArray());
         }
 
         #endregion
@@ -1483,7 +1494,10 @@ namespace TickTrader.Algo.Account.Fdk2
         {
             var res = new BarUpdateSummary[fdkUpdates.Length];
             for (var i = 0; i < fdkUpdates.Length; i++)
+            {
                 res[i] = Convert(fdkUpdates[i]);
+                res[i].IsReset = true;
+            }
             return res;
         }
 

@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Account
 
         private readonly EntityCache _cache = new EntityCache();
 
-        private ChannelItemProcessor<QuoteInfo> _feedProcessor;
+        private ChannelItemProcessor<object> _feedProcessor;
         private ChannelItemProcessor<object> _tradeProcessor;
 
         private FeedHistoryProviderModel.ControlHandler _feedHistory;
@@ -32,7 +32,8 @@ namespace TickTrader.Algo.Account
         private PluginTradeApiProvider _tradeApi;
 
         private QuoteMonitoringModel _quoteMonitoring;
-        private QuoteSubManager _rootSubManager;
+        private QuoteSubManager _rootQuoteSubManager;
+        private BarSubManager _rootBarSubManager;
         private bool _allowSubModification;
         private ConnectionModel _connection;
         private TradeSubManager _tradeSubManager;
@@ -45,8 +46,10 @@ namespace TickTrader.Algo.Account
         protected override void ActorInit()
         {
             _ref = this.GetRef();
-            _rootSubManager = new QuoteSubManager(new FeedSubProviderWrapper(_ref));
-            _tradeSubManager = new TradeSubManager(_cache.Account, new QuoteSubscription(_rootSubManager));
+            var feedSubProvider = new FeedSubProviderWrapper(_ref);
+            _rootQuoteSubManager = new QuoteSubManager(feedSubProvider);
+            _tradeSubManager = new TradeSubManager(_cache.Account, new QuoteSubscription(_rootQuoteSubManager));
+            _rootBarSubManager = new BarSubManager(feedSubProvider);
         }
 
         private void Init(AccountModelSettings settings)
@@ -63,7 +66,7 @@ namespace TickTrader.Algo.Account
             if (settings.Monitoring?.EnableQuoteMonitoring ?? false)
                 _quoteMonitoring = new QuoteMonitoringModel(_connection, settings.Monitoring);
 
-            _feedProcessor = ChannelItemProcessor<QuoteInfo>.CreateUnbounded($"{Name} feed loop", true);
+            _feedProcessor = ChannelItemProcessor<object>.CreateUnbounded($"{Name} feed loop", true);
             _tradeProcessor = ChannelItemProcessor<object>.CreateUnbounded($"{Name} trade loop", true);
 
 
@@ -171,7 +174,7 @@ namespace TickTrader.Algo.Account
                 return Actor.Call(a =>
                 {
                     var historyHandler = new FeedHistoryProviderModel.Handler(a._feedHistory.Ref);
-                    return new PluginFeedProvider(a._cache, a._rootSubManager, historyHandler);
+                    return new PluginFeedProvider(a._cache, a._rootQuoteSubManager, historyHandler);
                 });
             }
 
@@ -236,7 +239,7 @@ namespace TickTrader.Algo.Account
 
             public async Task Init()
             {
-                SubManager = await Actor.Call(a => a._rootSubManager);
+                SubManager = await Actor.Call(a => a._rootQuoteSubManager);
 
                 Distributor = new QuoteDistributor(SubManager);
 
@@ -350,16 +353,20 @@ namespace TickTrader.Algo.Account
 
             _logger.Debug("Loaded orders.");
 
-            await LoadQuotesSnapshot(symbols.Select(s => s.Name));
+            _allowSubModification = true;
 
-            _logger.Debug("Loaded quotes snaphsot.");
+            await Task.WhenAll(
+                RestoreQuotesSubscription(symbols.Select(s => s.Name)),
+                RestoreBarsSubscription());
+
+            _logger.Debug("Restored feed subscriptions.");
 
             _logger.Debug("Done loading.");
 
             // start multicasting
 
             _tradeProcessor.Start(ApplyTradeUpdate);
-            _feedProcessor.Start(ApplyQuote);
+            _feedProcessor.Start(ApplyFeedUpdate);
         }
 
         private async Task Stop()
@@ -441,20 +448,29 @@ namespace TickTrader.Algo.Account
 
         #endregion
 
+        private void ApplyFeedUpdate(object update)
+        {
+            if (update is QuoteInfo quote)
+                ApplyQuote(quote);
+            else if (update is BarInfo bar)
+                ApplyBar(bar);
+            else
+                _logger.Error($"Unexcepted feed update of type: {update.GetType().FullName}");
+        }
+
         #region Quote distribution
 
-        private async Task LoadQuotesSnapshot(IEnumerable<string> allSymbols)
+        private async Task RestoreQuotesSubscription(IEnumerable<string> allSymbols)
         {
-            var updates = _rootSubManager.InitUnwrap(allSymbols);
+            var updates = _rootQuoteSubManager.InitUnwrap(allSymbols);
 
-            _allowSubModification = true;
             await ModifyAsync(updates);
         }
 
         private void ApplyQuote(QuoteInfo quote)
         {
             _cache.ApplyQuote(quote);
-            _rootSubManager.Dispatch(quote);
+            _rootQuoteSubManager.Dispatch(quote);
 
             _quoteEventSrc.DispatchEvent(quote);
         }
@@ -488,12 +504,12 @@ namespace TickTrader.Algo.Account
                             break;
                     }
 
-                    _logger.Debug("Subscribed with depth = " + depth + " to " + string.Join(",", symbols));
+                    _logger.Debug("Subscribed to quotes with depth = " + depth + " to " + string.Join(",", symbols));
                     return snapshot;
                 }
                 else
                 {
-                    _logger.Debug($"Subscription modified while offline. Args Depth = {depth}, Symbols = {string.Join(",", symbols)}");
+                    _logger.Debug($"Quote subscription modified while offline. Args Depth = {depth}, Symbols = {string.Join(",", symbols)}");
                 }
             }
             catch (Exception ex)
@@ -526,9 +542,40 @@ namespace TickTrader.Algo.Account
 
         #region Bar distribution
 
+        private async Task RestoreBarsSubscription()
+        {
+            var updates = _rootBarSubManager.GetCurrentSubs();
+
+            await ModifyAsync(updates);
+        }
+
+        private void ApplyBar(BarInfo bar)
+        {
+            _rootBarSubManager.Dispatch(bar);
+        }
+
         private async Task ModifyAsync(List<BarSubUpdate> updates)
         {
-            await _connection.FeedProxy.SubscribeToBars("", null);
+            if (updates.Count == 0)
+                return;
+
+            try
+            {
+                if (!_allowSubModification)
+                {
+                    _logger.Debug($"Bar subscription modified while offline. Args Depth = {string.Join(", ", updates.Select(u => $"{u.Entry.Symbol}.{u.Entry.MarketSide}.{u.Entry.Timeframe}"))}");
+                }
+                else
+                {
+                    await _connection.FeedProxy.SubscribeToBars(updates);
+
+                    _logger.Debug($"Subscribed to bars with args = {string.Join(", ", updates.Select(u => $"{u.Entry.Symbol}.{u.Entry.MarketSide}.{u.Entry.Timeframe}"))}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to modify bar subscription. Arguments updates = {string.Join(", ", updates.Select(u => $"{u.Entry.Symbol}.{u.Entry.MarketSide}.{u.Entry.Timeframe}"))}, Error = {ex}");
+            }
         }
 
         #endregion

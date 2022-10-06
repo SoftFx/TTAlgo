@@ -2,17 +2,20 @@
 using System.Text;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Account
+namespace TickTrader.Algo.Account.Fdk2
 {
-    public class BarUpdateSummary
+    internal class BarUpdateSummary
     {
         public string Symbol { get; set; }
+
+        public bool IsReset { get; set; }
 
         public double? AskClose { get; set; }
 
         public double? BidClose { get; set; }
 
         public BarUpdateDetails[] Details { get; set; }
+
 
         public override string ToString()
         {
@@ -30,7 +33,7 @@ namespace TickTrader.Algo.Account
     }
 
 
-    public class BarUpdateDetails
+    internal class BarUpdateDetails
     {
         public Feed.Types.Timeframe Timeframe { get; set; }
 
@@ -43,5 +46,7 @@ namespace TickTrader.Algo.Account
         public double? High { get; set; }
 
         public double? Low { get; set; }
+
+        public bool HasAllProperties => From.HasValue && Open.HasValue && High.HasValue && Low.HasValue;
     }
 }

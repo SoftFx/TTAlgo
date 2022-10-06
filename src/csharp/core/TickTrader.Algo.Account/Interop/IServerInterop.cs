@@ -1,5 +1,6 @@
 ﻿using ActorSharp;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ namespace TickTrader.Algo.Account
         bool AutoSymbols { get; }
 
         event Action<QuoteInfo> Tick;
-        event Action<BarUpdateSummary> BarUpdate;
+        event Action<BarInfo> BarUpdate;
         event Action<SymbolInfo[]> SymbolInfo;
         event Action<CurrencyInfo[]> CurrencyInfo;
 
@@ -66,6 +67,6 @@ namespace TickTrader.Algo.Account
 
         Task<(DateTime?, DateTime?)> GetAvailableRange(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
 
-        Task<BarUpdateSummary[]> SubscribeToBars(string symbol, (Feed.Types.Timeframe, Feed.Types.MarketSide)[] barParams);
+        Task SubscribeToBars(List<BarSubUpdate> updates);
     }
 }

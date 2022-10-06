@@ -1,5 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using TickTrader.Algo.Async;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 using TickTrader.FDK.Common;
 using FDK2 = TickTrader.FDK.Common;
 
@@ -9,11 +14,13 @@ namespace TickTrader.Algo.Account.Fdk2
     {
         private readonly FDK.Client.QuoteFeed _feedProxy;
         private readonly IAlgoLogger _logger;
+        private readonly BarUpdateAdapter _barUpdateAdapter;
 
-        public Fdk2FeedAdapter(FDK.Client.QuoteFeed feedProxy, IAlgoLogger logger)
+        public Fdk2FeedAdapter(FDK.Client.QuoteFeed feedProxy, IAlgoLogger logger, Action<BarInfo> barUpdateCallback)
         {
             _feedProxy = feedProxy;
             _logger = logger;
+            _barUpdateAdapter = new BarUpdateAdapter(barUpdateCallback);
 
             _feedProxy.ConnectResultEvent += (c, d) => SfxTaskAdapter.SetCompleted(d);
             _feedProxy.ConnectErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed(d, ex);
@@ -43,11 +50,14 @@ namespace TickTrader.Algo.Account.Fdk2
 
             _feedProxy.UnsubscribeBarsResultEvent += (c, d, s) => { SfxTaskAdapter.SetCompleted(d, true); };
             _feedProxy.UnsubscribeBarsErrorEvent += (c, d, ex) => { SfxTaskAdapter.SetFailed<bool>(d, ex); };
+
+            _feedProxy.BarsUpdateEvent += (c, b) => _barUpdateAdapter.AddUpdate(SfxInterop.Convert(b));
         }
 
 
         public Task Deinit()
         {
+            _barUpdateAdapter.Dispose();
             return Task.Factory.StartNew(() => _feedProxy.Dispose());
         }
 
@@ -119,21 +129,149 @@ namespace TickTrader.Algo.Account.Fdk2
             return res;
         }
 
-        public async Task<BarUpdateSummary[]> SubscribeBarsAsync(string symbol, BarParameters[] barParams)
+        internal async Task<BarUpdateSummary[]> SubscribeBarsAsync(BarSubscriptionSymbolEntry[] entries)
         {
             var taskSrc = new SfxTaskAdapter.RequestResultSource<BarUpdateSummary[]>("SubscribeBarsRequest");
-            _feedProxy.SubscribeBarsAsync(taskSrc, new[] { new BarSubscriptionSymbolEntry { Symbol = symbol, Params = barParams } });
+            _feedProxy.SubscribeBarsAsync(taskSrc, entries);
             var res = await taskSrc.Task;
             _logger.Debug(taskSrc.MeasureRequestTime());
             return res;
         }
 
-        public async Task UnsubscribeBarsAsync(string symbol)
+        internal async Task UnsubscribeBarsAsync(string[] symbols)
         {
             var taskSrc = new SfxTaskAdapter.RequestResultSource<bool>("UnsubscribeBarsRequest");
-            _feedProxy.UnsubscribeBarsAsync(taskSrc, new[] { symbol });
+            _feedProxy.UnsubscribeBarsAsync(taskSrc, symbols);
             await taskSrc.Task;
             _logger.Debug(taskSrc.MeasureRequestTime());
+        }
+
+
+        private class BarUpdateAdapter
+        {
+            private readonly Dictionary<string, SymbolBarGroup> _groups = new Dictionary<string, SymbolBarGroup>();
+            private readonly Action<BarInfo> _barUpdateCallback;
+            private readonly ChannelConsumerWrapper<BarUpdateSummary> _consumer;
+
+
+            public BarUpdateAdapter(Action<BarInfo> barUpdateCallback)
+            {
+                _barUpdateCallback = barUpdateCallback;
+
+                _consumer = new ChannelConsumerWrapper<BarUpdateSummary>(DefaultChannelFactory.CreateForOneToOne<BarUpdateSummary>(), $"{nameof(BarUpdateAdapter)} loop");
+                _consumer.BatchSize = 8;
+                _consumer.Start(ProcessUpdate);
+            }
+
+
+            public void Dispose() => _consumer.Dispose();
+
+            public void AddUpdate(BarUpdateSummary update) => _consumer.Add(update);
+
+
+            private void ProcessUpdate(BarUpdateSummary update)
+            {
+                List<BarInfo> res = default;
+                var smb = update.Symbol;
+
+                if (update.IsReset)
+                {
+                    if (update.Details.Length == 0)
+                        _groups.Remove(smb);
+                    else
+                    {
+                        if (!_groups.TryGetValue(smb, out var group))
+                        {
+                            group = new SymbolBarGroup();
+                            _groups.Add(smb, group);
+                        }
+                        group.Init(update);
+                        res = group.CurrentBars;
+                    }
+                }
+                else
+                {
+                    if (_groups.TryGetValue(smb, out var group))
+                    {
+                        group.Update(update);
+                        res = group.CurrentBars;
+                    }
+                }
+
+                if (res != null && _barUpdateCallback != null)
+                {
+                    foreach (var bar in res)
+                    {
+                        _barUpdateCallback(bar.Clone()); // protective copy
+                    }
+                }
+            }
+        }
+
+        private class SymbolBarGroup
+        {
+            public List<BarInfo> CurrentBars { get; } = new List<BarInfo>(16);
+
+
+            public void Init(BarUpdateSummary update)
+            {
+                CurrentBars.Clear();
+
+                var details = update.Details;
+                for (var i = 0; i < details.Length; i++)
+                {
+                    var d = details[i];
+                    var side = d.MarketSide;
+                    var close = side == Feed.Types.MarketSide.Ask ? update.AskClose : update.BidClose;
+                    if (close.HasValue && d.HasAllProperties && BarSampler.TryGet(d.Timeframe, out var sampler))
+                    {
+                        var boundaries = sampler.GetBar(new UtcTicks(d.From.Value));
+                        var data = new BarData(boundaries.Open, boundaries.Close)
+                        {
+                            Close = close.Value,
+                            Open = d.Open.Value,
+                            High = d.High.Value,
+                            Low = d.Low.Value
+                        };
+                        var bar = new BarInfo { Symbol = update.Symbol, Timeframe = d.Timeframe, MarketSide = side, Data = data };
+                        CurrentBars.Add(bar);
+                    }
+                }
+            }
+
+            public void Update(BarUpdateSummary update)
+            {
+                foreach (var bar in CurrentBars)
+                {
+                    var barData = bar.Data;
+                    var close = bar.MarketSide == Feed.Types.MarketSide.Ask ? update.AskClose : update.BidClose;
+
+                    var index = update.Details.IndexOf(d => d.Timeframe == bar.Timeframe && d.MarketSide == bar.MarketSide);
+                    if (index >= 0)
+                    {
+                        var d = update.Details[index];
+                        if (d.From.HasValue && d.HasAllProperties && BarSampler.TryGet(d.Timeframe, out var sampler))
+                        {
+                            var boundaries = sampler.GetBar(new UtcTicks(d.From.Value));
+                            barData.OpenTime = boundaries.Open;
+                            barData.CloseTime = boundaries.Close;
+                            barData.Open = d.Open.Value;
+                            barData.High = d.High.Value;
+                            barData.Low = d.Low.Value;
+                        }
+                        else
+                        {
+                            if (d.High.HasValue)
+                                barData.High = d.High.Value;
+                            if (d.Low.HasValue)
+                                barData.Low = d.Low.Value;
+                        }
+                    }
+
+                    if (close.HasValue)
+                        barData.Close = close.Value;
+                }
+            }
         }
     }
 }
