@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using TickTrader.Algo.Domain;
 
@@ -29,6 +30,12 @@ namespace TickTrader.Algo.Account.Fdk2
                 }
             }
             return sb.ToString();
+        }
+
+
+        public static BarUpdateSummary[] FromRemovedSymbols(string[] symbols)
+        {
+            return symbols.Select(smb => new BarUpdateSummary { Symbol = smb, IsReset = true }).ToArray();
         }
     }
 
