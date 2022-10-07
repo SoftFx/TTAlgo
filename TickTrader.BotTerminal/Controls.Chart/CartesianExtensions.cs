@@ -46,11 +46,11 @@ namespace TickTrader.BotTerminal.Controls.Chart
             return new FinancialPoint(data.OpenTime.ToUtcDateTime(), data.High, data.Open, data.Close, data.Low);
         }
 
-        internal static FinancialPoint ApplyTick(this FinancialPoint point, double tick)
+        internal static FinancialPoint ApplyBarUpdate(this FinancialPoint point, BarData data)
         {
-            point.High = Math.Max(point.High, tick);
-            point.Low = Math.Min(point.Low, tick);
-            point.Close = tick;
+            point.High = data.High;
+            point.Low = data.Low;
+            point.Close = data.Close;
 
             return point;
         }

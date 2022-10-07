@@ -152,6 +152,7 @@ namespace TickTrader.BotTerminal
         public IVarSet<string, CurrencyInfo> Currencies => _core.Currencies;
         public IObservableList<CurrencyInfo> SortedCurrencies { get; }
         public IObservableList<string> SortedCurrenciesNames { get; }
+        public BarDistributor BarDistributor => _core.BarDistributor;
 
 
         public IAccountProxy GetAccountProxy()

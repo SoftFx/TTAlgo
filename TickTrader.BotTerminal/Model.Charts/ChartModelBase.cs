@@ -44,9 +44,13 @@ namespace TickTrader.BotTerminal
         //private Property<AxisBase> _timeAxis = new Property<AxisBase>();
         private string dateAxisLabelFormat;
         private List<QuoteInfo> updateQueue;
-        private IDisposable _subscription;
+        private List<BarInfo> _barUpdateQueue;
+        private IDisposable _quoteSub;
         private Property<IRateInfo> _currentRateProp = new Property<IRateInfo>();
         private Feed.Types.Timeframe _timeframe;
+
+        protected IDisposable _barSub;
+
 
         public abstract IEnumerable<ChartTypes> AvailableChartTypes { get; }
 
@@ -66,8 +70,7 @@ namespace TickTrader.BotTerminal
             ClientModel.Disconnected += Connection_Disconnected;
             ClientModel.Deinitializing += Client_Deinitializing;
 
-            _subscription = ClientModel.Distributor.AddListener(OnRateUpdate, symbol.Name, 1);
-            //subscription.NewQuote += ;
+            _quoteSub = ClientModel.Distributor.AddListener(OnRateUpdate, symbol.Name, SubscriptionDepth.Tick_S0);
 
             _currentRateProp.Value = (IRateInfo)symbol.LastQuote;
 
@@ -232,6 +235,7 @@ namespace TickTrader.BotTerminal
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract IndicatorModel CreateIndicator(PluginConfig config);
         protected abstract void ApplyUpdate(QuoteInfo update);
+        protected abstract void ApplyBarUpdate(BarInfo update);
 
         //protected void Support(ChartTypes chartType)
         //{
@@ -247,6 +251,7 @@ namespace TickTrader.BotTerminal
                 isUpdateRequired = false;
                 ClearData();
                 updateQueue = new List<QuoteInfo>();
+                _barUpdateQueue = new List<BarInfo>();
                 await LoadData(cToken);
                 ApplyQueue();
                 _stateController.PushEvent(Events.Loaded);
@@ -321,7 +326,8 @@ namespace TickTrader.BotTerminal
                     ClientModel.Connected -= Connection_Connected;
                     ClientModel.Disconnected -= Connection_Disconnected;
                     ClientModel.Deinitializing -= Client_Deinitializing;
-                    _subscription.Dispose();
+                    _quoteSub.Dispose();
+                    _barSub?.Dispose();
 
                     _logger.Debug("Chart[" + Model.Name + "] disposed!");
                 }
@@ -346,6 +352,16 @@ namespace TickTrader.BotTerminal
         {
             updateQueue.ForEach(ApplyUpdate);
             updateQueue = null;
+            _barUpdateQueue.ForEach(ApplyBarUpdate);
+            _barUpdateQueue = null;
+        }
+
+        protected virtual void OnBarUpdate(BarInfo bar)
+        {
+            if (_stateController.Current == States.LoadingData)
+                _barUpdateQueue.Add(bar);
+            else if (_stateController.Current == States.Online)
+                ApplyBarUpdate(bar);
         }
 
         private void StartIndicators()

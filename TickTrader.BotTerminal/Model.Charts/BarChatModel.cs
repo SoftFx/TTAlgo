@@ -43,10 +43,14 @@ namespace TickTrader.BotTerminal
         protected override void ClearData()
         {
             BarVector.Clear();
+            _barSub?.Dispose();
+            _barSub = null;
         }
 
         protected async override Task LoadData(CancellationToken cToken)
         {
+            _barSub = ClientModel.BarDistributor.AddListener(OnBarUpdate, new BarSubEntry(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame));
+
             var aproximateTimeRef = UtcTicks.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
             var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef, -BarsCount);
 
@@ -80,6 +84,11 @@ namespace TickTrader.BotTerminal
             //    //_barVector.TryAppendQuote(quote.Time, quote.Bid, 1);
             //    //ExtendBoundaries(_barVector.Count, quote.TimeUtc);
             //}
+        }
+
+        protected override void ApplyBarUpdate(BarInfo bar)
+        {
+            BarVector.ApplyBarUpdate(bar);
         }
 
         protected override void UpdateSeries()

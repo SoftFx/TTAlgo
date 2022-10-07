@@ -38,6 +38,9 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         void IBarSubInternal.Dispatch(BarInfo bar) => UpdateBar(bar);
 
+        public IDisposable AddListener(Action<BarInfo> handler, BarSubEntry entry)
+            => new Listener(handler, this, entry);
+
 
         private void DispatchBar(BarInfo bar)
         {
@@ -87,7 +90,7 @@ namespace TickTrader.Algo.Core.Subscriptions
         }
 
 
-        private class Listener
+        private class Listener : IDisposable
         {
             private readonly Action<BarInfo> _handler;
             private readonly BarDistributor _parent;

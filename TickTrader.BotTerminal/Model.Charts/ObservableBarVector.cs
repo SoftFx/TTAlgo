@@ -88,38 +88,31 @@ namespace TickTrader.BotTerminal
 
         public void ApplyQuote(QuoteInfo quote)
         {
-            if (TryAppendBidQuote(quote))
-                ApplyNewTickEvent?.Invoke(quote.DoubleNullableBid(), quote.DoubleNullableAsk());
+            ApplyNewTickEvent?.Invoke(quote.DoubleNullableBid(), quote.DoubleNullableAsk());
         }
 
-        public bool TryAppendBidQuote(QuoteInfo quote)
+        public void ApplyBarUpdate(BarInfo bar)
         {
-            return quote.HasBid && AppendQuoteInternal(quote.Time, quote.Bid, true);
+            AppendBarUpdateInternal(bar, true);
         }
 
-        public bool TryAppendAskQuote(QuoteInfo quote)
+        private bool AppendBarUpdateInternal(BarInfo bar, bool noThrow)
         {
-            return quote.HasAsk && AppendQuoteInternal(quote.Time, quote.Ask, true);
-        }
-
-        private bool AppendQuoteInternal(UtcTicks time, double price, bool noThrow)
-        {
-            var boundaries = _sampler.GetBar(time);
             var currentBar = Items?.LastOrDefault();
 
             if (currentBar != null)
             {
-                if (time.Value < currentBar.Date.Ticks)
+                if (bar.Data.OpenTime.Value < currentBar.Date.Ticks)
                     return noThrow ? false : throw new ArgumentException("Invalid time sequnce!");
 
-                if (currentBar.Date.Ticks == boundaries.Open.Value)
+                if (bar.Data.OpenTime.Value == currentBar.Date.Ticks)
                 {
-                    currentBar.ApplyTick(price);
+                    currentBar.ApplyBarUpdate(bar.Data);
                     return true;
                 }
             }
 
-            return AppendBarIntenral(new BarData(boundaries.Open, boundaries.Close, price, 1), noThrow);
+            return AppendBarIntenral(bar.Data, noThrow);
         }
     }
 }
