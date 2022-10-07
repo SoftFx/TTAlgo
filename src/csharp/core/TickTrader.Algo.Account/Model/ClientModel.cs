@@ -75,6 +75,7 @@ namespace TickTrader.Algo.Account
             _connection.InitProxies += () =>
             {
                 _connection.FeedProxy.Tick += FeedProxy_Tick;
+                _connection.FeedProxy.BarUpdate += FeedProxy_BarUpdate;
                 _connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
                 _connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
                 _connection.TradeProxy.BalanceOperation += TradeProxy_BalanceOperation;
@@ -85,6 +86,7 @@ namespace TickTrader.Algo.Account
             _connection.AsyncDisconnected += (s, t) =>
             {
                 _connection.FeedProxy.Tick -= FeedProxy_Tick;
+                _connection.FeedProxy.BarUpdate -= FeedProxy_BarUpdate;
                 _connection.TradeProxy.ExecutionReport -= TradeProxy_ExecutionReport;
                 _connection.TradeProxy.PositionReport -= TradeProxy_PositionReport;
                 _connection.TradeProxy.BalanceOperation -= TradeProxy_BalanceOperation;
@@ -97,6 +99,11 @@ namespace TickTrader.Algo.Account
         {
             _quoteMonitoring?.CheckQuoteDelay(q);
             _feedProcessor.Add(q);
+        }
+
+        private void FeedProxy_BarUpdate(BarInfo b)
+        {
+            _feedProcessor.Add(b);
         }
 
         private void TradeProxy_ExecutionReport(ExecutionReport er)
@@ -563,18 +570,18 @@ namespace TickTrader.Algo.Account
             {
                 if (!_allowSubModification)
                 {
-                    _logger.Debug($"Bar subscription modified while offline. Args Depth = {string.Join(", ", updates.Select(u => $"{u.Entry.Symbol}.{u.Entry.MarketSide}.{u.Entry.Timeframe}"))}");
+                    _logger.Debug($"Bar subscription modified while offline. Args = {string.Join(", ", updates.Select(u => u.ToShortString()))}");
                 }
                 else
                 {
                     await _connection.FeedProxy.SubscribeToBars(updates);
 
-                    _logger.Debug($"Subscribed to bars with args = {string.Join(", ", updates.Select(u => $"{u.Entry.Symbol}.{u.Entry.MarketSide}.{u.Entry.Timeframe}"))}");
+                    _logger.Debug($"Subscribed to bars with args = {string.Join(", ", updates.Select(u => u.ToShortString()))}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to modify bar subscription. Arguments updates = {string.Join(", ", updates.Select(u => $"{u.Entry.Symbol}.{u.Entry.MarketSide}.{u.Entry.Timeframe}"))}, Error = {ex}");
+                _logger.Error($"Failed to modify bar subscription. Arguments updates = {string.Join(", ", updates.Select(u => u.ToShortString()))}, Error = {ex}");
             }
         }
 

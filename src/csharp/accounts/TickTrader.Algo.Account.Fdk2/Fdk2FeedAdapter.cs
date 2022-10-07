@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Core;
@@ -14,13 +15,13 @@ namespace TickTrader.Algo.Account.Fdk2
     {
         private readonly FDK.Client.QuoteFeed _feedProxy;
         private readonly IAlgoLogger _logger;
-        private readonly BarUpdateAdapter _barUpdateAdapter;
+        private readonly BarSubAdapter _barSubAdapter;
 
         public Fdk2FeedAdapter(FDK.Client.QuoteFeed feedProxy, IAlgoLogger logger, Action<BarInfo> barUpdateCallback)
         {
             _feedProxy = feedProxy;
             _logger = logger;
-            _barUpdateAdapter = new BarUpdateAdapter(barUpdateCallback);
+            _barSubAdapter = new BarSubAdapter(barUpdateCallback);
 
             _feedProxy.ConnectResultEvent += (c, d) => SfxTaskAdapter.SetCompleted(d);
             _feedProxy.ConnectErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed(d, ex);
@@ -48,16 +49,16 @@ namespace TickTrader.Algo.Account.Fdk2
             _feedProxy.SubscribeBarsResultEvent += (c, d, b) => { SfxTaskAdapter.SetCompleted(d, SfxInterop.Convert(b)); };
             _feedProxy.SubscribeBarsErrorEvent += (c, d, ex) => { SfxTaskAdapter.SetFailed<BarUpdateSummary[]>(d, ex); };
 
-            _feedProxy.UnsubscribeBarsResultEvent += (c, d, s) => { SfxTaskAdapter.SetCompleted(d, true); };
+            _feedProxy.UnsubscribeBarsResultEvent += (c, d, s) => { SfxTaskAdapter.SetCompleted(d, s.Select(smb => new BarUpdateSummary { Symbol = smb, IsReset = true })); };
             _feedProxy.UnsubscribeBarsErrorEvent += (c, d, ex) => { SfxTaskAdapter.SetFailed<bool>(d, ex); };
 
-            _feedProxy.BarsUpdateEvent += (c, b) => _barUpdateAdapter.AddUpdate(SfxInterop.Convert(b));
+            _feedProxy.BarsUpdateEvent += (c, b) => _barSubAdapter.AddUpdate(SfxInterop.Convert(b));
         }
 
 
         public Task Deinit()
         {
-            _barUpdateAdapter.Dispose();
+            _barSubAdapter.Dispose();
             return Task.Factory.StartNew(() => _feedProxy.Dispose());
         }
 
@@ -129,36 +130,73 @@ namespace TickTrader.Algo.Account.Fdk2
             return res;
         }
 
-        internal async Task<BarUpdateSummary[]> SubscribeBarsAsync(BarSubscriptionSymbolEntry[] entries)
+        public async Task ModifyBarSub(List<BarSubUpdate> updates)
         {
+            var fdkEntries = _barSubAdapter.CalcSubModification(updates);
+
+            var removes = fdkEntries.Where(e => e.Params == null);
+            var upserts = fdkEntries.Where(e => e.Params != null);
+
+            if (removes.Count() > 0)
+                await UnsubscribeBarsAsync(removes.Select(e => e.Symbol).ToArray());
+
+            if (upserts.Count() > 0)
+                await SubscribeBarsAsync(upserts.ToArray());
+        }
+
+
+        private async Task SubscribeBarsAsync(BarSubscriptionSymbolEntry[] entries)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.Append("Subscribe bars: ");
+            foreach (var entry in entries)
+            {
+                sb.Append(entry.Symbol);
+                sb.Append("(");
+                foreach (var p in entry.Params)
+                {
+                    sb.Append(p.PriceType.ToString());
+                    sb.Append(".");
+                    sb.Append(p.Periodicity.ToString());
+                    sb.Append(",");
+                }
+                sb.Append("), ");
+            }
+            _logger.Debug(sb.ToString());
+
             var taskSrc = new SfxTaskAdapter.RequestResultSource<BarUpdateSummary[]>("SubscribeBarsRequest");
             _feedProxy.SubscribeBarsAsync(taskSrc, entries);
             var res = await taskSrc.Task;
             _logger.Debug(taskSrc.MeasureRequestTime());
-            return res;
+
+            foreach (var upd in res)
+                _barSubAdapter.AddUpdate(upd);
         }
 
-        internal async Task UnsubscribeBarsAsync(string[] symbols)
+        private async Task UnsubscribeBarsAsync(string[] symbols)
         {
-            var taskSrc = new SfxTaskAdapter.RequestResultSource<bool>("UnsubscribeBarsRequest");
+            _logger.Debug($"Unsubscribe bars: {string.Join(", ", symbols)}");
+
+            var taskSrc = new SfxTaskAdapter.RequestResultSource<BarUpdateSummary[]>("UnsubscribeBarsRequest");
             _feedProxy.UnsubscribeBarsAsync(taskSrc, symbols);
             await taskSrc.Task;
             _logger.Debug(taskSrc.MeasureRequestTime());
         }
 
 
-        private class BarUpdateAdapter
+        private class BarSubAdapter
         {
+            private readonly Dictionary<string, HashSet<BarSubEntry>> _subGroups = new Dictionary<string, HashSet<BarSubEntry>>();
             private readonly Dictionary<string, SymbolBarGroup> _groups = new Dictionary<string, SymbolBarGroup>();
             private readonly Action<BarInfo> _barUpdateCallback;
             private readonly ChannelConsumerWrapper<BarUpdateSummary> _consumer;
 
 
-            public BarUpdateAdapter(Action<BarInfo> barUpdateCallback)
+            public BarSubAdapter(Action<BarInfo> barUpdateCallback)
             {
                 _barUpdateCallback = barUpdateCallback;
 
-                _consumer = new ChannelConsumerWrapper<BarUpdateSummary>(DefaultChannelFactory.CreateForOneToOne<BarUpdateSummary>(), $"{nameof(BarUpdateAdapter)} loop");
+                _consumer = new ChannelConsumerWrapper<BarUpdateSummary>(DefaultChannelFactory.CreateForOneToOne<BarUpdateSummary>(), $"{nameof(BarSubAdapter)} loop");
                 _consumer.BatchSize = 8;
                 _consumer.Start(ProcessUpdate);
             }
@@ -168,6 +206,55 @@ namespace TickTrader.Algo.Account.Fdk2
 
             public void AddUpdate(BarUpdateSummary update) => _consumer.Add(update);
 
+            public List<BarSubscriptionSymbolEntry> CalcSubModification(List<BarSubUpdate> updates)
+            {
+                lock (_subGroups)
+                {
+                    var modifiedGroups = new HashSet<string>();
+
+                    foreach (var update in updates)
+                    {
+                        var entry = update.Entry;
+                        var smb = entry.Symbol;
+                        var hasGroup = _subGroups.TryGetValue(smb, out var group);
+                        if (update.IsRemoveAction && hasGroup)
+                        {
+                            if (group.Remove(entry))
+                                modifiedGroups.Add(smb);
+
+                            if (group.Count == 0)
+                                _subGroups.Remove(smb);
+                        }
+                        else if (update.IsUpsertAction)
+                        {
+                            if (!hasGroup)
+                            {
+                                group = new HashSet<BarSubEntry>();
+                                _subGroups[smb] = group;
+                            }
+
+                            if (group.Add(entry))
+                                modifiedGroups.Add(smb);
+                        }
+                    }
+
+                    var res = new List<BarSubscriptionSymbolEntry>();
+
+                    foreach (var smb in modifiedGroups)
+                    {
+                        var fdkEntry = new BarSubscriptionSymbolEntry { Symbol = smb };
+                        if (_subGroups.TryGetValue(smb, out var group))
+                        {
+                            fdkEntry.Params = group.Select(e =>
+                                new BarParameters(SfxInterop.ConvertBack(e.Timeframe), SfxInterop.ConvertBack(e.MarketSide))).ToArray();
+                        }
+                        res.Add(fdkEntry);
+                    }
+
+                    return res;
+                }
+            }
+
 
             private void ProcessUpdate(BarUpdateSummary update)
             {
@@ -176,7 +263,7 @@ namespace TickTrader.Algo.Account.Fdk2
 
                 if (update.IsReset)
                 {
-                    if (update.Details.Length == 0)
+                    if (update.Details == null || update.Details.Length == 0)
                         _groups.Remove(smb);
                     else
                     {
@@ -246,25 +333,28 @@ namespace TickTrader.Algo.Account.Fdk2
                     var barData = bar.Data;
                     var close = bar.MarketSide == Feed.Types.MarketSide.Ask ? update.AskClose : update.BidClose;
 
-                    var index = update.Details.IndexOf(d => d.Timeframe == bar.Timeframe && d.MarketSide == bar.MarketSide);
-                    if (index >= 0)
+                    if (update.Details != null)
                     {
-                        var d = update.Details[index];
-                        if (d.From.HasValue && d.HasAllProperties && BarSampler.TryGet(d.Timeframe, out var sampler))
+                        var index = update.Details.IndexOf(d => d.Timeframe == bar.Timeframe && d.MarketSide == bar.MarketSide);
+                        if (index >= 0)
                         {
-                            var boundaries = sampler.GetBar(new UtcTicks(d.From.Value));
-                            barData.OpenTime = boundaries.Open;
-                            barData.CloseTime = boundaries.Close;
-                            barData.Open = d.Open.Value;
-                            barData.High = d.High.Value;
-                            barData.Low = d.Low.Value;
-                        }
-                        else
-                        {
-                            if (d.High.HasValue)
+                            var d = update.Details[index];
+                            if (d.From.HasValue && d.HasAllProperties && BarSampler.TryGet(d.Timeframe, out var sampler))
+                            {
+                                var boundaries = sampler.GetBar(new UtcTicks(d.From.Value));
+                                barData.OpenTime = boundaries.Open;
+                                barData.CloseTime = boundaries.Close;
+                                barData.Open = d.Open.Value;
                                 barData.High = d.High.Value;
-                            if (d.Low.HasValue)
                                 barData.Low = d.Low.Value;
+                            }
+                            else
+                            {
+                                if (d.High.HasValue)
+                                    barData.High = d.High.Value;
+                                if (d.Low.HasValue)
+                                    barData.Low = d.Low.Value;
+                            }
                         }
                     }
 

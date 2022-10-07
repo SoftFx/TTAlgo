@@ -443,21 +443,7 @@ namespace TickTrader.Algo.Account.Fdk2
             }
         }
 
-        public async Task SubscribeToBars(List<BarSubUpdate> updates)
-        {
-            var removes = updates.Where(u => u.IsRemoveAction);
-            var upserts = updates.Where(u => u.IsUpsertAction).GroupBy(u => u.Entry.Symbol);
-
-            if (removes.Count() > 0)
-                await _feedProxyAdapter.UnsubscribeBarsAsync(removes.Select(u => u.Entry.Symbol).ToArray());
-
-            if (upserts.Count() > 0)
-                await _feedProxyAdapter.SubscribeBarsAsync(upserts.Select(g => new BarSubscriptionSymbolEntry
-                {
-                    Symbol = g.Key,
-                    Params = g.Select(u => new BarParameters(ConvertBack(u.Entry.Timeframe), ConvertBack(u.Entry.MarketSide))).ToArray(),
-                }).ToArray());
-        }
+        public Task SubscribeToBars(List<BarSubUpdate> updates) => _feedProxyAdapter.ModifyBarSub(updates);
 
         #endregion
 
