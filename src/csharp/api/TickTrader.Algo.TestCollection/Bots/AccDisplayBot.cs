@@ -90,11 +90,6 @@ namespace TickTrader.Algo.TestCollection.Bots
             Status.WriteLine();
 
             PrintPendingOrders();
-
-            foreach(var s in Symbols)
-            {
-                Status.WriteLine($"{s.Name} - {s.LastQuote}");
-            }
         }
 
         private void PrintAccountInfo()
