@@ -74,6 +74,8 @@ namespace TickTrader.Algo.Server
 
         private async Task Shutdown(IndicatorHostModel.ShutdownCmd cmd)
         {
+            _isStarted = false;
+
             foreach (var pair in _charts)
                 await ShutdownChart(pair.Key, pair.Value);
 
