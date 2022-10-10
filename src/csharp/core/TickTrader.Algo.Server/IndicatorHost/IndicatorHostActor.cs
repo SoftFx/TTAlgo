@@ -76,6 +76,8 @@ namespace TickTrader.Algo.Server
         {
             foreach (var pair in _charts)
                 await ShutdownChart(pair.Key, pair.Value);
+
+            _charts.Clear();
         }
 
         private void SetAccProxy(IndicatorHostModel.SetAccountProxyCmd cmd)
