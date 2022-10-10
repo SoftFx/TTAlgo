@@ -59,8 +59,7 @@ namespace TickTrader.Algo.CoreV1
         {
             RateDispenser.Start();
             InitDefaultSubscription();
-            FeedProvider.RateUpdated += Feed_RateUpdated;
-            FeedProvider.RatesUpdated += Feed_RatesUpdated;
+            FeedProvider.QuoteUpdated += Feed_RateUpdated;
 
             ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
             ExecContext.Builder.CustomFeedProvider = this;
@@ -69,8 +68,7 @@ namespace TickTrader.Algo.CoreV1
         internal virtual void Stop()
         {
             RateDispenser.Stop();
-            FeedProvider.RateUpdated -= Feed_RateUpdated;
-            FeedProvider.RatesUpdated -= Feed_RatesUpdated;
+            FeedProvider.QuoteUpdated -= Feed_RateUpdated;
 
             CancelDefaultSubscription();
         }
@@ -105,12 +103,6 @@ namespace TickTrader.Algo.CoreV1
             builder.StopBatch();
         }
 
-        private void Feed_RatesUpdated(List<QuoteInfo> updates)
-        {
-            foreach (var update in updates)
-                ExecContext.EnqueueQuote(update);
-        }
-
         private void Feed_RateUpdated(QuoteInfo upd)
         {
             ExecContext.EnqueueQuote(upd);
@@ -118,7 +110,7 @@ namespace TickTrader.Algo.CoreV1
 
         private void InitDefaultSubscription()
         {
-            _defaultSubscription = FeedProvider.GetSubscription();
+            _defaultSubscription = FeedProvider.GetQuoteSub();
             _defaultSubscription.Modify(BufferedSymbols, 1);
         }
 

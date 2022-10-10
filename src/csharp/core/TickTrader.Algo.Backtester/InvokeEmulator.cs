@@ -577,7 +577,7 @@ namespace TickTrader.Algo.Backtester
         private void ApplyLastQuotes()
         {
             var feed = _feed as IFeedProvider;
-            var lasts = feed.GetSnapshot();
+            var lasts = feed.GetQuoteSnapshot();
 
             foreach(var q in lasts)
             {

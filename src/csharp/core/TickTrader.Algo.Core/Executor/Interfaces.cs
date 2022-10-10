@@ -1,15 +1,11 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    //public enum BufferUpdateResults { Extended = 2, LastItemUpdated = 1, NotUpdated = 0 }
-
     public struct BufferUpdateResult
     {
         /// <summary>
@@ -50,17 +46,13 @@ namespace TickTrader.Algo.Core
 
     public interface IFeedProvider
     {
-        List<QuoteInfo> GetSnapshot();
-        Task<List<QuoteInfo>> GetSnapshotAsync();
-        IQuoteSub GetSubscription();
+        List<QuoteInfo> GetQuoteSnapshot();
+        Task<List<QuoteInfo>> GetQuoteSnapshotAsync();
+        IQuoteSub GetQuoteSub();
+        IBarSub GetBarSub();
 
-        event Action<QuoteInfo> RateUpdated;
-        event Action<List<QuoteInfo>> RatesUpdated;
-    }
-
-    public interface ILinkOutput<T> : IDisposable
-    {
-        event Action<T> MsgReceived;
+        event Action<QuoteInfo> QuoteUpdated;
+        event Action<BarInfo> BarUpdated;
     }
 
     public interface IAccountInfoProvider

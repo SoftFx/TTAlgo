@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Server
         private readonly ConcurrentDictionary<string, object> _pendingRequestHandlers = new ConcurrentDictionary<string, object>();
 
         private IQuoteSub _quoteSub;
+        private IBarSub _barSub;
 
 
         public AccountRpcHandler(IAccountProxy account, RpcSession session)
@@ -23,7 +24,8 @@ namespace TickTrader.Algo.Server
             _account = account;
             _session = session;
 
-            _quoteSub = account.Feed.GetSubscription();
+            _quoteSub = account.Feed.GetQuoteSub();
+            _barSub = account.Feed.GetBarSub();
         }
 
 
@@ -31,6 +33,8 @@ namespace TickTrader.Algo.Server
         {
             _quoteSub.Dispose();
             _quoteSub = null;
+            _barSub.Dispose();
+            _barSub = null;
         }
 
 
@@ -74,6 +78,8 @@ namespace TickTrader.Algo.Server
                 return QuoteSnapshotRequestHandler();
             else if (payload.Is(ModifyQuoteSubRequest.Descriptor))
                 return ModifyQuoteSubRequestHandler(payload);
+            else if (payload.Is(ModifyBarSubRequest.Descriptor))
+                return ModifyBarSubRequestHandler(payload);
             else if (payload.Is(BarListRequest.Descriptor))
                 return BarListRequestHandler(payload);
             else if (payload.Is(QuoteListRequest.Descriptor))
@@ -271,7 +277,7 @@ namespace TickTrader.Algo.Server
         private Task<Any> QuoteSnapshotRequestHandler()
         {
             var response = new QuotePage();
-            response.Quotes.AddRange(_account.Feed.GetSnapshot().Select(q => q.GetFullQuote()));
+            response.Quotes.AddRange(_account.Feed.GetQuoteSnapshot().Select(q => q.GetFullQuote()));
             return Task.FromResult(Any.Pack(response));
         }
 
@@ -282,6 +288,16 @@ namespace TickTrader.Algo.Server
             if (request.Updates.Count == 1)
                 _quoteSub.Modify(request.Updates[0]);
             else _quoteSub.Modify(request.Updates.ToList());
+            return Task.FromResult(Any.Pack(response));
+        }
+
+        private Task<Any> ModifyBarSubRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<ModifyBarSubRequest>();
+            var response = new BarPage();
+            if (request.Updates.Count == 1)
+                _barSub.Modify(request.Updates[0]);
+            else _barSub.Modify(request.Updates.ToList());
             return Task.FromResult(Any.Pack(response));
         }
 

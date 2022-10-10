@@ -181,7 +181,7 @@ namespace TickTrader.Algo.Account
                 return Actor.Call(a =>
                 {
                     var historyHandler = new FeedHistoryProviderModel.Handler(a._feedHistory.Ref);
-                    return new PluginFeedProvider(a._cache, a._rootQuoteSubManager, historyHandler);
+                    return new PluginFeedProvider(a._cache, a._rootQuoteSubManager, a._rootBarSubManager, historyHandler);
                 });
             }
 
@@ -227,8 +227,9 @@ namespace TickTrader.Algo.Account
             public QuoteDistributor Distributor { get; private set; }
             public IVarSet<string, SymbolInfo> Symbols => Cache.Symbols;
             public IVarSet<string, CurrencyInfo> Currencies => Cache.Currencies;
-            public IQuoteSubManager SubManager { get; private set; }
+            public IQuoteSubManager QuoteSubManager { get; private set; }
             public BarDistributor BarDistributor { get; private set; }
+            public IBarSubManager BarSubManager { get; private set; }
 
             protected override void ActorInit()
             {
@@ -247,10 +248,11 @@ namespace TickTrader.Algo.Account
 
             public async Task Init()
             {
-                SubManager = await Actor.Call(a => a._rootQuoteSubManager);
+                QuoteSubManager = await Actor.Call(a => a._rootQuoteSubManager);
+                BarSubManager = await Actor.Call(a => a._rootBarSubManager);
 
-                Distributor = new QuoteDistributor(SubManager);
-                BarDistributor = new BarDistributor(await Actor.Call(a => a._rootBarSubManager));
+                Distributor = new QuoteDistributor(QuoteSubManager);
+                BarDistributor = new BarDistributor(BarSubManager);
 
                 Connection = new ConnectionModel.Handler(await Actor.Call(a => a._connection.Ref));
                 await Connection.OpenHandler();

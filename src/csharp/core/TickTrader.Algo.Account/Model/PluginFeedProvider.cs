@@ -11,25 +11,32 @@ namespace TickTrader.Algo.Account
 {
     public class PluginFeedProvider : IFeedProvider, IFeedHistoryProvider, IPluginMetadata
     {
-        private readonly IQuoteSub _subscription;
-        private readonly IQuoteSubManager _subManager;
-        private readonly IDisposable _subHandler;
+        private readonly IQuoteSub _quoteSub;
+        private readonly IQuoteSubManager _quoteSubManager;
+        private readonly IBarSub _barSub;
+        private readonly IBarSubManager _barSubManager;
+        private readonly IDisposable _quoteSubHandler, _barSubHandler;
         private readonly IVarSet<string, SymbolInfo> _symbols;
         private readonly FeedHistoryProviderModel.Handler _history;
         private readonly IReadOnlyDictionary<string, CurrencyInfo> _currencies;
 
-        public event Action<QuoteInfo> RateUpdated;
-        public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
+        public event Action<QuoteInfo> QuoteUpdated;
+        public event Action<BarInfo> BarUpdated;
 
 
-        public PluginFeedProvider(EntityCache cache, IQuoteSubManager subManager, FeedHistoryProviderModel.Handler history)
+        public PluginFeedProvider(EntityCache cache, IQuoteSubManager quoteSubManager, IBarSubManager barSubManager, FeedHistoryProviderModel.Handler history)
         {
             _symbols = cache.Symbols;
             _history = history;
             _currencies = cache.Currencies.Snapshot;
-            _subManager = subManager;
-            _subscription = new QuoteSubscription(subManager);
-            _subHandler = _subscription.AddHandler(r => RateUpdated?.Invoke(r));
+            _quoteSubManager = quoteSubManager;
+            _barSubManager = barSubManager;
+
+            _quoteSub = new QuoteSubscription(quoteSubManager);
+            _quoteSubHandler = _quoteSub.AddHandler(r => QuoteUpdated?.Invoke(r));
+
+            _barSub = new BarSubscription(barSubManager);
+            _barSubHandler = _barSub.AddHandler(r => BarUpdated?.Invoke(r));
         }
 
         #region IFeedHistoryProvider implementation
@@ -78,22 +85,21 @@ namespace TickTrader.Algo.Account
 
         #region IFeedProvider
 
-        public List<QuoteInfo> GetSnapshot()
+        public List<QuoteInfo> GetQuoteSnapshot()
         {
             return _symbols.Snapshot
                 .Where(s => s.Value.LastQuote != null)
                 .Select(s => s.Value.LastQuote).Cast<QuoteInfo>().ToList();
         }
 
-        public Task<List<QuoteInfo>> GetSnapshotAsync()
+        public Task<List<QuoteInfo>> GetQuoteSnapshotAsync()
         {
-            return Task.FromResult(GetSnapshot());
+            return Task.FromResult(GetQuoteSnapshot());
         }
 
-        public IQuoteSub GetSubscription()
-        {
-            return new QuoteSubscription(_subManager);
-        }
+        public IQuoteSub GetQuoteSub() => new QuoteSubscription(_quoteSubManager);
+
+        public IBarSub GetBarSub() => new BarSubscription(_barSubManager);
 
         #endregion
 

@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Runtime
     public class RuntimeInfoProvider : IPluginMetadata, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider, IFeedHistoryProvider
     {
         private readonly RemoteAccountProxy _account;
-        private readonly IDisposable _orderUpdateSub, _positionUpdateSub, _balanceUpdateSub, _rateUpdateSub, _rateListUpdateSub;
+        private readonly IDisposable _orderUpdateSub, _positionUpdateSub, _balanceUpdateSub, _quoteUpdateSub, _barUpdateSub;
 
         private List<CurrencyInfo> _currencies;
         private List<SymbolInfo> _symbols;
@@ -28,8 +28,8 @@ namespace TickTrader.Algo.Runtime
             _positionUpdateSub = _account.PositionUpdated.Subscribe(p => PositionUpdated?.Invoke(p));
             _balanceUpdateSub = _account.BalanceUpdated.Subscribe(b => BalanceUpdated?.Invoke(b));
 
-            _rateUpdateSub = _account.RateUpdated.Subscribe(q => RateUpdated?.Invoke(q));
-            _rateListUpdateSub = _account.RatesUpdated.Subscribe(q => RatesUpdated?.Invoke(q));
+            _quoteUpdateSub = _account.QuoteUpdated.Subscribe(q => QuoteUpdated?.Invoke(q));
+            _barUpdateSub = _account.BarUpdated.Subscribe(b => BarUpdated?.Invoke(b));
         }
 
 
@@ -51,8 +51,8 @@ namespace TickTrader.Algo.Runtime
             _orderUpdateSub.Dispose();
             _positionUpdateSub.Dispose();
             _balanceUpdateSub.Dispose();
-            _rateUpdateSub.Dispose();
-            _rateListUpdateSub.Dispose();
+            _quoteUpdateSub.Dispose();
+            _barUpdateSub.Dispose();
         }
 
 
@@ -156,23 +156,22 @@ namespace TickTrader.Algo.Runtime
 
         #region IFeedProvider
 
-        public event Action<QuoteInfo> RateUpdated;
-        public event Action<List<QuoteInfo>> RatesUpdated;
+        public event Action<QuoteInfo> QuoteUpdated;
+        public event Action<BarInfo> BarUpdated;
 
-        public List<QuoteInfo> GetSnapshot()
+        public List<QuoteInfo> GetQuoteSnapshot()
         {
-            return GetSnapshotAsync().GetAwaiter().GetResult();
+            return GetQuoteSnapshotAsync().GetAwaiter().GetResult();
         }
 
-        public Task<List<QuoteInfo>> GetSnapshotAsync()
+        public Task<List<QuoteInfo>> GetQuoteSnapshotAsync()
         {
             return RunOnThreadPool(_account.GetQuoteSnapshotAsync);
         }
 
-        public IQuoteSub GetSubscription()
-        {
-            return _account.GetSubscription();
-        }
+        public IQuoteSub GetQuoteSub() => _account.GetQuoteSub();
+
+        public IBarSub GetBarSub() => _account.GetBarSub();
 
         #endregion IFeedProvider
 

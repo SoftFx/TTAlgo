@@ -18,7 +18,7 @@ namespace TickTrader.Algo.CoreV1
 
         public void Start()
         {
-            _subscription = _context.FeedProvider.GetSubscription();
+            _subscription = _context.FeedProvider.GetQuoteSub();
         }
 
         public void Stop()

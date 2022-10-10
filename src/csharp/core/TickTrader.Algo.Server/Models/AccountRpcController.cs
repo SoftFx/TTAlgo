@@ -71,8 +71,8 @@ namespace TickTrader.Algo.Server
                 acc.AccInfoProvider.PositionUpdated += OnPositionUpdated;
                 acc.AccInfoProvider.BalanceUpdated += OnBalanceUpdated;
 
-                acc.Feed.RateUpdated += OnRateUpdated;
-                acc.Feed.RatesUpdated += OnRatesUpdated;
+                acc.Feed.QuoteUpdated += OnQuoteUpdated;
+                acc.Feed.BarUpdated += OnBarUpdated;
             }
 
             _logger.Debug($"Attached session {sessionId}. Have {RefCnt} active refs");
@@ -101,8 +101,8 @@ namespace TickTrader.Algo.Server
                 acc.AccInfoProvider.PositionUpdated -= OnPositionUpdated;
                 acc.AccInfoProvider.BalanceUpdated -= OnBalanceUpdated;
 
-                acc.Feed.RateUpdated -= OnRateUpdated;
-                acc.Feed.RatesUpdated -= OnRatesUpdated;
+                acc.Feed.QuoteUpdated -= OnQuoteUpdated;
+                acc.Feed.BarUpdated += OnBarUpdated;
             }
 
             _logger.Debug($"Detached session {sessionId}. Have {RefCnt} active refs");
@@ -115,9 +115,9 @@ namespace TickTrader.Algo.Server
 
         private void OnBalanceUpdated(BalanceOperation r) => PushNotification(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
 
-        private void OnRateUpdated(QuoteInfo r) => PushNotification(RpcMessage.Notification(_id, r.GetFullQuote())); // not actor thread. _id is safe since it is readonly
+        private void OnQuoteUpdated(QuoteInfo r) => PushNotification(RpcMessage.Notification(_id, r.GetFullQuote())); // not actor thread. _id is safe since it is readonly
 
-        private void OnRatesUpdated(List<QuoteInfo> r) => PushNotification(RpcMessage.Notification(_id, QuotePage.Create(r))); // not actor thread. _id is safe since it is readonly
+        private void OnBarUpdated(BarInfo b) => PushNotification(RpcMessage.Notification(_id, b)); // not actor thread. _id is safe since it is readonly
 
         private void PushNotification(RpcMessage msg) => _notificationBus?.Writer.TryWrite(msg);
 

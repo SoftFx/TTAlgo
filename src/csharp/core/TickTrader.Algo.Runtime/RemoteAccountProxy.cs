@@ -13,18 +13,19 @@ using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Runtime
 {
-    public class RemoteAccountProxy : IRpcHandler, IQuoteSubProvider
+    public class RemoteAccountProxy : IRpcHandler, IQuoteSubProvider, IBarSubProvider
     {
         private readonly IActorRef _acc;
-        private readonly QuoteSubManager _subManager;
+        private readonly QuoteSubManager _quoteSubManager;
+        private readonly BarSubManager _barSubManager;
 
         private RpcSession _session;
         private TaskCompletionSource<object> _startTaskSrc, _stopTaskSrc;
         private readonly ChannelEventSource<OrderExecReport> _orderEventSrc = new ChannelEventSource<OrderExecReport>();
         private readonly ChannelEventSource<PositionExecReport> _positionEventSrc = new ChannelEventSource<PositionExecReport>();
         private readonly ChannelEventSource<BalanceOperation> _balanceEventSrc = new ChannelEventSource<BalanceOperation>();
-        private readonly ChannelEventSource<QuoteInfo> _rateEventSrc = new ChannelEventSource<QuoteInfo>();
-        private readonly ChannelEventSource<List<QuoteInfo>> _rateListEventSrc = new ChannelEventSource<List<QuoteInfo>>();
+        private readonly ChannelEventSource<QuoteInfo> _quoteEventSrc = new ChannelEventSource<QuoteInfo>();
+        private readonly ChannelEventSource<BarInfo> _barEventSrc = new ChannelEventSource<BarInfo>();
 
 
         public string Id { get; }
@@ -35,9 +36,9 @@ namespace TickTrader.Algo.Runtime
 
         public IEventSource<BalanceOperation> BalanceUpdated => _balanceEventSrc;
 
-        public IEventSource<QuoteInfo> RateUpdated => _rateEventSrc;
+        public IEventSource<QuoteInfo> QuoteUpdated => _quoteEventSrc;
 
-        public IEventSource<List<QuoteInfo>> RatesUpdated => _rateListEventSrc;
+        public IEventSource<BarInfo> BarUpdated => _barEventSrc;
 
 
         public RemoteAccountProxy(string id, IActorRef acc)
@@ -45,7 +46,8 @@ namespace TickTrader.Algo.Runtime
             Id = id;
             _acc = acc;
 
-            _subManager = new QuoteSubManager(this);
+            _quoteSubManager = new QuoteSubManager(this);
+            _barSubManager = new BarSubManager(this);
         }
 
 
@@ -68,6 +70,10 @@ namespace TickTrader.Algo.Runtime
                 FullQuoteInfoNotificationHandler(payload);
             else if (payload.Is(QuotePage.Descriptor))
                 QuotePageNotificationHandler(payload);
+            else if (payload.Is(BarInfo.Descriptor))
+                BarInfoNotificationHandler(payload);
+            else if (payload.Is(BarPage.Descriptor))
+                BarPageNotificationHandler(payload);
         }
 
         Task<Any> IRpcHandler.HandleRequest(string proxyId, string callId, Any payload)
@@ -80,7 +86,14 @@ namespace TickTrader.Algo.Runtime
         {
             var request = new ModifyQuoteSubRequest();
             request.Updates.AddRange(updates);
-            var _ = ModifyQuoteSubAsync(request);
+            _ = ModifyQuoteSubAsync(request);
+        }
+
+        void IBarSubProvider.Modify(List<BarSubUpdate> updates)
+        {
+            var request = new ModifyBarSubRequest();
+            request.Updates.AddRange(updates);
+            _ = ModifyBarSubAsync(request);
         }
 
 
@@ -123,15 +136,14 @@ namespace TickTrader.Algo.Runtime
             _orderEventSrc.Dispose();
             _positionEventSrc.Dispose();
             _balanceEventSrc.Dispose();
-            _rateEventSrc.Dispose();
-            _rateListEventSrc.Dispose();
+            _quoteEventSrc.Dispose();
+            _barEventSrc.Dispose();
         }
 
 
-        internal IQuoteSub GetSubscription()
-        {
-            return new QuoteSubscription(_subManager);
-        }
+        internal IQuoteSub GetQuoteSub() => new QuoteSubscription(_quoteSubManager);
+
+        internal IBarSub GetBarSub() => new BarSubscription(_barSubManager);
 
         internal async Task<List<CurrencyInfo>> GetCurrencyListAsync()
         {
@@ -235,6 +247,14 @@ namespace TickTrader.Algo.Runtime
             return res.Quotes.Select(QuoteInfo.Create).ToList();
         }
 
+        internal async Task<List<BarInfo>> ModifyBarSubAsync(ModifyBarSubRequest request)
+        {
+            var context = new RpcResponseTaskContext<BarPage>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(Id, request), context);
+            var res = await context.TaskSrc.Task.ConfigureAwait(false);
+            return res.Bars.ToList();
+        }
+
         internal async Task<List<BarData>> GetBarListAsync(BarListRequest request)
         {
             var context = new RpcResponseTaskContext<BarChunk>(RpcHandler.SingleReponseHandler);
@@ -270,17 +290,36 @@ namespace TickTrader.Algo.Runtime
         private void FullQuoteInfoNotificationHandler(Any payload)
         {
             var quote = QuoteInfo.Create(payload.Unpack<FullQuoteInfo>());
-            _rateEventSrc.Send(quote);
-            _subManager.Dispatch(quote);
+            _quoteEventSrc.Send(quote);
+            _quoteSubManager.Dispatch(quote);
         }
 
         private void QuotePageNotificationHandler(Any payload)
         {
             var page = payload.Unpack<QuotePage>();
-            var quotes = page.Quotes.Select(QuoteInfo.Create).ToList();
-            _rateListEventSrc.Send(quotes);
-            foreach (var q in quotes)
-                _subManager.Dispatch(q);
+            foreach (var q in page.Quotes)
+            {
+                var quote = QuoteInfo.Create(q);
+                _quoteEventSrc.Send(quote);
+                _quoteSubManager.Dispatch(quote);
+            }
+        }
+
+        private void BarInfoNotificationHandler(Any payload)
+        {
+            var bar = payload.Unpack<BarInfo>();
+            _barEventSrc.Send(bar);
+            _barSubManager.Dispatch(bar);
+        }
+
+        private void BarPageNotificationHandler(Any payload)
+        {
+            var page = payload.Unpack<BarPage>();
+            foreach (var b in page.Bars)
+            {
+                _barEventSrc.Send(b);
+                _barSubManager.Dispatch(b);
+            }
         }
 
 

@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -170,20 +169,19 @@ namespace TickTrader.Algo.Backtester
 
         #region IPluginFeedProvider
 
-        List<QuoteInfo> IFeedProvider.GetSnapshot()
+        List<QuoteInfo> IFeedProvider.GetQuoteSnapshot()
         {
             return _feedSeries.Values.Where(s => s.Current != null).Select(s => s.Current.LastQuote).ToList();
         }
 
-        Task<List<QuoteInfo>> IFeedProvider.GetSnapshotAsync()
+        Task<List<QuoteInfo>> IFeedProvider.GetQuoteSnapshotAsync()
         {
             return Task.FromResult(_feedSeries.Values.Where(s => s.Current != null).Select(s => s.Current.LastQuote).ToList());
         }
 
-        IQuoteSub IFeedProvider.GetSubscription()
-        {
-            return new QuoteSubStub();
-        }
+        IQuoteSub IFeedProvider.GetQuoteSub() => new QuoteSubStub();
+
+        IBarSub IFeedProvider.GetBarSub() => new BarSubStub();
 
         private class QuoteSubStub : IQuoteSub
         {
@@ -194,6 +192,17 @@ namespace TickTrader.Algo.Backtester
             public void Modify(QuoteSubUpdate update) { }
 
             public void Modify(List<QuoteSubUpdate> updates) { }
+        }
+
+        private class BarSubStub : IBarSub
+        {
+            public IDisposable AddHandler(Action<BarInfo> handler) => null;
+
+            public void Dispose() { }
+
+            public void Modify(BarSubUpdate update) { }
+
+            public void Modify(List<BarSubUpdate> updates) { }
         }
 
         List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
@@ -236,8 +245,8 @@ namespace TickTrader.Algo.Backtester
             return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryTicks(from, count, level2) ?? new List<QuoteInfo>());
         }
 
-        public event Action<QuoteInfo> RateUpdated { add { } remove { } }
-        public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
+        public event Action<QuoteInfo> QuoteUpdated { add { } remove { } }
+        public event Action<BarInfo> BarUpdated { add { } remove { } }
 
         #endregion
     }
