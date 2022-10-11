@@ -1,5 +1,4 @@
-﻿using LiveChartsCore;
-using LiveChartsCore.Measure;
+﻿using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using Machinarium.Qnil;
 using System.Windows;
@@ -25,7 +24,6 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         private readonly SupportPriceLine _bidSupportLine, _askSupportLine;
         private readonly YLabelAxis _yLabelAxis;
-        private readonly Crosshair _crosshair;
 
 
         public ChartTypes ChartType
@@ -52,12 +50,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
             _settings.ChartType = ChartType;
 
             _yLabelAxis = new YLabelAxis(_yAxis);
-            _crosshair = new Crosshair(this, _settings, yAxisIndex: 1);
 
             _bidSupportLine = new SupportPriceLine(Customizer.DownColor, _settings, labelAxisIndex: 1);
             _askSupportLine = new SupportPriceLine(Customizer.UpColor, _settings, labelAxisIndex: 1);
-
-            MouseMove += _crosshair.OnCrossHairMove;
         }
 
 
@@ -68,7 +63,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             ZoomMode = ZoomAndPanMode.None;
 
             YAxes = new Axis[] { _yAxis, _yLabelAxis };
-            Sections = new RectangularSection[] { _bidSupportLine, _askSupportLine, _crosshair.XLine, _crosshair.YLine };
+            Sections = new RectangularSection[] { _bidSupportLine, _askSupportLine };
         }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e) => ScrollPage(e.Delta / MouseScrollSpeed);
@@ -81,7 +76,6 @@ namespace TickTrader.BotTerminal.Controls.Chart
             _askSupportLine.X = _xAxis.MaxLimit;
             _bidSupportLine.X = _xAxis.MaxLimit;
 
-            _crosshair.UpdateYLabelPosition(_xAxis.MaxLimit);
             _yLabelAxis.SyncWithMain();
         }
 
@@ -98,9 +92,6 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
                 _staticSeriesList.Add(_askSupportLine.Label);
                 _staticSeriesList.Add(_bidSupportLine.Label);
-
-                _staticSeriesList.Add(_crosshair.XLabel);
-                _staticSeriesList.Add(_crosshair.YLabel);
 
                 _observableSeries = IndicatorObserver is not null
                     ? VarCollection.Combine(_staticSeriesList, IndicatorObserver.Overlay.SeriesList).Chain().AsObservable()
@@ -125,7 +116,6 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 _bidSupportLine.Price = bid;
                 _askSupportLine.Price = ask;
 
-                _crosshair.UpdateXLabelPosition(_yAxis.VisibleDataBounds.Min);
                 _yLabelAxis.SyncWithMain();
             };
         }
@@ -148,7 +138,13 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         private static void ChangeEnableCrosshairSource(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
-            (obj as CartesianScrollBarChart)?._crosshair.SwitchCrosshair((bool)e.NewValue);
+            if (obj is CartesianScrollBarChart chart)
+            {
+                var paint = (bool)e.NewValue ? Customizer.CrosshairPaint : Customizer.EmptyPaint;
+
+                chart._xAxis.SetCrosshairColor(paint);
+                chart._yAxis.SetCrosshairColor(paint);
+            }
         }
     }
 }

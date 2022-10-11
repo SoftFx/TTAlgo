@@ -13,10 +13,10 @@ namespace TickTrader.BotTerminal.Controls.Chart
             var format = settings.PriceFormat;
 
             sb.AppendLine($"{bar.Date.ToString(settings.DateFormat)}")
-              .AppendLine($"O: {bar.Open.ToString(format)}")
-              .AppendLine($"H: {bar.High.ToString(format)}")
-              .AppendLine($"L: {bar.Low.ToString(format)}")
-              .Append($"C: {bar.Close.ToString(format)}");
+              .AppendLine($"O: {bar.Open?.ToString(format)}")
+              .AppendLine($"H: {bar.High?.ToString(format)}")
+              .AppendLine($"L: {bar.Low?.ToString(format)}")
+              .Append($"C: {bar.Close?.ToString(format)}");
 
             return sb.ToString();
         }
@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             var sb = new StringBuilder(1 << 5);
 
             sb.AppendLine($"{bar.Date.ToString(settings.DateFormat)}")
-              .Append($"C: {bar.Close.ToString(settings.PriceFormat)}");
+              .Append($"C: {bar.Close?.ToString(settings.PriceFormat)}");
 
             return sb.ToString();
         }

@@ -31,6 +31,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         internal static SolidColorPaint EmptyPaint { get; } = new SolidColorPaint(SKColor.Empty);
 
+        internal static SolidColorPaint CrosshairPaint { get; } = new SolidColorPaint(SKColors.DarkOliveGreen);
+
+
 
         static Customizer()
         {
@@ -62,7 +65,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         internal static Axis SetXSettings(this Axis axis, ChartSettings settings)
         {
-            axis.Padding = new Padding(-50, 0, 0, 5);
+            axis.CrosshairPadding = new Padding(0, 0, 0, 58);
             axis.Labeler = value => value >= DateTime.MinValue.Ticks ? new DateTime((long)value).ToString(settings.DateFormat) : null;
             axis.UnitWidth = settings.Period.ToTimespan().Ticks;
 
@@ -79,6 +82,13 @@ namespace TickTrader.BotTerminal.Controls.Chart
             return axis;
         }
 
+        internal static Axis SetCrosshairColor(this Axis axis, SolidColorPaint paint)
+        {
+            axis.CrosshairPaint = paint;
+            axis.CrosshairLabelsPaint = paint;
+
+            return axis;
+        }
 
         internal static ColumnSeries<ObservablePoint> SetPeriod(this ColumnSeries<ObservablePoint> label, TradeChartSettings settings)
         {
