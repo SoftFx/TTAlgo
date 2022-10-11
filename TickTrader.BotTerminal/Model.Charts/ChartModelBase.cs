@@ -30,18 +30,12 @@ namespace TickTrader.BotTerminal
         private readonly SM.StateMachine<States> _stateController = new(new DispatcherStateMachineSync());
         private readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        //private VarList<IRenderableSeriesViewModel> seriesCollection = new VarList<IRenderableSeriesViewModel>();
-        private VarList<IndicatorModel> indicators = new VarList<IndicatorModel>();
         private ChartTypes chartType;
         private bool isIndicatorsOnline;
         private bool isLoading;
         private bool isUpdateRequired;
         private bool isConnected;
         private bool _isDisposed;
-        //private readonly List<ChartTypes> supportedChartTypes = new List<ChartTypes>();
-        //private ChartNavigator navigator;
-        private long indicatorNextId = 1;
-        //private Property<AxisBase> _timeAxis = new Property<AxisBase>();
         private string dateAxisLabelFormat;
         private List<QuoteInfo> updateQueue;
         private List<BarInfo> _barUpdateQueue;
@@ -88,7 +82,7 @@ namespace TickTrader.BotTerminal
 
             _stateController.OnEnter(States.LoadingData, () => Update(CancellationToken.None));
             _stateController.OnEnter(States.Online, StartIndicators);
-            _stateController.OnEnter(States.Stopping, StopIndicators);
+            _stateController.OnEnter(States.Stopping, () => _ = StopIndicators());
 
             _stateController.StateChanged += (o, n) => _logger.Debug("Chart [" + Model.Name + "] " + o + " => " + n);
         }
@@ -114,13 +108,10 @@ namespace TickTrader.BotTerminal
         }
 
         public ITimeVectorRef TimeSyncRef { get; }
-        //public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableList<AlgoPluginViewModel> AvailableIndicators { get; private set; }
         public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
         public IObservableList<AlgoPluginViewModel> AvailableBotTraders { get; private set; }
         public bool HasAvailableBotTraders => AvailableBotTraders.Count() > 0;
-        public IVarList<IndicatorModel> Indicators { get { return indicators; } }
-        //public IEnumerable<ChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
         public Var<IRateInfo> CurrentRate => _currentRateProp.Var;
         public bool IsIndicatorsOnline => isIndicatorsOnline;
@@ -131,11 +122,6 @@ namespace TickTrader.BotTerminal
         {
             _stateController.ModifyConditions(() => isUpdateRequired = true);
         }
-
-        //protected void AddSeries(IRenderableSeriesViewModel series)
-        //{
-        //    seriesCollection.Add(series);
-        //}
 
         public void Deactivate()
         {
@@ -209,38 +195,12 @@ namespace TickTrader.BotTerminal
         public event System.Action ParamsLocked = delegate { };
         public event System.Action ParamsUnlocked = delegate { };
 
-        public void AddIndicator(PluginConfig config)
-        {
-            var indicator = CreateIndicator(config);
-            indicators.Add(indicator);
-            Agent.IdProvider.RegisterPluginId(indicator.InstanceId);
-        }
-
-        public void RemoveIndicator(IndicatorModel i)
-        {
-            if (indicators.Remove(i))
-            {
-                //Agent.IdProvider.UnregisterPlugin(i.InstanceId);
-                i.Dispose();
-            }
-        }
-
-        protected long GetNextIndicatorId()
-        {
-            return indicatorNextId++;
-        }
-
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
-        protected abstract IndicatorModel CreateIndicator(PluginConfig config);
         protected abstract void ApplyUpdate(QuoteInfo update);
         protected abstract void ApplyBarUpdate(BarInfo update);
 
-        //protected void Support(ChartTypes chartType)
-        //{
-        //    this.supportedChartTypes.Add(chartType);
-        //}
 
         private async void Update(CancellationToken cToken)
         {
@@ -370,7 +330,7 @@ namespace TickTrader.BotTerminal
             StartEvent();
         }
 
-        private async void StopIndicators()
+        private async Task StopIndicators()
         {
             isIndicatorsOnline = false;
             await StopEvent.InvokeAsync(this);

@@ -18,7 +18,6 @@ namespace TickTrader.BotTerminal
         private ChartModelBase activeChart;
         private readonly IShell _shell;
         private readonly AlgoEnvironment _algoEnv;
-        private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolInfo smb;
         private VarDictionary<string, AlgoBotViewModel> _chartBots = new VarDictionary<string, AlgoBotViewModel>();
         private readonly IVarList<PluginOutputModel> _allIndicators;
@@ -45,21 +44,13 @@ namespace TickTrader.BotTerminal
 
             Chart = BarChart;
             PriceDigits = smb.Digits;
-            //this.tickChart = new TickChartModel(smb, _algoEnv);
             this.UiLock = new UiLock();
 
-            _allIndicators = _chartHost.Indicators.TransformToList(); //charts.SelectMany(c => c.Indicators);
+            _allIndicators = _chartHost.Indicators.TransformToList();
             _allBots = _chartBots.OrderBy((id, bot) => id);
 
             Indicators = _allIndicators.Chain().Select(i => new IndicatorViewModel(_chartHost, i)).UseSyncContext().Chain().AsObservable();
             Bots = _allBots.Chain().AsObservable();
-
-            //var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
-
-            // index from VarCollection.CombineChained doesn't work properly when first collection changes size
-            //_indicatorOutputs = new VarList<OutputGroupViewModel>();
-            //_botOutputs = new VarList<OutputGroupViewModel>();
-            //var allOutputs = VarCollection.CombineChained(_indicatorOutputs, _botOutputs);
 
             FilterChartBots();
             _algoEnv.LocalAgent.BotUpdated += BotOnUpdated;
@@ -166,7 +157,6 @@ namespace TickTrader.BotTerminal
             Indicators.Dispose();
             Bots.Dispose();
 
-            charts.Clear();
             _chartBots.Clear();
             _allIndicators.Updated -= AllIndicators_Updated;
             _allBots.Updated -= AllBots_Updated;
@@ -321,11 +311,6 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void Indicators_Updated(ListUpdateArgs<IndicatorModel> args)
-        {
-            NotifyOfPropertyChange(nameof(HasIndicators));
-        }
-
         private void AllIndicators_Updated(ListUpdateArgs<PluginOutputModel> args)
         {
             //var allOutputs = ChartControl.OutputGroups;
@@ -373,25 +358,18 @@ namespace TickTrader.BotTerminal
 
         private void InitChart()
         {
-            charts.Clear();
-            charts.Add(Chart);
-
             Chart_TimeframeChanged();
 
             Chart.TimeframeChanged += Chart_TimeframeChanged;
-            //Chart.TimeAxis.PropertyChanged += TimeAxis_PropertyChanged;
             Chart.ParamsLocked += Chart_ParamsLocked;
             Chart.ParamsUnlocked += Chart_ParamsUnlocked;
-            Chart.Indicators.Updated += Indicators_Updated;
         }
 
         private void DeinitChart()
         {
-            //Chart.TimeAxis.PropertyChanged -= TimeAxis_PropertyChanged;
             Chart.TimeframeChanged -= Chart_TimeframeChanged;
             Chart.ParamsLocked -= Chart_ParamsLocked;
             Chart.ParamsUnlocked -= Chart_ParamsUnlocked;
-            Chart.Indicators.Updated -= Indicators_Updated;
         }
 
         public bool CanDrop(object o)
@@ -413,7 +391,7 @@ namespace TickTrader.BotTerminal
             _algoEnv.LocalAgentVM.Bots.Snapshot.Where(IsChartBot).ForEach(AddChartBot);
         }
 
-        private bool BotBelongsToChart(PluginModel bot)
+        private bool BotBelongsToChart(LocalTradeBot bot)
         {
             return bot.Descriptor != null && bot.Config != null && Chart != null
                 && bot.Descriptor.SetupMainSymbol
@@ -423,7 +401,7 @@ namespace TickTrader.BotTerminal
 
         private bool IsChartBot(AlgoBotViewModel botVM)
         {
-            return botVM.Model is TradeBotModel && BotBelongsToChart((TradeBotModel)botVM.Model);
+            return botVM.Model is LocalTradeBot localBot && BotBelongsToChart(localBot);
         }
 
         private void AddChartBot(AlgoBotViewModel botVM)
@@ -454,14 +432,18 @@ namespace TickTrader.BotTerminal
 
         private void BotOnUpdated(ITradeBot bot)
         {
-            if (_chartBots.ContainsKey(bot.InstanceId) && !BotBelongsToChart((TradeBotModel)bot))
+            if (bot is LocalTradeBot localBot)
             {
-                RemoveChartBot(bot.InstanceId);
-            }
-            else if (!_chartBots.ContainsKey(bot.InstanceId) && bot is TradeBotModel && BotBelongsToChart((TradeBotModel)bot))
-            {
-                var botVM = _algoEnv.LocalAgentVM.BotList.FirstOrDefault(b => b.InstanceId == bot.InstanceId);
-                AddChartBot(botVM);
+                var belongsToChart = BotBelongsToChart(localBot);
+                if (_chartBots.ContainsKey(bot.InstanceId) && !belongsToChart)
+                {
+                    RemoveChartBot(bot.InstanceId);
+                }
+                else if (!_chartBots.ContainsKey(bot.InstanceId) && belongsToChart)
+                {
+                    var botVM = _algoEnv.LocalAgentVM.BotList.FirstOrDefault(b => b.InstanceId == bot.InstanceId);
+                    AddChartBot(botVM);
+                }
             }
         }
 

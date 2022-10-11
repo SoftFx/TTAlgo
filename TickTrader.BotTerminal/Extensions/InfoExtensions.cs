@@ -23,18 +23,5 @@ namespace TickTrader.BotTerminal
                     throw new ArgumentException();
             }
         }
-
-        public static PluginModelInfo ToInfo(this TradeBotModel tradeBot)
-        {
-            return new PluginModelInfo
-            {
-                AccountId = null,
-                Config = tradeBot.Config,
-                Descriptor_ = tradeBot.Descriptor,
-                FaultMessage = "",
-                InstanceId = tradeBot.InstanceId,
-                State = tradeBot.State,
-            };
-        }
     }
 }

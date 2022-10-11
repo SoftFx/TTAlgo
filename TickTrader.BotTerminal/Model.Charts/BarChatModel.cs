@@ -62,11 +62,6 @@ namespace TickTrader.BotTerminal
                 InitBoundaries(barArray.Length, barArray.First().OpenTime.ToUtcDateTime(), barArray.Last().OpenTime.ToUtcDateTime());
         }
 
-        protected override IndicatorModel CreateIndicator(PluginConfig config)
-        {
-            return new IndicatorModel(config, null, this, this);
-        }
-
         public override void InitializePlugin(ExecutorConfig config)
         {
             base.InitializePlugin(config);

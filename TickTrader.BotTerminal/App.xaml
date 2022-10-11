@@ -58,7 +58,6 @@
                 <ResourceDictionary Source="Views.Algo/BotFolderView.xaml" />
                 <ResourceDictionary Source="Views.Algo/CopyBotInstanceView.xaml" />
 
-                <ResourceDictionary Source="Views.Chart/AlgoChartView.xaml" />
                 <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotListOverlayView.xaml" />

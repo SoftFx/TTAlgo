@@ -1,7 +1,5 @@
 ﻿using Machinarium.Qnil;
-//using SciChart.Charting.Visuals.Axes;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -14,6 +12,42 @@ using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.BotTerminal
 {
+    internal interface ITradeBot
+    {
+        bool IsRemote { get; }
+
+        string InstanceId { get; }
+
+        PluginConfig Config { get; }
+
+        PluginModelInfo.Types.PluginState State { get; }
+
+        string FaultMessage { get; }
+
+        PluginDescriptor Descriptor { get; }
+
+        string Status { get; }
+
+        BotJournal Journal { get; }
+
+        string AccountId { get; }
+
+
+        event Action<ITradeBot> Updated;
+        event Action<ITradeBot> StateChanged;
+        event Action<ITradeBot> StatusChanged;
+
+
+        void SubscribeToStatus();
+
+        void UnsubscribeFromStatus();
+
+        void SubscribeToLogs();
+
+        void UnsubscribeFromLogs();
+    }
+
+
     internal interface IAlgoAgent
     {
         string Name { get; }
@@ -118,14 +152,5 @@ namespace TickTrader.BotTerminal
 
         //event Action<PluginCatalogItem> PluginBeingReplaced; // fired on background thread!
         //event Action<PluginCatalogItem> PluginBeingRemoved; // fired on background thread!
-    }
-
-    internal interface IPluginModel
-    {
-        string InstanceId { get; }
-
-        IDictionary<string, IOutputCollector> Outputs { get; }
-
-        event Action OutputsChanged;
     }
 }
