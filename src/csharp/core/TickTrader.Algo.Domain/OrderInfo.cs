@@ -34,6 +34,9 @@ namespace TickTrader.Algo.Domain
 
         public bool IsContingentOrder => Options.HasFlag(OrderOptions.ContingentOrder);
 
+        public bool IsSupportedSlippage => Type == Types.Type.Stop || Type == Types.Type.Market;
+
+
         public bool MarketWithSlippdage => Options.HasFlag(OrderOptions.MarketWithSlippage);
 
         public bool HiddenIceberg => Options.HasFlag(OrderOptions.HiddenIceberg);
@@ -192,6 +195,25 @@ namespace TickTrader.Algo.Domain
             StopPrice = newStopPirce;
 
             EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, false));
+        }
+
+        public double GetMaxSlippagePrice(double currentPrice)
+        {
+            if (SymbolInfo != null)
+            {
+                var koef = Side.IsBuy() ? 1 : -1;
+                var slippage = SymbolInfo.Slippage.DefaultValue ?? 0.0;
+
+                switch (SymbolInfo.Slippage.Type)
+                {
+                    case SlippageInfo.Types.Type.Pips:
+                        return currentPrice + koef * (slippage * SymbolInfo.Point);
+                    case SlippageInfo.Types.Type.Percent:
+                        return currentPrice * (1.0 + koef * slippage);
+                }
+            }
+
+            return currentPrice;
         }
     }
 

@@ -10,6 +10,8 @@ namespace TickTrader.Algo.Domain
 
         public string TradePair => $"{BaseCurrency}{CounterCurrency}";
 
+        public double Point => Math.Pow(10, -Digits);
+
 
         double ISymbolInfoWithRate.Bid => Bid ?? double.NaN;
 

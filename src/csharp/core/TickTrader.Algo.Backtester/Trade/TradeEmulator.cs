@@ -895,23 +895,39 @@ namespace TickTrader.Algo.Backtester
 
         private FillInfo FillOrder(OrderAccessor order, double? fillPrice, double? fillAmount, TradeReportInfo.Types.Reason reason)
         {
-            double actualPrice;
-            double actualAmount;
+            var actualPrice = fillPrice ?? GetCurrentOpenPrice(order) ?? 0.0;
+            var actualAmount = fillAmount ?? order.Info.RemainingAmount;
 
-            if (fillPrice == null)
+            return order.Info.IsSupportedSlippage ? FillOrderWithSlippage(order, actualPrice, actualAmount, reason) :
+                                                    FillOrder2(order, actualPrice, actualAmount, reason);
+        }
+
+
+        //TODO: fill will always be at maxSlippagePrice because of _scheduler doesn't refresh current rate
+        //for correct work need to add Task.Delay and redone it to async function
+        private FillInfo FillOrderWithSlippage(OrderAccessor order, double fillPrice, double fillAmount, TradeReportInfo.Types.Reason reason)
+        {
+            if (_scheduler.TryPeekNextRate(out var rate))
             {
-                var quote = _calcFixture.GetCurrentRateOrNull(order.Info.Symbol);
-                actualPrice = GetCurrentOpenPrice(order) ?? 0;
+                var maxSlippagePrice = order.Info.GetMaxSlippagePrice(fillPrice);
+
+                fillPrice = maxSlippagePrice;
+
+                //if (order.Info.Side.IsBuy())
+                //{
+                //    var nextPrice = rate.NullableAsk();
+
+                //    fillPrice = nextPrice is not null ? Math.Min(nextPrice.Value, maxSlippagePrice) : maxSlippagePrice;
+                //}
+                //else
+                //{
+                //    var nextPrice = rate.NullableBid();
+
+                //    fillPrice = nextPrice is not null ? Math.Max(nextPrice.Value, maxSlippagePrice) : maxSlippagePrice;
+                //}
             }
-            else
-                actualPrice = fillPrice.Value;
 
-            if (fillAmount != null)
-                actualAmount = fillAmount.Value;
-            else
-                actualAmount = order.Info.RemainingAmount;
-
-            return FillOrder2(order, actualPrice, actualAmount, reason);
+            return FillOrder2(order, fillPrice, fillAmount, reason);
         }
 
         // can lead to: 1) new gross position 2) net position settlement 3) asset movement

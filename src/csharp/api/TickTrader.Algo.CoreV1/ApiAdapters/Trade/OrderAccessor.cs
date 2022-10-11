@@ -107,7 +107,6 @@ namespace TickTrader.Algo.CoreV1
 
         public IContingentOrderTrigger ContingentTrigger { get; private set; }
 
-
         private static double ProcessResponse(ICalculateResponse<double> response)
         {
             return response != null && response.IsCompleted ? response.Value : double.NaN;
