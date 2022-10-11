@@ -102,30 +102,20 @@ namespace TickTrader.BotTerminal
 
         public static BaseTransactionModel Create<T>(AccountInfo.Types.Type accountType, T tTransaction, int balanceDigits, ISymbolInfo symbol = null)
         {
-            switch (tTransaction)
+            return tTransaction switch
             {
-                case TriggerReportInfo triggerReport:
-                    return new TriggerTransactionModel(triggerReport, symbol, accountType);
+                TriggerReportInfo triggerReport => new TriggerTransactionModel(triggerReport, symbol, accountType),
 
-                case TradeReportInfo tradeReport:
-                    switch (accountType)
-                    {
-                        case AccountInfo.Types.Type.Gross:
-                            return new GrossTransactionModel(tradeReport, symbol, balanceDigits);
+                TradeReportInfo tradeReport => accountType switch
+                {
+                    AccountInfo.Types.Type.Gross => new GrossTransactionModel(tradeReport, symbol, balanceDigits),
+                    AccountInfo.Types.Type.Net => new NetTransactionModel(tradeReport, symbol, balanceDigits),
+                    AccountInfo.Types.Type.Cash => new CashTransactionModel(tradeReport, symbol, balanceDigits),
+                    _ => throw new NotSupportedException(accountType.ToString()),
+                },
 
-                        case AccountInfo.Types.Type.Net:
-                            return new NetTransactionModel(tradeReport, symbol, balanceDigits);
-
-                        case AccountInfo.Types.Type.Cash:
-                            return new CashTransactionModel(tradeReport, symbol, balanceDigits);
-
-                        default:
-                            throw new NotSupportedException(accountType.ToString());
-                    }
-
-                default:
-                    throw new NotSupportedException(nameof(T));
-            }
+                _ => throw new NotSupportedException(nameof(T)),
+            };
         }
 
         private double? GetMaxVisibleVolume(TradeReportInfo transaction)

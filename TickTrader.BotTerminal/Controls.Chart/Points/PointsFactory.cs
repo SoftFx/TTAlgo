@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             {
                 Price = price,
                 Time = report.OpenTime.Ticks,
-                ToolTip = $"Open #{report.OrderNum} {report.Side} {report.OpenQuantity} at price {price?.ToString(GetDoubleFormat(report))}"
+                ToolTip = BuildTooltip("Open", report, report.OpenQuantity, price),
             };
         }
 
@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             {
                 Price = report.ClosePrice,
                 Time = report.CloseTime.Ticks,
-                ToolTip = $"Close #{report.OrderNum} {side} {report.CloseQuantity} at price {report.ClosePrice?.ToString(GetDoubleFormat(report))}"
+                ToolTip = BuildTooltip("Close", report, report.CloseQuantity, report.ClosePrice, side),
             };
         }
 
@@ -37,12 +37,20 @@ namespace TickTrader.BotTerminal.Controls.Chart
             {
                 Price = price,
                 Time = report.OpenTime.Ticks,
-                ToolTip = $"Fill #{report.OrderNum} {report.Side} {report.OpenQuantity} at price {price?.ToString(GetDoubleFormat(report))}"
+                ToolTip = BuildTooltip("Fill", report, report.OpenQuantity, price),
             };
         }
 
 
-        private static string GetDoubleFormat(BaseTransactionModel model) => $"F{model.PriceDigits}";
+        private static string BuildTooltip(string action, BaseTransactionModel report, double? volume, double? price, string side = null)
+        {
+            side ??= report.Side.ToString();
+
+            if (volume is not null)
+                volume = Math.Round(volume.Value, report.PriceDigits);
+
+            return $"{action} #{report.OrderNum} {side} {volume} at price {price?.ToString($"F{report.PriceDigits}")}";
+        }
     }
 
 
