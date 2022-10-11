@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
@@ -20,7 +19,7 @@ using SM = Machinarium.State;
 
 namespace TickTrader.BotTerminal
 {
-    internal abstract class ChartModelBase : PropertyChangedBase, IDisposable, IAlgoPluginHost, IAlgoSetupContext
+    internal abstract class ChartModelBase : PropertyChangedBase, IDisposable, IAlgoSetupContext
     {
         private enum States { Idle, LoadingData, Online, Stopping, Closed, Faulted }
 
@@ -31,7 +30,7 @@ namespace TickTrader.BotTerminal
         private readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private ChartTypes chartType;
-        private bool isIndicatorsOnline;
+        private bool _isIndicatorsOnline;
         private bool isLoading;
         private bool isUpdateRequired;
         private bool isConnected;
@@ -61,7 +60,6 @@ namespace TickTrader.BotTerminal
 
             isConnected = ClientModel.IsConnected.Value;
             ClientModel.Connected += Connection_Connected;
-            ClientModel.Disconnected += Connection_Disconnected;
             ClientModel.Deinitializing += Client_Deinitializing;
 
             _quoteSub = ClientModel.Distributor.AddListener(OnRateUpdate, symbol.Name, SubscriptionDepth.Tick_S0);
@@ -81,8 +79,8 @@ namespace TickTrader.BotTerminal
             _stateController.AddTransition(States.Stopping, Events.Stopped, isReadyToStart, States.LoadingData);
 
             _stateController.OnEnter(States.LoadingData, () => Update(CancellationToken.None));
-            _stateController.OnEnter(States.Online, StartIndicators);
-            _stateController.OnEnter(States.Stopping, () => _ = StopIndicators());
+            _stateController.OnEnter(States.Online, () => StartIndicators());
+            _stateController.OnEnter(States.Stopping, () => StopIndicators());
 
             _stateController.StateChanged += (o, n) => _logger.Debug("Chart [" + Model.Name + "] " + o + " => " + n);
         }
@@ -107,14 +105,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public ITimeVectorRef TimeSyncRef { get; }
         public IObservableList<AlgoPluginViewModel> AvailableIndicators { get; private set; }
         public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
         public IObservableList<AlgoPluginViewModel> AvailableBotTraders { get; private set; }
         public bool HasAvailableBotTraders => AvailableBotTraders.Count() > 0;
         public string SymbolCode { get { return Model.Name; } }
         public Var<IRateInfo> CurrentRate => _currentRateProp.Var;
-        public bool IsIndicatorsOnline => isIndicatorsOnline;
+        public bool IsIndicatorsOnline => _isIndicatorsOnline;
 
         public event System.Action TimeframeChanged;
 
@@ -143,27 +140,6 @@ namespace TickTrader.BotTerminal
 
         public bool IsReady { get { return !IsLoading; } }
 
-        //public ChartNavigator Navigator
-        //{
-        //    get { return navigator; }
-        //    protected set
-        //    {
-        //        navigator = value;
-        //        //_timeAxis.Value = value.CreateAxis();
-        //        //CreateXAxisBinging(TimeAxis.Value);
-        //    }
-        //}
-
-        //public void CreateXAxisBinging(AxisBase timeAxis)
-        //{
-        //    Binding cursorTextFormatBinding = new Binding(nameof(DateAxisLabelFormat));
-        //    cursorTextFormatBinding.Source = this;
-        //    cursorTextFormatBinding.Mode = BindingMode.TwoWay;
-        //    timeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
-        //}
-
-        //public Var<AxisBase> TimeAxis => _timeAxis.Var;
-
         public ChartTypes SelectedChartType
         {
             get { return chartType; }
@@ -182,7 +158,7 @@ namespace TickTrader.BotTerminal
             set
             {
                 this.dateAxisLabelFormat = value;
-                NotifyOfPropertyChange("DateAxisLabelFormat");
+                NotifyOfPropertyChange(nameof(DateAxisLabelFormat));
             }
         }
 
@@ -234,25 +210,16 @@ namespace TickTrader.BotTerminal
         {
             TimelineStart = startDate;
             TimelineEnd = endDate;
-            //Navigator.Init(count, startDate, endDate);
-            //Navigator.OnDataLoaded(count, startDate, endDate);
         }
 
         protected void ExtendBoundaries(int count, DateTime endDate)
         {
             TimelineEnd = endDate;
-            //Navigator.Extend(count, endDate);
-        }
-
-        private void Connection_Disconnected()
-        {
-            Disconnected?.Invoke();
         }
 
         private void Connection_Connected()
         {
             _stateController.ModifyConditions(() => isConnected = true);
-            Connected?.Invoke();
         }
 
         private Task Client_Deinitializing(object sender, CancellationToken cancelToken)
@@ -262,12 +229,12 @@ namespace TickTrader.BotTerminal
 
         private void AvailableIndicators_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            NotifyOfPropertyChange("HasAvailableIndicators");
+            NotifyOfPropertyChange(nameof(HasAvailableIndicators));
         }
 
         private void AvailableBotTraders_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            NotifyOfPropertyChange("HasAvailableBotTraders");
+            NotifyOfPropertyChange(nameof(HasAvailableBotTraders));
         }
 
         public async void Dispose()
@@ -284,7 +251,6 @@ namespace TickTrader.BotTerminal
                     AvailableBotTraders.Dispose();
 
                     ClientModel.Connected -= Connection_Connected;
-                    ClientModel.Disconnected -= Connection_Disconnected;
                     ClientModel.Deinitializing -= Client_Deinitializing;
                     _quoteSub.Dispose();
                     _barSub?.Dispose();
@@ -326,72 +292,14 @@ namespace TickTrader.BotTerminal
 
         private void StartIndicators()
         {
-            isIndicatorsOnline = true;
-            StartEvent();
+            _isIndicatorsOnline = true;
         }
 
-        private async Task StopIndicators()
+        private void StopIndicators()
         {
-            isIndicatorsOnline = false;
-            await StopEvent.InvokeAsync(this);
+            _isIndicatorsOnline = false;
             _stateController.PushEvent(Events.Stopped);
         }
-
-        #region IAlgoPluginHost
-
-        //AxisBase IPluginDataChartModel.CreateXAxis()
-        //{
-        //    var axis =  Navigator.CreateAxis();
-        //    CreateXAxisBinging(axis);
-        //    return axis;
-        //}
-
-        void IAlgoPluginHost.Lock()
-        {
-            ParamsLocked();
-        }
-
-        void IAlgoPluginHost.Unlock()
-        {
-            ParamsUnlocked();
-        }
-
-        void IAlgoPluginHost.EnqueueStartAction(System.Action action)
-        {
-            ((IAlgoPluginHost)AlgoEnv.LocalAgent).EnqueueStartAction(action);
-        }
-
-        ITradeExecutor IAlgoPluginHost.GetTradeApi()
-        {
-            return ClientModel.TradeApi;
-        }
-
-        ITradeHistoryProvider IAlgoPluginHost.GetTradeHistoryApi()
-        {
-            return ClientModel.TradeHistory.AlgoAdapter;
-        }
-
-        string IAlgoPluginHost.GetConnectionInfo()
-        {
-            return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
-        }
-
-        public virtual void InitializePlugin(ExecutorConfig config)
-        {
-            config.InitPriorityInvokeStrategy();
-            config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
-            //runtime.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
-        }
-
-        bool IExecStateObservable.IsStarted { get { return isIndicatorsOnline; } }
-
-        public event System.Action ParamsChanged = delegate { };
-        public event System.Action StartEvent = delegate { };
-        public event AsyncEventHandler StopEvent = delegate { return Task.CompletedTask; };
-        public event System.Action Connected;
-        public event System.Action Disconnected;
-
-        #endregion
 
         #region IAlgoSetupContext
 

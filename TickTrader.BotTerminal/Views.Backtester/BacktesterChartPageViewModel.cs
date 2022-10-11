@@ -11,7 +11,7 @@ using static TickTrader.BotTerminal.BaseTransactionModel;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BacktesterChartPageViewModel : Page, IPluginDataChartModel
+    internal class BacktesterChartPageViewModel : Page
     {
         private const Feed.Types.Timeframe DefaultTimeframe = Feed.Types.Timeframe.M1;
 
@@ -335,22 +335,6 @@ namespace TickTrader.BotTerminal
         //            _barVector.MarkersData.Metadata[index] = new PositionMarkerMetadatda(info.Key, info.Description, info.IsBuy);
         //    }
         //}
-
-        #region IPluginDataChartModel
-
-        ITimeVectorRef IPluginDataChartModel.TimeSyncRef => null;
-        bool IExecStateObservable.IsStarted => true;
-
-        event System.Action IExecStateObservable.StartEvent { add { } remove { } }
-        event AsyncEventHandler IExecStateObservable.StopEvent { add { } remove { } }
-
-
-        //AxisBase IPluginDataChartModel.CreateXAxis()
-        //{
-        //    return _navigator.CreateAxis();
-        //}
-
-        #endregion
 
         //private struct MarkerInfo
         //{
