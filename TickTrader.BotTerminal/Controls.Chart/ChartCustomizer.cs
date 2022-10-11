@@ -65,6 +65,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         internal static Axis SetXSettings(this Axis axis, ChartSettings settings)
         {
+            axis.Padding = new Padding(-50, 0, 0, 5);
             axis.CrosshairPadding = new Padding(0, 0, 0, 58);
             axis.Labeler = value => value >= DateTime.MinValue.Ticks ? new DateTime((long)value).ToString(settings.DateFormat) : null;
             axis.UnitWidth = settings.Period.ToTimespan().Ticks;
