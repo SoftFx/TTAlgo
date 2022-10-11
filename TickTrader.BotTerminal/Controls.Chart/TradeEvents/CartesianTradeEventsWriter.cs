@@ -41,19 +41,17 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public event Action InitNewDataEvent;
 
 
-        public TradeEventsWriter()
-        {
-            foreach (var setting in _settings.Values)
-                Markers.Add(setting.GetMarkerSeries());
-        }
-
-
         public void LoadTradeEvents(IEnumerable<BaseTransactionModel> eventSource)
         {
             void AddEvent(EventType type, BaseTransactionModel report)
             {
                 _settings[type].Events.Add(_settings[type].GetPoint(report));
             }
+
+            Markers.Clear();
+
+            foreach (var setting in _settings.Values)
+                Markers.Add(setting.GetMarkerSeries());
 
             _settings.ForEach(p => p.Value.Events.Clear());
 

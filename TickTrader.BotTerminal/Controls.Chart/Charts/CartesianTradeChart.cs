@@ -153,7 +153,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
                         _staticSeriesList.Add(item);
                 }
 
-                _observableSeries = IndicatorObserver is not null
+                _observableSeries = IndicatorObserver.Overlay is not null
                     ? VarCollection.Combine(_staticSeriesList, IndicatorObserver.Overlay.SeriesList).Chain().AsObservable()
                     : _staticSeriesList.AsObservable();
 
