@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
 
             private set
             {
-                if (_timeFrame == value)
+                if (_timeFrame == value && _sampler != null)
                     return;
 
                 _timeFrame = value;

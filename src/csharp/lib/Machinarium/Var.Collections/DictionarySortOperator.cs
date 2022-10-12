@@ -78,7 +78,7 @@ namespace Machinarium.Qnil
 
         protected override void DoDispose()
         {
-            src.Updated += Src_Updated;
+            src.Updated -= Src_Updated;
         }
 
         protected override void SendDisposeToConsumers()

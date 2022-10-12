@@ -37,8 +37,6 @@ namespace TickTrader.BotTerminal
             base.Activate();
         }
 
-        //public override ITimeVectorRef TimeSyncRef => null; //_barVector.Ref;
-
 
         protected override void ClearData()
         {
@@ -62,28 +60,15 @@ namespace TickTrader.BotTerminal
                 InitBoundaries(barArray.Length, barArray.First().OpenTime.ToUtcDateTime(), barArray.Last().OpenTime.ToUtcDateTime());
         }
 
-        public override void InitializePlugin(ExecutorConfig config)
-        {
-            base.InitializePlugin(config);
-
-            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
-            //config.SetMainSeries(_barVector.Select(u));
-        }
-
         protected override void ApplyUpdate(QuoteInfo quote)
         {
             BarVector.ApplyQuote(quote);
-
-            //if (quote.HasBid)
-            //{
-            //    //_barVector.TryAppendQuote(quote.Time, quote.Bid, 1);
-            //    //ExtendBoundaries(_barVector.Count, quote.TimeUtc);
-            //}
         }
 
         protected override void ApplyBarUpdate(BarInfo bar)
         {
             BarVector.ApplyBarUpdate(bar);
+            //ExtendBoundaries(BarVector.Count, bar.Data.CloseTime.ToUtcDateTime());
         }
 
         protected override void UpdateSeries()

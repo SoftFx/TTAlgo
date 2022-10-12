@@ -118,39 +118,4 @@ namespace TickTrader.BotTerminal
 
         Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerPublicApi.IFileProgressListener progressListener);
     }
-
-    internal interface IExecStateObservable
-    {
-        bool IsStarted { get; }
-
-        event Action StartEvent;
-        event AsyncEventHandler StopEvent;
-    }
-
-    internal interface IPluginDataChartModel : IExecStateObservable
-    {
-        ITimeVectorRef TimeSyncRef { get; }
-
-        //AxisBase CreateXAxis();
-    }
-
-    internal interface IAlgoPluginHost : IPluginDataChartModel
-    {
-        void Lock();
-        void Unlock();
-
-        void InitializePlugin(ExecutorConfig config);
-        void EnqueueStartAction(Action action);
-
-        ITradeExecutor GetTradeApi();
-        ITradeHistoryProvider GetTradeHistoryApi();
-        string GetConnectionInfo();
-
-        event Action ParamsChanged;
-        event Action Connected;
-        event Action Disconnected;
-
-        //event Action<PluginCatalogItem> PluginBeingReplaced; // fired on background thread!
-        //event Action<PluginCatalogItem> PluginBeingRemoved; // fired on background thread!
-    }
 }

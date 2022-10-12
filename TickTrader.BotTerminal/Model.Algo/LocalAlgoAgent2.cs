@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
         private SetupContextInfo _setupContext;
 
 
-        public string Name => "AlgoTerminal";
+        public string Name => LocalAlgoAgent.LocalAgentName;
 
         public bool IsRemote => false;
 
