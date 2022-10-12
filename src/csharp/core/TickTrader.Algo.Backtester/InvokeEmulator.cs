@@ -449,7 +449,7 @@ namespace TickTrader.Algo.Backtester
 
         public bool TryPeekNextRate(out IRateInfo info)
         {
-            info = _feedReader.NextRate;
+            info = _feedReader?.NextRate;
 
             return info is not null;
         }

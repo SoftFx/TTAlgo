@@ -11,6 +11,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
+using TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -124,19 +125,16 @@ namespace TickTrader.Algo.Backtester
             {
                 OrderCmdResultCodes error = OrderCmdResultCodes.UnknownError;
 
-                var smbMetadata = _context.Builder.Symbols.GetOrNull(request.Symbol).Info;
-
-                var roundedVolumeLots = RoundVolume(request.Volume, smbMetadata);
+                var smbMetadata = _context.Builder.Symbols.GetOrNull(request.Symbol)?.Info;
 
                 try
                 {
-                    //using (calc.UsageScope())
-                    //{
-                    //maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
-                    double volume = ToUnits(roundedVolumeLots, smbMetadata);
-                    double? maxVisibleVolume = null; //ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
+                    var volume = ToUnits(request.Volume, smbMetadata);
+                    var maxVisibleVolume = ToUnits(request.MaxVisibleVolume, smbMetadata);
+
                     var price = RoundPrice(request.Price, smbMetadata, request.Side.ToDomainEnum());
                     var stopPrice = RoundPrice(request.StopPrice, smbMetadata, request.Side.ToDomainEnum());
+
                     var sl = RoundPrice(request.StopLoss, smbMetadata, request.Side.ToDomainEnum());
                     var tp = RoundPrice(request.TakeProfit, smbMetadata, request.Side.ToDomainEnum());
 
@@ -151,14 +149,13 @@ namespace TickTrader.Algo.Backtester
 
                         //Facade.ValidateExpirationTime(Request.Expiration, _acc);
 
-                        var order = OpenOrder(smbMetadata, request.Type.ToDomainEnum(), request.Side.ToDomainEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options.ToDomainEnum(), request.Tag, request.Expiration, OpenOrderOptions.None);
+                        var order = OpenOrder(smbMetadata, request.Type.ToDomainEnum(), request.Side.ToDomainEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options.ToDomainEnum(), request.Tag, request.Expiration, OpenOrderOptions.None, request.Slippage);
 
                         _collector.OnOrderOpened();
 
                         // set result
                         return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone(), ExecutionTime);
                     }
-                    //}
                 }
                 catch (OrderValidationError ex)
                 {
@@ -173,7 +170,7 @@ namespace TickTrader.Algo.Backtester
                 _collector.OnOrderRejected();
 
                 using (JournalScope())
-                    _opSummary.AddOpenFailAction(request.Type, request.Symbol, request.Side, roundedVolumeLots, error, _acc);
+                    _opSummary.AddOpenFailAction(request.Type, request.Symbol, request.Side, RoundVolume(request.Volume, smbMetadata), error, _acc);
 
                 return new OrderResultEntity(error, null, ExecutionTime);
             });
@@ -200,7 +197,7 @@ namespace TickTrader.Algo.Backtester
 
                     //node.CheckTradeTime(Request, symbol);
 
-                    TradeReportInfo.Types.Reason trReason = TradeReportInfo.Types.Reason.ClientRequest;
+                    var trReason = TradeReportInfo.Types.Reason.ClientRequest;
                     //if (Request.ExpirationFlag)
                     //    trReason = TradeReportInfo.Types.Reason.Expired;
                     //if (Request.StopoutFlag)
@@ -239,11 +236,8 @@ namespace TickTrader.Algo.Backtester
 
                     var orderVolume = orderToModify.Info.RemainingAmount;
 
-                    var roundedNewVolumeLots = RoundVolume(request.Volume, smbMetadata);
-                    var roundedMaxVisibleVolume = RoundVolume(request.MaxVisibleVolume, smbMetadata);
-
-                    var newOrderVolume = ToUnits(roundedNewVolumeLots, smbMetadata);
-                    var orderMaxVisibleVolume = ToUnits(roundedMaxVisibleVolume, smbMetadata);
+                    var newOrderVolume = ToUnits(request.Volume, smbMetadata);
+                    var orderMaxVisibleVolume = ToUnits(request.MaxVisibleVolume, smbMetadata);
 
                     var price = RoundPrice(request.Price, smbMetadata, orderToModify.Info.Side);
                     var stopPrice = RoundPrice(request.StopPrice, smbMetadata, orderToModify.Info.Side);
@@ -258,14 +252,14 @@ namespace TickTrader.Algo.Backtester
                         Type = orderToModify.Info.Type,
                         Side = orderToModify.Info.Side,
                         CurrentAmount = (double)orderVolume,
-                        NewAmount = (double?)newOrderVolume,
+                        NewAmount = newOrderVolume,
                         Price = price,
                         StopPrice = stopPrice,
                         StopLoss = sl,
                         TakeProfit = tp,
                         Comment = comment,
                         Expiration = request.Expiration.ToUtcTicks(),
-                        MaxVisibleAmount = (double?)orderMaxVisibleVolume,
+                        MaxVisibleAmount = orderMaxVisibleVolume,
                         ExecOptions = request.Options?.ToDomainEnum(),
                     };
 
@@ -435,7 +429,7 @@ namespace TickTrader.Algo.Backtester
         }
 
         private OrderAccessor OpenOrder(SymbolInfo symbolInfo, OrderInfo.Types.Type orderType, OrderInfo.Types.Side side, double volume, double? maxVisibleVolume, double? price, double? stopPrice,
-            double? sl, double? tp, string comment, Domain.OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
+            double? sl, double? tp, string comment, Domain.OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options, double? slippage)
         {
             var order = new OrderAccessor(symbolInfo);
 
@@ -496,10 +490,18 @@ namespace TickTrader.Algo.Backtester
             //order.ReqOpenPrice = clientPrice;
             //order.ReqOpenAmount = clientAmount;
 
-            if (orderType != OrderInfo.Types.Type.Stop)
+            if (orderType is not OrderInfo.Types.Type.Stop)
                 order.Info.Price = price;
-            if (orderType == OrderInfo.Types.Type.Stop || orderType == OrderInfo.Types.Type.StopLimit)
+
+            if (orderType is OrderInfo.Types.Type.Stop or OrderInfo.Types.Type.StopLimit)
                 order.Info.StopPrice = stopPrice;
+
+            if (orderType is OrderInfo.Types.Type.Market or OrderInfo.Types.Type.Stop)
+                order.Info.Slippage = slippage ?? symbolInfo.Slippage.DefaultValue;
+
+            if (maxVisibleVolume?.E(0.0) ?? false)
+                order.Info.Options |= Domain.OrderOptions.HiddenIceberg;
+
 
             _calcFixture.ValidateNewOrder(order);
 
@@ -791,6 +793,11 @@ namespace TickTrader.Algo.Backtester
                     order.Info.MaxVisibleAmount = request.MaxVisibleAmount;
                     //order.Options = order.Options.SetFlag(OrderExecutionOptions.HiddenIceberg);
                 }
+
+                if (order.Info.MaxVisibleAmount?.E(0.0) ?? false)
+                    order.Info.Options |= Domain.OrderOptions.HiddenIceberg;
+                else
+                    order.Info.Options &= ~Domain.OrderOptions.HiddenIceberg;
             }
 
             if (request.Price.HasValue && orderType.IsLimit())
@@ -1002,8 +1009,8 @@ namespace TickTrader.Algo.Backtester
             if (tradeReport != null)
             {
                 tradeReport.FillGenericOrderData(_calcFixture, order);
-                tradeReport.Info.OrderLastFillAmount = (double?)fillAmount;
-                tradeReport.Info.OrderFillPrice = (double?)fillPrice;
+                tradeReport.Info.OrderLastFillAmount = fillAmount;
+                tradeReport.Info.OrderFillPrice = fillPrice;
 
                 if (_acc.IsMarginType)
                 {
@@ -1654,8 +1661,8 @@ namespace TickTrader.Algo.Backtester
             //    report.FillAccountBalanceConversionRates(mAcc.BalanceCurrency, mAcc.Balance);
             //}
 
-            OpenOrder(order.SymbolInfo, OrderInfo.Types.Type.Limit, order.Info.Side, order.Info.RemainingAmount, null, order.Info.Price,
-                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Info.UserTag, order.Info.Expiration.ToDateTime(), OpenOrderOptions.SkipDealing);
+            OpenOrder(order.SymbolInfo, OrderInfo.Types.Type.Limit, order.Info.Side, order.Info.RemainingAmount, order.Info.MaxVisibleAmount, order.Info.Price,
+                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Info.UserTag, order.Info.Expiration.ToDateTime(), OpenOrderOptions.SkipDealing, null);
         }
 
         private void ClosePosition(OrderAccessor position, TradeReportInfo.Types.Reason trReason, double? reqAmount, double? reqPrice,
@@ -1934,7 +1941,7 @@ namespace TickTrader.Algo.Backtester
                     {
                         var smbInfo = _context.Builder.Symbols.GetOrNull(pos.Info.Symbol).Info;
                         OpenOrder(smbInfo, OrderInfo.Types.Type.Market, pos.Info.Side.Revert(), pos.Info.Volume, null, null, null, null, null, "",
-                            Domain.OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
+                            Domain.OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder, null);
                     }
                 }
             }
@@ -2447,12 +2454,13 @@ namespace TickTrader.Algo.Backtester
         {
             if (volumeInLots == null)
                 return null;
+
             return ToUnits(volumeInLots.Value, smbMetadata);
         }
 
         private double ToUnits(double volumeInLots, SymbolInfo smbMetadata)
         {
-            return smbMetadata.LotSize * volumeInLots;
+            return smbMetadata.LotSize * RoundVolume(volumeInLots, smbMetadata);
         }
 
         #endregion

@@ -66,11 +66,11 @@ namespace TickTrader.Algo.CoreV1
 
         public double NetProfitLoss => Info.NetProfitLoss;
 
-        public Domain.OrderInfo.Types.Side TradeRecordSide => Info.OrderSide;
+        public OrderInfo.Types.Side TradeRecordSide => Info.OrderSide;
 
         OrderSide TradeReport.TradeRecordSide => Info.OrderSide.ToApiEnum();
 
-        public Domain.OrderInfo.Types.Type TradeRecordType => Info.OrderType;
+        public OrderInfo.Types.Type TradeRecordType => Info.OrderType;
 
         OrderType TradeReport.TradeRecordType => Info.OrderType.ToApiEnum();
 
@@ -96,16 +96,20 @@ namespace TickTrader.Algo.CoreV1
 
         #region Emulation
 
-        public static TradeReportAdapter Create(Timestamp key, ISymbolInfo symbol, Domain.TradeReportInfo.Types.ReportType repType, Domain.TradeReportInfo.Types.Reason reason)
+        public static TradeReportAdapter Create(Timestamp key, ISymbolInfo symbol, TradeReportInfo.Types.ReportType repType, TradeReportInfo.Types.Reason reason)
         {
-            var entity = new Domain.TradeReportInfo();
-            entity.TransactionTime = key;
-            entity.Symbol = symbol.Name;
-            entity.ReportType = repType;
-            entity.TransactionReason = reason;
             var ms = Math.DivRem(key.Nanos, 1_000_000, out var rem);
-            entity.Id = $"{key.Seconds * 1_000 + ms}.{rem}";
-            entity.IsEmulated = true;
+
+            var entity = new TradeReportInfo
+            {
+                TransactionTime = key,
+                Symbol = symbol.Name,
+                ReportType = repType,
+                TransactionReason = reason,
+                Id = $"{key.Seconds * 1_000 + ms}.{rem}",
+                IsEmulated = true
+            };
+
             return new TradeReportAdapter(entity, symbol);
         }
 
@@ -124,6 +128,7 @@ namespace TickTrader.Algo.CoreV1
             Info.RequestedOrderType = orderInfo.InitialType;
             Info.OpenQuantity = orderInfo.RequestedAmount;
             Info.RemainingQuantity = orderInfo.RemainingAmount;
+            Info.MaxVisibleQuantity = orderInfo.MaxVisibleAmount;
             //Entity.OrderHiddenAmount = order.HiddenAmount;
             //Entity.OrderMaxVisibleAmount = order.MaxVisibleAmount;
             Info.Price = orderInfo.Price ?? double.NaN;
@@ -145,6 +150,9 @@ namespace TickTrader.Algo.CoreV1
 
             //ReducedOpenCommissionFlag = order.IsReducedOpenCommission;
             //ReducedCloseCommissionFlag = order.IsReducedCloseCommission;
+
+            if (orderInfo.IsSupportedSlippage)
+                Info.Slippage = orderInfo.Slippage;
 
             // comments and tags
             Info.Comment = orderInfo.Comment;

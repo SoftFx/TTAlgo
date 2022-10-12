@@ -65,6 +65,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter]
         public string OtoTriggeredById { get; set; }
 
+        [Parameter(DefaultValue = true)]
+        public bool ExitAfterOpen { get; set; }
+
 
         protected override void OnStart()
         {
@@ -103,7 +106,8 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (res.ResultingOrder != null)
                 Status.WriteLine(ToObjectPropertiesString(res.ResultingOrder));
 
-            Exit();
+            if (ExitAfterOpen)
+                Exit();
         }
 
         public static ContingentOrderTrigger.TriggerType Convert(OtoTriggerOpenType type)
