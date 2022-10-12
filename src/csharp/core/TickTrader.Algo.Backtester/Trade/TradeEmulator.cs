@@ -11,7 +11,6 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
-using TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine;
 
 namespace TickTrader.Algo.Backtester
 {

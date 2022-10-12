@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
@@ -8,14 +9,17 @@ namespace TickTrader.Algo.CoreV1
     internal sealed class TradeReportAdapter : TradeReport
     {
         private readonly double _lotSize;
+        private readonly double _volumeStep;
 
 
         public TradeReportInfo Info { get; }
 
         public TradeReportAdapter(TradeReportInfo entity, ISymbolInfo symbol)
         {
-            Info = entity;
             _lotSize = symbol?.LotSize ?? 1;
+            _volumeStep = symbol?.VolumeStep ?? 1;
+
+            Info = entity;
         }
 
         public string ReportId => Info.Id;
@@ -418,6 +422,22 @@ namespace TickTrader.Algo.CoreV1
             }
 
             return TradeRecordTypes.Unknown;
+        }
+
+        public TradeReportAdapter RoundVolumes()
+        {
+            Info.OpenQuantity = Info.OpenQuantity.FloorToStep(_volumeStep);
+            Info.MaxVisibleQuantity = Info.MaxVisibleQuantity.FloorToStep(_volumeStep);
+            Info.RemainingQuantity = Info.RemainingQuantity.FloorToStep(_volumeStep);
+            Info.OrderLastFillAmount = Info.OrderLastFillAmount.FloorToStep(_volumeStep);
+            Info.PositionQuantity = Info.PositionQuantity.FloorToStep(_volumeStep);
+            Info.PositionCloseQuantity = Info.PositionCloseQuantity.FloorToStep(_volumeStep);
+            Info.PositionLeavesQuantity = Info.PositionLeavesQuantity.FloorToStep(_volumeStep);
+            Info.RequestedOpenQuantity = Info.RequestedOpenQuantity.FloorToStep(_volumeStep);
+            Info.RequestedCloseQuantity = Info.RequestedCloseQuantity.FloorToStep(_volumeStep);
+            Info.TransactionAmount = Info.TransactionAmount.FloorToStep(_volumeStep);
+
+            return this;
         }
     }
 }

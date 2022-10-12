@@ -161,6 +161,11 @@
             return FractionToDouble(numerator, denominator);
         }
 
+        public static double? FloorToStep(this double? val, double step)
+        {
+            return val?.FloorToStep(step);
+        }
+
         public static double FloorToStep(this double val, double step)
         {
             var dv = System.Math.Floor(val / step);
@@ -220,7 +225,7 @@
         /// <returns>Rounded value</returns>
         public static double? Round(this double? val, double step)
         {
-            return !val.HasValue ? default(double?) : val.Value.Round(step);
+            return val?.Round(step);
         }
 
         /// <summary>
