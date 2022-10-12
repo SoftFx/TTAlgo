@@ -156,7 +156,7 @@ namespace TickTrader.Algo.BacktesterApi
                 Map(t => t.OpenQuantity).Index(15).Name("OpenAmount");
                 Map(t => t.RemainingQuantity).Index(16).Name("RemainingAmount");
                 Map(t => t.MaxVisibleQuantity).Index(17).Name("MaxVisibleAmount");
-                Map(t => t.OrderOptionsBitmask).Index(18).Name("OrderOptions");
+                Map(t => t.OrderOptions).Index(18).Name("OrderOptions");
                 Map(t => t.Slippage).Index(19).Name("Slippage");
                 Map(t => t.Expiration).Index(20).Name("Expiration").TypeConverter<ProtoTimestampTypeConverter>();
                 Map(t => t.OrderOpened).Index(21).Name("OrderOpened").TypeConverter<ProtoTimestampTypeConverter>();
