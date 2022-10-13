@@ -426,16 +426,16 @@ namespace TickTrader.Algo.CoreV1
 
         public TradeReportAdapter RoundVolumes()
         {
-            Info.OpenQuantity = Info.OpenQuantity.FloorToStep(_volumeStep);
-            Info.MaxVisibleQuantity = Info.MaxVisibleQuantity.FloorToStep(_volumeStep);
-            Info.RemainingQuantity = Info.RemainingQuantity.FloorToStep(_volumeStep);
-            Info.OrderLastFillAmount = Info.OrderLastFillAmount.FloorToStep(_volumeStep);
-            Info.PositionQuantity = Info.PositionQuantity.FloorToStep(_volumeStep);
-            Info.PositionCloseQuantity = Info.PositionCloseQuantity.FloorToStep(_volumeStep);
-            Info.PositionLeavesQuantity = Info.PositionLeavesQuantity.FloorToStep(_volumeStep);
-            Info.RequestedOpenQuantity = Info.RequestedOpenQuantity.FloorToStep(_volumeStep);
-            Info.RequestedCloseQuantity = Info.RequestedCloseQuantity.FloorToStep(_volumeStep);
-            Info.TransactionAmount = Info.TransactionAmount.FloorToStep(_volumeStep);
+            Info.OpenQuantity = Info.OpenQuantity.Floor(_volumeStep);
+            Info.MaxVisibleQuantity = Info.MaxVisibleQuantity.Floor(_volumeStep);
+            Info.RemainingQuantity = Info.RemainingQuantity.Floor(_volumeStep);
+            Info.OrderLastFillAmount = Info.OrderLastFillAmount.Floor(_volumeStep);
+            Info.PositionQuantity = Info.PositionQuantity.Floor(_volumeStep);
+            Info.PositionCloseQuantity = Info.PositionCloseQuantity.Floor(_volumeStep);
+            Info.PositionLeavesQuantity = Info.PositionLeavesQuantity.Floor(_volumeStep);
+            Info.RequestedOpenQuantity = Info.RequestedOpenQuantity.Floor(_volumeStep);
+            Info.RequestedCloseQuantity = Info.RequestedCloseQuantity.Floor(_volumeStep);
+            Info.TransactionAmount = Info.TransactionAmount.Floor(_volumeStep);
 
             return this;
         }

@@ -496,7 +496,12 @@ namespace TickTrader.Algo.Backtester
                 order.Info.StopPrice = stopPrice;
 
             if (orderType is OrderInfo.Types.Type.Market or OrderInfo.Types.Type.Stop)
+            {
                 order.Info.Slippage = slippage ?? symbolInfo.Slippage.DefaultValue;
+
+                if (order.Info.Slippage != null)
+                    order.Info.Slippage = Math.Min(order.Info.Slippage.Value, symbolInfo.Slippage.DefaultValue.Value);
+            }
 
             if (maxVisibleVolume?.E(0.0) ?? false)
                 order.Info.Options |= Domain.OrderOptions.HiddenIceberg;
@@ -809,6 +814,14 @@ namespace TickTrader.Algo.Backtester
             {
                 order.Info.StopPrice = request.StopPrice.Value;
                 //order.ReqOpenPrice = request.StopPrice.Value;
+            }
+
+            if (order.Info.IsSupportedSlippage)
+            {
+                order.Info.Slippage = request.Slippage ?? order.Info.Slippage;
+
+                if (order.Info.Slippage != null)
+                    order.Info.Slippage = Math.Min(order.Info.Slippage.Value, order.SymbolInfo.Slippage.DefaultValue.Value);
             }
 
             // Change IOC option for stop-limit orders
@@ -2428,7 +2441,7 @@ namespace TickTrader.Algo.Backtester
             var decVal = volumeInLots;
             var decStep = smbMetadata.TradeVolumeStep;
 
-            return decVal.FloorToStep(decStep);
+            return decVal.Floor(decStep);
         }
 
         private double? RoundVolume(double? volumeInLots, SymbolInfo smbMetadata)
