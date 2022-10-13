@@ -115,7 +115,7 @@ namespace TickTrader.Algo.CoreV1
 
         public override void OnBufferExtended()
         {
-            var bufferSize = MainBuffer.LastIndex + 1;
+            var bufferSize = MainBuffer.Count;
 
             if (bufferSize > _size)
             {
