@@ -1,31 +1,22 @@
 ﻿using System.Threading.Tasks;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class QuoteSeriesBuffer : ILoadableFeedBuffer
+    internal class QuoteSeriesBuffer : FeedBufferBase<QuoteInfo>, IWritableFeedBuffer<QuoteInfo>
     {
-        private readonly CircularList<QuoteInfo> _data = new CircularList<QuoteInfo>();
-        private readonly IFeedLoadContext _context;
-
-
         public string Symbol { get; }
 
         public bool Level2 { get; }
 
-        public UtcTicks this[int index] => _data[index].Time;
-
-        public int Count => _data.Count;
-
-        public bool IsLoaded { get; private set; }
+        UtcTicks IFeedBuffer.this[int index] => _data[index].Time;
 
 
-        public QuoteSeriesBuffer(string symbol, bool level2, IFeedLoadContext context)
+        public QuoteSeriesBuffer(string symbol, bool level2, IFeedControllerContext context)
+            : base(context)
         {
             Symbol = symbol;
             Level2 = level2;
-            _context = context;
         }
 
 
@@ -35,7 +26,6 @@ namespace TickTrader.Algo.Core
                 return;
 
             IsLoaded = true;
-            InitSub();
             var bars = await _context.FeedHistory.QueryQuotesAsync(Symbol, from, count, Level2);
             _data.AddRange(bars);
         }
@@ -46,15 +36,13 @@ namespace TickTrader.Algo.Core
                 return;
 
             IsLoaded = true;
-            InitSub();
             var bars = await _context.FeedHistory.QueryQuotesAsync(Symbol, from, to, Level2);
             _data.AddRange(bars);
         }
 
-
-        private void InitSub()
+        public void ApplyUpdate(QuoteInfo update)
         {
-            _context.QuoteSub.Modify(QuoteSubUpdate.Upsert(Symbol, 1));
+            _data.Add(update);
         }
     }
 }

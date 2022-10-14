@@ -1,34 +1,25 @@
 ﻿using System.Threading.Tasks;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class BarSeriesBuffer : ILoadableFeedBuffer
+    internal class BarSeriesBuffer : FeedBufferBase<BarData>, IWritableFeedBuffer<BarData>
     {
-        private readonly CircularList<BarData> _data = new CircularList<BarData>();
-        private readonly IFeedLoadContext _context;
-
-
         public string Symbol { get; }
 
         public Feed.Types.Timeframe Timeframe { get; }
 
         public Feed.Types.MarketSide Side { get; }
 
-        public UtcTicks this[int index] => _data[index].OpenTime;
-
-        public int Count => _data.Count;
-
-        public bool IsLoaded { get; private set; }
+        UtcTicks IFeedBuffer.this[int index] => _data[index].OpenTime;
 
 
-        public BarSeriesBuffer(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide side, IFeedLoadContext context)
+        public BarSeriesBuffer(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide side, IFeedControllerContext context)
+            : base(context)
         {
             Symbol = symbol;
             Timeframe = timeframe;
             Side = side;
-            _context = context;
         }
 
 
@@ -38,7 +29,6 @@ namespace TickTrader.Algo.Core
                 return;
 
             IsLoaded = true;
-            InitSub();
             var bars = await _context.FeedHistory.QueryBarsAsync(Symbol, Side, Timeframe, from, count);
             _data.AddRange(bars);
         }
@@ -49,15 +39,18 @@ namespace TickTrader.Algo.Core
                 return;
 
             IsLoaded = true;
-            InitSub();
             var bars = await _context.FeedHistory.QueryBarsAsync(Symbol, Side, Timeframe, from, to);
             _data.AddRange(bars);
         }
 
-
-        private void InitSub()
+        public void ApplyUpdate(BarData update)
         {
-            _context.BarSub.Modify(BarSubUpdate.Upsert(new BarSubEntry(Symbol, Side, Timeframe)));
+            var lastIndex = _data.Count - 1;
+
+            if (_data[lastIndex].OpenTime == update.OpenTime)
+                _data[lastIndex] = update;
+            else if (_data[lastIndex].OpenTime < update.OpenTime)
+                _data.Add(update);
         }
     }
 }
