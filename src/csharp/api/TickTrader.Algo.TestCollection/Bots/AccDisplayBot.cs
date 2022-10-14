@@ -94,7 +94,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void PrintAccountInfo()
         {
-            Status.WriteLine($"Current UTC time: {DateTime.UtcNow}");
+            Status.WriteLine($"Current UTC time: {UtcNow}");
             Status.WriteLine($"Account Id: {Account.Id}");
             Status.WriteLine($"Account Type: {Account.Type}");
             Status.WriteLine($"Leverage: {Account.Leverage}");

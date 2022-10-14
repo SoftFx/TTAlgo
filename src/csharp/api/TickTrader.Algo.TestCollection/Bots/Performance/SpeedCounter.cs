@@ -12,7 +12,7 @@ namespace TickTrader.Algo.TestCollection
 
         protected override void OnStart()
         {
-            _startTime = DateTime.UtcNow;
+            _startTime = UtcNow;
             _totalQuotesCount = 0;
 
             Print($"Folder - {Enviroment.BotDataFolder}");
@@ -25,7 +25,7 @@ namespace TickTrader.Algo.TestCollection
 
         protected override void OnStop()
         {
-            var workingTime = DateTime.UtcNow - _startTime;
+            var workingTime = UtcNow - _startTime;
             var fileName = Path.Combine(Enviroment.BotDataFolder, "AlgoTester.csv");
             var speed = _totalQuotesCount / workingTime.TotalMilliseconds;
 

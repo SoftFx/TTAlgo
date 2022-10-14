@@ -28,7 +28,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (double.IsNaN(price))
                 price = 1; // can still try
 
-            OpenOrder(Symbol.Name, OrderType.Market, Side, Volume, price, null, null, "Open Market Bot " + DateTime.Now, OrderExecOptions.None, Tag);
+            OpenOrder(Symbol.Name, OrderType.Market, Side, Volume, price, null, null, "Open Market Bot " + UtcNow, OrderExecOptions.None, Tag);
 
             if (!DoNotExit)
             {

@@ -1143,7 +1143,7 @@ namespace TickTrader.Algo.Backtester
                 _context.SendExtUpdate(TesterTradeTransaction.OnCancelOrder(order));
 
             // summary
-            _opSummary.AddCancelAction(order);
+            _opSummary.AddCancelAction(order, trReason);
 
             return order;
         }
@@ -1984,7 +1984,8 @@ namespace TickTrader.Algo.Backtester
                 foreach (var order in expiredOrders)
                 {
                     //Logger.Debug(() => "Order id=" + order.OrderId + " has been expired.");
-                    ConfirmOrderCancelation(TradeReportInfo.Types.Reason.Expired, order);
+                    using (JournalScope())
+                        ConfirmOrderCancelation(TradeReportInfo.Types.Reason.Expired, order);
                     //MarkAsAffected(order.Account);
                 }
             }

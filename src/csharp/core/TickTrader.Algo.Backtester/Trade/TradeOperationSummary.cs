@@ -114,11 +114,11 @@ namespace TickTrader.Algo.Backtester
             PrintCharges(charges);
         }
 
-        public void AddCancelAction(OrderAccessor order)
+        public void AddCancelAction(OrderAccessor order, TradeReportInfo.Types.Reason reason)
         {
             StartNewAction();
 
-            _builder.Append("Canceled order ");
+            _builder.Append($"{reason} order ");
             PrintOrderDescription(order);
             PrintAmountAndPrice(order);
         }

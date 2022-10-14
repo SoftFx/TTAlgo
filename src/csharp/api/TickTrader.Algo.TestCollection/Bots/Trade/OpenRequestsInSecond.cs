@@ -45,9 +45,9 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
             {
                 if (Mode == OpenMode.Exponential)
                 {
-                    await Delay(1000 - DateTime.UtcNow.Millisecond);
+                    await Delay(1000 - UtcNow.Millisecond);
 
-                    side = DateTime.Now.Second % 2 == 0 ? OrderSide.Buy : OrderSide.Sell;
+                    side = UtcNow.Second % 2 == 0 ? OrderSide.Buy : OrderSide.Sell;
 
                     _stopwatch.Restart();
 

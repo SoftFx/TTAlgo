@@ -107,7 +107,7 @@ namespace TickTrader.Algo
                 DateTime? expiration = null;
 
                 if (UseExpiration)
-                    expiration = DateTime.UtcNow.AddSeconds(rnd.Next());
+                    expiration = UtcNow.AddSeconds(rnd.Next());
 
                 await OpenOrderAsync(symbol.Name, OrderType, side, OrderVolume, null, price, stopPrice, null, null, comment, OrderExecOptions.None, null, expiration);
             }

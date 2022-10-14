@@ -83,7 +83,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (OtoTriggerType != OtoTriggerModifyType.DoNotModify)
             {
                 var otoType = ConvertToApi(OtoTriggerType);
-                var otoTime = OtoTriggerTimeTimeout.HasValue ? DateTime.Now + TimeSpan.FromSeconds(OtoTriggerTimeTimeout.Value) : (DateTime?)null;
+                var otoTime = OtoTriggerTimeTimeout.HasValue ? UtcNow + TimeSpan.FromSeconds(OtoTriggerTimeTimeout.Value) : (DateTime?)null;
                 var otoId = OtoTriggeredById;
 
                 otoTrigger = ContingentOrderTrigger.Create(otoType, otoTime, otoId);
@@ -98,7 +98,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             var request = ModifyOrderRequest.Template.Create().WithOrderId(OrderId)
                 .WithPrice(Price).WithStopPrice(StopPrice).WithMaxVisibleVolume(MaxVisibleVolume)
                 .WithStopLoss(StopLoss).WithTakeProfit(TakeProfit).WithComment(comment).WithTag(tag)
-                .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
+                .WithExpiration(ExpirationTimeout.HasValue ? UtcNow + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
                 .WithVolume(Volume).WithOptions(options).WithSlippage(Slippage).WithOCOEqualVolume(ocoEqualsVolume).WithOCORelatedOrderId(OCORelatedId).WithContingentOrderTrigger(otoTrigger).MakeRequest();
 
             var result = ModifyOrder(request);

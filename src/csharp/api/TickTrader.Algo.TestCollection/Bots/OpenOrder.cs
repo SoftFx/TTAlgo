@@ -95,7 +95,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 .WithSide(Side).WithType(Type).WithVolume(Volume).WithPrice(Price)
                 .WithMaxVisibleVolume(MaxVisibleVolume).WithTakeProfit(TakeProfit)
                 .WithComment(Comment).WithOptions(Options).WithTag(Tag)
-                .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
+                .WithExpiration(ExpirationTimeout.HasValue ? UtcNow + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
                 .WithSlippage(Slippage).WithOCOEqualVolume(OcoEqualVolume).WithOCORelatedOrderId(OcoRelatedOrderId)
                 .WithContingentOrderTrigger(otoTrigger).MakeRequest();
 
