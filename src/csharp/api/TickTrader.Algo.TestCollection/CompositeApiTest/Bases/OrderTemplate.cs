@@ -16,7 +16,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool IsNull => Volume.E(0.0);
 
-        public bool IsOnTimeTrigger => TriggerType.HasValue && TriggerType.Value == TriggerTypes.OnTime;
+        public bool IsOnTimeTrigger => TriggerType == TriggerTypes.OnTime;
 
 
         public OrderType InitType { get; }

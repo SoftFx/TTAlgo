@@ -6,66 +6,59 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Backtester
 {
-    internal class OrderExpirationEmulator
+    internal sealed class OrderExpirationEmulator
     {
-        private SortedDictionary<UtcTicks, LinkedList<OrderAccessor>> innerMap;
+        private readonly SortedDictionary<UtcTicks, LinkedList<OrderAccessor>> _innerMap;
 
-        public int Count { get; private set; }
+        public int Count => _innerMap.Count;
+
 
         public OrderExpirationEmulator()
         {
-            innerMap = new SortedDictionary<UtcTicks, LinkedList<OrderAccessor>>();
+            _innerMap = new SortedDictionary<UtcTicks, LinkedList<OrderAccessor>>();
         }
+
 
         public bool AddOrder(OrderAccessor order)
         {
             if (order.Info.Type.IsPending() && order.Info.Expiration != null)
             {
                 GetOrAddDateList(order.Info.Expiration.Value).AddLast(order);
-                Count++;
                 return true;
             }
+
             return false;
         }
+
 
         public void RemoveOrder(OrderAccessor order)
         {
             if (order.Info.Type.IsPending() && order.Info.Expiration != null)
             {
-                LinkedList<OrderAccessor> list;
-                if (innerMap.TryGetValue(order.Info.Expiration.Value, out list))
+                var time = order.Info.Expiration.Value;
+
+                if (_innerMap.TryGetValue(time, out LinkedList<OrderAccessor> list))
                 {
-                    if (list.Remove(order))
-                        Count--;
+                    if (list.Remove(order) && list.Count == 0)
+                        _innerMap.Remove(time);
                 }
             }
-        }
-
-        private LinkedList<OrderAccessor> GetOrAddDateList(UtcTicks dt)
-        {
-            LinkedList<OrderAccessor> list;
-            if (!innerMap.TryGetValue(dt, out list))
-            {
-                list = new LinkedList<OrderAccessor>();
-                innerMap.Add(dt, list);
-            }
-
-            return list;
         }
 
         public List<OrderAccessor> GetExpiredOrders(DateTime refTime)
         {
             var refTimestamp = refTime.ToUtcTicks();
-            List<OrderAccessor> expiredOrders = new List<OrderAccessor>();
+            var expiredOrders = new List<OrderAccessor>();
 
-            while (innerMap.Count > 0)
+            while (_innerMap.Count > 0)
             {
-                KeyValuePair<UtcTicks, LinkedList<OrderAccessor>> list = innerMap.First();
+                var list = _innerMap.First();
+
                 if (list.Key <= refTimestamp)
                 {
                     expiredOrders.AddRange(list.Value);
-                    if (innerMap.Remove(list.Key))
-                        Count--;
+
+                    _innerMap.Remove(list.Key);
                 }
                 else
                     break;
@@ -74,18 +67,15 @@ namespace TickTrader.Algo.Backtester
             return expiredOrders;
         }
 
-        public bool FindOrder(OrderAccessor order)
+        private LinkedList<OrderAccessor> GetOrAddDateList(UtcTicks dt)
         {
-            if (order.Info.Expiration != null)
+            if (!_innerMap.TryGetValue(dt, out LinkedList<OrderAccessor> list))
             {
-                LinkedList<OrderAccessor> list;
-                if (innerMap.TryGetValue(order.Info.Expiration.Value, out list))
-                {
-                    return list.Contains(order);
-                }
+                list = new LinkedList<OrderAccessor>();
+                _innerMap.Add(dt, list);
             }
 
-            return false;
+            return list;
         }
     }
 }

@@ -189,6 +189,8 @@ namespace TickTrader.Algo.BacktesterApi
 
                 Map(t => t.Comment).Index(45).Name("Comment");
                 Map(t => t.Tag).Index(46).Name("Tag");
+
+                Map(t => t.OcoRelatedOrderId).Index(47).Name("OcoRelatedOrderId");
             }
         }
 

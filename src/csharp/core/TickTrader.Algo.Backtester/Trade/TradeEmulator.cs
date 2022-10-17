@@ -120,6 +120,11 @@ namespace TickTrader.Algo.Backtester
 
         public Task<OrderCmdResult> OpenOrder(bool isAsync, Api.OpenOrderRequest request)
         {
+            return OpenOrder(isAsync, request, request.SubOpenRequests.Count > 0);
+        }
+
+        private Task<OrderCmdResult> OpenOrder(bool isAsync, Api.OpenOrderRequest request, bool isSubOrder)
+        {
             return ExecTradeRequest(isAsync, async () =>
             {
                 OrderCmdResultCodes error = OrderCmdResultCodes.UnknownError;
@@ -137,8 +142,30 @@ namespace TickTrader.Algo.Backtester
                     var sl = RoundPrice(request.StopLoss, smbMetadata, request.Side.ToDomainEnum());
                     var tp = RoundPrice(request.TakeProfit, smbMetadata, request.Side.ToDomainEnum());
 
+                    var side = request.Side.ToDomainEnum();
+
+                    //var coreRequest = new Domain.OpenOrderRequest
+                    //{
+                    //    Symbol = smbMetadata.Name,
+                    //    Type = request.Type.ToDomainEnum(),
+                    //    Side = side,
+                    //    Amount = ToUnits(request.Volume, smbMetadata),
+                    //    MaxVisibleAmount = ToUnits(request.MaxVisibleVolume, smbMetadata),
+                    //    Price = RoundPrice(request.Price, smbMetadata, side),
+                    //    StopPrice = RoundPrice(request.StopPrice, smbMetadata, side),
+                    //    StopLoss = RoundPrice(request.StopLoss, smbMetadata, side),
+                    //    TakeProfit = RoundPrice(request.TakeProfit, smbMetadata, side),
+                    //    Slippage = request.Slippage,
+                    //    ExpirationTicks = request.Expiration?.Ticks,
+                    //    Comment = request.Comment,
+                    //    Tag = request.Tag,
+                    //    ExecOptions = request.Options.ToDomainEnum(),
+                    //};
+
                     // emulate server ping
                     await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
+
+                    OrderAccessor order;
 
                     using (JournalScope())
                     {
@@ -148,13 +175,32 @@ namespace TickTrader.Algo.Backtester
 
                         //Facade.ValidateExpirationTime(Request.Expiration, _acc);
 
-                        var order = OpenOrder(smbMetadata, request.Type.ToDomainEnum(), request.Side.ToDomainEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options.ToDomainEnum(), request.Tag, request.Expiration, OpenOrderOptions.None, request.Slippage);
+                        order = OpenOrder(smbMetadata, request.Type.ToDomainEnum(), request.Side.ToDomainEnum(),
+                        volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options.ToDomainEnum(),
+                        request.Tag, request.Expiration, OpenOrderOptions.None, request.Slippage, request.OcoRelatedOrderId, request.OcoEqualVolume, isSubOrder);
 
                         _collector.OnOrderOpened();
-
-                        // set result
-                        return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone(), ExecutionTime);
                     }
+
+                    using (JournalScope())
+                    {
+                        foreach (var subRequest in request.SubOpenRequests)
+                        {
+                            var sub = await OpenOrder(isAsync, subRequest, true);
+                            var result = sub.ResultingOrder;
+
+                            if (result.Options.HasFlag(Api.OrderOptions.OneCancelsTheOther))
+                            {
+                                var ocoOrder = _acc.GetOcoOrderOrThrow(result.Id);
+
+                                AddOcoForOrder(ocoOrder, order.Info.Id);
+                                AddOcoForOrder(order, ocoOrder.Info.Id);
+                            }
+                        }
+                    }
+
+                    // set result
+                    return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone(), ExecutionTime);
                 }
                 catch (OrderValidationError ex)
                 {
@@ -260,6 +306,8 @@ namespace TickTrader.Algo.Backtester
                         Expiration = request.Expiration.ToUtcTicks(),
                         MaxVisibleAmount = orderMaxVisibleVolume,
                         ExecOptions = request.Options?.ToDomainEnum(),
+                        OcoRelatedOrderId = request.OcoRelatedOrderId,
+                        OcoEqualVolume = request.OcoEqualVolume,
                     };
 
                     // emulate server ping
@@ -427,8 +475,10 @@ namespace TickTrader.Algo.Backtester
             return (++_orderIdSeed).ToString();
         }
 
-        private OrderAccessor OpenOrder(SymbolInfo symbolInfo, OrderInfo.Types.Type orderType, OrderInfo.Types.Side side, double volume, double? maxVisibleVolume, double? price, double? stopPrice,
-            double? sl, double? tp, string comment, Domain.OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options, double? slippage)
+        private OrderAccessor OpenOrder(SymbolInfo symbolInfo, OrderInfo.Types.Type orderType, OrderInfo.Types.Side side,
+            double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl, double? tp, string comment,
+            Domain.OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options, double? slippage,
+            string ocoRelatedOrderId, bool ocoEqualVolume = false, bool isLinkedOrder = false)
         {
             var order = new OrderAccessor(symbolInfo);
 
@@ -506,6 +556,13 @@ namespace TickTrader.Algo.Backtester
             if (maxVisibleVolume?.E(0.0) ?? false)
                 order.Info.Options |= Domain.OrderOptions.HiddenIceberg;
 
+            OrderAccessor ocoOrder = null;
+
+            if (order.Info.Options.HasFlag(Domain.OrderOptions.OneCancelsTheOther) && (order.Info.IsImmediateOrCancel || !order.Info.IsSupportOco))
+                throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
+
+            if (!isLinkedOrder && order.Info.IsOcoOrder && _acc.Type != AccountInfo.Types.Type.Gross)
+                ocoOrder = AddAndGetOcoForOrder(order, ocoRelatedOrderId, ocoEqualVolume);
 
             _calcFixture.ValidateNewOrder(order);
 
@@ -527,13 +584,13 @@ namespace TickTrader.Algo.Backtester
 
                 var dealerAmount = ToUnits(dealerRequest.DealerAmount, symbolInfo);
 
-                return ConfirmOrderOpening(order, trReason, dealerRequest.DealerPrice, dealerAmount, options);
+                return ConfirmOrderOpening(order, trReason, dealerRequest.DealerPrice, dealerAmount, options, ocoOrder);
             }
 
-            return ConfirmOrderOpening(order, trReason, null, null, options);
+            return ConfirmOrderOpening(order, trReason, null, null, options, ocoOrder);
         }
 
-        private OrderAccessor ConfirmOrderOpening(OrderAccessor order, TradeReportInfo.Types.Reason trReason, double? execPrice, double? execAmount, OpenOrderOptions options)
+        private OrderAccessor ConfirmOrderOpening(OrderAccessor order, TradeReportInfo.Types.Reason trReason, double? execPrice, double? execAmount, OpenOrderOptions options, OrderAccessor ocoOrder)
         {
             var currentRate = _calcFixture.GetCurrentRateOrNull(order.Info.Symbol);
 
@@ -547,6 +604,9 @@ namespace TickTrader.Algo.Backtester
             // fire API event
             if (order.Info.Type != OrderInfo.Types.Type.Position)
                 _scheduler.EnqueueEvent(new OrderOpenedEventArgsImpl(order));
+
+            if (ocoOrder is not null)
+                FireAddModifyOcoEvent(ocoOrder, order);
 
             if (order.Info.Type == OrderInfo.Types.Type.Market)
             {
@@ -847,6 +907,29 @@ namespace TickTrader.Algo.Backtester
                     order.Info.TakeProfit = (request.TakeProfit.Value != 0) ? request.TakeProfit : null;
             }
 
+            if (_acc.Type != AccountInfo.Types.Type.Gross && request.ExecOptions.HasValue)
+            {
+                var modified = request.ExecOptions.Value;
+                var original = order.Info.Options;
+
+                if (modified.HasFlag(Domain.OrderExecOptions.OneCancelsTheOther))
+                {
+                    if (!order.Info.IsSupportOco)
+                        throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
+
+                    var oco = AddAndGetOcoForOrder(order, request.OcoRelatedOrderId, false);
+
+                    FireAddModifyOcoEvent(order, oco);
+                }
+                else
+                if (original.HasFlag(Domain.OrderOptions.OneCancelsTheOther))
+                {
+                    var oco = _acc.GetOcoOrderOrThrow(order.Info.OcoRelatedOrderId);
+
+                    FireRemoveModifyOcoEvent(order, oco);
+                }
+            }
+
             order.Info.Comment = request.Comment ?? order.Info.Comment;
             order.Info.UserTag = request.Tag == null ? order.Info.UserTag : CompositeTag.ExtarctUserTarg(request.Tag);
             order.Info.Modified = _scheduler.UnsafeVirtualTimestamp;
@@ -1063,6 +1146,8 @@ namespace TickTrader.Algo.Backtester
             if (tradeReport != null)
                 _history.Add(tradeReport);
 
+            CancelOcoForOrder(order);
+
             return new FillInfo() { FillAmount = fillAmount, FillPrice = fillPrice, Position = newPos, NetPos = netInfo, SymbolInfo = order.SymbolInfo };
         }
 
@@ -1142,10 +1227,88 @@ namespace TickTrader.Algo.Backtester
             if (_sendReports)
                 _context.SendExtUpdate(TesterTradeTransaction.OnCancelOrder(order));
 
+            CancelOcoForOrder(order);
+
             // summary
-            _opSummary.AddCancelAction(order, trReason);
+            _opSummary.AddCancelAction(order, TradeReportInfo.Types.Reason.OneCancelsTheOther);
 
             return order;
+        }
+
+        private OrderAccessor AddAndGetOcoForOrder(OrderAccessor order, string ocoRelatedOrderId, bool equalVolume)
+        {
+            var ocoOrder = _acc.GetOcoOrderOrThrow(ocoRelatedOrderId);
+
+            if (ocoOrder.Info.IsOcoOrder)
+                throw new OrderValidationError(OrderCmdResultCodes.OCOAlreadyExists);
+
+            if (!ocoOrder.Info.IsSupportOco || (order.Info.Type == OrderInfo.Types.Type.Limit && ocoOrder.Info.Type == OrderInfo.Types.Type.Limit))
+                throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
+
+            if (order.Info.Type != ocoOrder.Info.Type && order.Info.Side != ocoOrder.Info.Side) //check that for pair limit/stop price for Buy must be less than Sell
+            {
+                var stop = order.Info.Type == OrderInfo.Types.Type.Stop ? order : ocoOrder;
+                var limit = order.Info.Type == OrderInfo.Types.Type.Limit ? order : ocoOrder;
+
+                if (stop.Info.Side.IsBuy() && stop.Info.StopPrice.Value.Gte(limit.Info.Price.Value))
+                    throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
+
+                if (stop.Info.Side.IsSell() && stop.Info.StopPrice.Value.Lt(limit.Info.Price.Value))
+                    throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
+            }
+
+            AddOcoForOrder(order, ocoRelatedOrderId);
+
+            if (equalVolume)
+            {
+                order.Info.RequestedAmount = ocoOrder.Info.RemainingAmount;
+                order.Info.RemainingAmount = ocoOrder.Info.RemainingAmount;
+            }
+
+            return ocoOrder;
+        }
+
+        private static void AddOcoForOrder(OrderAccessor order, string ocoRelatedOrderId)
+        {
+            order.Info.OcoRelatedOrderId = ocoRelatedOrderId;
+            order.Info.Options |= Domain.OrderOptions.OneCancelsTheOther;
+        }
+
+        private static void RemoveOcoForOrder(OrderAccessor order)
+        {
+            order.Info.Options &= ~Domain.OrderOptions.OneCancelsTheOther;
+            order.Info.OcoRelatedOrderId = null;
+        }
+
+        private void CancelOcoForOrder(OrderAccessor order)
+        {
+            if (!string.IsNullOrEmpty(order.Info.OcoRelatedOrderId))
+            {
+                var ocoOrder = _acc.GetOcoOrderOrThrow(order.Info.OcoRelatedOrderId);
+
+                RemoveOcoForOrder(order);
+                RemoveOcoForOrder(ocoOrder);
+
+                CancelOrder(ocoOrder, TradeReportInfo.Types.Reason.ClientRequest);
+            }
+        }
+
+        private void FireAddModifyOcoEvent(OrderAccessor order, OrderAccessor ocoOrder)
+        {
+            var oldOrder = order.Clone();
+
+            AddOcoForOrder(order, ocoOrder.Info.Id);
+
+            _scheduler.EnqueueEvent(new OrderModifiedEventArgsImpl(oldOrder, order));
+        }
+
+        private void FireRemoveModifyOcoEvent(OrderAccessor order, OrderAccessor ocoOrder)
+        {
+            var oldOrder = order.Clone();
+
+            RemoveOcoForOrder(order);
+
+            _scheduler.EnqueueEvent(new OrderModifiedEventArgsImpl(oldOrder, order));
         }
 
         private OrderAccessor CreatePositionFromOrder(TradeReportInfo.Types.Reason trReason, OrderAccessor parentOrder,
@@ -1674,7 +1837,7 @@ namespace TickTrader.Algo.Backtester
             //}
 
             OpenOrder(order.SymbolInfo, OrderInfo.Types.Type.Limit, order.Info.Side, order.Info.RemainingAmount, order.Info.MaxVisibleAmount, order.Info.Price,
-                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Info.UserTag, order.Info.Expiration.ToDateTime(), OpenOrderOptions.SkipDealing, null);
+                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Info.UserTag, order.Info.Expiration.ToDateTime(), OpenOrderOptions.SkipDealing, null, null, false);
         }
 
         private void ClosePosition(OrderAccessor position, TradeReportInfo.Types.Reason trReason, double? reqAmount, double? reqPrice,
@@ -1953,7 +2116,7 @@ namespace TickTrader.Algo.Backtester
                     {
                         var smbInfo = _context.Builder.Symbols.GetOrNull(pos.Info.Symbol).Info;
                         OpenOrder(smbInfo, OrderInfo.Types.Type.Market, pos.Info.Side.Revert(), pos.Info.Volume, null, null, null, null, null, "",
-                            Domain.OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder, null);
+                            Domain.OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder, null, null, false);
                     }
                 }
             }
@@ -2004,6 +2167,7 @@ namespace TickTrader.Algo.Backtester
         private void RegisterForExpirationCheck(OrderAccessor order)
         {
             bool startLoop = _expirationManager.Count == 0;
+
             if (_expirationManager.AddOrder(order) && startLoop)
                 ExpirationCheckLoop();
         }

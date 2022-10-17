@@ -34,7 +34,12 @@ namespace TickTrader.Algo.Domain
 
         public bool IsContingentOrder => Options.HasFlag(OrderOptions.ContingentOrder);
 
-        public bool IsSupportedSlippage => Type is Types.Type.Stop || Type == Types.Type.Market || Type == Types.Type.Position;
+        public bool IsOcoOrder => IsSupportOco && Options.HasFlag(OrderOptions.OneCancelsTheOther);
+
+
+        public bool IsSupportOco => Type == Types.Type.Limit || Type == Types.Type.Stop;
+
+        public bool IsSupportedSlippage => Type == Types.Type.Stop || Type == Types.Type.Market || Type == Types.Type.Position;
 
 
         public bool MarketWithSlippdage => Options.HasFlag(OrderOptions.MarketWithSlippage);

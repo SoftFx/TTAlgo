@@ -223,7 +223,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 mainOrder.OcoRelatedOrderId = value;
 
                 await TestModifyReject(mainOrder, OrderCmdResultCodes.OCORelatedIdNotFound);
-                //await TestCancelOrder(mainOrder);
             }
 
             return RunOCOTest(RejectModifyRelatedId, set, ocoSet, testInfo: $"{nameof(RejectModifyRelatedId)}={value}");

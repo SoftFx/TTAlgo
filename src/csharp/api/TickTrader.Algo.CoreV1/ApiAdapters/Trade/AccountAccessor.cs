@@ -403,6 +403,15 @@ namespace TickTrader.Algo.CoreV1
                 ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OrderNotFound);
         }
 
+        internal OrderAccessor GetOcoOrderOrThrow(string orderId)
+        {
+            if (string.IsNullOrEmpty(orderId))
+                throw new OrderValidationError(OrderCmdResultCodes.OCORelatedIdNotFound);
+
+            return Orders.GetOrNull(orderId)
+                ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OCORelatedIdNotFound);
+        }
+
         //internal void IncreasePosition(string symbol, decimal amount, decimal price, Domain.OrderInfo.Types.Side side, Func<string> idGenerator)
         //{
         //    var pos = NetPositions.GetOrCreatePosition(symbol, idGenerator);

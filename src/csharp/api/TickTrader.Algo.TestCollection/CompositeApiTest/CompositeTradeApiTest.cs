@@ -81,6 +81,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         protected override void OnStop()
         {
             GroupTestReport.ResetStaticFields();
+
+            Print($"Finish");
+
             Exit();
         }
 
