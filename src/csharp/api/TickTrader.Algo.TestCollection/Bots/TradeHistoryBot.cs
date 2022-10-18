@@ -143,7 +143,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             }
         }
 
-        private async Task PrintList<T>(IAsyncEnumerator<T> e) where T : class
+        private async Task PrintList<T>(Api.IAsyncEnumerator<T> e) where T : class
         {
             while (await e.Next())
             {
