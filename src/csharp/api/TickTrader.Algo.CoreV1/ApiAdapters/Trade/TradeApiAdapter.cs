@@ -68,7 +68,14 @@ namespace TickTrader.Algo.CoreV1
                 if (resCode != OrderCmdResultCodes.Ok)
                     resultEntity = new OrderResultEntity(resCode, null, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(resCode, _account.Orders[orderResp.ResultingOrder.Id], orderResp.TransactionTime);
+                {
+                    var resOrder = _account.Orders[orderResp.ResultingOrder.Id];
+
+                    if (resOrder.IsNull)
+                        resOrder = new OrderAccessor(smbMetadata, orderResp.ResultingOrder);
+
+                    resultEntity = new OrderResultEntity(resCode, resOrder, orderResp.TransactionTime);
+                }
             }
             else
             {
