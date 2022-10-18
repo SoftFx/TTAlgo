@@ -177,8 +177,11 @@ namespace TickTrader.Algo.Account.Fdk2
 
             var taskSrc = new SfxTaskAdapter.RequestResultSource<BarUpdateSummary[]>("UnsubscribeBarsRequest");
             _feedProxy.UnsubscribeBarsAsync(taskSrc, symbols);
-            await taskSrc.Task;
+            var res = await taskSrc.Task;
             _logger.Debug(taskSrc.MeasureRequestTime());
+
+            foreach (var upd in res)
+                _barSubAdapter.AddUpdate(upd);
         }
     }
 }
