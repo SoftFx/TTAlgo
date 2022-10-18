@@ -27,7 +27,6 @@ namespace TickTrader.Algo.Core
 
     public interface IDataBuffer : IEnumerable
     {
-        object this[int index] { get; set; }
     }
 
     public interface IDataBuffer<T> : IEnumerable<T>
@@ -38,7 +37,6 @@ namespace TickTrader.Algo.Core
 
     public interface IReadOnlyDataBuffer : IEnumerable
     {
-        object this[int index] { get; }
     }
 
     public interface IReadOnlyDataBuffer<T> : IEnumerable<T>

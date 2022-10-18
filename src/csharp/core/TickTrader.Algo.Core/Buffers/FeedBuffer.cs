@@ -5,13 +5,18 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public interface IFeedBuffer
+    public interface ITimeRef
     {
         UtcTicks this[int index] { get; }
 
         int Count { get; }
+    }
 
-        bool IsMain { get; set; }
+    public interface IFeedBuffer
+    {
+        ITimeRef Timeline { get; }
+
+        int Count { get; }
     }
 
     public interface IFeedBuffer<T>
@@ -23,6 +28,8 @@ namespace TickTrader.Algo.Core
 
     internal interface ILoadableFeedBuffer : IFeedBuffer
     {
+        bool IsMain { get; set; }
+
         bool IsLoaded { get; }
 
 

@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class BarSeriesBuffer : FeedBufferBase<BarData>, IWritableFeedBuffer<BarData>
+    internal class BarSeriesBuffer : FeedBufferBase<BarData>, IWritableFeedBuffer<BarData>, ITimeRef
     {
         public string Symbol { get; }
 
@@ -11,7 +11,9 @@ namespace TickTrader.Algo.Core
 
         public Feed.Types.MarketSide Side { get; }
 
-        UtcTicks IFeedBuffer.this[int index] => _data[index].OpenTime;
+        UtcTicks ITimeRef.this[int index] => _data[index].OpenTime;
+
+        public ITimeRef Timeline => this;
 
 
         public BarSeriesBuffer(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide side, IFeedControllerContext context)

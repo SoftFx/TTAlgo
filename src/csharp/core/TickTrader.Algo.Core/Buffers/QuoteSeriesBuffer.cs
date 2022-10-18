@@ -3,13 +3,15 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class QuoteSeriesBuffer : FeedBufferBase<QuoteInfo>, IWritableFeedBuffer<QuoteInfo>
+    internal class QuoteSeriesBuffer : FeedBufferBase<QuoteInfo>, IWritableFeedBuffer<QuoteInfo>, ITimeRef
     {
         public string Symbol { get; }
 
         public bool Level2 { get; }
 
-        UtcTicks IFeedBuffer.this[int index] => _data[index].Time;
+        UtcTicks ITimeRef.this[int index] => _data[index].Time;
+
+        public ITimeRef Timeline => this;
 
 
         public QuoteSeriesBuffer(string symbol, bool level2, IFeedControllerContext context)

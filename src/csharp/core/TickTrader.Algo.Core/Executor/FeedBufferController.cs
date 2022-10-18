@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Core
             var to = DateTime.UtcNow.AddHours(1).ToUtcTicks();
             await mainBuffer.LoadFeed(to, -count);
 
-            var from = mainBuffer[0];
+            var from = mainBuffer.Timeline[0];
 
             await LoadBuffersInternal(from, to);
         }
@@ -70,14 +70,20 @@ namespace TickTrader.Algo.Core
             await LoadBuffersInternal(from, to);
         }
 
-        public IFeedBuffer GetBarBuffer(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide side)
+        public IFeedBuffer<BarData> GetBarBuffer(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide side, bool markMain = false)
         {
-            return GetBuffer(BufferKey.ForBar(symbol, timeframe, side));
+            var buffer = GetBuffer(BufferKey.ForBar(symbol, timeframe, side));
+            if (markMain)
+                buffer.IsMain = true;
+            return (IFeedBuffer<BarData>)buffer;
         }
 
-        public IFeedBuffer GetQuoteBuffer(string symbol, bool level2)
+        public IFeedBuffer<QuoteInfo> GetQuoteBuffer(string symbol, bool level2, bool markMain = false)
         {
-            return GetBuffer(BufferKey.ForQuote(symbol, level2));
+            var buffer = GetBuffer(BufferKey.ForQuote(symbol, level2));
+            if (markMain)
+                buffer.IsMain = true;
+            return (IFeedBuffer<QuoteInfo>)buffer;
         }
 
         public void ApplyUpdates()

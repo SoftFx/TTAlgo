@@ -51,8 +51,6 @@ namespace TickTrader.Algo.Core
             set { this[Count - 1] = value; }
         }
 
-        object IDataBuffer.this[int index] { get { return _data[index]; } set { _data[index] = (T)value; } }
-
         public IEnumerator<T> GetEnumerator()
         {
             return _data.GetEnumerator();

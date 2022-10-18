@@ -57,8 +57,6 @@ namespace TickTrader.Algo.CoreV1
         public Action BeginBatchBuild { get; set; }
         public Action EndBatchBuild { get; set; }
 
-        object IReadOnlyDataBuffer.this[int index] { get { return this[index]; } }
-
         public IEnumerator<T> GetEnumerator()
         {
             return _data.GetEnumerator();
