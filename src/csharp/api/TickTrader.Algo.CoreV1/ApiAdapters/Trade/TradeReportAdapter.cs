@@ -173,6 +173,7 @@ namespace TickTrader.Algo.CoreV1
             //Entity.ReqOpenQuantity = order.ReqOpenAmount;
 
             Info.OrderOptions = orderInfo.Options;
+            Info.OcoRelatedOrderId = orderInfo.OcoRelatedOrderId;
             //ClientApp = order.ClientApp;
 
             FillSymbolConversionRates(acc, orderAccessor.SymbolInfo);

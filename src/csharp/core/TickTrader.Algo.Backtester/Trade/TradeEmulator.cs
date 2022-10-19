@@ -120,10 +120,10 @@ namespace TickTrader.Algo.Backtester
 
         public Task<OrderCmdResult> OpenOrder(bool isAsync, Api.OpenOrderRequest request)
         {
-            return OpenOrder(isAsync, request, request.SubOpenRequests.Count > 0);
+            return OpenOrder(isAsync, request, null);
         }
 
-        private Task<OrderCmdResult> OpenOrder(bool isAsync, Api.OpenOrderRequest request, bool isSubOrder)
+        private Task<OrderCmdResult> OpenOrder(bool isAsync, Api.OpenOrderRequest request, string linkedOrderId)
         {
             return ExecTradeRequest(isAsync, async () =>
             {
@@ -172,12 +172,15 @@ namespace TickTrader.Algo.Backtester
                         VerifyAmout(volume, smbMetadata);
                         ValidateOrderTypeForAccount(request.Type, smbMetadata);
                         ValidateTypeAndPrice(request.Type, price, stopPrice, sl, tp, maxVisibleVolume, request.Options, smbMetadata);
+                        ValidateOcoLink(request, linkedOrderId);
 
                         //Facade.ValidateExpirationTime(Request.Expiration, _acc);
 
                         order = OpenOrder(smbMetadata, request.Type.ToDomainEnum(), request.Side.ToDomainEnum(),
                         volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options.ToDomainEnum(),
-                        request.Tag, request.Expiration, OpenOrderOptions.None, request.Slippage, request.OcoRelatedOrderId, request.OcoEqualVolume, isSubOrder);
+                        request.Tag, request.Expiration, OpenOrderOptions.None, request.Slippage,
+                        string.IsNullOrEmpty(request.OcoRelatedOrderId) ? linkedOrderId : request.OcoRelatedOrderId,
+                        request.OcoEqualVolume, !string.IsNullOrEmpty(linkedOrderId) || request.SubOpenRequests.Count > 0);
 
                         _collector.OnOrderOpened();
                     }
@@ -186,15 +189,13 @@ namespace TickTrader.Algo.Backtester
                     {
                         foreach (var subRequest in request.SubOpenRequests)
                         {
-                            var sub = await OpenOrder(isAsync, subRequest, true);
-                            var result = sub.ResultingOrder;
+                            var sub = await OpenOrder(isAsync, subRequest, order.Info.Id);
 
-                            if (result.Options.HasFlag(Api.OrderOptions.OneCancelsTheOther))
+                            if (order.Info.IsSupportOco)
                             {
-                                var ocoOrder = _acc.GetOcoOrderOrThrow(result.Id);
+                                var ocoOrder = AddAndGetOcoForOrder(order, sub.ResultingOrder.Id, false);
 
                                 AddOcoForOrder(ocoOrder, order.Info.Id);
-                                AddOcoForOrder(order, ocoOrder.Info.Id);
                             }
                         }
                     }
@@ -478,7 +479,7 @@ namespace TickTrader.Algo.Backtester
         private OrderAccessor OpenOrder(SymbolInfo symbolInfo, OrderInfo.Types.Type orderType, OrderInfo.Types.Side side,
             double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl, double? tp, string comment,
             Domain.OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options, double? slippage,
-            string ocoRelatedOrderId, bool ocoEqualVolume = false, bool isLinkedOrder = false)
+            string ocoRelatedOrderId, bool ocoEqualVolume = false, bool hasLinkedOrder = false)
         {
             var order = new OrderAccessor(symbolInfo);
 
@@ -561,8 +562,16 @@ namespace TickTrader.Algo.Backtester
             if (order.Info.Options.HasFlag(Domain.OrderOptions.OneCancelsTheOther) && (order.Info.IsImmediateOrCancel || !order.Info.IsSupportOco))
                 throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
 
-            if (!isLinkedOrder && order.Info.IsOcoOrder && _acc.Type != AccountInfo.Types.Type.Gross)
+            if (!hasLinkedOrder && order.Info.IsOcoOrder && _acc.Type != AccountInfo.Types.Type.Gross)
                 ocoOrder = AddAndGetOcoForOrder(order, ocoRelatedOrderId, ocoEqualVolume);
+
+            //if (hasLinkedOrder && order.Info.IsSupportOco && _acc.Type != AccountInfo.Types.Type.Gross)
+            //{
+            //    if (string.IsNullOrEmpty(ocoRelatedOrderId))
+            //        ocoRelatedOrderId = $"{_orderIdSeed + 1}";
+
+            //    AddOcoForOrder(order, ocoRelatedOrderId);
+            //}
 
             _calcFixture.ValidateNewOrder(order);
 
@@ -917,7 +926,7 @@ namespace TickTrader.Algo.Backtester
                     if (!order.Info.IsSupportOco)
                         throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
 
-                    var oco = AddAndGetOcoForOrder(order, request.OcoRelatedOrderId, false);
+                    var oco = AddAndGetOcoForOrder(order, request.OcoRelatedOrderId, false, true);
 
                     FireAddModifyOcoEvent(order, oco);
                 }
@@ -926,7 +935,9 @@ namespace TickTrader.Algo.Backtester
                 {
                     var oco = _acc.GetOcoOrderOrThrow(order.Info.OcoRelatedOrderId);
 
-                    FireRemoveModifyOcoEvent(order, oco);
+                    RemoveOcoForOrder(order);
+
+                    FireRemoveModifyOcoEvent(oco);
                 }
             }
 
@@ -1235,26 +1246,29 @@ namespace TickTrader.Algo.Backtester
             return order;
         }
 
-        private OrderAccessor AddAndGetOcoForOrder(OrderAccessor order, string ocoRelatedOrderId, bool equalVolume)
+        private OrderAccessor AddAndGetOcoForOrder(OrderAccessor order, string ocoRelatedOrderId, bool equalVolume, bool validate = false)
         {
             var ocoOrder = _acc.GetOcoOrderOrThrow(ocoRelatedOrderId);
 
-            if (ocoOrder.Info.IsOcoOrder)
-                throw new OrderValidationError(OrderCmdResultCodes.OCOAlreadyExists);
-
-            if (!ocoOrder.Info.IsSupportOco || (order.Info.Type == OrderInfo.Types.Type.Limit && ocoOrder.Info.Type == OrderInfo.Types.Type.Limit))
-                throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
-
-            if (order.Info.Type != ocoOrder.Info.Type && order.Info.Side != ocoOrder.Info.Side) //check that for pair limit/stop price for Buy must be less than Sell
+            if (validate) // validation for modify request
             {
-                var stop = order.Info.Type == OrderInfo.Types.Type.Stop ? order : ocoOrder;
-                var limit = order.Info.Type == OrderInfo.Types.Type.Limit ? order : ocoOrder;
+                if (ocoOrder.Info.IsOcoOrder)
+                    throw new OrderValidationError(OrderCmdResultCodes.OCOAlreadyExists);
 
-                if (stop.Info.Side.IsBuy() && stop.Info.StopPrice.Value.Gte(limit.Info.Price.Value))
-                    throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
+                if (!ocoOrder.Info.IsSupportOco || (order.Info.Type == OrderInfo.Types.Type.Limit && ocoOrder.Info.Type == OrderInfo.Types.Type.Limit))
+                    throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
 
-                if (stop.Info.Side.IsSell() && stop.Info.StopPrice.Value.Lt(limit.Info.Price.Value))
-                    throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
+                if (order.Info.Type != ocoOrder.Info.Type && order.Info.Side != ocoOrder.Info.Side) //check that for pair limit/stop price for Buy must be less than Sell
+                {
+                    var stop = order.Info.Type == OrderInfo.Types.Type.Stop ? order : ocoOrder;
+                    var limit = order.Info.Type == OrderInfo.Types.Type.Limit ? order : ocoOrder;
+
+                    if (stop.Info.Side.IsBuy() && stop.Info.StopPrice.Value.Gte(limit.Info.Price.Value))
+                        throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
+
+                    if (stop.Info.Side.IsSell() && stop.Info.StopPrice.Value.Lt(limit.Info.Price.Value))
+                        throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
+                }
             }
 
             AddOcoForOrder(order, ocoRelatedOrderId);
@@ -1302,7 +1316,7 @@ namespace TickTrader.Algo.Backtester
             _scheduler.EnqueueEvent(new OrderModifiedEventArgsImpl(oldOrder, order));
         }
 
-        private void FireRemoveModifyOcoEvent(OrderAccessor order, OrderAccessor ocoOrder)
+        private void FireRemoveModifyOcoEvent(OrderAccessor order)
         {
             var oldOrder = order.Clone();
 
@@ -2553,6 +2567,69 @@ namespace TickTrader.Algo.Backtester
 
                 //if (Request.MaxVisibleAmount.HasValue && Request.MaxVisibleAmount.Value >= 0)
                 //    Request.SetOption(OrderExecutionOptions.HiddenIceberg);
+            }
+        }
+
+        private void ValidateOcoLink(Api.OpenOrderRequest request, string linkedOrderId)
+        {
+            if (!request.Options.HasFlag(Api.OrderExecOptions.OneCancelsTheOther) || _acc.Type == AccountInfo.Types.Type.Gross)
+                return;
+
+            OrderInfo.Types.Type ocoType;
+            OrderInfo.Types.Side ocoSide;
+            double? ocoPrice;
+            double? ocoStopPrice;
+
+            if (request.SubOpenRequests.Count > 0)
+            {
+                var ocoReqeust = request.SubOpenRequests.First();
+
+                ocoType = ocoReqeust.Type.ToDomainEnum();
+                ocoSide = ocoReqeust.Side.ToDomainEnum();
+                ocoPrice = ocoReqeust.Price;
+                ocoStopPrice = ocoReqeust.StopPrice;
+            }
+            else
+            {
+                var ocoOrder = _acc.GetOcoOrderOrThrow(string.IsNullOrEmpty(request.OcoRelatedOrderId) ? linkedOrderId : request.OcoRelatedOrderId);
+
+                if (!string.IsNullOrEmpty(ocoOrder.Info.OcoRelatedOrderId))
+                    throw new OrderValidationError(OrderCmdResultCodes.OCOAlreadyExists);
+
+                ocoType = ocoOrder.Info.Type;
+                ocoSide = ocoOrder.Info.Side;
+                ocoPrice = ocoOrder.Info.Price;
+                ocoStopPrice = ocoOrder.Info.StopPrice;
+            }
+
+            if ((ocoType is not (OrderInfo.Types.Type.Limit or OrderInfo.Types.Type.Stop)) ||
+                (request.Type == OrderType.Limit && ocoType == OrderInfo.Types.Type.Limit))
+                throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
+
+            if (request.Type.ToDomainEnum() != ocoType && request.Side.ToDomainEnum() != ocoSide) //check that for pair limit/stop price for Buy must be less than Sell
+            {
+                OrderInfo.Types.Side stopSide;
+                double stopPrice;
+                double limitPrice;
+
+                if (ocoType == OrderInfo.Types.Type.Stop)
+                {
+                    stopSide = ocoSide;
+                    stopPrice = ocoStopPrice.Value;
+                    limitPrice = request.Price.Value;
+                }
+                else
+                {
+                    stopSide = request.Side.ToDomainEnum();
+                    stopPrice = request.StopPrice.Value;
+                    limitPrice = ocoPrice.Value;
+                }
+
+                if (stopSide.IsBuy() && stopPrice.Gte(limitPrice))
+                    throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
+
+                if (stopSide.IsSell() && stopPrice.Lt(limitPrice))
+                    throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
             }
         }
 

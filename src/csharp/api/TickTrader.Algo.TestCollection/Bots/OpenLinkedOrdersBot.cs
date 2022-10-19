@@ -108,6 +108,8 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (answer.ResultCode == OrderCmdResultCodes.Ok)
                 Print(ToObjectPropertiesString("MainOrderResult", answer.ResultingOrder));
 
+            await Delay(1000);
+
             Exit();
         }
 
