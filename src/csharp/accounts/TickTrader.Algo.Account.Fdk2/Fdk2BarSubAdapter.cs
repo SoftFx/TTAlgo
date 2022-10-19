@@ -13,11 +13,11 @@ namespace TickTrader.Algo.Account.Fdk2
     {
         private readonly Dictionary<string, HashSet<BarSubEntry>> _subGroups = new Dictionary<string, HashSet<BarSubEntry>>();
         private readonly Dictionary<string, SymbolBarGroup> _groups = new Dictionary<string, SymbolBarGroup>();
-        private readonly Action<BarInfo> _barUpdateCallback;
+        private readonly Action<Domain.BarUpdate> _barUpdateCallback;
         private readonly ChannelConsumerWrapper<BarUpdateSummary> _consumer;
 
 
-        public BarSubAdapter(Action<BarInfo> barUpdateCallback)
+        public BarSubAdapter(Action<Domain.BarUpdate> barUpdateCallback)
         {
             _barUpdateCallback = barUpdateCallback;
 
@@ -70,8 +70,8 @@ namespace TickTrader.Algo.Account.Fdk2
                     var fdkEntry = new BarSubscriptionSymbolEntry { Symbol = smb };
                     if (_subGroups.TryGetValue(smb, out var group))
                     {
-                        fdkEntry.Params = group.Select(e =>
-                            new BarParameters(SfxInterop.ConvertBack(e.Timeframe), SfxInterop.ConvertBack(e.MarketSide))).ToArray();
+                        fdkEntry.Params = group.Select(e => new BarParameters(SfxInterop.ConvertBack(e.Timeframe), PriceType.Bid))
+                            .Concat(group.Select(e => new BarParameters(SfxInterop.ConvertBack(e.Timeframe), PriceType.Ask))).ToArray();
                     }
                     res.Add(fdkEntry);
                 }
@@ -83,7 +83,7 @@ namespace TickTrader.Algo.Account.Fdk2
 
         private void ProcessUpdate(BarUpdateSummary update)
         {
-            List<BarInfo> res = default;
+            List<Domain.BarUpdate> res = default;
             var smb = update.Symbol;
 
             if (update.IsReset)
@@ -122,7 +122,7 @@ namespace TickTrader.Algo.Account.Fdk2
 
         private class SymbolBarGroup
         {
-            public List<BarInfo> CurrentBars { get; } = new List<BarInfo>(16);
+            public List<Domain.BarUpdate> CurrentBars { get; } = new List<Domain.BarUpdate>(16);
 
 
             public void Init(BarUpdateSummary update)
@@ -133,58 +133,52 @@ namespace TickTrader.Algo.Account.Fdk2
                 for (var i = 0; i < details.Length; i++)
                 {
                     var d = details[i];
+                    var index = CurrentBars.IndexOf(b => b.Timeframe == d.Timeframe);
+                    if (index < 0)
+                    {
+                        CurrentBars.Add(new Domain.BarUpdate() { Symbol = update.Symbol, Timeframe = d.Timeframe });
+                        index = CurrentBars.Count - 1;
+                    }
+                    var bar = CurrentBars[index];
+
                     var side = d.MarketSide;
                     var close = side == Feed.Types.MarketSide.Ask ? update.AskClose : update.BidClose;
-                    if (close.HasValue && d.HasAllProperties && BarSampler.TryGet(d.Timeframe, out var sampler))
-                    {
-                        var boundaries = sampler.GetBar(new UtcTicks(d.From.Value));
-                        var data = new BarData(boundaries.Open, boundaries.Close)
-                        {
-                            Close = close.Value,
-                            Open = d.Open.Value,
-                            High = d.High.Value,
-                            Low = d.Low.Value
-                        };
-                        var bar = new BarInfo { Symbol = update.Symbol, Timeframe = d.Timeframe, MarketSide = side, Data = data };
-                        CurrentBars.Add(bar);
-                    }
+                    var data = d.CreateBarData(close);
+                    if (side == Feed.Types.MarketSide.Bid)
+                        bar.BidData = data;
+                    else if (side == Feed.Types.MarketSide.Ask)
+                        bar.AskData = data;
                 }
             }
 
             public void Update(BarUpdateSummary update)
             {
-                foreach (var bar in CurrentBars)
+                if (update.AskClose.HasValue || update.BidClose.HasValue)
                 {
-                    var barData = bar.Data;
-                    var close = bar.MarketSide == Feed.Types.MarketSide.Ask ? update.AskClose : update.BidClose;
+                    var askClose = update.AskClose ?? CurrentBars[0].AskData.Close;
+                    var bidClose = update.BidClose ?? CurrentBars[0].BidData.Close;
 
-                    if (update.Details != null)
+                    foreach (var bar in CurrentBars)
                     {
-                        var index = update.Details.IndexOf(d => d.Timeframe == bar.Timeframe && d.MarketSide == bar.MarketSide);
+                        bar.AskData.Close = askClose;
+                        bar.BidData.Close = bidClose;
+                    }
+                }
+
+                if (update.Details != null && update.Details.Length > 0)
+                {
+                    var details = update.Details;
+                    for (var i = 0; i < details.Length; i++)
+                    {
+                        var d = details[i];
+                        var index = CurrentBars.IndexOf(b => b.Timeframe == d.Timeframe);
                         if (index >= 0)
                         {
-                            var d = update.Details[index];
-                            if (d.From.HasValue && d.HasAllProperties && BarSampler.TryGet(d.Timeframe, out var sampler))
-                            {
-                                var boundaries = sampler.GetBar(new UtcTicks(d.From.Value));
-                                barData.OpenTime = boundaries.Open;
-                                barData.CloseTime = boundaries.Close;
-                                barData.Open = d.Open.Value;
-                                barData.High = d.High.Value;
-                                barData.Low = d.Low.Value;
-                            }
-                            else
-                            {
-                                if (d.High.HasValue)
-                                    barData.High = d.High.Value;
-                                if (d.Low.HasValue)
-                                    barData.Low = d.Low.Value;
-                            }
+                            var bar = CurrentBars[index];
+                            var barData = d.MarketSide == Feed.Types.MarketSide.Ask ? bar.AskData : bar.BidData;
+                            d.UpdateBarData(barData);
                         }
                     }
-
-                    if (close.HasValue)
-                        barData.Close = close.Value;
                 }
             }
         }

@@ -190,8 +190,7 @@ message QuoteListRequest {
 
 message BarSubEntry {
     string symbol = 1;
-    Feed.MarketSide market_side = 2;
-    Feed.Timeframe timeframe = 3;
+    Feed.Timeframe timeframe = 2;
 }
 
 message BarSubUpdate {
@@ -201,4 +200,11 @@ message BarSubUpdate {
 
 message ModifyBarSubRequest { // returns BarPage
     repeated BarSubUpdate updates = 1;
+}
+
+message BarUpdate {
+    string symbol = 1;
+    Feed.Timeframe timeframe = 2;
+    BarData ask_data = 3;
+    BarData bid_data = 4;
 }

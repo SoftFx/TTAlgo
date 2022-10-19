@@ -302,7 +302,7 @@ namespace TickTrader.Algo.Account.Fdk2
         #region IFeedServerApi
 
         public event Action<Domain.QuoteInfo> Tick;
-        public event Action<BarInfo> BarUpdate;
+        public event Action<Domain.BarUpdate> BarUpdate;
 
         public async Task<Domain.CurrencyInfo[]> GetCurrencies()
         {

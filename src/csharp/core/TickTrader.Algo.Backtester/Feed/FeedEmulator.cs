@@ -196,7 +196,7 @@ namespace TickTrader.Algo.Backtester
 
         private class BarSubStub : IBarSub
         {
-            public IDisposable AddHandler(Action<BarInfo> handler) => null;
+            public IDisposable AddHandler(Action<BarUpdate> handler) => null;
 
             public void Dispose() { }
 
@@ -246,7 +246,7 @@ namespace TickTrader.Algo.Backtester
         }
 
         public event Action<QuoteInfo> QuoteUpdated { add { } remove { } }
-        public event Action<BarInfo> BarUpdated { add { } remove { } }
+        public event Action<BarUpdate> BarUpdated { add { } remove { } }
 
         #endregion
     }

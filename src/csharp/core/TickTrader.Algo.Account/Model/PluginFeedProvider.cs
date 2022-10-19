@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Account
         private readonly IReadOnlyDictionary<string, CurrencyInfo> _currencies;
 
         public event Action<QuoteInfo> QuoteUpdated;
-        public event Action<BarInfo> BarUpdated;
+        public event Action<BarUpdate> BarUpdated;
 
 
         public PluginFeedProvider(EntityCache cache, IQuoteSubManager quoteSubManager, IBarSubManager barSubManager, FeedHistoryProviderModel.Handler history)

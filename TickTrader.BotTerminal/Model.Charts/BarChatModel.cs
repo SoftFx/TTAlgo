@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
 
         protected async override Task LoadData(CancellationToken cToken)
         {
-            _barSub = ClientModel.BarDistributor.AddListener(OnBarUpdate, new BarSubEntry(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame));
+            _barSub = ClientModel.BarDistributor.AddListener(OnBarUpdate, new BarSubEntry(SymbolCode, TimeFrame));
 
             var aproximateTimeRef = UtcTicks.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
             var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef, -BarsCount);
@@ -60,14 +60,11 @@ namespace TickTrader.BotTerminal
                 InitBoundaries(barArray.Length, barArray.First().OpenTime.ToUtcDateTime(), barArray.Last().OpenTime.ToUtcDateTime());
         }
 
-        protected override void ApplyUpdate(QuoteInfo quote)
-        {
-            BarVector.ApplyQuote(quote);
-        }
 
-        protected override void ApplyBarUpdate(BarInfo bar)
+        protected override void ApplyBarUpdate(BarUpdate bar)
         {
-            BarVector.ApplyBarUpdate(bar);
+            BarVector.ApplyTickUpdate(bar.BidData?.Close, bar.AskData?.Close);
+            BarVector.ApplyBarUpdate(bar.BidData);
             //ExtendBoundaries(BarVector.Count, bar.Data.CloseTime.ToUtcDateTime());
         }
 

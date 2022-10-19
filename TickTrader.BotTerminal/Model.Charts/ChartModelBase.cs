@@ -36,10 +36,7 @@ namespace TickTrader.BotTerminal
         private bool isConnected;
         private bool _isDisposed;
         private string dateAxisLabelFormat;
-        private List<QuoteInfo> updateQueue;
-        private List<BarInfo> _barUpdateQueue;
-        private IDisposable _quoteSub;
-        private Property<IRateInfo> _currentRateProp = new Property<IRateInfo>();
+        private List<BarUpdate> _barUpdateQueue;
         private Feed.Types.Timeframe _timeframe;
 
         protected IDisposable _barSub;
@@ -61,10 +58,6 @@ namespace TickTrader.BotTerminal
             isConnected = ClientModel.IsConnected.Value;
             ClientModel.Connected += Connection_Connected;
             ClientModel.Deinitializing += Client_Deinitializing;
-
-            _quoteSub = ClientModel.Distributor.AddListener(OnRateUpdate, symbol.Name, SubscriptionDepth.Tick_S0);
-
-            _currentRateProp.Value = (IRateInfo)symbol.LastQuote;
 
             Func<bool> isReadyToStart = () => isConnected && !_isDisposed;
             Func<bool> isNotReadyToStart = () => !isReadyToStart();
@@ -110,7 +103,6 @@ namespace TickTrader.BotTerminal
         public IObservableList<AlgoPluginViewModel> AvailableBotTraders { get; private set; }
         public bool HasAvailableBotTraders => AvailableBotTraders.Count() > 0;
         public string SymbolCode { get { return Model.Name; } }
-        public Var<IRateInfo> CurrentRate => _currentRateProp.Var;
         public bool IsIndicatorsOnline => _isIndicatorsOnline;
 
         public event System.Action TimeframeChanged;
@@ -174,8 +166,7 @@ namespace TickTrader.BotTerminal
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
-        protected abstract void ApplyUpdate(QuoteInfo update);
-        protected abstract void ApplyBarUpdate(BarInfo update);
+        protected abstract void ApplyBarUpdate(BarUpdate update);
 
 
         private async void Update(CancellationToken cToken)
@@ -186,8 +177,7 @@ namespace TickTrader.BotTerminal
             {
                 isUpdateRequired = false;
                 ClearData();
-                updateQueue = new List<QuoteInfo>();
-                _barUpdateQueue = new List<BarInfo>();
+                _barUpdateQueue = new List<BarUpdate>();
                 await LoadData(cToken);
                 ApplyQueue();
                 _stateController.PushEvent(Events.Loaded);
@@ -252,7 +242,6 @@ namespace TickTrader.BotTerminal
 
                     ClientModel.Connected -= Connection_Connected;
                     ClientModel.Deinitializing -= Client_Deinitializing;
-                    _quoteSub.Dispose();
                     _barSub?.Dispose();
 
                     _logger.Debug("Chart[" + Model.Name + "] disposed!");
@@ -264,25 +253,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected virtual void OnRateUpdate(QuoteInfo tick)
-        {
-            if (_stateController.Current == States.LoadingData)
-                updateQueue.Add(tick);
-            else if (_stateController.Current == States.Online)
-                ApplyUpdate(tick);
-
-            _currentRateProp.Value = tick;
-        }
-
         private void ApplyQueue()
         {
-            updateQueue.ForEach(ApplyUpdate);
-            updateQueue = null;
             _barUpdateQueue.ForEach(ApplyBarUpdate);
             _barUpdateQueue = null;
         }
 
-        protected virtual void OnBarUpdate(BarInfo bar)
+        protected virtual void OnBarUpdate(BarUpdate bar)
         {
             if (_stateController.Current == States.LoadingData)
                 _barUpdateQueue.Add(bar);

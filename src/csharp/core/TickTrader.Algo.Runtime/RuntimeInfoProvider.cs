@@ -157,7 +157,7 @@ namespace TickTrader.Algo.Runtime
         #region IFeedProvider
 
         public event Action<QuoteInfo> QuoteUpdated;
-        public event Action<BarInfo> BarUpdated;
+        public event Action<BarUpdate> BarUpdated;
 
         public List<QuoteInfo> GetQuoteSnapshot()
         {

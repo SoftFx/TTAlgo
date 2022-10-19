@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Account
         bool AutoSymbols { get; }
 
         event Action<QuoteInfo> Tick;
-        event Action<BarInfo> BarUpdate;
+        event Action<BarUpdate> BarUpdate;
         event Action<SymbolInfo[]> SymbolInfo;
         event Action<CurrencyInfo[]> CurrencyInfo;
 

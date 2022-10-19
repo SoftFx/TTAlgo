@@ -86,33 +86,30 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void ApplyQuote(QuoteInfo quote)
-        {
-            ApplyNewTickEvent?.Invoke(quote.DoubleNullableBid(), quote.DoubleNullableAsk());
-        }
+        public void ApplyTickUpdate(double? bid, double? ask) => ApplyNewTickEvent?.Invoke(bid, ask);
 
-        public void ApplyBarUpdate(BarInfo bar)
+        public void ApplyBarUpdate(BarData bar)
         {
             AppendBarUpdateInternal(bar, true);
         }
 
-        private bool AppendBarUpdateInternal(BarInfo bar, bool noThrow)
+        private bool AppendBarUpdateInternal(BarData bar, bool noThrow)
         {
             var currentBar = Items?.LastOrDefault();
 
             if (currentBar != null)
             {
-                if (bar.Data.OpenTime.Value < currentBar.Date.Ticks)
+                if (bar.OpenTime.Value < currentBar.Date.Ticks)
                     return noThrow ? false : throw new ArgumentException("Invalid time sequnce!");
 
-                if (bar.Data.OpenTime.Value == currentBar.Date.Ticks)
+                if (bar.OpenTime.Value == currentBar.Date.Ticks)
                 {
-                    currentBar.ApplyBarUpdate(bar.Data);
+                    currentBar.ApplyBarUpdate(bar);
                     return true;
                 }
             }
 
-            return AppendBarIntenral(bar.Data, noThrow);
+            return AppendBarIntenral(bar, noThrow);
         }
     }
 }

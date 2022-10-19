@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core.Subscriptions
     {
         private readonly ConcurrentDictionary<BarSubEntry, ListenerGroup> _groups = new ConcurrentDictionary<BarSubEntry, ListenerGroup>();
         private readonly IBarSubManager _manager;
-        private readonly ChannelConsumerWrapper<BarInfo> _barConsumer;
+        private readonly ChannelConsumerWrapper<BarUpdate> _barConsumer;
         private readonly BarSubEntry _dispatchEntry = new BarSubEntry();
 
 
@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Core.Subscriptions
             _manager = manager;
             _manager.Add(this);
 
-            _barConsumer = new ChannelConsumerWrapper<BarInfo>(DefaultChannelFactory.CreateForOneToOne<BarInfo>(), $"{nameof(BarDistributor)} loop");
+            _barConsumer = new ChannelConsumerWrapper<BarUpdate>(DefaultChannelFactory.CreateForOneToOne<BarUpdate>(), $"{nameof(BarDistributor)} loop");
             _barConsumer.BatchSize = 10;
             _barConsumer.Start(DispatchBar);
         }
@@ -34,20 +34,19 @@ namespace TickTrader.Algo.Core.Subscriptions
         }
 
 
-        public void UpdateBar(BarInfo bar) => _barConsumer.Add(bar);
+        public void UpdateBar(BarUpdate bar) => _barConsumer.Add(bar);
 
-        void IBarSubInternal.Dispatch(BarInfo bar) => UpdateBar(bar);
+        void IBarSubInternal.Dispatch(BarUpdate bar) => UpdateBar(bar);
 
-        public IDisposable AddListener(Action<BarInfo> handler, BarSubEntry entry)
+        public IDisposable AddListener(Action<BarUpdate> handler, BarSubEntry entry)
             => new Listener(handler, this, entry);
 
 
-        private void DispatchBar(BarInfo bar)
+        private void DispatchBar(BarUpdate bar)
         {
             // Single consuming thread. Using cached object to reduce memory traffic
             var entry = _dispatchEntry;
             entry.Symbol = bar.Symbol;
-            entry.MarketSide = bar.MarketSide;
             entry.Timeframe = bar.Timeframe;
             if (_groups.TryGetValue(entry, out var group))
             {
@@ -92,12 +91,12 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         private class Listener : IDisposable
         {
-            private readonly Action<BarInfo> _handler;
+            private readonly Action<BarUpdate> _handler;
             private readonly BarDistributor _parent;
             private readonly BarSubEntry _entry;
 
 
-            public Listener(Action<BarInfo> handler, BarDistributor parent, BarSubEntry entry)
+            public Listener(Action<BarUpdate> handler, BarDistributor parent, BarSubEntry entry)
             {
                 _handler = handler;
                 _parent = parent;
@@ -111,7 +110,7 @@ namespace TickTrader.Algo.Core.Subscriptions
                 _parent.RemoveListener(_entry, this);
             }
 
-            public void OnNewBar(BarInfo bar) => _handler?.Invoke(bar);
+            public void OnNewBar(BarUpdate bar) => _handler?.Invoke(bar);
         }
 
 
@@ -133,7 +132,7 @@ namespace TickTrader.Algo.Core.Subscriptions
                 _subList.RemoveSub(listener);
             }
 
-            public void DispathBar(BarInfo bar)
+            public void DispathBar(BarUpdate bar)
             {
                 var sublist = _subList.Items;
                 for (var i = 0; i < sublist.Length; i++)

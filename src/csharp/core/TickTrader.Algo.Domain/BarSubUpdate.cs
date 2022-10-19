@@ -18,14 +18,13 @@
 
     public partial class BarSubEntry
     {
-        public BarSubEntry(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
+        public BarSubEntry(string symbol, Feed.Types.Timeframe timeframe)
         {
             Symbol = symbol;
-            MarketSide = marketSide;
             Timeframe = timeframe;
         }
 
 
-        public string ToShortString() => $"{Symbol}.{MarketSide}.{Timeframe}";
+        public string ToShortString() => $"{Symbol}.{Timeframe}";
     }
 }

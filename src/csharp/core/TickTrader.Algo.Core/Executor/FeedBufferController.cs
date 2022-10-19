@@ -116,7 +116,7 @@ namespace TickTrader.Algo.Core
         private void InitSubs()
         {
             var barSubUpdates = _buffers.Keys.Where(k => (int)k.Side != -1)
-                .Select(k => BarSubUpdate.Upsert(new BarSubEntry(k.Symbol, k.Side, k.Timeframe)))
+                .Select(k => BarSubUpdate.Upsert(new BarSubEntry(k.Symbol, k.Timeframe)))
                 .ToList();
             if (barSubUpdates.Count > 0)
                 _barSub.Modify(barSubUpdates);

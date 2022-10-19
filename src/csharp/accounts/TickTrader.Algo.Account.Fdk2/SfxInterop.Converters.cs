@@ -843,7 +843,7 @@ namespace TickTrader.Algo.Account.Fdk2
             return res;
         }
 
-        internal static BarUpdateDetails Convert(KeyValuePair<BarParameters, BarUpdate> fdkUpdate)
+        internal static BarUpdateDetails Convert(KeyValuePair<BarParameters, SFX.BarUpdate> fdkUpdate)
         {
             var k = fdkUpdate.Key;
             var v = fdkUpdate.Value;

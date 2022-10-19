@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 
     public interface IBarSubInternal
     {
-        void Dispatch(BarInfo bar);
+        void Dispatch(BarUpdate bar);
     }
 
     public interface IBarSubProvider
@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Core.Subscriptions
         }
 
 
-        public void Dispatch(BarInfo bar)
+        public void Dispatch(BarUpdate bar)
         {
             var subList = _subList.Items;
             var n = subList.Length;

@@ -117,7 +117,7 @@ namespace TickTrader.Algo.Server
 
         private void OnQuoteUpdated(QuoteInfo r) => PushNotification(RpcMessage.Notification(_id, r.GetFullQuote())); // not actor thread. _id is safe since it is readonly
 
-        private void OnBarUpdated(BarInfo b) => PushNotification(RpcMessage.Notification(_id, b)); // not actor thread. _id is safe since it is readonly
+        private void OnBarUpdated(BarUpdate b) => PushNotification(RpcMessage.Notification(_id, b)); // not actor thread. _id is safe since it is readonly
 
         private void PushNotification(RpcMessage msg) => _notificationBus?.Writer.TryWrite(msg);
 

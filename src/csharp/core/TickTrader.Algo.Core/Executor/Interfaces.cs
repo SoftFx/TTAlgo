@@ -52,7 +52,7 @@ namespace TickTrader.Algo.Core
         IBarSub GetBarSub();
 
         event Action<QuoteInfo> QuoteUpdated;
-        event Action<BarInfo> BarUpdated;
+        event Action<BarUpdate> BarUpdated;
     }
 
     public interface IAccountInfoProvider

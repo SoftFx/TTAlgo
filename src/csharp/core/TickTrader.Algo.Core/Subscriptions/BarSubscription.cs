@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         void Modify(List<BarSubUpdate> updates);
 
-        IDisposable AddHandler(Action<BarInfo> handler);
+        IDisposable AddHandler(Action<BarUpdate> handler);
     }
 
 
@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Core.Subscriptions
         private readonly HashSet<BarSubEntry> _subEntries = new HashSet<BarSubEntry>();
         private readonly IBarSubManager _manager;
 
-        private ChannelConsumerWrapper<BarInfo> _barConsumer;
+        private ChannelConsumerWrapper<BarUpdate> _barConsumer;
         private SubList<HandlerWrapper> _handlers;
 
 
@@ -73,12 +73,12 @@ namespace TickTrader.Algo.Core.Subscriptions
                 _manager.Modify(this, updates);
         }
 
-        public IDisposable AddHandler(Action<BarInfo> handler)
+        public IDisposable AddHandler(Action<BarUpdate> handler)
         {
             if (_handlers == null)
             {
                 _handlers = new SubList<HandlerWrapper>();
-                _barConsumer = new ChannelConsumerWrapper<BarInfo>(DefaultChannelFactory.CreateForOneToOne<BarInfo>(), $"{nameof(BarSubscription)} loop");
+                _barConsumer = new ChannelConsumerWrapper<BarUpdate>(DefaultChannelFactory.CreateForOneToOne<BarUpdate>(), $"{nameof(BarSubscription)} loop");
                 _barConsumer.BatchSize = 10;
                 _barConsumer.Start(DispatchBar);
             }
@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Core.Subscriptions
             return new HandlerWrapper(handler, this);
         }
 
-        void IBarSubInternal.Dispatch(BarInfo bar) => _barConsumer?.Add(bar);
+        void IBarSubInternal.Dispatch(BarUpdate bar) => _barConsumer?.Add(bar);
 
 
         private bool ApplyUpdate(BarSubUpdate update)
@@ -99,7 +99,7 @@ namespace TickTrader.Algo.Core.Subscriptions
             return false;
         }
 
-        private void DispatchBar(BarInfo bar)
+        private void DispatchBar(BarUpdate bar)
         {
             var sublist = _handlers.Items;
             for (var i = 0; i < sublist.Length; i++)
@@ -111,11 +111,11 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         private class HandlerWrapper : IDisposable
         {
-            private readonly Action<BarInfo> _handler;
+            private readonly Action<BarUpdate> _handler;
             private readonly BarSubscription _parent;
 
 
-            public HandlerWrapper(Action<BarInfo> handler, BarSubscription parent)
+            public HandlerWrapper(Action<BarUpdate> handler, BarSubscription parent)
             {
                 _handler = handler;
                 _parent = parent;
@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Core.Subscriptions
             }
 
 
-            public void OnNewBar(BarInfo bar)
+            public void OnNewBar(BarUpdate bar)
             {
                 _handler?.Invoke(bar);
             }

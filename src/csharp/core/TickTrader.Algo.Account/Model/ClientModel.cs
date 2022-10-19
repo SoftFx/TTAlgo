@@ -101,7 +101,7 @@ namespace TickTrader.Algo.Account
             _feedProcessor.Add(q);
         }
 
-        private void FeedProxy_BarUpdate(BarInfo b)
+        private void FeedProxy_BarUpdate(BarUpdate b)
         {
             _feedProcessor.Add(b);
         }
@@ -463,7 +463,7 @@ namespace TickTrader.Algo.Account
         {
             if (update is QuoteInfo quote)
                 ApplyQuote(quote);
-            else if (update is BarInfo bar)
+            else if (update is BarUpdate bar)
                 ApplyBar(bar);
             else
                 _logger.Error($"Unexcepted feed update of type: {update.GetType().FullName}");
@@ -560,7 +560,7 @@ namespace TickTrader.Algo.Account
             await ModifyAsync(updates);
         }
 
-        private void ApplyBar(BarInfo bar)
+        private void ApplyBar(BarUpdate bar)
         {
             _rootBarSubManager.Dispatch(bar);
         }

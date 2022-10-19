@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Runtime
         private readonly ChannelEventSource<PositionExecReport> _positionEventSrc = new ChannelEventSource<PositionExecReport>();
         private readonly ChannelEventSource<BalanceOperation> _balanceEventSrc = new ChannelEventSource<BalanceOperation>();
         private readonly ChannelEventSource<QuoteInfo> _quoteEventSrc = new ChannelEventSource<QuoteInfo>();
-        private readonly ChannelEventSource<BarInfo> _barEventSrc = new ChannelEventSource<BarInfo>();
+        private readonly ChannelEventSource<BarUpdate> _barEventSrc = new ChannelEventSource<BarUpdate>();
 
 
         public string Id { get; }
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Runtime
 
         public IEventSource<QuoteInfo> QuoteUpdated => _quoteEventSrc;
 
-        public IEventSource<BarInfo> BarUpdated => _barEventSrc;
+        public IEventSource<BarUpdate> BarUpdated => _barEventSrc;
 
 
         public RemoteAccountProxy(string id, IActorRef acc)
@@ -70,10 +70,8 @@ namespace TickTrader.Algo.Runtime
                 FullQuoteInfoNotificationHandler(payload);
             else if (payload.Is(QuotePage.Descriptor))
                 QuotePageNotificationHandler(payload);
-            else if (payload.Is(BarInfo.Descriptor))
-                BarInfoNotificationHandler(payload);
-            else if (payload.Is(BarPage.Descriptor))
-                BarPageNotificationHandler(payload);
+            else if (payload.Is(BarUpdate.Descriptor))
+                BarUpdateNotificationHandler(payload);
         }
 
         Task<Any> IRpcHandler.HandleRequest(string proxyId, string callId, Any payload)
@@ -305,21 +303,11 @@ namespace TickTrader.Algo.Runtime
             }
         }
 
-        private void BarInfoNotificationHandler(Any payload)
+        private void BarUpdateNotificationHandler(Any payload)
         {
-            var bar = payload.Unpack<BarInfo>();
+            var bar = payload.Unpack<BarUpdate>();
             _barEventSrc.Send(bar);
             _barSubManager.Dispatch(bar);
-        }
-
-        private void BarPageNotificationHandler(Any payload)
-        {
-            var page = payload.Unpack<BarPage>();
-            foreach (var b in page.Bars)
-            {
-                _barEventSrc.Send(b);
-                _barSubManager.Dispatch(b);
-            }
         }
 
 

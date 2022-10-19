@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Account.Fdk2
         private readonly IAlgoLogger _logger;
         private readonly BarSubAdapter _barSubAdapter;
 
-        public Fdk2FeedAdapter(FDK.Client.QuoteFeed feedProxy, IAlgoLogger logger, Action<BarInfo> barUpdateCallback)
+        public Fdk2FeedAdapter(FDK.Client.QuoteFeed feedProxy, IAlgoLogger logger, Action<Domain.BarUpdate> barUpdateCallback)
         {
             _feedProxy = feedProxy;
             _logger = logger;
