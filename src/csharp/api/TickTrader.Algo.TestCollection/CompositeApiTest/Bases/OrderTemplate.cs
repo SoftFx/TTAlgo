@@ -169,7 +169,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return (OrderStateTemplate)this;
         }
 
-        private OrderStateTemplate WithFullLinkedOCOProperies() => FillAdditionalProperties();
+        private OrderStateTemplate WithFullLinkedOCOProperies() => FillAdditionalProperties().WithExpiration(60);
 
         internal OrderStateTemplate WithOnTimeTrigger(int seconds)
         {

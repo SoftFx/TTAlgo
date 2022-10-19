@@ -49,13 +49,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             await RunOpenOCOTests(set, ocoSet);
             await RunModifyOCOTests(set, ocoSet);
+            await RunFillOCOTests(set, ocoSet);
             await RunCancelTests(set, ocoSet);
 
             await RunOpenRejectTests(set, ocoSet);
             await RunModifyRejectTests(set, ocoSet);
-
-            if (_useAD)
-                await RunFillOCOTests(set, ocoSet);
         }
 
         protected async Task RunOpenOCOTests(OrderBaseSet set, OrderBaseSet ocoSet)
@@ -69,9 +67,18 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task RunFillOCOTests(OrderBaseSet set, OrderBaseSet ocoSet)
         {
-            await RunOCOTest(FullFillOCOOrder, set, ocoSet, true);
-            await RunOCOTest(PartialFillOCOOrder, set, ocoSet);
-            await RunOCOTest(OCOWithPartialFillOrder, set, ocoSet, true);
+            //if (!IsLimitStopPairWithDiffSide(set, ocoSet))
+            //    await RunOCOTest(FillLinkedOCOOrders, set, ocoSet);
+            //    await FillLinkedOcoOrder
+            //    await ExpireFirstLinkedOrder
+            //    await ExpireSecondLinkedOrder
+
+            if (_useAD)
+            {
+                await RunOCOTest(FullFillOCOOrder, set, ocoSet, true);
+                await RunOCOTest(PartialFillOCOOrder, set, ocoSet);
+                await RunOCOTest(OCOWithPartialFillOrder, set, ocoSet, true);
+            }
         }
 
         protected async Task RunModifyOCOTests(OrderBaseSet set, OrderBaseSet ocoSet)
@@ -116,9 +123,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return OpenOCO(mainOrder, ocoOrder, Events.Modify);
         }
 
-        protected Task OpenLinkedOCO(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
+        protected async Task OpenLinkedOCO(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
-            return TestOpenOrder(mainOrder.WithLinkedOCO(ocoOrder), Events.Open);
+            await TestOpenOrder(mainOrder.WithLinkedOCO(ocoOrder), Events.Open);
+            await ocoOrder.Opened.Task;
         }
 
         private async Task OpenOCO(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, params Type[] events)
@@ -128,6 +136,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await mainOrder.Modified.Task;
         }
 
+
+        private async Task FillLinkedOCOOrders(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
+        {
+            await TestOpenOrder(mainOrder.ForExecuting().WithLinkedOCO(ocoOrder), Events.Open, Events.Fill, Events.Cancel);
+            await mainOrder.Filled.Task;
+            await ocoOrder.Canceled.Task;
+        }
 
         private Task FullFillOCOOrder(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
@@ -295,9 +310,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 ocoOrder.BreakOCO();
             }
 
-            bool IsLimitStopPair() => set.IsSupportedStopPrice ^ ocoSet.IsSupportedStopPrice;
-
-            if (IsLimitStopPair() && set.Side != ocoSet.Side)
+            if (IsLimitStopPairWithDiffSide(set, ocoSet))
                 await RunOCOTest(RejectWithIncorrectPrice, set, ocoSet, testInfo: $"{type} {nameof(RejectWithIncorrectPrice)}");
         }
 
@@ -323,6 +336,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
 
             return RunTest(OCOTestEnviroment, set, testInfo: $"{testInfo ?? test.Method.Name} OCO=({ocoSet}) equalVolume={equalVolume}");
+        }
+
+        private static bool IsLimitStopPairWithDiffSide(OrderBaseSet main, OrderBaseSet oco)
+        {
+            return (main.IsSupportedStopPrice ^ oco.IsSupportedStopPrice) && main.Side != oco.Side;
         }
     }
 }

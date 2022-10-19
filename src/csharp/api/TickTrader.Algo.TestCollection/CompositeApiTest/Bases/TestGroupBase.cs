@@ -94,10 +94,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private OrderStateTemplate RegisterAdditionalTemplate(OrderStateTemplate template)
         {
+            _eventManager.RegistryNewTemplate(template);
+
             foreach (var linkOrder in template.LinkedOrders)
                 _eventManager.RegistryNewTemplate(linkOrder);
-
-            _eventManager.RegistryNewTemplate(template);
 
             return template;
         }
