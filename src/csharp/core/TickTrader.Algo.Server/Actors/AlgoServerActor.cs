@@ -186,7 +186,7 @@ namespace TickTrader.Algo.Server
             }
             var pkgUpdate = new PkgRuntimeUpdate(pkgId, runtimeId);
             _plugins.TellAllPlugins(pkgUpdate);
-            _indicatorHost.Tell(pkgUpdate);
+            _indicatorHost?.Tell(pkgUpdate);
         }
 
         private void OnPkgRuntimeInvalid(AlgoServerPrivate.PkgRuntimeInvalidMsg msg)
