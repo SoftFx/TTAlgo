@@ -64,7 +64,8 @@ namespace TickTrader.BotTerminal
         protected override void ApplyBarUpdate(BarUpdate bar)
         {
             BarVector.ApplyTickUpdate(bar.BidData?.Close, bar.AskData?.Close);
-            BarVector.ApplyBarUpdate(bar.BidData);
+            if (bar.BidData != null)
+                BarVector.ApplyBarUpdate(bar.BidData);
             //ExtendBoundaries(BarVector.Count, bar.Data.CloseTime.ToUtcDateTime());
         }
 
