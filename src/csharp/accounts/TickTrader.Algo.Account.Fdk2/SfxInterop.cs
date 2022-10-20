@@ -886,6 +886,15 @@ namespace TickTrader.Algo.Account.Fdk2
 
         public static Domain.OrderInfo Convert(SFX.ExecutionReport record)
         {
+            var userTag = record.Tag;
+            var instanceId = "";
+
+            if (Domain.CompositeTag.TryParse(record.Tag, out var tag))
+            {
+                instanceId = tag?.Key;
+                userTag = tag?.Tag;
+            }
+
             return new Domain.OrderInfo
             {
                 Id = record.OrderId,
@@ -904,7 +913,8 @@ namespace TickTrader.Algo.Account.Fdk2
                 Slippage = record.Slippage,
                 Commission = record.Commission,
                 ExecAmount = record.ExecutedVolume,
-                UserTag = record.Tag,
+                UserTag = userTag,
+                InstanceId = instanceId,
                 RemainingAmount = record.LeavesVolume,
                 RequestedAmount = record.InitialVolume ?? 0,
                 Expiration = record.Expiration?.ToUniversalTime().ToTimestamp(),
