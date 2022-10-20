@@ -116,16 +116,8 @@ namespace TickTrader.BotTerminal
             ParentOrderId.Value = _order.ParentOrderId;
             RelatedOrderId.Value = _order.OcoRelatedOrderId;
 
-            if (CompositeTag.TryParse(_order.UserTag, out CompositeTag compositeTag))
-            {
-                Tag.Value = compositeTag.Tag;
-                InstanceId.Value = compositeTag.Key;
-            }
-            else
-            {
-                Tag.Value = _order.UserTag;
-                InstanceId.Value = _order.InstanceId;
-            }
+            Tag.Value = _order.UserTag;
+            InstanceId.Value = _order.InstanceId;
 
             TakeProfit.Value = _order.TakeProfit;
             StopLoss.Value = _order.StopLoss;
