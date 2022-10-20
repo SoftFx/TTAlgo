@@ -91,7 +91,7 @@ namespace TickTrader.Algo.Core
             var reader = _feedQueue.Reader;
             while (reader.TryRead(out var update))
             {
-                if (update is BarInfo bar)
+                if (update is BarUpdate bar)
                     ApplyBarUpdate(bar);
                 else if (update is QuoteInfo quote)
                     ApplyQuoteUpdate(quote);
@@ -142,11 +142,20 @@ namespace TickTrader.Algo.Core
             return buffer;
         }
 
-        private void ApplyBarUpdate(BarInfo bar)
+        private void ApplyBarUpdate(BarUpdate bar)
         {
-            var key = BufferKey.ForBar(bar.Symbol, bar.Timeframe, bar.MarketSide);
-            if (_buffers.TryGetValue(key, out var buffer) && buffer is IWritableFeedBuffer<BarData> barBuffer)
-                barBuffer.ApplyUpdate(bar.Data);
+            if (bar.AskData != null)
+            {
+                var key = BufferKey.ForBar(bar.Symbol, bar.Timeframe, Feed.Types.MarketSide.Ask);
+                if (_buffers.TryGetValue(key, out var buffer) && buffer is IWritableFeedBuffer<BarData> barBuffer)
+                    barBuffer.ApplyUpdate(bar.AskData);
+            }
+            if (bar.BidData != null)
+            {
+                var key = BufferKey.ForBar(bar.Symbol, bar.Timeframe, Feed.Types.MarketSide.Bid);
+                if (_buffers.TryGetValue(key, out var buffer) && buffer is IWritableFeedBuffer<BarData> barBuffer)
+                    barBuffer.ApplyUpdate(bar.BidData);
+            }
         }
 
         private void ApplyQuoteUpdate(QuoteInfo quote)

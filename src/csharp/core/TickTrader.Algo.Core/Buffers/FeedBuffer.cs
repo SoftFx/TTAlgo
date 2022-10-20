@@ -19,11 +19,9 @@ namespace TickTrader.Algo.Core
         int Count { get; }
     }
 
-    public interface IFeedBuffer<T>
+    public interface IFeedBuffer<T> : IFeedBuffer
     {
         T this[int index] { get; }
-
-        int Count { get; }
     }
 
     internal interface ILoadableFeedBuffer : IFeedBuffer
