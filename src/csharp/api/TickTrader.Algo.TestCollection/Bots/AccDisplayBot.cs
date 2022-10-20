@@ -17,7 +17,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DefaultValue = AccUpdateTypes.ByTimer)]
         public AccUpdateTypes Refresh { get; set; }
 
-        [Parameter(DefaultValue = BoolEnum.False)]
+        [Parameter(DefaultValue = BoolEnum.True)]
         public BoolEnum DisplayComments { get; set; }
 
         protected override void Init()
@@ -116,6 +116,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                         Status.Write(" margin={0}", order.Margin.ToString(_baseCurrFormat));
                     if (DisplayComments == BoolEnum.True)
                     {
+                        Status.Write(" instanceid='" + order.InstanceId + "'");
                         if (!string.IsNullOrEmpty(order.Comment))
                             Status.Write(" comment='" + order.Comment + "'");
                         if (!string.IsNullOrEmpty(order.Tag))
@@ -144,6 +145,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                         Status.Write(" margin={0} profit={1}", order.Margin.ToString(_baseCurrFormat), order.Profit.ToString(_baseCurrFormat));
                     if (DisplayComments == BoolEnum.True)
                     {
+                        Status.Write(" instanceid='" + order.InstanceId + "'");
                         if (!string.IsNullOrEmpty(order.Comment))
                             Status.Write(" comment='" + order.Comment + "'");
                         if (!string.IsNullOrEmpty(order.Tag))
