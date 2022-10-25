@@ -2145,7 +2145,8 @@ namespace TickTrader.Algo.Backtester
                 foreach (var order in toCancel)
                 {
                     using (JournalScope())
-                        CancelOrder(order, reason);
+                        if (_acc.Orders.Contains(order))
+                            CancelOrder(order, reason);
                 }
             }
         }
