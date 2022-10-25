@@ -1298,12 +1298,10 @@ namespace TickTrader.Algo.Backtester
         {
             if (!string.IsNullOrEmpty(order.Info.OcoRelatedOrderId))
             {
-                var ocoOrder = _acc.GetOcoOrderOrThrow(order.Info.OcoRelatedOrderId);
+                var ocoOrder = _acc.Orders.GetOrNull(order.Info.OcoRelatedOrderId);
 
-                RemoveOcoForOrder(order);
-                RemoveOcoForOrder(ocoOrder);
-
-                CancelOrder(ocoOrder, TradeReportInfo.Types.Reason.ClientRequest);
+                if (ocoOrder != null)
+                    CancelOrder(ocoOrder, TradeReportInfo.Types.Reason.ClientRequest);
             }
         }
 
