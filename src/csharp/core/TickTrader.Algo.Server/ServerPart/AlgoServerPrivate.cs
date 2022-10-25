@@ -201,7 +201,7 @@ namespace TickTrader.Algo.Server
 
                 Monitoring = new AccountMonitoringSettings
                 {
-                    NotificationMethod = Alerts.SendServerAlert,
+                    NotificationMethod = Alerts.SendMonitoringAlert,
 
                     EnableQuoteMonitoring = MonitoringSettings.QuoteMonitoring.EnableMonitoring,
                     AccetableQuoteDelay = MonitoringSettings.QuoteMonitoring.AccetableQuoteDelay,

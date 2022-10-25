@@ -7,11 +7,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 {
     internal sealed class NotificationBuilder
     {
-        private const string ServerHeader = "AlgoServer";
-
-        private enum Type { Plugin, Server, Monitoring };
-
-        private readonly ConcurrentDictionary<(Type, string), MessageGroup> _groups = new();
+        private readonly ConcurrentDictionary<(AlertRecordInfo.Types.AlertType, string), MessageGroup> _groups = new();
         private readonly StringBuilder _sb = new(1 << 10);
 
 
@@ -20,7 +16,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
         public void AddAlert(AlertRecordInfo alert)
         {
-            var key = GetKey(alert);
+            var key = (alert.Type, alert.PluginId);
 
             if (!_groups.ContainsKey(key))
                 _groups.TryAdd(key, new MessageGroup());
@@ -35,22 +31,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
             foreach (((_, var header), var value) in _groups)
             {
-                _sb.AppendLine($"*{header}:*"); //bold message
+                _sb.AppendLine($"*{header.EscapeMarkdownV2()}:*"); //bold message
                 _sb.AppendLine(value.GetState().EscapeMarkdownV2());
             }
 
             _groups.Clear();
 
             return _sb.ToString();
-        }
-
-
-        private static (Type, string) GetKey(AlertRecordInfo alert)
-        {
-            if (alert.PluginId is not null)
-                return (Type.Plugin, alert.PluginId);
-            else
-                return (Type.Server, ServerHeader);
         }
     }
 

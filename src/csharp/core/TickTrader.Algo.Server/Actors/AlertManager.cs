@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Server
         {
             Receive<PluginAlertMsg>(OnPluginAlert);
             Receive<ServerAlertMsg>(OnServerAlert);
+            Receive<MonitoringAlertMsg>(OnMonitoringAlert);
 
             Receive<AttachAlertChannelCmd>(AttachAlertChannel);
             Receive<PluginAlertsRequest, AlertRecordInfo[]>(GetAlerts);
@@ -56,6 +57,7 @@ namespace TickTrader.Algo.Server
                 PluginId = pluginId,
                 Message = log.Message,
                 TimeUtc = log.TimeUtc,
+                Type = AlertRecordInfo.Types.AlertType.Plugin,
             };
 
             AddAlert(alert);
@@ -70,6 +72,22 @@ namespace TickTrader.Algo.Server
                 // In concurrent scenarios we can't guarantee time sequence to be ascending when we receive messages from many thread.
                 // Therefore we have to assign our own time. Plugin alerts time is assigned on plugin thread within log time sequence
                 TimeUtc = _timeGen.NextKey(DateTime.UtcNow),
+                Type = AlertRecordInfo.Types.AlertType.Server,
+            };
+
+            AddAlert(alert);
+        }
+
+        private void OnMonitoringAlert(MonitoringAlertMsg msg)
+        {
+            var alert = new AlertRecordInfo
+            {
+                PluginId = "<Monitoring>",
+                Message = msg.Message,
+                // In concurrent scenarios we can't guarantee time sequence to be ascending when we receive messages from many thread.
+                // Therefore we have to assign our own time. Plugin alerts time is assigned on plugin thread within log time sequence
+                TimeUtc = _timeGen.NextKey(DateTime.UtcNow),
+                Type = AlertRecordInfo.Types.AlertType.Monitoring,
             };
 
             AddAlert(alert);
@@ -125,6 +143,14 @@ namespace TickTrader.Algo.Server
             public ServerAlertMsg(string message)
             {
                 Message = message;
+            }
+        }
+
+        internal sealed class MonitoringAlertMsg : ServerAlertMsg
+        {
+            public MonitoringAlertMsg(string message) : base(message)
+            {
+
             }
         }
 

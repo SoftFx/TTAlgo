@@ -24,6 +24,8 @@ namespace TickTrader.Algo.Server
 
         internal void SendServerAlert(string message) => _ref.Tell(new AlertManager.ServerAlertMsg(message));
 
+        internal void SendMonitoringAlert(string message) => _ref.Tell(new AlertManager.MonitoringAlertMsg(message));
+
         internal void AttachAlertChannel(ChannelWriter<AlertRecordInfo> sink) => _ref.Ask(new AlertManager.AttachAlertChannelCmd(sink, null));
     }
 }
