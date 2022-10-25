@@ -1266,7 +1266,7 @@ namespace TickTrader.Algo.Backtester
                     if (stop.Info.Side.IsBuy() && stop.Info.StopPrice.Value.Gte(limit.Info.Price.Value))
                         throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
 
-                    if (stop.Info.Side.IsSell() && stop.Info.StopPrice.Value.Lt(limit.Info.Price.Value))
+                    if (stop.Info.Side.IsSell() && stop.Info.StopPrice.Value.Lte(limit.Info.Price.Value))
                         throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
                 }
             }
@@ -2628,7 +2628,7 @@ namespace TickTrader.Algo.Backtester
                 if (stopSide.IsBuy() && stopPrice.Gte(limitPrice))
                     throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
 
-                if (stopSide.IsSell() && stopPrice.Lt(limitPrice))
+                if (stopSide.IsSell() && stopPrice.Lte(limitPrice))
                     throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
             }
         }
