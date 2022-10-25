@@ -24,6 +24,9 @@ namespace TickTrader.BotTerminal
 
         event System.Action RemoveViewsEvent;
 
+        System.Action Initialized { get; }
+
+
         void ViewVisibilityChanged(string contentId, bool opened);
 
         IScreen GetScreen(string contentId);
@@ -143,10 +146,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public System.Action Initialized { get; }
+
         #endregion Bindable properties
 
 
-        public DockManagerService(AlgoEnvironment algoEnv)
+        public DockManagerService(AlgoEnvironment algoEnv, System.Action initialized)
         {
             _algoEnv = algoEnv;
 
@@ -160,6 +165,8 @@ namespace TickTrader.BotTerminal
                 {Tab_Journal, false },
                 {Tab_Alert, false },
             };
+
+            Initialized = initialized;
         }
 
 

@@ -76,7 +76,7 @@ namespace TickTrader.BotTerminal
             AccountPane = new AccountPaneViewModel(this);
             Journal = new JournalViewModel(eventJournal);
             //BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
-            DockManagerService = new DockManagerService(algoEnv);
+            DockManagerService = new DockManagerService(algoEnv, InitDockService);
 
             AlertsManager = new AlertViewModel(wndManager, this);
             AlertsManager.SubscribeToModel(Agent.AlertModel);
@@ -106,6 +106,11 @@ namespace TickTrader.BotTerminal
             //cManager.CredsChanged += () => NotifyOfPropertyChange(nameof(CurrentServerName));
 
             LogStateLoop();
+        }
+
+        private void InitDockService()
+        {
+            AlertsManager.RegisterAlertWindow();
         }
 
         private void OpenDefaultChart()
@@ -174,7 +179,7 @@ namespace TickTrader.BotTerminal
             //ShootBots(out var isConfirmed);
 
             //if (isConfirmed)
-                Connect(null);
+            Connect(null);
         }
 
         public void Disconnect()
@@ -184,7 +189,7 @@ namespace TickTrader.BotTerminal
                 //ShootBots(out var isConfirmed);
 
                 //if (isConfirmed)
-                    cManager.TriggerDisconnect();
+                cManager.TriggerDisconnect();
             }
             catch (Exception ex)
             {
@@ -457,7 +462,6 @@ namespace TickTrader.BotTerminal
         {
             var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, Agent, DockManagerService);
             wndManager.ShowDialog(loading, this);
-            AlertsManager.RegisterAlertWindow();
         }
 
         #endregion
