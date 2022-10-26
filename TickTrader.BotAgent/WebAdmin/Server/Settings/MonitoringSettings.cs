@@ -18,6 +18,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Settings
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public int AlertsDelay { get; set; }
 
+        public bool SaveOnDisk { get; set; }
+
 
         [JsonIgnore]
         internal static QuoteMonitoringSettings Default { get; } = new()
@@ -25,6 +27,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Settings
             EnableMonitoring = false,
             AccetableQuoteDelay = 60000,
             AlertsDelay = 1,
+            SaveOnDisk = true,
         };
     }
 }

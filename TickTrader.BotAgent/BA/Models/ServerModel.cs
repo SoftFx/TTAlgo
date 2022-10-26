@@ -23,10 +23,10 @@ namespace TickTrader.BotAgent.BA.Models
         private static readonly string cfgFilePath = Path.Combine(envService.AppFolder, "server.config.xml");
 
         [DataMember(Name = "accounts")]
-        private List<ClientModel> _accounts = new List<ClientModel>();
+        private List<ClientModel> _accounts = new();
 
         private ThreadPoolManager _threadPoolManager;
-        private LocalAlgoServer _algoServer = new LocalAlgoServer();
+        private LocalAlgoServer _algoServer = new();
 
         public static EnvService Environment => envService;
 
@@ -48,9 +48,13 @@ namespace TickTrader.BotAgent.BA.Models
             settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder);
             settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
 
-            settings.MonitoringSettings.QuoteMonitoring.EnableMonitoring = monitoringSettings.QuoteMonitoring.EnableMonitoring;
-            settings.MonitoringSettings.QuoteMonitoring.AccetableQuoteDelay = monitoringSettings.QuoteMonitoring.AccetableQuoteDelay;
-            settings.MonitoringSettings.QuoteMonitoring.AlertsDelay = monitoringSettings.QuoteMonitoring.AlertsDelay;
+            settings.MonitoringSettings.QuoteMonitoring = new()
+            {
+                EnableMonitoring = monitoringSettings.QuoteMonitoring.EnableMonitoring,
+                AccetableQuoteDelay = monitoringSettings.QuoteMonitoring.AccetableQuoteDelay,
+                AlertsDelay = monitoringSettings.QuoteMonitoring.AlertsDelay,
+                SaveOnDisk = monitoringSettings.QuoteMonitoring.SaveOnDisk,
+            };
 
             await _algoServer.Init(settings);
 

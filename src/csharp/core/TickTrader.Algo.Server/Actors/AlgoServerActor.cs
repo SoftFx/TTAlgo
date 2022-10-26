@@ -104,7 +104,7 @@ namespace TickTrader.Algo.Server
             _env = new EnvService(_settings.DataFolder);
             _eventBus = ServerBusActor.Create();
             _stateManager = ServerStateManager.Create(_env.ServerStateFilePath);
-            _alerts = new AlertManagerModel(AlertManager.Create());
+            _alerts = new AlertManagerModel(AlertManager.Create(_settings.MonitoringSettings));
             _savedState = new ServerStateModel(_stateManager);
             _serverPrivate = new AlgoServerPrivate(Self, _env, _eventBus, _savedState, _alerts)
             {

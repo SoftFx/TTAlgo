@@ -19,10 +19,13 @@ namespace TickTrader.Algo.Server
         private readonly MessageCache<AlertRecordInfo> _cache = new(MaxCachedAlerts);
         private readonly ActorEventSource<AlertRecordInfo> _alertEventSrc = new();
         private readonly TimeKeyGenerator _timeGen = new();
+        private readonly MonitoringSettings _settings;
 
 
-        private AlertManager()
+        private AlertManager(MonitoringSettings settings)
         {
+            _settings = settings;
+
             Receive<PluginAlertMsg>(OnPluginAlert);
             Receive<ServerAlertMsg>(OnServerAlert);
             Receive<MonitoringAlertMsg>(OnMonitoringAlert);
@@ -32,9 +35,9 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public static IActorRef Create()
+        public static IActorRef Create(MonitoringSettings settings)
         {
-            return ActorSystem.SpawnLocal(() => new AlertManager(), $"{nameof(AlertManager)}");
+            return ActorSystem.SpawnLocal(() => new AlertManager(settings), $"{nameof(AlertManager)}");
         }
 
 
@@ -127,7 +130,8 @@ namespace TickTrader.Algo.Server
                     _logger.Error(alert.Message);
                     break;
                 case AlertRecordInfo.Types.AlertType.Monitoring:
-                    _logger.Info(alert.Message);
+                    if (_settings.QuoteMonitoring.SaveOnDisk)
+                        _logger.Info(alert.Message);
                     break;
                 default:
                     break;

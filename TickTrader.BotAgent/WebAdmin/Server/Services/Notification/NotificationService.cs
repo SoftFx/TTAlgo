@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Services.Notification;
+using TickTrader.BotAgent.WebAdmin.Server.Settings;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Services
 {

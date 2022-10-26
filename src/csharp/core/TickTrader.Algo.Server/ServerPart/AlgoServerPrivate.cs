@@ -1,7 +1,6 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using System.Diagnostics;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Settings;
@@ -185,19 +184,13 @@ namespace TickTrader.Algo.Server
         }
 
         internal AccountModelSettings GetDefaultClientSettings(string loggerId) =>
-            new AccountModelSettings(loggerId)
+            new(loggerId)
             {
                 ConnectionSettings = new ConnectionSettings
                 {
                     AccountFactory = KnownAccountFactories.Fdk2,
                     Options = AccountOptions,
                 },
-
-                //HistoryProviderSettings = new HistoryProviderSettings
-                //{
-                //    FolderPath = Env.FeedHistoryCacheFolder,
-                //    Options = FeedHistoryFolderOptions.ServerClientHierarchy,
-                //},
 
                 Monitoring = new AccountMonitoringSettings
                 {

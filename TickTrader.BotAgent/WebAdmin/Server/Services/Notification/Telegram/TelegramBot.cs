@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
-using TickTrader.BotAgent.WebAdmin.Server.Models;
+using TickTrader.BotAgent.WebAdmin.Server.Settings;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 {

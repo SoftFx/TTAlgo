@@ -12,17 +12,20 @@
                 EnableMonitoring = false,
                 AccetableQuoteDelay = 1000,
                 AlertsDelay = 5,
+                SaveOnDisk = true,
             };
         }
     }
 
 
-    public sealed class QuoteMonitoringSettings
+    public sealed record QuoteMonitoringSettings
     {
-        public bool EnableMonitoring { get; set; }
+        public bool EnableMonitoring { get; init; }
 
-        public int AccetableQuoteDelay { get; set; }
+        public int AccetableQuoteDelay { get; init; }
 
-        public int AlertsDelay { get; set; }
+        public int AlertsDelay { get; init; }
+
+        public bool SaveOnDisk { get; init; }
     }
 }
