@@ -16,7 +16,6 @@ namespace TickTrader.BotTerminal
 
         private List<AlertUpdate> _buffer = new();
 
-        private Timestamp _lastAlertTimeUtc;
         private Timer _timer;
 
         private bool _newAlerts;
@@ -29,7 +28,6 @@ namespace TickTrader.BotTerminal
 
         public AlertManagerModel(string name, RemoteAlgoAgent remoteAgent = null)
         {
-            _lastAlertTimeUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToTimestamp();
             _timer = new Timer(SendAlerts, null, 0, AlertsUpdateTimeout);
             _isRemoteAlert = remoteAgent is not null;
 
@@ -69,11 +67,9 @@ namespace TickTrader.BotTerminal
         public void UpdateRemoteAlert(List<AlertRecordInfo> alerts)
         {
             if (alerts.Count > 0)
-            {
                 AddAlerts(alerts.Select(Convert).ToList());
-                _lastAlertTimeUtc = alerts.Max(u => u.TimeUtc);
-            }
         }
+
 
         private void SendAlerts(object obj)
         {
