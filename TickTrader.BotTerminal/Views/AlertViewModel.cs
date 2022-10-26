@@ -4,8 +4,6 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
 using System.Windows.Data;
 using TickTrader.WpfWindowsSupportLibrary;
 
@@ -21,8 +19,8 @@ namespace TickTrader.BotTerminal
 
         private readonly object _locker = new object();
 
-        private ObservableCircularList<IAlertUpdateEventArgs> _alertBuffer = new ObservableCircularList<IAlertUpdateEventArgs>();
-        private LinkedList<IAlertUpdateEventArgs> _lockBuffer = new LinkedList<IAlertUpdateEventArgs>();
+        private ObservableCircularList<AlertUpdate> _alertBuffer = new ObservableCircularList<AlertUpdate>();
+        private LinkedList<AlertUpdate> _lockBuffer = new LinkedList<AlertUpdate>();
 
         private WindowManager _wnd;
         private IShell _shell;
@@ -106,12 +104,12 @@ namespace TickTrader.BotTerminal
 
         public ICollectionView ObservableBuffer { get; }
 
-        public void SubscribeToModel(IAlertModel model)
+        public void SubscribeToModel(AlertManagerModel model)
         {
             model.AlertUpdateEvent += GetAlertsArray;
         }
 
-        public void SubcribeToModels(IEnumerable<IAlertModel> models)
+        public void SubcribeToModels(IEnumerable<AlertManagerModel> models)
         {
             foreach (var m in models)
                 SubscribeToModel(m);
@@ -128,7 +126,7 @@ namespace TickTrader.BotTerminal
             {
                 try
                 {
-                    var items = new IAlertUpdateEventArgs[_alertBuffer.Count];
+                    var items = new AlertUpdate[_alertBuffer.Count];
                     int position = -1;
 
                     while (_alertBuffer.Count > 0)
@@ -163,22 +161,22 @@ namespace TickTrader.BotTerminal
 
         private bool AgentAndBotFilter(object sender)
         {
-            if (!(sender is IAlertUpdateEventArgs item))
+            if (sender is not AlertUpdate item)
                 return false;
 
             return FilterPass(SelectAgentNameFilter, item.AgentName) && FilterPass(SelectBotNameFilter, item.InstanceId);
         }
 
-        private bool FilterPass(string filter, string value)
+        private static bool FilterPass(string filter, string value)
         {
             return filter == DefaultFilterValue || filter == value;
         }
 
-        private void GetAlertsArray(IEnumerable<IAlertUpdateEventArgs> args)
+        private void GetAlertsArray(IEnumerable<AlertUpdate> args, bool isRemote)
         {
             lock (_locker)
             {
-                var records = new List<IAlertUpdateEventArgs>(args);
+                var records = new List<AlertUpdate>(args);
 
                 if (UpdateBuffer)
                 {
@@ -202,13 +200,13 @@ namespace TickTrader.BotTerminal
                     }
                 }
 
-                if (records.Count > 0 && !records.First().IsRemoteAgent)
+                if (isRemote)
                     foreach (var a in records)
                         _logger.Info(a);
             }
         }
 
-        private void AddRecord(IAlertUpdateEventArgs record)
+        private void AddRecord(AlertUpdate record)
         {
             while (_alertBuffer.Count > MaxBufferSize)
                 GetAlertItem();
@@ -216,7 +214,7 @@ namespace TickTrader.BotTerminal
             SetAlertItem(record);
         }
 
-        private IAlertUpdateEventArgs GetAlertItem()
+        private AlertUpdate GetAlertItem()
         {
             var item = _alertBuffer.Dequeue();
             AgentsNames.Remove(item.AgentName);
@@ -225,7 +223,7 @@ namespace TickTrader.BotTerminal
             return item;
         }
 
-        private void SetAlertItem(IAlertUpdateEventArgs item)
+        private void SetAlertItem(AlertUpdate item)
         {
             _alertBuffer.Add(item);
 

@@ -38,7 +38,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services
             await _serverApi.SubscribeToAlerts(_channel.Writer);
             await ApplyNewSettings(_currentSettings);
 
-            _ = _channel.Consume(_builder.AddAlert);
+            _ = _channel.Consume(_builder.AddAlert, cancelToken: cToken);
 
             await base.StartAsync(cToken);
         }

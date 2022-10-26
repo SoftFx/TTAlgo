@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
 
         AlgoServerPublicApi.IAccessManager AccessManager { get; }
 
-        IAlertModel AlertModel { get; }
+        AlertManagerModel AlertModel { get; }
 
 
         event Action<PackageInfo> PackageStateChanged;

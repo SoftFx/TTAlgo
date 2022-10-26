@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
 
         public AlgoServerPublicApi.IAccessManager AccessManager { get; }
 
-        public IAlertModel AlertModel { get; }
+        public AlertManagerModel AlertModel { get; }
 
         public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !b.State.IsStopped());
 
@@ -90,7 +90,7 @@ namespace TickTrader.BotTerminal
             _idProvider = new PluginIdProvider();
 
             Catalog = new PluginCatalog(this);
-            AlertModel = new AlgoAlertModel(Name);
+            AlertModel = new AlertManagerModel(Name);
             AccessManager = new AlgoServerPublicApi.ApiAccessManager(AlgoServerPublicApi.ClientClaims.Types.AccessLevel.Admin);
 
             _ = Init(storage);
