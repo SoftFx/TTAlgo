@@ -10,15 +10,15 @@ using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.Server
 {
-    internal class AlertManager : Actor
+    internal sealed class AlertManager : Actor
     {
         private const int MaxCachedAlerts = 10_000;
 
         private readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlertManager>();
 
-        private readonly MessageCache<AlertRecordInfo> _cache = new MessageCache<AlertRecordInfo>(MaxCachedAlerts);
-        private readonly ActorEventSource<AlertRecordInfo> _alertEventSrc = new ActorEventSource<AlertRecordInfo>();
-        private readonly TimeKeyGenerator _timeGen = new TimeKeyGenerator();
+        private readonly MessageCache<AlertRecordInfo> _cache = new(MaxCachedAlerts);
+        private readonly ActorEventSource<AlertRecordInfo> _alertEventSrc = new();
+        private readonly TimeKeyGenerator _timeGen = new();
 
 
         private AlertManager()
@@ -120,6 +120,18 @@ namespace TickTrader.Algo.Server
         {
             _cache.Add(alert);
             _alertEventSrc.DispatchEvent(alert);
+
+            switch (alert.Type)
+            {
+                case AlertRecordInfo.Types.AlertType.Server:
+                    _logger.Error(alert.Message);
+                    break;
+                case AlertRecordInfo.Types.AlertType.Monitoring:
+                    _logger.Info(alert.Message);
+                    break;
+                default:
+                    break;
+            }
         }
 
 
