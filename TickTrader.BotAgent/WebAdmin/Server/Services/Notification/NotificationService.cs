@@ -16,10 +16,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services
     {
         private readonly Channel<AlertRecordInfo> _channel = DefaultChannelFactory.CreateForOneToOne<AlertRecordInfo>();
         private readonly NotificationBuilder _builder = new();
-        private readonly TelegramBot _telegramBot = new();
+        private readonly NotificationStorage _storage = new();
 
         private readonly IAlgoServerApi _serverApi;
         private readonly IDisposable _settingsSub;
+        private readonly TelegramBot _telegramBot;
 
         private NotificationSettings _currentSettings;
 
@@ -28,6 +29,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services
         {
             _currentSettings = file.CurrentValue;
             _serverApi = server;
+
+            _telegramBot = new TelegramBot(_storage);
 
             _settingsSub = file.OnChange(async s => await ApplyNewSettings(s));
         }

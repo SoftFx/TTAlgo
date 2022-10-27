@@ -17,7 +17,6 @@ namespace TickTrader.BotTerminal
         private List<AlertUpdate> _buffer = new();
 
         private Timer _timer;
-
         private bool _newAlerts;
 
 

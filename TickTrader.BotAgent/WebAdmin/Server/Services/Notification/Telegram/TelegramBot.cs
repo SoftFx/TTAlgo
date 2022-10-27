@@ -13,7 +13,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
         private const string BotName = nameof(TelegramBot);
 
         private readonly Logger _logger = LogManager.GetLogger(nameof(TelegramBot));
-        private readonly TelegramBotUpdateHandler _handler = new();
+
+        private readonly TelegramBotUpdateHandler _handler;
+        private readonly NotificationStorage _storage;
 
         private CancellationToken _cToken = CancellationToken.None;
         private TelegramBotClientOptions _cOptions;
@@ -21,6 +23,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
         private bool _isRun = false;
 
+
+        public TelegramBot(NotificationStorage storage)
+        {
+            _handler = new(storage);
+            _storage = storage;
+        }
 
         internal async Task StartBot(TelegramSettings settings)
         {
@@ -76,7 +84,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
         {
             try
             {
-                foreach ((_, var chat) in _handler.Chats)
+                foreach ((_, var chat) in _storage.Settings.Telegram.Chats)
                     await _bot.SendTextMessageAsync(chat, message, ParseMode.MarkdownV2, cancellationToken: _cToken);
             }
             catch (Exception ex)
