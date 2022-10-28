@@ -119,10 +119,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Hosting\WindowsServiceHost.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Update="nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

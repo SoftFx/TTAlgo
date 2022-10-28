@@ -68,7 +68,15 @@ namespace TickTrader.Algo.BacktesterV1Host
                 Environment.FailFast(ex.ToString());
             }
 
-            backtesterRunFactory().Wait();
+            try
+            {
+                backtesterRunFactory().Wait();
+            }
+            finally
+            {
+                LogManager.Flush();
+                LogManager.Shutdown();
+            }
         }
 
         private static async Task RunBacktester(RpcProxyParams rpcParams)

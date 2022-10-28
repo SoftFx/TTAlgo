@@ -29,7 +29,15 @@ namespace TickTrader.Algo.RuntimeV1Host
 
             ConfigureLogging(rpcParams.ProxyId);
 
-            RunRuntime(rpcParams).Wait();
+            try
+            {
+                RunRuntime(rpcParams).Wait();
+            }
+            finally
+            {
+                LogManager.Flush();
+                LogManager.Shutdown();
+            }
         }
 
         private static async Task RunRuntime(RpcProxyParams rpcParams)

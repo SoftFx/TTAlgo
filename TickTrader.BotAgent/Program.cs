@@ -58,7 +58,8 @@ namespace TickTrader.BotAgent
             {
                 CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());
 
-                var hostBuilder = CreateWebHostBuilder(args);
+                var launchSettings = LaunchSettings.Read(args, SwitchMappings);
+                var hostBuilder = CreateWebHostBuilder(args, launchSettings);
 
                 var host = hostBuilder
                     .AddBotAgent()
@@ -67,7 +68,7 @@ namespace TickTrader.BotAgent
 
                 logger.Info("Starting web host");
 
-                host.Run();
+                GenericHostRunner.Run(host, launchSettings.Mode);
             }
             catch (Exception ex)
             {
@@ -75,10 +76,8 @@ namespace TickTrader.BotAgent
             }
         }
 
-        public static IHostBuilder CreateWebHostBuilder(string[] args)
+        public static IHostBuilder CreateWebHostBuilder(string[] args, LaunchSettings launchSettings)
         {
-            var launchSettings = LaunchSettings.Read(args, SwitchMappings);
-
             Console.WriteLine(launchSettings);
 
             var pathToContentRoot = Directory.GetCurrentDirectory();
@@ -145,8 +144,6 @@ namespace TickTrader.BotAgent
                     .UseContentRoot(pathToContentRoot)
                     .UseWebRoot(pathToWebRoot)
                     .UseStartup<Startup>());
-            if (launchSettings.Mode == LaunchMode.WindowsService)
-                builder.UseWindowsService();
 
             return builder;
         }
