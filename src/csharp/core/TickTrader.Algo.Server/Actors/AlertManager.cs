@@ -85,7 +85,7 @@ namespace TickTrader.Algo.Server
         {
             var alert = new AlertRecordInfo
             {
-                PluginId = "<Monitoring>",
+                PluginId = $"<Monitoring-{msg.AccountId}>",
                 Message = msg.Message,
                 // In concurrent scenarios we can't guarantee time sequence to be ascending when we receive messages from many thread.
                 // Therefore we have to assign our own time. Plugin alerts time is assigned on plugin thread within log time sequence
@@ -164,13 +164,15 @@ namespace TickTrader.Algo.Server
 
         internal sealed class MonitoringAlertMsg : ServerAlertMsg
         {
-            public MonitoringAlertMsg(string message) : base(message)
-            {
+            public string AccountId { get; }
 
+            public MonitoringAlertMsg(string message, string accId) : base(message)
+            {
+                AccountId = accId;
             }
         }
 
-        internal class AttachAlertChannelCmd
+        internal sealed class AttachAlertChannelCmd
         {
             public ChannelWriter<AlertRecordInfo> AlertSink { get; }
 

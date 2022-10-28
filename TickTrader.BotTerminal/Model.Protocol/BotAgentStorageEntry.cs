@@ -1,11 +1,10 @@
 ﻿using System.Runtime.Serialization;
-using TickTrader.Algo.Server.Common;
 using TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.BotTerminal
 {
     [DataContract(Namespace = "")]
-    internal class BotAgentStorageEntry : IClientSessionSettings
+    internal sealed class BotAgentStorageEntry : IClientSessionSettings
     {
         [DataMember]
         public string Name { get; private set; }
@@ -26,6 +25,9 @@ namespace TickTrader.BotTerminal
 
         [DataMember]
         public bool Connect { get; set; }
+
+
+        public bool IsLocalhost => string.Equals(ServerAddress, "localhost", System.StringComparison.InvariantCultureIgnoreCase);
 
 
         int IClientSessionSettings.ServerPort => Port;

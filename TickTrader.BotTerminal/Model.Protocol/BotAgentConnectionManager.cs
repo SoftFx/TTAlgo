@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
         {
             Creds = botAgentCreds;
 
-            RemoteAgent = new RemoteAlgoAgent(Creds.Name, get2FAHandler);
+            RemoteAgent = new RemoteAlgoAgent(Creds, get2FAHandler);
             _protocolClient = AlgoServerClient.Create(RemoteAgent);
             RemoteAgent.SetProtocolClient(_protocolClient);
 

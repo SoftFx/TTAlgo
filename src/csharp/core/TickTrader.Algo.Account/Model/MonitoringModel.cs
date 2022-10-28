@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Account
         private readonly Timer _sender;
         private readonly QuoteStats _stats;
         private readonly ConnectionModel _connection;
-        private readonly Action<string> _sendNotification;
+        private readonly Action<string, string> _sendNotification;
 
 
         internal QuoteMonitoringModel(ConnectionModel connection, IQuoteMonitoring settings)
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Account
 
         private void SendNotification(object sender, ElapsedEventArgs e)
         {
-            _sendNotification?.Invoke($"TTS={_connection.CurrentServer} acc={_connection.CurrentLogin}.\n{_stats}");
+            _sendNotification?.Invoke($"TTS={_connection.CurrentServer} acc={_connection.CurrentLogin}.\n{_stats}", _connection.CurrentLogin);
             _stats.ResetStats();
             _sender.Stop();
         }

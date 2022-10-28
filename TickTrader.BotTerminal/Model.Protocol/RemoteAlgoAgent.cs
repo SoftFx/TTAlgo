@@ -13,16 +13,18 @@ using AlgoServerApi = TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.BotTerminal
 {
-    internal class RemoteAlgoAgent : IAlgoAgent, AlgoServerApi.IAlgoServerEventHandler
+    internal sealed class RemoteAlgoAgent : IAlgoAgent, AlgoServerApi.IAlgoServerEventHandler
     {
         private readonly Func<string, Task<string>> _get2FAHandler;
 
-        private ISyncContext _syncContext;
-        private VarDictionary<string, PackageInfo> _packages;
-        private VarDictionary<PluginKey, PluginInfo> _plugins;
-        private VarDictionary<string, AccountModelInfo> _accounts;
-        private VarDictionary<string, RemoteTradeBot> _bots;
-        private PluginIdProvider _idProvider;
+        private readonly VarDictionary<string, AccountModelInfo> _accounts;
+        private readonly VarDictionary<string, PackageInfo> _packages;
+        private readonly VarDictionary<PluginKey, PluginInfo> _plugins;
+        private readonly VarDictionary<string, RemoteTradeBot> _bots;
+
+        private readonly PluginIdProvider _idProvider;
+        private readonly ISyncContext _syncContext;
+
         private AlgoServerApi.IAlgoServerClient _protocolClient;
         private ApiMetadataInfo _apiMetadata;
         private MappingCollectionInfo _mappings;
@@ -63,9 +65,9 @@ namespace TickTrader.BotTerminal
         public event Action AccessLevelChanged = delegate { };
 
 
-        public RemoteAlgoAgent(string name, Func<string, Task<string>> get2FAHandler)
+        public RemoteAlgoAgent(BotAgentStorageEntry creds, Func<string, Task<string>> get2FAHandler)
         {
-            Name = name;
+            Name = creds.Name;
             _get2FAHandler = get2FAHandler;
 
             _syncContext = new DispatcherSync();
@@ -79,7 +81,7 @@ namespace TickTrader.BotTerminal
             _idProvider = new PluginIdProvider();
 
             Catalog = new PluginCatalog(this);
-            AlertModel = new AlertManagerModel(name, this);
+            AlertModel = new AlertManagerModel(creds);
         }
 
 

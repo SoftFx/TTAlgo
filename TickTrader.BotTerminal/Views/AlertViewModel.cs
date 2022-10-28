@@ -172,7 +172,7 @@ namespace TickTrader.BotTerminal
             return filter == DefaultFilterValue || filter == value;
         }
 
-        private void GetAlertsArray(IEnumerable<AlertUpdate> args, bool isRemote)
+        private void GetAlertsArray(IEnumerable<AlertUpdate> args)
         {
             lock (_locker)
             {
@@ -200,8 +200,8 @@ namespace TickTrader.BotTerminal
                     }
                 }
 
-                if (isRemote)
-                    foreach (var a in records)
+                foreach (var a in records)
+                    if (a.SaveToFile)
                         _logger.Info(a);
             }
         }

@@ -4,7 +4,7 @@ namespace TickTrader.Algo.Account.Settings
 {
     internal interface IMonitoringSetting
     {
-        Action<string> NotificationMethod { get; }
+        Action<string, string> NotificationMethod { get; }
     }
 
 
@@ -26,6 +26,6 @@ namespace TickTrader.Algo.Account.Settings
 
         public int AlertsDelay { get; init; }
 
-        public Action<string> NotificationMethod { get; init; }
+        public Action<string, string> NotificationMethod { get; init; }
     }
 }

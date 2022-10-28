@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
         }
 
         private static void OnDockManagerServicePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
+       {
             var dockManager = d as CustomDockManager;
             var oldService = e.OldValue as IDockManagerServiceProvider;
             var newService = e.NewValue as IDockManagerServiceProvider;
