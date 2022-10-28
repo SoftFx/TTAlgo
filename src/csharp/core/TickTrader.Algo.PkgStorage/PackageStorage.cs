@@ -177,9 +177,11 @@ namespace TickTrader.Algo.PkgStorage
 
             try
             {
-                if (File.Exists(pkgPath))
-                    File.Delete(pkgPath);
-                File.Copy(pkgFilePath, pkgPath);
+                using (var dstFile = File.Open(pkgPath, FileMode.Create, FileAccess.Write))
+                using (var srcFile = File.Open(pkgFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    srcFile.CopyTo(dstFile);
+                }
             }
             catch (Exception ex)
             {
