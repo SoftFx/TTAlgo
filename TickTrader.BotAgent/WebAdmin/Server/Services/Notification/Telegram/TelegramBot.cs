@@ -37,6 +37,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
             await StopBot();
 
+            _isRun = true;
+
             _logger.Info($"{BotName} is starting");
 
             _cToken = new CancellationToken();
@@ -53,10 +55,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
                 await _bot.SetMyCommandsAsync(BotSettings.BotCommands, cancellationToken: _cToken);
 
-                _isRun = true;
 
                 _logger.Info($"{BotName} has been started");
             }
+            else
+                _isRun = false;
         }
 
         internal async Task StopBot()
@@ -81,6 +84,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
         internal Task ApplySettings(TelegramSettings settings)
         {
+            if (settings.Enable == _isRun) //IOptionsMonitoring OnChange fired twice
+                return Task.CompletedTask;
+
             return settings.Enable ? StartBot(settings) : StopBot();
         }
 
@@ -88,6 +94,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
         {
             try
             {
+                if (!_isRun)
+                    return;
+
                 foreach ((_, var chat) in _storage.Settings.Telegram.Chats)
                     await _bot.SendTextMessageAsync(chat, message, ParseMode.MarkdownV2, cancellationToken: _cToken);
             }

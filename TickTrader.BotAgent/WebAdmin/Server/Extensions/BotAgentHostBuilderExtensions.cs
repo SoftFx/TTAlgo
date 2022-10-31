@@ -31,7 +31,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             builder.ConfigureServices(services =>
             {
-                services.AddSingleton<ServerSettings>(s => s.GetRequiredService<IConfiguration>().GetProtocolServerSettings());
+                services.AddSingleton(s => s.GetRequiredService<IConfiguration>().GetProtocolServerSettings());
                 services.AddSingleton<IJwtProvider, JwtProviderAdapter>();
                 services.AddSingleton<PublicApiServer>();
                 services.AddHostedService<PublicApiHostedService>();

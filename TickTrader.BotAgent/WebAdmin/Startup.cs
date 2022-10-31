@@ -32,6 +32,7 @@ namespace TickTrader.BotAgent.WebAdmin
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
+
             services.Configure<ServerCredentials>(Configuration.GetSection(nameof(AppSettings.Credentials)));
             services.Configure<NotificationSettings>(Configuration.GetSection(nameof(AppSettings.Notification)));
 
