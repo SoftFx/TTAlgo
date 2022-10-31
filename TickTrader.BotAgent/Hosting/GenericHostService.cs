@@ -76,7 +76,10 @@ namespace TickTrader.BotAgent
         protected sealed override void OnShutdown() => OnStop();
 
 
-        protected virtual void OnStarting(string[] args) { }
+        protected virtual void OnStarting(string[] args)
+        {
+            NLog.LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
+        }
 
         protected virtual void OnStarted() { }
 
@@ -84,7 +87,6 @@ namespace TickTrader.BotAgent
 
         protected virtual void OnStopped()
         {
-            NLog.LogManager.Flush();
             NLog.LogManager.Shutdown();
         }
     }

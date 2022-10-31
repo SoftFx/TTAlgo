@@ -29,13 +29,13 @@ namespace TickTrader.Algo.RuntimeV1Host
 
             ConfigureLogging(rpcParams.ProxyId);
 
+            LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
             try
             {
                 RunRuntime(rpcParams).Wait();
             }
             finally
             {
-                LogManager.Flush();
                 LogManager.Shutdown();
             }
         }

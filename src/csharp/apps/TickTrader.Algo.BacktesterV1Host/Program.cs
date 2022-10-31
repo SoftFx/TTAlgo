@@ -68,13 +68,13 @@ namespace TickTrader.Algo.BacktesterV1Host
                 Environment.FailFast(ex.ToString());
             }
 
+            LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
             try
             {
                 backtesterRunFactory().Wait();
             }
             finally
             {
-                LogManager.Flush();
                 LogManager.Shutdown();
             }
         }

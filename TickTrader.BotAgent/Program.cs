@@ -54,6 +54,7 @@ namespace TickTrader.BotAgent
 
             SetupGlobalExceptionLogging(logger);
 
+            LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
             try
             {
                 CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());
@@ -73,6 +74,10 @@ namespace TickTrader.BotAgent
             catch (Exception ex)
             {
                 logger.Error(ex);
+            }
+            finally
+            {
+                LogManager.Shutdown();
             }
         }
 
