@@ -70,7 +70,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
             _cToken.ThrowIfCancellationRequested();
 
-            await (_bot?.CloseAsync() ?? Task.CompletedTask);
+            if (_bot != null)
+            {
+                await _bot.DeleteWebhookAsync();
+                await _bot.CloseAsync();
+            }
 
             _logger.Info($"{BotName} has been stopped");
         }
