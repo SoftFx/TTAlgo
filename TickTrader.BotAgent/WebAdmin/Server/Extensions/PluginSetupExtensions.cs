@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
@@ -67,7 +68,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                         yield return new Int32ParameterConfig() { PropertyId = param.Id, Value = param.Value.GetInt32() };
                         break;
                     case ParameterTypes.NullableInteger:
-                        yield return new NullableInt32ParameterConfig() { PropertyId = param.Id, Value = string.IsNullOrEmpty(param.Value.GetRawText()) ? null : param.Value.GetInt32() };
+                        if (param.Value.ValueKind == JsonValueKind.Undefined || param.Value.ValueKind == JsonValueKind.Null)
+                        {
+                            yield return new NullableInt32ParameterConfig() { PropertyId = param.Id, Value = null };
+                        }
+                        else if (param.Value.TryGetInt32(out var nullableInt32Value))
+                        {
+                            yield return new NullableInt32ParameterConfig() { PropertyId = param.Id, Value = param.Value.GetInt32() };
+                        }
+                        else throw new InvalidCastException($"Can't cast {param.Value} to NullableInt32");
                         break;
                     case ParameterTypes.Double:
                         if (param.Value.TryGetInt64(out var int64Value))
@@ -81,7 +90,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                         else throw new InvalidCastException($"Can't cast {param.Value} to Double");
                         break;
                     case ParameterTypes.NullableDouble:
-                        if (string.IsNullOrEmpty(param.Value.GetRawText()))
+                        if (param.Value.ValueKind == JsonValueKind.Undefined || param.Value.ValueKind == JsonValueKind.Null)
                         {
                             yield return new NullableDoubleParameterConfig() { PropertyId = param.Id, Value = null };
                             break;
