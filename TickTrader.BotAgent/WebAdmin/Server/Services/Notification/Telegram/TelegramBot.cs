@@ -17,7 +17,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
         private readonly TelegramBotUpdateHandler _handler;
         private readonly NotificationStorage _storage;
 
-        private CancellationToken _cToken = CancellationToken.None;
+        private CancellationTokenSource _cTokenSource = new();
         private TelegramBotClientOptions _cOptions;
         private TelegramBotClient _bot;
 
@@ -41,7 +41,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
             _logger.Info($"{BotName} is starting");
 
-            _cToken = new CancellationToken();
+            _cTokenSource = new CancellationTokenSource();
             _cOptions = new TelegramBotClientOptions(settings.BotToken);
 
             _bot = new TelegramBotClient(_cOptions)
@@ -51,9 +51,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
             if (await TestBotToken())
             {
-                _bot.StartReceiving(_handler, BotSettings.Options, _cToken);
+                _bot.StartReceiving(_handler, BotSettings.Options, _cTokenSource.Token);
 
-                await _bot.SetMyCommandsAsync(BotSettings.BotCommands, cancellationToken: _cToken);
+                await _bot.SetMyCommandsAsync(BotSettings.BotCommands, cancellationToken: _cTokenSource.Token);
 
 
                 _logger.Info($"{BotName} has been started");
@@ -71,7 +71,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
             _isRun = false;
 
-            _cToken.ThrowIfCancellationRequested();
+            _cTokenSource.Cancel();
 
             if (_bot != null)
             {
@@ -84,10 +84,19 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
 
         internal Task ApplySettings(TelegramSettings settings)
         {
-            if (settings.Enable == _isRun) //IOptionsMonitoring OnChange fired twice
-                return Task.CompletedTask;
+            try
+            {
+                if (settings.Enable == _isRun) //IOptionsMonitoring OnChange fired twice
+                    return Task.CompletedTask;
 
-            return settings.Enable ? StartBot(settings) : StopBot();
+                return settings.Enable ? StartBot(settings) : StopBot();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+
+                return Task.CompletedTask;
+            }
         }
 
         internal async Task SendMessage(string message)
@@ -98,7 +107,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
                     return;
 
                 foreach ((_, var chat) in _storage.Settings.Telegram.Chats)
-                    await _bot.SendTextMessageAsync(chat, message, ParseMode.MarkdownV2, cancellationToken: _cToken);
+                    await _bot.SendTextMessageAsync(chat, message, ParseMode.MarkdownV2, cancellationToken: _cTokenSource.Token);
             }
             catch (Exception ex)
             {
@@ -111,7 +120,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Services.Notification
         {
             try
             {
-                await _bot.GetMeAsync(_cToken);
+                await _bot.GetMeAsync(_cTokenSource.Token);
 
                 return true;
             }
