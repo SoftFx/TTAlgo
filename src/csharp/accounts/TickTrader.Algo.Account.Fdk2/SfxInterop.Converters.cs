@@ -845,6 +845,8 @@ namespace TickTrader.Algo.Account.Fdk2
                 Symbol = fdkUpdate.Symbol,
                 AskClose = fdkUpdate.AskClose,
                 BidClose = fdkUpdate.BidClose,
+                AskVolumeDelta = fdkUpdate.AskVolumeDelta,
+                BidVolumeDelta = fdkUpdate.BidVolumeDelta,
             };
             if (fdkUpdate.Updates?.Count > 0)
             {
@@ -865,6 +867,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 Open = v.Open,
                 High = v.High,
                 Low = v.Low,
+                Volume = v.Volume,
             };
         }
 

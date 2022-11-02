@@ -16,18 +16,22 @@ namespace TickTrader.Algo.Account.Fdk2
 
         public double? BidClose { get; set; }
 
+        public double? AskVolumeDelta { get; set; }
+
+        public double? BidVolumeDelta { get; set; }
+
         public BarUpdateDetails[] Details { get; set; }
 
 
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"{Symbol}, ask = {AskClose}, bid = {BidClose}");
+            sb.AppendLine($"{Symbol}, reset = {IsReset}, ask = {AskClose}, bid = {BidClose}, askVolDelta = {AskVolumeDelta}, bidVolDelta = {BidVolumeDelta}");
             if (Details?.Length > 0)
             {
-                foreach(var d in Details)
+                foreach (var d in Details)
                 {
-                    sb.AppendLine($"{d.Timeframe}, {d.MarketSide}: from={d.From}, open={d.Open}, high={d.High}, low={d.Low}");
+                    sb.AppendLine($"{d.Timeframe}, {d.MarketSide}: from={d.From}, open={d.Open}, high={d.High}, low={d.Low}, volume={d.Volume}");
                 }
             }
             return sb.ToString();
@@ -55,6 +59,8 @@ namespace TickTrader.Algo.Account.Fdk2
 
         public double? Low { get; set; }
 
+        public double? Volume { get; set; }
+
         public bool HasAllProperties => From.HasValue && Open.HasValue && High.HasValue && Low.HasValue;
 
 
@@ -70,6 +76,9 @@ namespace TickTrader.Algo.Account.Fdk2
                     High = High.Value,
                     Low = Low.Value
                 };
+
+                if (Volume.HasValue) // Volume available only in TTS 1.57
+                    data.TickVolume = (long)Volume.Value;
 
                 return data;
             }
@@ -87,6 +96,9 @@ namespace TickTrader.Algo.Account.Fdk2
                 data.Open = Open.Value;
                 data.High = High.Value;
                 data.Low = Low.Value;
+
+                if (Volume.HasValue) // Volume available only in TTS 1.57
+                    data.TickVolume = (long)Volume.Value;
             }
             else
             {

@@ -2,7 +2,6 @@
 using System;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.FDK.Common;
 using System.Linq;
@@ -15,6 +14,7 @@ namespace TickTrader.Algo.Account.Fdk2
         private readonly Dictionary<string, SymbolBarGroup> _groups = new Dictionary<string, SymbolBarGroup>();
         private readonly Action<Domain.BarUpdate> _barUpdateCallback;
         private readonly ChannelConsumerWrapper<BarUpdateSummary> _consumer;
+        //private readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<BarSubAdapter>();
 
 
         public BarSubAdapter(Action<Domain.BarUpdate> barUpdateCallback)
@@ -83,6 +83,8 @@ namespace TickTrader.Algo.Account.Fdk2
 
         private void ProcessUpdate(BarUpdateSummary update)
         {
+            //_logger.Debug(update.ToString());
+
             List<Domain.BarUpdate> res = default;
             var smb = update.Symbol;
 
@@ -157,11 +159,15 @@ namespace TickTrader.Algo.Account.Fdk2
                 {
                     var askClose = update.AskClose ?? CurrentBars[0].AskData.Close;
                     var bidClose = update.BidClose ?? CurrentBars[0].BidData.Close;
+                    var askVolDelta = update.AskVolumeDelta ?? 0;
+                    var bidVolDelta = update.BidVolumeDelta ?? 0;
 
                     foreach (var bar in CurrentBars)
                     {
                         bar.AskData.Close = askClose;
                         bar.BidData.Close = bidClose;
+                        bar.AskData.TickVolume += (long)askVolDelta;
+                        bar.BidData.TickVolume += (long)bidVolDelta;
                     }
                 }
 

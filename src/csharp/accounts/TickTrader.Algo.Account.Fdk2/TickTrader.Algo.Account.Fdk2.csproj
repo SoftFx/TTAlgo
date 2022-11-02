@@ -10,7 +10,7 @@
 
   <ItemGroup Label="FDK2 references">
     <ProjectReference Include="..\..\..\..\modules\FDK2\Client\Client.csproj" Condition=" '$(UseFdk2Src)' == 'true' " />
-    <PackageReference Include="SoftFX.FDK2" Version="2.31.2116" Condition=" '$(UseFdk2Src)' != 'true' " />
+    <PackageReference Include="SoftFX.FDK2" Version="2.32.2130" Condition=" '$(UseFdk2Src)' != 'true' " />
   </ItemGroup>
 
 </Project>
