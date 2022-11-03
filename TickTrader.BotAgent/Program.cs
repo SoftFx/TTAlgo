@@ -145,6 +145,11 @@ namespace TickTrader.BotAgent
                                 kestrelLoader.AnyIPEndpoint(publicApiSettings.ListeningPort, o => o.UseHttps());
                             }
                         }
+                        if (publicApiSettings.InsecurePort > 0)
+                        {
+                            // Enable HTTP/2 clear text communication. Should always be localhost. For grpc clients when machine has cipher suites issues
+                            kestrelLoader.LocalhostEndpoint(publicApiSettings.InsecurePort, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
+                        }
                     })
                     .UseContentRoot(pathToContentRoot)
                     .UseWebRoot(pathToWebRoot)

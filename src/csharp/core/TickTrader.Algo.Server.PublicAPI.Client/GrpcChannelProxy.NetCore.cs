@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                     HttpHandler = handler,
                 };
 
-                _channel = GrpcChannel.ForAddress($"https://{settings.ServerAddress}:{settings.ServerPort}", options);
+                _channel = GrpcChannel.ForAddress($"https://{address}:{settings.ServerPort}", options);
             }
         }
 
