@@ -10,6 +10,6 @@
 
         public bool LogMessages { get; set; }
 
-        public int InsecurePort { get; set; }
+        public int InsecurePort { get; set; } = -1;
     }
 }
