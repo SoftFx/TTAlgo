@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Core.Lib
             Count++;
         }
 
-        public void AddRange(IEnumerable<T> recRange)
+        public virtual void AddRange(IEnumerable<T> recRange)
         {
             // TO DO : optimization in case recRange is IList or ICollection
 
