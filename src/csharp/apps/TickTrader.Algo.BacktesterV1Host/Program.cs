@@ -68,7 +68,15 @@ namespace TickTrader.Algo.BacktesterV1Host
                 Environment.FailFast(ex.ToString());
             }
 
-            backtesterRunFactory().Wait();
+            LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
+            try
+            {
+                backtesterRunFactory().Wait();
+            }
+            finally
+            {
+                LogManager.Shutdown();
+            }
         }
 
         private static async Task RunBacktester(RpcProxyParams rpcParams)

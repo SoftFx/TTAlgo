@@ -27,13 +27,27 @@ namespace TickTrader.Algo.Server.PublicAPI
             var handler = new SocketsHttpHandler();
             handler.SslOptions.RemoteCertificateValidationCallback = ServerCertValidationCallback;
 
-            var options = new GrpcChannelOptions
+            var address = settings.ServerAddress;
+            if (address == "localhost-h2c")
             {
-                Credentials = ChannelCredentials.SecureSsl,
-                HttpHandler = handler,
-            };
+                var options = new GrpcChannelOptions
+                {
+                    Credentials = ChannelCredentials.Insecure,
+                    HttpHandler = handler,
+                };
 
-            _channel = GrpcChannel.ForAddress($"https://{settings.ServerAddress}:{settings.ServerPort}", options);
+                _channel = GrpcChannel.ForAddress($"http://localhost:{settings.ServerPort}", options);
+            }
+            else
+            {
+                var options = new GrpcChannelOptions
+                {
+                    Credentials = ChannelCredentials.SecureSsl,
+                    HttpHandler = handler,
+                };
+
+                _channel = GrpcChannel.ForAddress($"https://{address}:{settings.ServerPort}", options);
+            }
         }
 
 

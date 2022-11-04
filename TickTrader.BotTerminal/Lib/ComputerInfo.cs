@@ -22,21 +22,40 @@ namespace TickTrader.BotTerminal
             .Cast<ManagementObject>()
             .FirstOrDefault();
 
-            var cs = new ManagementObjectSearcher("SELECT SystemType FROm Win32_ComputerSystem")
+            var cs = new ManagementObjectSearcher("SELECT SystemType FROM Win32_ComputerSystem")
             .Get()
             .Cast<ManagementObject>()
             .FirstOrDefault();
 
-            Name = ((string)os["Caption"]).Trim();
-            Version = (string)os["Version"];
-            MaxProcessCount = (uint)os["MaxNumberOfProcesses"];
-            MaxProcessRAM = (ulong)os["MaxProcessMemorySize"];
-            Architecture = (string)cs["SystemType"];
-            SerialNumber = (string)os["SerialNumber"];
-            Build = ((string)os["BuildNumber"]);
-            TotalVisibleMemorySize = (ulong)os["TotalVisibleMemorySize"];
-            FreePhysicalMemory = (ulong)os["FreePhysicalMemory"];
-            CurrentTimeZone = (short)os["CurrentTimeZone"];
+            if (os.TryGet("Caption", out var name))
+                Name = ((string)name).Trim();
+
+            if (os.TryGet("Version", out var version))
+                Version = (string)version;
+
+            if (os.TryGet("MaxNumberOfProcesses", out var maxProcessCount))
+                MaxProcessCount = (uint)maxProcessCount;
+
+            if (os.TryGet("MaxProcessMemorySize", out var maxProcessRAM))
+                MaxProcessRAM = (ulong)maxProcessRAM;
+
+            if (cs.TryGet("SystemType", out var architecture))
+                Architecture = (string)architecture;
+
+            if (os.TryGet("SerialNumber", out var serialNumber))
+                SerialNumber = (string)serialNumber;
+
+            if (os.TryGet("BuildNumber", out var build))
+                Build = (string)build;
+
+            if (os.TryGet("TotalVisibleMemorySize", out var totalVisibleMemorySize))
+                TotalVisibleMemorySize = (ulong)totalVisibleMemorySize;
+
+            if (os.TryGet("FreePhysicalMemory", out var freePhysicalMemory))
+                FreePhysicalMemory = (ulong)freePhysicalMemory;
+
+            if (os.TryGet("CurrentTimeZone", out var currentTimeZone))
+                CurrentTimeZone = (short)currentTimeZone;
         }
 
         public string Architecture { get; private set; }
@@ -61,19 +80,44 @@ namespace TickTrader.BotTerminal
             .Cast<ManagementObject>()
             .FirstOrDefault();
 
-            ID = (string)cpu["ProcessorId"];
-            Socket = (string)cpu["SocketDesignation"];
-            Name = (string)cpu["Name"];
-            Description = (string)cpu["Caption"];
-            AddressWidth = (ushort)cpu["AddressWidth"];
-            DataWidth = (ushort)cpu["DataWidth"];
-            Architecture = (ushort)cpu["Architecture"];
-            SpeedMHz = (uint)cpu["MaxClockSpeed"];
-            BusSpeedMHz = (uint)cpu["ExtClock"];
-            L2Cache = (uint)cpu["L2CacheSize"] * (ulong)1024;
-            L3Cache = (uint)cpu["L3CacheSize"] * (ulong)1024;
-            Cores = (uint)cpu["NumberOfCores"];
-            Threads = (uint)cpu["NumberOfLogicalProcessors"];
+            if (cpu.TryGet("ProcessorId", out var id))
+                ID = (string)id;
+
+            if (cpu.TryGet("SocketDesignation", out var socket))
+                Socket = (string)socket;
+
+            if (cpu.TryGet("Name", out var name))
+                Name = (string)name;
+
+            if (cpu.TryGet("Caption", out var description))
+                Description = (string)description;
+
+            if (cpu.TryGet("AddressWidth", out var width))
+                AddressWidth = (ushort)width;
+
+            if (cpu.TryGet("DataWidth", out var dataWidth))
+                DataWidth = (ushort)dataWidth;
+
+            if (cpu.TryGet("Architecture", out var architecture))
+                Architecture = (ushort)architecture;
+
+            if (cpu.TryGet("MaxClockSpeed", out var maxClockSpeed))
+                SpeedMHz = (uint)maxClockSpeed;
+
+            if (cpu.TryGet("ExtClock", out var extClock))
+                BusSpeedMHz = (uint)extClock;
+
+            if (cpu.TryGet("L2CacheSize", out var l2CacheSize))
+                L2Cache = (uint)l2CacheSize * (ulong)1024;
+
+            if (cpu.TryGet("L3CacheSize", out var l3CacheSize))
+                L3Cache = (uint)l3CacheSize * (ulong)1024;
+
+            if (cpu.TryGet("NumberOfCores", out var numberOfCores))
+                Cores = (uint)numberOfCores;
+
+            if (cpu.TryGet("NumberOfLogicalProcessors", out var numberOfLogicalProcessors))
+                Threads = (uint)numberOfLogicalProcessors;
         }
 
         public ushort AddressWidth { get; private set; }
@@ -89,5 +133,15 @@ namespace TickTrader.BotTerminal
         public string Socket { get; private set; }
         public uint SpeedMHz { get; private set; }
         public uint Threads { get; private set; }
+    }
+
+    internal static class ManagementObjectExtension
+    {
+        internal static bool TryGet(this ManagementObject obj, string key, out object val)
+        {
+            val = obj[key];
+
+            return val != null;
+        }
     }
 }

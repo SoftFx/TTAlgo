@@ -24,7 +24,10 @@ namespace TickTrader.BotTerminal
             }
             else
             {
-                var startInfo = new ProcessStartInfo(Assembly.GetExecutingAssembly().Location)
+                var location = Assembly.GetExecutingAssembly().Location;
+                if (location.EndsWith(".dll"))
+                    location = location[..^3] + "exe";
+                var startInfo = new ProcessStartInfo(location)
                 {
                     Verb = "runas",
                     UseShellExecute = true,

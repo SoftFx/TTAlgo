@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Logging
 
             _logFactory = new LogFactory(logConfig);
             _logger = _logFactory.GetLogger("plugin");
+            _logFactory.AutoShutdown = false;
         }
 
         public void Stop()

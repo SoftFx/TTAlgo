@@ -19,10 +19,18 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(logger));
 
-            var creds = new SslCredentials(CertificateProvider.RootCertificate);
-            var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
+            var address = settings.ServerAddress;
+            if (address == "localhost-h2c")
+            {
+                _channel = new Channel("localhost", settings.ServerPort, ChannelCredentials.Insecure);
+            }
+            else
+            {
+                var creds = new SslCredentials(CertificateProvider.RootCertificate);
+                var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
 
-            _channel = new Channel(settings.ServerAddress, settings.ServerPort, creds, options);
+                _channel = new Channel(address, settings.ServerPort, creds, options);
+            }
         }
 
 

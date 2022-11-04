@@ -109,7 +109,6 @@ namespace TickTrader.BotAgent.WebAdmin
             }
 
             app.UseStaticFiles();
-            app.UseHttpsRedirection();
 
             app.UseRouting();
 

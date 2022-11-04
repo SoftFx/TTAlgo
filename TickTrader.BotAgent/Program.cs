@@ -50,11 +50,13 @@ namespace TickTrader.BotAgent
 
             SetupGlobalExceptionLogging(logger);
 
+            LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
             try
             {
                 CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());
 
-                var hostBuilder = CreateWebHostBuilder(args);
+                var launchSettings = LaunchSettings.Read(args, SwitchMappings);
+                var hostBuilder = CreateWebHostBuilder(args, launchSettings);
 
                 var host = hostBuilder
                     .AddBotAgent()
@@ -63,18 +65,20 @@ namespace TickTrader.BotAgent
 
                 logger.Info("Starting web host");
 
-                host.Run();
+                GenericHostRunner.Run(host, launchSettings.Mode);
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
             }
+            finally
+            {
+                LogManager.Shutdown();
+            }
         }
 
-        public static IHostBuilder CreateWebHostBuilder(string[] args)
+        public static IHostBuilder CreateWebHostBuilder(string[] args, LaunchSettings launchSettings)
         {
-            var launchSettings = LaunchSettings.Read(args, SwitchMappings);
-
             Console.WriteLine(launchSettings);
 
             var pathToContentRoot = Directory.GetCurrentDirectory();
@@ -137,12 +141,15 @@ namespace TickTrader.BotAgent
                                 kestrelLoader.AnyIPEndpoint(publicApiSettings.ListeningPort, o => o.UseHttps());
                             }
                         }
+                        if (publicApiSettings.InsecurePort > 0)
+                        {
+                            // Enable HTTP/2 clear text communication. Should always be localhost. For grpc clients when machine has cipher suites issues
+                            kestrelLoader.LocalhostEndpoint(publicApiSettings.InsecurePort, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
+                        }
                     })
                     .UseContentRoot(pathToContentRoot)
                     .UseWebRoot(pathToWebRoot)
                     .UseStartup<Startup>());
-            if (launchSettings.Mode == LaunchMode.WindowsService)
-                builder.UseWindowsService();
 
             return builder;
         }
