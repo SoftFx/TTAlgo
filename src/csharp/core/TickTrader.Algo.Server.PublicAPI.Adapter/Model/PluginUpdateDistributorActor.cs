@@ -201,7 +201,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             internal const int MaxLogsPerMessage = 100;
 
             private readonly LinkedList<SessionHandler> _sessions = new LinkedList<SessionHandler>();
-            private readonly ItemCache<LogRecordInfo> _logsCache = new ItemCache<LogRecordInfo>(MaxLogsPerMessage);
+            private readonly CircularItemCache<LogRecordInfo> _logsCache = new CircularItemCache<LogRecordInfo>(MaxLogsPerMessage);
             private readonly List<LogRecordInfo> _newLogsBuffer = new List<LogRecordInfo>(MaxLogsPerMessage);
 
 
