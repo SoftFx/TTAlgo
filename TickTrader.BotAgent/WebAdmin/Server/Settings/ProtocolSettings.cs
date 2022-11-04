@@ -9,5 +9,7 @@
         public string LogDirectoryName { get; set; }
 
         public bool LogMessages { get; set; }
+
+        public int InsecurePort { get; set; } = -1;
     }
 }

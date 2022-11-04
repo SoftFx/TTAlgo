@@ -29,7 +29,15 @@ namespace TickTrader.Algo.RuntimeV1Host
 
             ConfigureLogging(rpcParams.ProxyId);
 
-            RunRuntime(rpcParams).Wait();
+            LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
+            try
+            {
+                RunRuntime(rpcParams).Wait();
+            }
+            finally
+            {
+                LogManager.Shutdown();
+            }
         }
 
         private static async Task RunRuntime(RpcProxyParams rpcParams)
