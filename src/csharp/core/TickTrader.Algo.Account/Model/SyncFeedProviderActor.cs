@@ -104,9 +104,26 @@ namespace TickTrader.Algo.Account
             }
         }
 
+        private class CacheSearchResult
+        {
+            public int Offset { get; set; }
+
+            public int Cnt { get; set; }
+
+            public bool CheckFutureUpdates { get; set; }
+
+            public bool NeedServerRequest { get; set; }
+
+            public UtcTicks ReqFrom { get; set; }
+
+            public UtcTicks ReqTo { get; set; }
+
+            public int? ReqCount { get; set; }
+        }
+
         private class BarCacheController
         {
-            private readonly ActorLock _asynclock;
+            private readonly ActorLock _requestlock;
             private readonly CircularItemCache<BarData> _askBars, _bidBars;
             private readonly CircularList<BarData> _futureAsks, _futureBids;
 
@@ -119,7 +136,7 @@ namespace TickTrader.Algo.Account
             public BarCacheController(BufferKey key, ActorLock asyncLock, int cacheSize)
             {
                 Key = key;
-                _asynclock = asyncLock;
+                _requestlock = asyncLock;
 
                 _askBars = new CircularItemCache<BarData>(cacheSize);
                 _bidBars = new CircularItemCache<BarData>(cacheSize);
@@ -134,32 +151,40 @@ namespace TickTrader.Algo.Account
             {
                 var cache = req.MarketSide == Feed.Types.MarketSide.Ask ? _askBars : _bidBars;
 
-                if (req.Count.HasValue)
-                {
-                    var cnt = req.Count.Value;
-                    var isBackward = cnt < 0;
-                    cnt = Math.Abs(cnt);
+                if (req.Count == 0 || (!req.Count.HasValue && req.From > req.To))
+                    return Array.Empty<BarData>();
 
-                    var fromIndex = cache.BinarySearchBy(d => d.OpenTime, req.From, BinarySearchTypes.NearestLower);
-                    var cacheFrom = cache[fromIndex].OpenTime;
-                    if (!isBackward && cacheFrom <= req.From)
-                    {
-                        // Copy cache[fromIndex..Count)
-                    }
-                }
+                var searchRes = SearchCache(cache, req.From, req.To, req.Count);
+                if (!searchRes.NeedServerRequest) // all data already in cache
+                    CreateCacheResult(cache, searchRes);
 
-                using (await _asynclock.GetLock())
+                using (await _requestlock.GetLock())
                 {
+                    // Now we have no pending requests
+                    // Cache state might be modified since last check. Search again
+                    searchRes = SearchCache(cache, req.From, req.To, req.Count);
+                    if (!searchRes.NeedServerRequest) // all data already in cache
+                        CreateCacheResult(cache, searchRes);
+
                     _freezeCache = true;
+                    BarData[] barsRes = null;
                     try
                     {
-                        return null;
+                        var requestRes = searchRes.ReqCount.HasValue
+                            ? await history.GetBarPage(req.Symbol, req.MarketSide, req.Timeframe, searchRes.ReqFrom, searchRes.ReqCount.Value)
+                            : (await history.GetBarList(req.Symbol, req.MarketSide, req.Timeframe, req.From, req.To)).ToArray();
+
+                        // merge requestRes and cache into barsRes
+
+                        // merge cache with requestRes if cache not full
                     }
                     finally
                     {
                         _freezeCache = false;
                         ApplyPendingUpdates();
                     }
+
+                    return barsRes;
                 }
             }
 
@@ -200,6 +225,130 @@ namespace TickTrader.Algo.Account
                     ApplyUpdate(_askBars, upd);
                 foreach (var upd in _futureBids)
                     ApplyUpdate(_bidBars, upd);
+            }
+
+            private CacheSearchResult SearchCache(CircularItemCache<BarData> cache, UtcTicks reqFrom, UtcTicks reqTo, int? reqCount)
+            {
+                var searchRes = new CacheSearchResult();
+
+                if (cache.Count == 0)
+                {
+                    searchRes.Offset = 0;
+                    searchRes.Cnt = 0;
+                    searchRes.CheckFutureUpdates = true;
+                    searchRes.NeedServerRequest = true;
+                    searchRes.ReqFrom = reqFrom;
+                    searchRes.ReqTo = reqTo;
+                    searchRes.ReqCount = reqCount;
+                }
+
+                if (reqCount < 0)
+                {
+                    SearchCacheBackward(cache, reqFrom, -reqCount.Value, searchRes);
+                }
+                else
+                {
+                    SearchCacheForward(cache, reqFrom, reqTo, reqCount, searchRes);
+                }
+
+                return searchRes;
+            }
+
+            private void SearchCacheForward(CircularItemCache<BarData> cache, UtcTicks reqFrom, UtcTicks reqTo, int? reqCount, CacheSearchResult searchRes)
+            {
+                var fromIndex = cache.BinarySearchBy(d => d.OpenTime, reqFrom, BinarySearchTypes.NearestLower);
+                var cacheFrom = cache[fromIndex].OpenTime;
+                if (cacheFrom < reqFrom)
+                    fromIndex++;
+
+                searchRes.Offset = fromIndex;
+                if (cacheFrom > reqFrom)
+                {
+                    // cache miss: extra date range from cache begin
+                    searchRes.NeedServerRequest = true;
+                    searchRes.ReqFrom = reqFrom;
+                    searchRes.ReqTo = cache[0].OpenTime.AddMs(-1);
+                }
+                else
+                {
+                    // cache hit
+                    searchRes.NeedServerRequest = false;
+                }
+
+                if (reqCount.HasValue)
+                {
+                    var reqCnt = reqCount.Value; // expected to be positive
+                    var cacheSize = cache.Count - fromIndex;
+                    searchRes.Cnt = Math.Min(cacheSize, reqCnt);
+                    if (reqCnt >= cacheSize)
+                    {
+                        searchRes.Cnt = cacheSize;
+                        searchRes.CheckFutureUpdates = true; // During server request can update last bar or add new
+                    }
+                    else
+                    {
+                        searchRes.Cnt = reqCnt;
+                        searchRes.CheckFutureUpdates = false;
+                    }
+                }
+                else
+                {
+                    var toIndex = cache.BinarySearchBy(d => d.OpenTime, reqTo, BinarySearchTypes.NearestHigher);
+                    var cacheTo = cache[toIndex].OpenTime;
+                    if (cacheTo > reqTo)
+                        toIndex--;
+
+                    searchRes.Cnt = toIndex - fromIndex + 1;
+                    searchRes.CheckFutureUpdates = cacheTo <= reqTo; // During server request can update last bar or add new
+                }
+            }
+
+            private void SearchCacheBackward(CircularItemCache<BarData> cache, UtcTicks reqFrom, int reqCount, CacheSearchResult searchRes)
+            {
+                var fromIndex = cache.BinarySearchBy(d => d.OpenTime, reqFrom, BinarySearchTypes.NearestLower);
+                var cacheFrom = cache[fromIndex].OpenTime;
+
+                if (cacheFrom > reqFrom)
+                    fromIndex--;
+
+                searchRes.CheckFutureUpdates = cacheFrom <= reqFrom; // future can update last bar or add new
+
+                var cacheSize = fromIndex + 1;
+                if (reqCount > cacheSize)
+                {
+                    // cache miss: extra cnt from cache begin
+                    searchRes.Offset = 0;
+                    searchRes.Cnt = cacheSize;
+                    searchRes.NeedServerRequest = true;
+                    searchRes.ReqFrom = cache[0].OpenTime.AddMs(-1);
+                    searchRes.ReqCount = -(reqCount - cacheSize);
+                }
+                else
+                {
+                    // cache hit
+                    searchRes.Offset = cacheSize - reqCount;
+                    searchRes.Cnt = reqCount;
+                    searchRes.NeedServerRequest = false;
+                }
+            }
+
+            private void CopyCache(CircularItemCache<BarData> cache, int offset, int cnt, BarData[] dst, int dstOffset)
+            {
+                for (var i = 0; i < cnt; i++)
+                {
+                    dst[dstOffset + i] = cache[offset + i];
+                }
+            }
+
+            private BarData[] CreateCacheResult(CircularItemCache<BarData> cache, CacheSearchResult searchRes)
+            {
+                var cnt = searchRes.Cnt;
+                if (cnt == 0)
+                    return Array.Empty<BarData>();
+
+                var res = new BarData[cnt];
+                CopyCache(cache, searchRes.Offset, cnt, res, 0);
+                return res;
             }
         }
     }
