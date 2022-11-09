@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
@@ -156,7 +157,7 @@ namespace TickTrader.Algo.Account
 
                 var searchRes = SearchCache(cache, req.From, req.To, req.Count);
                 if (!searchRes.NeedServerRequest) // all data already in cache
-                    CreateCacheResult(cache, searchRes);
+                    return CreateCacheResult(cache, searchRes);
 
                 using (await _requestlock.GetLock())
                 {
@@ -164,7 +165,7 @@ namespace TickTrader.Algo.Account
                     // Cache state might be modified since last check. Search again
                     searchRes = SearchCache(cache, req.From, req.To, req.Count);
                     if (!searchRes.NeedServerRequest) // all data already in cache
-                        CreateCacheResult(cache, searchRes);
+                        return CreateCacheResult(cache, searchRes);
 
                     _freezeCache = true;
                     BarData[] barsRes = null;
@@ -174,9 +175,12 @@ namespace TickTrader.Algo.Account
                             ? await history.GetBarPage(req.Symbol, req.MarketSide, req.Timeframe, searchRes.ReqFrom, searchRes.ReqCount.Value)
                             : (await history.GetBarList(req.Symbol, req.MarketSide, req.Timeframe, req.From, req.To)).ToArray();
 
-                        // merge requestRes and cache into barsRes
+                        var futureCache = req.MarketSide == Feed.Types.MarketSide.Ask ? _futureAsks : _futureBids;
+                        barsRes = searchRes.CheckFutureUpdates
+                            ? MergeBarsResult(requestRes, cache, futureCache, req.From, req.To, req.Count)
+                            : MergeBarsResult(requestRes, cache, searchRes);
 
-                        // merge cache with requestRes if cache not full
+                        MergeCacheWithRequest(requestRes, cache);
                     }
                     finally
                     {
@@ -223,8 +227,33 @@ namespace TickTrader.Algo.Account
             {
                 foreach (var upd in _futureAsks)
                     ApplyUpdate(_askBars, upd);
+                _futureAsks.Clear();
+
                 foreach (var upd in _futureBids)
                     ApplyUpdate(_bidBars, upd);
+                _futureBids.Clear();
+            }
+
+            private void ApplyPendingLastUpdates()
+            {
+                if (_askBars.Count > 0 && _futureAsks.Count > 0)
+                {
+                    var update = _futureAsks[0];
+                    var lastIndex = _askBars.Count - 1;
+                    if (_askBars[lastIndex].OpenTime == update.OpenTime)
+                        _askBars[lastIndex] = update;
+
+                    _futureAsks.Dequeue();
+                }
+                if (_bidBars.Count > 0 && _futureBids.Count > 0)
+                {
+                    var update = _futureBids[0];
+                    var lastIndex = _bidBars.Count - 1;
+                    if (_bidBars[lastIndex].OpenTime == update.OpenTime)
+                        _bidBars[lastIndex] = update;
+
+                    _futureBids.Dequeue();
+                }
             }
 
             private CacheSearchResult SearchCache(CircularItemCache<BarData> cache, UtcTicks reqFrom, UtcTicks reqTo, int? reqCount)
@@ -305,7 +334,7 @@ namespace TickTrader.Algo.Account
 
             private void SearchCacheBackward(CircularItemCache<BarData> cache, UtcTicks reqFrom, int reqCount, CacheSearchResult searchRes)
             {
-                var fromIndex = cache.BinarySearchBy(d => d.OpenTime, reqFrom, BinarySearchTypes.NearestLower);
+                var fromIndex = cache.BinarySearchBy(d => d.OpenTime, reqFrom, BinarySearchTypes.NearestHigher);
                 var cacheFrom = cache[fromIndex].OpenTime;
 
                 if (cacheFrom > reqFrom)
@@ -348,6 +377,122 @@ namespace TickTrader.Algo.Account
 
                 var res = new BarData[cnt];
                 CopyCache(cache, searchRes.Offset, cnt, res, 0);
+                return res;
+            }
+
+            private void MergeCacheWithRequest(BarData[] requestRes, CircularItemCache<BarData> cache)
+            {
+                var cacheSize = cache.Count;
+                if (cacheSize >= MaxBarsInCache)
+                    return; // cache full
+
+                if (cacheSize != 0 && requestRes.Length != 0 && cache[0].OpenTime > requestRes[^1].OpenTime)
+                    return; // requestRes end is expected to be before cache begin
+
+                var buffer = ArrayPool<BarData>.Shared.Rent(cacheSize);
+                try
+                {
+                    cache.CopyTo(buffer, 0);
+                    cache.Clear();
+                    cache.AddRange(requestRes.AsSpan());
+                    cache.AddRange(buffer.AsSpan(0, cacheSize));
+                }
+                finally
+                {
+                    ArrayPool<BarData>.Shared.Return(buffer);
+                }
+            }
+
+            private BarData[] MergeBarsResult(BarData[] requestRes, CircularItemCache<BarData> cache, CacheSearchResult searchRes)
+            {
+                var res = new BarData[requestRes.Length + searchRes.Cnt];
+                requestRes.CopyTo(res, 0);
+                CopyCache(cache, searchRes.Offset, searchRes.Cnt, res, requestRes.Length);
+                return res;
+            }
+
+            private BarData[] MergeBarsResult(BarData[] requestRes, CircularItemCache<BarData> cache, CircularList<BarData> futureCache, UtcTicks reqFrom, UtcTicks reqTo, int? reqCount)
+            {
+                // The fact that we made a request and need future updates mean that full cache range is involved
+                // So we need to check what part of future updates are needed
+
+                // update last bars to simplify merge calculations
+                // this doesn't change cache range so search result should be still relevant
+                ApplyPendingLastUpdates();
+
+                BarData[] res = Array.Empty<BarData>();
+                if (reqCount < 0)
+                {
+                    var reqCnt = Math.Abs(reqCount.Value);
+
+                    var futureIndex = futureCache.BinarySearchBy(d => d.OpenTime, reqFrom, BinarySearchTypes.NearestHigher);
+                    if (futureCache[futureIndex].OpenTime > reqFrom)
+                        futureIndex--;
+
+                    var futureCnt = futureIndex + 1;
+                    var availableSize = requestRes.Length + cache.Count + futureCnt;
+                    // future updates may have shifted the window we requested initially
+                    var offset = availableSize > reqCnt ? availableSize - reqCnt : 0;
+                    res = new BarData[offset > 0 ? reqCnt : availableSize];
+                    var i = 0;
+                    if (offset < requestRes.Length)
+                    {
+                        requestRes.AsSpan(offset).CopyTo(res.AsSpan(i));
+                        i += requestRes.Length - offset;
+                        offset = 0;
+                    }
+                    else
+                    {
+                        offset -= requestRes.Length;
+                    }
+
+                    if (offset < cache.Count)
+                    {
+                        var copySize = cache.Count - offset;
+                        CopyCache(cache, offset, copySize, res, i);
+                        i += copySize;
+                        offset = 0;
+                    }
+                    else
+                    {
+                        offset -= cache.Count;
+                    }
+
+                    if (offset < futureCnt)
+                    {
+                        for (var j = 0; j < futureCnt; j++)
+                            res[i + j] = futureCache[j];
+                    }
+                }
+                else
+                {
+                    var futureCnt = 0;
+                    if (reqCount.HasValue)
+                    {
+                        var spaceLeft = reqCount.Value - requestRes.Length - cache.Count;
+                        if (spaceLeft > 0)
+                            futureCnt = Math.Min(spaceLeft, futureCnt);
+                    }
+                    else
+                    {
+                        var futureIndex = futureCache.BinarySearchBy(d => d.OpenTime, reqTo, BinarySearchTypes.NearestHigher);
+                        if (futureCache[futureIndex].OpenTime > reqTo)
+                            futureIndex--;
+
+                        futureCnt = futureIndex + 1;
+                    }
+
+                    res = new BarData[requestRes.Length + cache.Count + futureCnt];
+                    var i = 0;
+                    requestRes.CopyTo(res, i); i += requestRes.Length;
+                    cache.CopyTo(res, i); i += cache.Count;
+                    if (i < res.Length)
+                    {
+                        for (var j = 0; j < futureCnt; j++)
+                            res[i + j] = futureCache[j];
+                    }
+                }
+
                 return res;
             }
         }

@@ -58,6 +58,15 @@ namespace TickTrader.Algo.Core.Lib
                 Add(rec);
         }
 
+        public virtual void AddRange(ReadOnlySpan<T> items)
+        {
+            // TO DO : optimization with Span.CopyTo
+
+            var n = items.Length;
+            for (var i = 0; i < n; i++)
+                Add(items[i]);
+        }
+
         public virtual T Dequeue()
         {
             if (Count == 0)

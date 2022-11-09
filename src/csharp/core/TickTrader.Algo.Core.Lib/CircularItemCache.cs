@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace TickTrader.Algo.Core.Lib
 {
@@ -31,6 +32,13 @@ namespace TickTrader.Algo.Core.Lib
             {
                 Add(item);
             }
+        }
+
+        public override void AddRange(ReadOnlySpan<T> items)
+        {
+            var n = items.Length;
+            for (var i = 0; i < n; i++)
+                Add(items[i]);
         }
     }
 }
