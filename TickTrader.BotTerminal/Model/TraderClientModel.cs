@@ -157,7 +157,7 @@ namespace TickTrader.BotTerminal
 
         public IAccountProxy GetAccountProxy()
         {
-            var feedAdapter = new PluginFeedProvider(_core.Cache, _core.QuoteSubManager, _core.BarSubManager, FeedHistory);
+            var feedAdapter = new PluginFeedProvider(_core.Cache, _core.QuoteSubManager, _core.BarSubManager, FeedHistory, _core.SyncFeedProvider);
             var res = new LocalAccountProxy("")
             {
                 Feed = feedAdapter,

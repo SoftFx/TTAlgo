@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
@@ -19,18 +20,20 @@ namespace TickTrader.Algo.Account
         private readonly IVarSet<string, SymbolInfo> _symbols;
         private readonly FeedHistoryProviderModel.Handler _history;
         private readonly IReadOnlyDictionary<string, CurrencyInfo> _currencies;
+        private readonly IActorRef _syncFeedProvider;
 
         public event Action<QuoteInfo> QuoteUpdated;
         public event Action<BarUpdate> BarUpdated;
 
 
-        public PluginFeedProvider(EntityCache cache, IQuoteSubManager quoteSubManager, IBarSubManager barSubManager, FeedHistoryProviderModel.Handler history)
+        public PluginFeedProvider(EntityCache cache, IQuoteSubManager quoteSubManager, IBarSubManager barSubManager, FeedHistoryProviderModel.Handler history, IActorRef syncFeedProvider)
         {
             _symbols = cache.Symbols;
             _history = history;
             _currencies = cache.Currencies.Snapshot;
             _quoteSubManager = quoteSubManager;
             _barSubManager = barSubManager;
+            _syncFeedProvider = syncFeedProvider;
 
             _quoteSub = new QuoteSubscription(quoteSubManager);
             _quoteSubHandler = _quoteSub.AddHandler(r => QuoteUpdated?.Invoke(r));
@@ -43,32 +46,32 @@ namespace TickTrader.Algo.Account
 
         public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
-            return _history.GetBarList(symbol, marketSide, timeframe, from, to).GetAwaiter().GetResult();
+            return QueryBarsAsync(symbol, marketSide, timeframe, from, to).GetAwaiter().GetResult();
         }
 
         public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
-            return _history.GetBarPage(symbol, marketSide, timeframe, from, count).GetAwaiter().GetResult().ToList();
+            return QueryBarsAsync(symbol, marketSide, timeframe, from, count).GetAwaiter().GetResult().ToList();
         }
 
         public List<QuoteInfo> QueryQuotes(string symbolCode, UtcTicks from, UtcTicks to, bool level2)
         {
-            return _history.GetQuoteList(symbolCode, from, to, level2).GetAwaiter().GetResult();
+            return QueryQuotesAsync(symbolCode, from, to, level2).GetAwaiter().GetResult();
         }
 
         public List<QuoteInfo> QueryQuotes(string symbolCode, UtcTicks from, int count, bool level2)
         {
-            return _history.GetQuotePage(symbolCode, from, count, level2).GetAwaiter().GetResult().ToList();
+            return QueryQuotesAsync(symbolCode, from, count, level2).GetAwaiter().GetResult().ToList();
         }
 
-        public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
+        public async Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
-            return _history.GetBarList(symbol, marketSide, timeframe, from, to);
+            return (await SyncFeedProviderModel.GetBarList(_syncFeedProvider, symbol, timeframe, marketSide, from, to, null)).ToList();
         }
 
         public async Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
-            return (await _history.GetBarPage(symbol, marketSide, timeframe, from, count)).ToList();
+            return (await SyncFeedProviderModel.GetBarList(_syncFeedProvider, symbol, timeframe, marketSide, from, UtcTicks.Default, count)).ToList();
         }
 
         public Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, UtcTicks from, UtcTicks to, bool level2)

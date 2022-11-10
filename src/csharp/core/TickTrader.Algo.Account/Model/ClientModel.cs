@@ -27,6 +27,7 @@ namespace TickTrader.Algo.Account
         private ChannelItemProcessor<object> _tradeProcessor;
 
         private FeedHistoryProviderModel.ControlHandler _feedHistory;
+        private IActorRef _syncFeedProvider;
 
         private TradeHistoryProvider _tradeHistory;
         private PluginTradeApiProvider _tradeApi;
@@ -62,6 +63,7 @@ namespace TickTrader.Algo.Account
             _tradeHistory = new TradeHistoryProvider(_connection, loggerId);
             _tradeApi = new PluginTradeApiProvider(_connection);
             _feedHistory = new FeedHistoryProviderModel.ControlHandler(/*settings.HistoryProviderSettings, */loggerId);
+            _syncFeedProvider = SyncFeedProviderActor.Create(new FeedHistoryProviderModel.Handler(_feedHistory.Ref), new BarSubscription(_rootBarSubManager), loggerId);
 
             if (settings.Monitoring?.EnableQuoteMonitoring ?? false)
                 _quoteMonitoring = new QuoteMonitoringModel(_connection, settings.Monitoring);
@@ -181,7 +183,7 @@ namespace TickTrader.Algo.Account
                 return Actor.Call(a =>
                 {
                     var historyHandler = new FeedHistoryProviderModel.Handler(a._feedHistory.Ref);
-                    return new PluginFeedProvider(a._cache, a._rootQuoteSubManager, a._rootBarSubManager, historyHandler);
+                    return new PluginFeedProvider(a._cache, a._rootQuoteSubManager, a._rootBarSubManager, historyHandler, a._syncFeedProvider);
                 });
             }
 
@@ -230,6 +232,7 @@ namespace TickTrader.Algo.Account
             public IQuoteSubManager QuoteSubManager { get; private set; }
             public BarDistributor BarDistributor { get; private set; }
             public IBarSubManager BarSubManager { get; private set; }
+            public IActorRef SyncFeedProvider { get; private set; }
 
             protected override void ActorInit()
             {
@@ -259,6 +262,8 @@ namespace TickTrader.Algo.Account
 
                 FeedHistory = new FeedHistoryProviderModel.Handler(await Actor.Call(a => a._feedHistory.Ref));
                 await FeedHistory.Init();
+
+                SyncFeedProvider = await Actor.Call(a => a._syncFeedProvider);
 
                 TradeHistory = new TradeHistoryProvider.Handler(await Actor.Call(a => a._tradeHistory.GetRef()));
                 await TradeHistory.Init();
@@ -396,6 +401,8 @@ namespace TickTrader.Algo.Account
 
                 await _feedProcessor.Stop();
                 _logger.Debug("Stopped feed stream.");
+
+                await SyncFeedProviderModel.Reset(_syncFeedProvider);
 
                 await _feedHistory.Stop();
                 _logger.Debug("Stopped feed history.");
@@ -578,6 +585,8 @@ namespace TickTrader.Algo.Account
                 }
                 else
                 {
+                    SyncFeedProviderModel.NotifyBarSubChanged(_syncFeedProvider, updates);
+
                     await _connection.FeedProxy.SubscribeToBars(updates);
 
                     _logger.Debug($"Subscribed to bars with args = {string.Join(", ", updates.Select(u => u.ToShortString()))}");

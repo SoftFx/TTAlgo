@@ -11,9 +11,24 @@ namespace TickTrader.Algo.Account
 {
     public static class SyncFeedProviderModel
     {
+        public static Task Reset(IActorRef actor) => actor.Ask(ResetCmd.Instance);
+
+        public static void NotifyBarSubChanged(IActorRef actor, List<BarSubUpdate> updates) => actor.Tell(new BarSubChangedMsg(updates));
+
+        public static Task<BarData[]> GetBarList(IActorRef actor, string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, UtcTicks from, UtcTicks to, int? count)
+            => actor.Ask<BarData[]>(new BarListRequest(symbol, timeframe, marketSide, from, to, count));
+
+        public static Task<QuoteInfo[]> GetQuoteList(IActorRef actor, string symbol, bool level2, UtcTicks from, UtcTicks to, int? count)
+            => actor.Ask<QuoteInfo[]>(new QuoteListRequest(symbol, level2, from, to, count));
+
+
         internal record BarListRequest(string Symbol, Feed.Types.Timeframe Timeframe, Feed.Types.MarketSide MarketSide, UtcTicks From, UtcTicks To, int? Count);
 
         internal record QuoteListRequest(string Symbol, bool Level2, UtcTicks From, UtcTicks To, int? Count);
+
+        internal class ResetCmd : Singleton<ResetCmd> { }
+
+        internal record BarSubChangedMsg(List<BarSubUpdate> Updates);
     }
 
 
@@ -21,7 +36,7 @@ namespace TickTrader.Algo.Account
     {
         public const int MaxBarsInCache = 4096;
 
-        private readonly Dictionary<BufferKey, BarCacheController> _barCaches;
+        private readonly Dictionary<BufferKey, BarCacheController> _barCaches = new();
 
         private readonly FeedHistoryProviderModel.Handler _history;
         private readonly IBarSub _barSub;
@@ -35,35 +50,61 @@ namespace TickTrader.Algo.Account
 
             _barSubHandler = _barSub.AddHandler(update => Self.Tell(update));
 
+            Receive<SyncFeedProviderModel.ResetCmd>(Reset);
+            Receive<SyncFeedProviderModel.BarSubChangedMsg>(BarSubChanged);
             Receive<BarUpdate>(ApplyBarUpdate);
-            Receive<SyncFeedProviderModel.BarListRequest>(GetBars);
-            Receive<SyncFeedProviderModel.QuoteListRequest>(GetQuotes);
+            Receive<SyncFeedProviderModel.BarListRequest, BarData[]>(GetBars);
+            Receive<SyncFeedProviderModel.QuoteListRequest, QuoteInfo[]>(GetQuotes);
         }
 
 
-        public static IActorRef Create(FeedHistoryProviderModel.Handler history, IBarSub barSub)
+        public static IActorRef Create(FeedHistoryProviderModel.Handler history, IBarSub barSub, string loggerId)
         {
-            return ActorSystem.SpawnLocal(() => new SyncFeedProviderActor(history, barSub), $"{nameof(SyncFeedProviderActor)}");
+            return ActorSystem.SpawnLocal(() => new SyncFeedProviderActor(history, barSub), $"{nameof(SyncFeedProviderActor)} {loggerId}");
         }
 
+
+        private void Reset(SyncFeedProviderModel.ResetCmd cmd)
+        {
+            _barSubHandler.Dispose();
+
+            foreach (var barCache in _barCaches.Values)
+                barCache.Dispose();
+
+            _barCaches.Clear();
+        }
+
+        private void BarSubChanged(SyncFeedProviderModel.BarSubChangedMsg msg)
+        {
+            foreach (var update in msg.Updates)
+            {
+                var key = new BufferKey(update.Entry.Symbol, update.Entry.Timeframe);
+                var hasCache = _barCaches.TryGetValue(key, out var barCache);
+                if (update.IsUpsertAction && !hasCache)
+                {
+                    barCache = new BarCacheController(key, CreateLock(), MaxBarsInCache);
+                    _barCaches[key] = barCache;
+                }
+                else if (update.IsRemoveAction)
+                {
+                    _barCaches.Remove(key);
+                    barCache.Dispose();
+                }
+            }
+        }
 
         private void ApplyBarUpdate(BarUpdate update)
         {
             var key = new BufferKey(update.Symbol, update.Timeframe);
 
-            if (!_barCaches.TryGetValue(key, out var barCache))
-            {
-                barCache = new BarCacheController(key, CreateLock(), MaxBarsInCache);
-                _barCaches[key] = barCache;
-            }
-
-            barCache.ApplyUpdate(update);
+            if (_barCaches.TryGetValue(key, out var barCache))
+                barCache.ApplyUpdate(update);
         }
 
         private async Task<BarData[]> GetBars(SyncFeedProviderModel.BarListRequest req)
         {
-            if (req.Count == 0 || req.From >= req.To)
-                return new BarData[0];
+            if (req.Count == 0 || (!req.Count.HasValue && req.From > req.To))
+                return Array.Empty<BarData>();
 
             var key = new BufferKey(req.Symbol, req.Timeframe);
 
@@ -82,8 +123,8 @@ namespace TickTrader.Algo.Account
 
         private async Task<QuoteInfo[]> GetQuotes(SyncFeedProviderModel.QuoteListRequest req)
         {
-            if (req.Count == 0 || req.From >= req.To)
-                return new QuoteInfo[0];
+            if (req.Count == 0 || (!req.Count.HasValue && req.From > req.To))
+                return Array.Empty<QuoteInfo>();
 
             return req.Count.HasValue
                 ? await _history.GetQuotePage(req.Symbol, req.From, req.Count.Value, req.Level2)
@@ -129,6 +170,7 @@ namespace TickTrader.Algo.Account
             private readonly CircularList<BarData> _futureAsks, _futureBids;
 
             private bool _freezeCache;
+            private bool _disposed;
 
 
             public BufferKey Key { get; }
@@ -148,12 +190,20 @@ namespace TickTrader.Algo.Account
             }
 
 
+            public void Dispose()
+            {
+                _disposed = true;
+
+                _askBars.Clear();
+                _bidBars.Clear();
+                _futureAsks.Clear();
+                _futureBids.Clear();
+            }
+
+
             public async Task<BarData[]> GetBars(SyncFeedProviderModel.BarListRequest req, FeedHistoryProviderModel.Handler history)
             {
                 var cache = req.MarketSide == Feed.Types.MarketSide.Ask ? _askBars : _bidBars;
-
-                if (req.Count == 0 || (!req.Count.HasValue && req.From > req.To))
-                    return Array.Empty<BarData>();
 
                 var searchRes = SearchCache(cache, req.From, req.To, req.Count);
                 if (!searchRes.NeedServerRequest) // all data already in cache
@@ -161,6 +211,9 @@ namespace TickTrader.Algo.Account
 
                 using (await _requestlock.GetLock())
                 {
+                    if (_disposed)
+                        return Array.Empty<BarData>();
+
                     // Now we have no pending requests
                     // Cache state might be modified since last check. Search again
                     searchRes = SearchCache(cache, req.From, req.To, req.Count);
@@ -386,7 +439,7 @@ namespace TickTrader.Algo.Account
                 if (cacheSize >= MaxBarsInCache)
                     return; // cache full
 
-                if (cacheSize != 0 && requestRes.Length != 0 && cache[0].OpenTime > requestRes[^1].OpenTime)
+                if (cacheSize != 0 && requestRes.Length != 0 && cache[0].OpenTime <= requestRes[^1].OpenTime)
                     return; // requestRes end is expected to be before cache begin
 
                 var buffer = ArrayPool<BarData>.Shared.Rent(cacheSize);
@@ -426,7 +479,7 @@ namespace TickTrader.Algo.Account
                     var reqCnt = Math.Abs(reqCount.Value);
 
                     var futureIndex = futureCache.BinarySearchBy(d => d.OpenTime, reqFrom, BinarySearchTypes.NearestHigher);
-                    if (futureCache[futureIndex].OpenTime > reqFrom)
+                    if (futureIndex != -1 && futureCache[futureIndex].OpenTime > reqFrom)
                         futureIndex--;
 
                     var futureCnt = futureIndex + 1;
@@ -476,7 +529,7 @@ namespace TickTrader.Algo.Account
                     else
                     {
                         var futureIndex = futureCache.BinarySearchBy(d => d.OpenTime, reqTo, BinarySearchTypes.NearestHigher);
-                        if (futureCache[futureIndex].OpenTime > reqTo)
+                        if (futureIndex != -1 && futureCache[futureIndex].OpenTime > reqTo)
                             futureIndex--;
 
                         futureCnt = futureIndex + 1;
