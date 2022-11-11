@@ -34,15 +34,15 @@ namespace TickTrader.BotTerminal.Controls.Chart
         internal static SolidColorPaint CrosshairPaint { get; } = new SolidColorPaint(SKColors.DarkOliveGreen);
 
 
-
-        static Customizer()
+        internal static void Init()
         {
-            LiveCharts.Configure(c => c.WithDefaultAnimationsSpeed(DefaultAnimationSpeed)
+            // Apply defaults first and then extend with our custom types
+            LiveCharts.Configure(LiveChartsSkiaSharp.DefaultPlatformBuilder);
+            LiveCharts.Configure(c => c.WithDefaultAnimationsSpeed(LiveCharts.DisableAnimations)
                                        .HasMap<EventPoint>(EventPoint.MapPoint)
                                        .HasMap<IndicatorPoint>(IndicatorPoint.MapPoint));
         }
-
-
+        
         internal static Axis GetDefaultAxis(int textSize = 10)
         {
             return new Axis

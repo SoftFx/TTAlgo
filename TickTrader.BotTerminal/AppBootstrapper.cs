@@ -59,6 +59,7 @@ namespace TickTrader.BotTerminal
                 PackageExplorer.Init<PackageV1Explorer>();
                 PluginLogWriter.Init(NLogPluginLogWriter.Create);
                 BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
+                Controls.Chart.Customizer.Init();
             }
         }
 
