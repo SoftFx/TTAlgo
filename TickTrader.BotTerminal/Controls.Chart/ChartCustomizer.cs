@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         private static readonly SKColor _lineColor = SKColors.SteelBlue;
 
 
-        internal static TimeSpan DefaultAnimationSpeed { get; } = new TimeSpan();
+        internal static TimeSpan DefaultAnimationSpeed { get; } = LiveCharts.DisableAnimations;
 
         internal static SKColor UpColor { get; } = SKColors.Green;
 
@@ -38,7 +38,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             // Apply defaults first and then extend with our custom types
             LiveCharts.Configure(LiveChartsSkiaSharp.DefaultPlatformBuilder);
-            LiveCharts.Configure(c => c.WithDefaultAnimationsSpeed(LiveCharts.DisableAnimations)
+            LiveCharts.Configure(c => c.WithDefaultAnimationsSpeed(DefaultAnimationSpeed)
                                        .HasMap<EventPoint>(EventPoint.MapPoint)
                                        .HasMap<IndicatorPoint>(IndicatorPoint.MapPoint));
         }
