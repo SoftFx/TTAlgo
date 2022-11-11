@@ -50,26 +50,26 @@ namespace TickTrader.Algo.Server
         }
 
 
-        private void Start(IndicatorHostModel.StartCmd cmd)
+        private async Task Start(IndicatorHostModel.StartCmd cmd)
         {
             if (_isStarted)
                 return;
 
-            foreach (var chart in _charts.Values)
-                ChartBuilderModel.Start(chart);
-
             _isStarted = true;
+
+            foreach (var chart in _charts.Values)
+                await ChartBuilderModel.Start(chart);
         }
 
-        private void Stop(IndicatorHostModel.StopCmd cmd)
+        private async Task Stop(IndicatorHostModel.StopCmd cmd)
         {
             if (!_isStarted)
                 return;
 
-            foreach (var chart in _charts.Values)
-                ChartBuilderModel.Stop(chart);
-
             _isStarted = false;
+
+            foreach (var chart in _charts.Values)
+                await ChartBuilderModel.Stop(chart);
         }
 
         private async Task Shutdown(IndicatorHostModel.ShutdownCmd cmd)

@@ -245,6 +245,9 @@ namespace TickTrader.Algo.Core.Lib
 
         public void CopyTo(T[] array, int arrayIndex)
         {
+            if (Count == 0)
+                return; // nothing to copy
+
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
             if (arrayIndex < 0 || arrayIndex >= array.Length)

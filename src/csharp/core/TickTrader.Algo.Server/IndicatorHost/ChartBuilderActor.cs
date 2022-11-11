@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
@@ -207,14 +208,16 @@ namespace TickTrader.Algo.Server
 
         private async Task StartAllIndicators()
         {
-            foreach (var indicator in _indicators.Values)
-                await StartIndicator(indicator.PluginRef);
+            await Task.WhenAll(_indicators.Values.Select(ind => StartIndicator(ind.PluginRef)));
+            //foreach (var indicator in _indicators.Values)
+            //    await StartIndicator(indicator.PluginRef);
         }
 
         private async Task StopAllIndicators()
         {
-            foreach (var indicator in _indicators.Values)
-                await StopIndicator(indicator.PluginRef);
+            await Task.WhenAll(_indicators.Values.Select(ind => StopIndicator(ind.PluginRef)));
+            //foreach (var indicator in _indicators.Values)
+            //    await StopIndicator(indicator.PluginRef);
         }
 
 

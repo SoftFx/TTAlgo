@@ -12,6 +12,7 @@ namespace TickTrader.Algo.CoreV1
     {
         private MarketStateFixture _marketFixture;
         private IQuoteSub _defaultSubscription;
+        private IBarSub _defaultBarSub;
         private readonly List<SetupAction> _setupActions = new List<SetupAction>();
         private string _mainSymbol;
         private BufferUpdateResult _mainSymbolUpdateResult;
@@ -112,17 +113,22 @@ namespace TickTrader.Algo.CoreV1
         {
             _defaultSubscription = FeedProvider.GetQuoteSub();
             _defaultSubscription.Modify(BufferedSymbols, 1);
+            _defaultBarSub = FeedProvider.GetBarSub();
+            _defaultBarSub.Modify(BufferedSymbols.Select(s => BarSubUpdate.Upsert(new BarSubEntry(s, ExecContext.TimeFrame))).ToList());
         }
 
         protected void AddSubscription(string symbol)
         {
             _defaultSubscription.Modify(symbol, 1);
+            _defaultBarSub.Modify(BarSubUpdate.Upsert(new BarSubEntry(symbol, ExecContext.TimeFrame)));
         }
 
         private void CancelDefaultSubscription()
         {
             _defaultSubscription.Dispose();
             _defaultSubscription = null;
+            _defaultBarSub.Dispose();
+            _defaultBarSub = null;
         }
 
         internal BufferUpdateResult ApplyUpdate(IRateInfo update)

@@ -50,9 +50,9 @@ namespace TickTrader.Algo.CoreV1
             {
                 fixture = new BarSeriesFixture(symbol, marketSide, ExecContext, null, mainSeriesFixture);
                 AddFixture(symbol, marketSide, fixture);
-                BufferingStrategy.InitBuffer(fixture);
                 if (!isSetup)
                     AddSubscription(symbol);
+                BufferingStrategy.InitBuffer(fixture);
             }
         }
 

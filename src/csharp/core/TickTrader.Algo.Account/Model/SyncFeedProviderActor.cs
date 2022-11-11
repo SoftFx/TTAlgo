@@ -42,6 +42,8 @@ namespace TickTrader.Algo.Account
         private readonly IBarSub _barSub;
         private readonly IDisposable _barSubHandler;
 
+        private IAlgoLogger _logger;
+
 
         private SyncFeedProviderActor(FeedHistoryProviderModel.Handler history, IBarSub barSub)
         {
@@ -64,9 +66,16 @@ namespace TickTrader.Algo.Account
         }
 
 
+        protected override void ActorInit(object initMsg)
+        {
+            _logger = AlgoLoggerFactory.GetLogger(Name);
+        }
+
+
         private void Reset(SyncFeedProviderModel.ResetCmd cmd)
         {
-            _barSubHandler.Dispose();
+            // Reset called on disconnect. Sub handler should release only on complete shutdown
+            //_barSubHandler.Dispose();
 
             foreach (var barCache in _barCaches.Values)
                 barCache.Dispose();
@@ -84,11 +93,15 @@ namespace TickTrader.Algo.Account
                 {
                     barCache = new BarCacheController(key, CreateLock(), MaxBarsInCache);
                     _barCaches[key] = barCache;
+
+                    _logger.Debug($"BarSubChanged: Enabled bar cache for {key.Symbol}.{key.Timeframe}");
                 }
                 else if (update.IsRemoveAction)
                 {
                     _barCaches.Remove(key);
                     barCache.Dispose();
+
+                    _logger.Debug($"BarSubchanged: Disabled bar cache for {key.Symbol}.{key.Timeframe}");
                 }
             }
         }
@@ -110,6 +123,8 @@ namespace TickTrader.Algo.Account
 
             if (!_barCaches.TryGetValue(key, out var barCache))
             {
+                _logger.Debug($"Bar cache disabled for {key.Symbol}.{key.Timeframe}; Using direct feed history query...");
+
                 // No cache if there is no subscription to updates 
                 return req.Count.HasValue
                     ? await _history.GetBarPage(req.Symbol, req.MarketSide, req.Timeframe, req.From, req.Count.Value)
@@ -117,6 +132,8 @@ namespace TickTrader.Algo.Account
             }
             else
             {
+                _logger.Debug($"Bar cache enabled for {key.Symbol}.{key.Timeframe}; Searching cache first...");
+
                 return await barCache.GetBars(req, _history);
             }
         }
@@ -322,6 +339,8 @@ namespace TickTrader.Algo.Account
                     searchRes.ReqFrom = reqFrom;
                     searchRes.ReqTo = reqTo;
                     searchRes.ReqCount = reqCount;
+
+                    return searchRes;
                 }
 
                 if (reqCount < 0)
@@ -442,17 +461,24 @@ namespace TickTrader.Algo.Account
                 if (cacheSize != 0 && requestRes.Length != 0 && cache[0].OpenTime <= requestRes[^1].OpenTime)
                     return; // requestRes end is expected to be before cache begin
 
-                var buffer = ArrayPool<BarData>.Shared.Rent(cacheSize);
-                try
+                if (cacheSize == 0)
                 {
-                    cache.CopyTo(buffer, 0);
-                    cache.Clear();
                     cache.AddRange(requestRes.AsSpan());
-                    cache.AddRange(buffer.AsSpan(0, cacheSize));
                 }
-                finally
+                else
                 {
-                    ArrayPool<BarData>.Shared.Return(buffer);
+                    var buffer = ArrayPool<BarData>.Shared.Rent(cacheSize);
+                    try
+                    {
+                        cache.CopyTo(buffer, 0);
+                        cache.Clear();
+                        cache.AddRange(requestRes.AsSpan());
+                        cache.AddRange(buffer.AsSpan(0, cacheSize));
+                    }
+                    finally
+                    {
+                        ArrayPool<BarData>.Shared.Return(buffer);
+                    }
                 }
             }
 
