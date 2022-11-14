@@ -157,7 +157,7 @@ namespace TickTrader.BotTerminal
 
         public IAccountProxy GetAccountProxy()
         {
-            var feedAdapter = new PluginFeedProvider(_core.Cache, _core.QuoteSubManager, _core.BarSubManager, FeedHistory, _core.SyncFeedProvider);
+            var feedAdapter = new PluginFeedProvider(_core.Cache, _core.QuoteSubManager, _core.BarSubManager, _core.FeedHistory, _core.SyncFeedProvider);
             var res = new LocalAccountProxy("")
             {
                 Feed = feedAdapter,
@@ -170,5 +170,9 @@ namespace TickTrader.BotTerminal
 
             return res;
         }
+
+
+        public Task<BarData[]> GetBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
+            => SyncFeedProviderModel.GetBarList(_core.SyncFeedProvider, symbol, timeframe, marketSide, from, UtcTicks.Default, count);
     }
 }

@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
             _barSub = ClientModel.BarDistributor.AddListener(OnBarUpdate, new BarSubEntry(SymbolCode, TimeFrame));
 
             var aproximateTimeRef = UtcTicks.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
-            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef, -BarsCount);
+            var barArray = await ClientModel.GetBars(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef, -BarsCount);
 
             cToken.ThrowIfCancellationRequested();
 
