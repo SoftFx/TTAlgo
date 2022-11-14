@@ -112,8 +112,6 @@ namespace TickTrader.Algo.Backtester
                 || OutputDataMode.HasFlag(TestDataSeriesFlags.Realtime)
                 || SymbolDataConfig.Any(s => s.Value.HasFlag(TestDataSeriesFlags.Realtime));
 
-            _executorCore.StartUpdateMarshalling();
-
             try
             {
                 if (!_control.OnStart())
@@ -139,7 +137,6 @@ namespace TickTrader.Algo.Backtester
             finally
             {
                 _control.OnStop();
-                _executorCore.StopUpdateMarshalling();
             }
         }
 

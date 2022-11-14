@@ -16,7 +16,6 @@ namespace TickTrader.Algo.CoreV1
         Feed.Types.Timeframe TimeFrame { get; }
         Feed.Types.Timeframe ModelTimeFrame { get; }
         PluginLoggerAdapter Logger { get; }
-        bool IsGlobalUpdateMarshalingEnabled { get; }
 
         void EnqueueQuote(QuoteInfo update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);

@@ -48,7 +48,6 @@ namespace TickTrader.Algo.CoreV1
         private PluginPermissions _permissions;
         private States state;
         private Func<IFixtureContext, IExecutorFixture> _tradeFixtureFactory = c => new TradingFixture(c);
-        private bool _enableUpdateMarshaling = true;
 
         private bool InRunningState => state == States.Running;
 
@@ -285,9 +284,6 @@ namespace TickTrader.Algo.CoreV1
 
                     Validate();
 
-                    if (_enableUpdateMarshaling)
-                        StartUpdateMarshalling();
-
                     accFixture = _tradeFixtureFactory(this);
 
                     // Setup builder
@@ -503,13 +499,6 @@ namespace TickTrader.Algo.CoreV1
                 OnInternalException(ex, false);
             }
 
-            try
-            {
-                if (_enableUpdateMarshaling)
-                    StopUpdateMarshalling();
-            }
-            catch { }
-
 
             lock (_sync) ChangeState(States.Idle);
         }
@@ -602,7 +591,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 ThrowIfRunning();
                 if (_pluginLoggerFixture == null)
-                    _pluginLoggerFixture = new LogFixture(this, GetDescriptor().IsTradeBot, logDir);
+                    _pluginLoggerFixture = new LogFixture(this, _metadata.Descriptor.IsTradeBot, logDir);
                 _pluginLogger = _pluginLoggerFixture;
                 return _pluginLoggerFixture;
             }
@@ -663,12 +652,9 @@ namespace TickTrader.Algo.CoreV1
             _timerFixture = timerFixture;
             _builderFactory = builderFactory;
             _pluginLogger = pluginLogger;
-            _enableUpdateMarshaling = false;
         }
 
         internal PluginBuilder GetBuilder() => _builder;
-        internal PluginDescriptor GetDescriptor() => _metadata.Descriptor;
-        internal IExecutorFixture GetTradeFixute() => accFixture;
         internal CalculatorFixture GetCalcFixture() => _calcFixture;
 
         internal void EmulateStop()
@@ -809,35 +795,9 @@ namespace TickTrader.Algo.CoreV1
 
         #region Update Marshaling
 
-        private BunchingBlock<object> _channel;
-
-        public bool IsGlobalMarshalingEnabled { get; set; }
-        public bool IsBunchingRequired { get; set; }
-        internal Action<IReadOnlyList<object>> MarshalUpdates { get; set; }
-        internal Action<object> MarshalUpdate { get; set; }
         internal Action<object> OnUpdate { get; set; }
         public Action<IMessage> OnNotification { get; set; }
         public Action<PluginExecutorCore> OnExitRequest { get; set; }
-
-        internal void StartUpdateMarshalling()
-        {
-            if (IsBunchingRequired)
-            {
-                _channel = new BunchingBlock<object>(MarshalUpdates, 30, 60);
-                OnUpdate = _channel.EnqueueNoTrhow;
-            }
-            else
-                OnUpdate = MarshalUpdate;
-        }
-
-        internal void StopUpdateMarshalling()
-        {
-            if (_channel != null)
-            {
-                _channel.Complete();
-                _channel.Completion.Wait();
-            }
-        }
 
         #endregion
 
@@ -853,7 +813,6 @@ namespace TickTrader.Algo.CoreV1
         PluginBuilder IFixtureContext.Builder => _builder;
         FeedStrategy IFixtureContext.FeedStrategy => _fStrategy;
         PluginLoggerAdapter IFixtureContext.Logger => _builder.LogAdapter;
-        bool IFixtureContext.IsGlobalUpdateMarshalingEnabled => IsGlobalMarshalingEnabled;
 
         void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {

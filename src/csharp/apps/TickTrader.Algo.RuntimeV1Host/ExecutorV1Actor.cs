@@ -165,8 +165,6 @@ namespace TickTrader.Algo.RuntimeV1Host
                 _executor.OnExitRequest = _ => Self.Tell(ExitRequest.Instance);
                 _executor.OnNotification = msg => _runtime.Tell(new ExecutorNotification(_id, msg));
                 _executor.OnInternalError += err => Self.Tell(err);
-                _executor.IsGlobalMarshalingEnabled = true;
-                _executor.IsBunchingRequired = true;
 
                 await _provider.PreLoad();
                 var accProxy = new LocalAccountProxy(_config.AccountId)
