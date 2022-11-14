@@ -289,7 +289,7 @@ namespace TickTrader.Algo.Backtester
             {
                 var feedClone = Feed.Clone();
                 var fStrategyClone = FStrategy.Clone();
-                var executor = Factory.CreateExecutor();
+                var executor = Factory.CreateExecutor("Optimizing-" + Interlocked.Increment(ref _idSeed).ToString());
                 executor.Metadata = this;
                 executor.OnUpdate = o => { };
 
@@ -300,7 +300,6 @@ namespace TickTrader.Algo.Backtester
                 executor.MainSymbolCode = CommonSettings.MainSymbol;
                 executor.TimeFrame = CommonSettings.MainTimeframe;
                 executor.ModelTimeFrame = CommonSettings.ModelTimeframe;
-                executor.InstanceId = "Optimizing-" + Interlocked.Increment(ref _idSeed).ToString();
                 executor.Permissions = new PluginPermissions() { TradeAllowed = true };
 
                 return emFixture;

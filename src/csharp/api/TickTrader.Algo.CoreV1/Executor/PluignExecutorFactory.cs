@@ -4,16 +4,18 @@ namespace TickTrader.Algo.CoreV1
 {
     public class PluignExecutorFactory
     {
-        private PluginKey _pluginKey;
+        private readonly PluginKey _pluginKey;
 
-        internal PluignExecutorFactory(PluginKey pluginKey)
+
+        public PluignExecutorFactory(PluginKey pluginKey)
         {
             _pluginKey = pluginKey;
         }
 
-        public PluginExecutorCore CreateExecutor()
+
+        public PluginExecutorCore CreateExecutor(string instanceId)
         {
-            return new PluginExecutorCore(_pluginKey);
+            return new PluginExecutorCore(_pluginKey, instanceId);
         }
     }
 }

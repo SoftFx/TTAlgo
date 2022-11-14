@@ -15,7 +15,9 @@ namespace TickTrader.Algo.CoreV1
     {
         public enum States { Idle, Running, Stopping }
 
-        private object _sync = new object();
+        private readonly object _sync = new object();
+        private readonly IAlgoLogger _logger;
+
         private LogFixture _pluginLoggerFixture;
         private IPluginLogger _pluginLogger = Null.Logger;
         private IPluginMetadata metadata;
@@ -51,9 +53,12 @@ namespace TickTrader.Algo.CoreV1
 
         private bool InRunningState => state == States.Running;
 
-        public PluginExecutorCore(PluginKey pluginKey)
+        public PluginExecutorCore(PluginKey pluginKey, string instanceId)
         {
             _metadata = PackageMetadataCache.GetPlugin(pluginKey);
+            InstanceId = instanceId;
+            _logger = AlgoLoggerFactory.GetLogger($"{nameof(PluginExecutorCore)} ({instanceId})");
+
             _statusFixture = new StatusFixture(this);
             _calcFixture = new CalculatorFixture(this);
             _marketFixture = new MarketStateFixture(this);
@@ -66,6 +71,8 @@ namespace TickTrader.Algo.CoreV1
         }
 
         #region Properties
+
+        public string InstanceId { get; }
 
         public bool IsRunning { get; private set; }
 
@@ -241,20 +248,6 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public string InstanceId
-        {
-            get { return _instanceId; }
-            set
-            {
-                lock (_sync)
-                {
-                    ThrowIfRunning();
-
-                    _instanceId = value;
-                }
-            }
-        }
-
         public PluginPermissions Permissions
         {
             get { return _permissions; }
@@ -280,7 +273,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("EXECUTOR START!");
+                    _logger.Debug("EXECUTOR START!");
 
                     Validate();
 
@@ -371,14 +364,14 @@ namespace TickTrader.Algo.CoreV1
 
         public Task Stop()
         {
-            System.Diagnostics.Debug.WriteLine("EXECUTOR STOP!");
+            _logger.Debug("EXECUTOR STOP!");
 
             return StopInternal(false);
         }
 
         public Task Exit()
         {
-            System.Diagnostics.Debug.WriteLine("EXECUTOR EXIT!");
+            _logger.Debug("EXECUTOR EXIT!");
 
             return StopInternal(false);
         }
@@ -403,7 +396,7 @@ namespace TickTrader.Algo.CoreV1
         {
             lock (_sync)
             {
-                System.Diagnostics.Debug.WriteLine("EXECUTOR ABORT!");
+                _logger.Debug("EXECUTOR ABORT!");
 
                 if (state == States.Stopping)
                 {
@@ -481,7 +474,7 @@ namespace TickTrader.Algo.CoreV1
                 if (_pluginLoggerFixture != null)
                     await _pluginLoggerFixture.Stop();
 
-                System.Diagnostics.Debug.WriteLine("EXECUTOR STOPPED STRATEGY!");
+                _logger.Debug("EXECUTOR STOPPED STRATEGY!");
 
                 _fStrategy.Stop();
                 accFixture.Stop();
@@ -605,7 +598,6 @@ namespace TickTrader.Algo.CoreV1
             if (config.IsLoggingEnabled)
                 InitLogging(config.LogDirectory);
 
-            InstanceId = pluginConfig.InstanceId;
             MainSymbolCode = pluginConfig.MainSymbol.Name;
             TimeFrame = pluginConfig.Timeframe;
             ModelTimeFrame = pluginConfig.ModelTimeframe;

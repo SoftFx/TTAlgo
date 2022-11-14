@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Backtester
             _pluginKey = pluginKey ?? throw new ArgumentNullException(nameof(pluginKey));
             var metadata = PackageMetadataCache.GetPlugin(pluginKey) ?? throw new ArgumentException("metadata not found", nameof(pluginKey));
             PluginInfo = metadata.Descriptor;
-            _executorCore = new PluginExecutorCore(pluginKey);
+            _executorCore = new PluginExecutorCore(pluginKey, "Baсktesting-" + Interlocked.Increment(ref IdSeed).ToString());
             _executorCore.Metadata = this;
 
             CommonSettings.EmulationPeriodStart = from;
@@ -104,7 +104,6 @@ namespace TickTrader.Algo.Backtester
             _executorCore.MainSymbolCode = CommonSettings.MainSymbol;
             _executorCore.TimeFrame = CommonSettings.MainTimeframe;
             _executorCore.ModelTimeFrame = CommonSettings.ModelTimeframe;
-            _executorCore.InstanceId = "Baсktesting-" + Interlocked.Increment(ref IdSeed).ToString();
             _executorCore.Permissions = new PluginPermissions() { TradeAllowed = true };
 
             bool isRealtime = MarginDataMode.HasFlag(TestDataSeriesFlags.Realtime)

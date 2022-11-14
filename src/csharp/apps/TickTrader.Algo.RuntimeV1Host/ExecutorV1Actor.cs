@@ -161,7 +161,7 @@ namespace TickTrader.Algo.RuntimeV1Host
 
                 var config = _config.PluginConfig.Unpack<PluginConfig>();
 
-                _executor = new PluginExecutorCore(config.Key);
+                _executor = new PluginExecutorCore(config.Key, config.InstanceId);
                 _executor.OnExitRequest = _ => Self.Tell(ExitRequest.Instance);
                 _executor.OnNotification = msg => _runtime.Tell(new ExecutorNotification(_id, msg));
                 _executor.OnInternalError += err => Self.Tell(err);
