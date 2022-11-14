@@ -111,7 +111,7 @@ namespace TickTrader.Algo.Core
             return mainBuffers.First();
         }
 
-        private Task LoadBuffersInternal(UtcTicks from, UtcTicks to) => Task.WhenAll(_buffers.Values.Where(b => b.IsLoaded).Select(b => b.LoadFeed(from, to)));
+        private Task LoadBuffersInternal(UtcTicks from, UtcTicks to) => Task.WhenAll(_buffers.Values.Where(b => !b.IsLoaded).Select(b => b.LoadFeed(from, to)));
 
         private void InitSubs()
         {
