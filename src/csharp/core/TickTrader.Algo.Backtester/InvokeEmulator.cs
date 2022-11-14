@@ -88,9 +88,9 @@ namespace TickTrader.Algo.Backtester
             _accEventQueue.Enqueue(e);
         }
 
-        public override void EnqueueQuote(Domain.QuoteInfo update)
+        public override void EnqueueBar(BarRateUpdate update)
         {
-            throw new InvalidOperationException("InvokeEmulator does not accept quote updates!");
+            throw new InvalidOperationException("InvokeEmulator does not accept bar updates!");
         }
 
         public override void EnqueueTradeUpdate(Action<PluginBuilder> a)

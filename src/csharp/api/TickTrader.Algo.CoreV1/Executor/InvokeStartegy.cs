@@ -39,7 +39,7 @@ namespace TickTrader.Algo.CoreV1
         public abstract void Start();
         public abstract Task Stop(bool quick);
         public abstract void Abort();
-        public abstract void EnqueueQuote(Domain.QuoteInfo update);
+        public abstract void EnqueueBar(BarRateUpdate update);
         public abstract void EnqueueCustomInvoke(Action<PluginBuilder> a);
         public abstract void EnqueueTradeUpdate(Action<PluginBuilder> a);
         public abstract void EnqueueEvent(IAccountApiEvent e);
@@ -94,9 +94,9 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public override int FeedQueueSize { get { return 0; } }
+        public override int FeedQueueSize => 0;
 
-        public override void EnqueueQuote(Domain.QuoteInfo update)
+        public override void EnqueueBar(BarRateUpdate update)
         {
             lock (syncObj)
             {

@@ -17,7 +17,7 @@ namespace TickTrader.Algo.CoreV1
         Feed.Types.Timeframe ModelTimeFrame { get; }
         PluginLoggerAdapter Logger { get; }
 
-        void EnqueueQuote(QuoteInfo update);
+        void EnqueueBar(BarRateUpdate update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
         void EnqueueEvent(IAccountApiEvent apiEvent);
         void EnqueueCustomInvoke(Action<PluginBuilder> action);

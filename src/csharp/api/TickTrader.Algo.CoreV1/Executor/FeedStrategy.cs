@@ -11,7 +11,6 @@ namespace TickTrader.Algo.CoreV1
     public abstract class FeedStrategy : IFeedBuferStrategyContext, CustomFeedProvider
     {
         private MarketStateFixture _marketFixture;
-        private IQuoteSub _defaultSubscription;
         private IBarSub _defaultBarSub;
         private readonly List<SetupAction> _setupActions = new List<SetupAction>();
         private string _mainSymbol;
@@ -60,7 +59,7 @@ namespace TickTrader.Algo.CoreV1
         {
             RateDispenser.Start();
             InitDefaultSubscription();
-            FeedProvider.QuoteUpdated += Feed_RateUpdated;
+            FeedProvider.BarUpdated += Feed_BarUpdated;
 
             ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
             ExecContext.Builder.CustomFeedProvider = this;
@@ -69,7 +68,7 @@ namespace TickTrader.Algo.CoreV1
         internal virtual void Stop()
         {
             RateDispenser.Stop();
-            FeedProvider.QuoteUpdated -= Feed_RateUpdated;
+            FeedProvider.BarUpdated -= Feed_BarUpdated;
 
             CancelDefaultSubscription();
         }
@@ -104,29 +103,24 @@ namespace TickTrader.Algo.CoreV1
             builder.StopBatch();
         }
 
-        private void Feed_RateUpdated(QuoteInfo upd)
+        private void Feed_BarUpdated(BarUpdate bar)
         {
-            ExecContext.EnqueueQuote(upd);
+            ExecContext.EnqueueBar(new BarRateUpdate(bar.BidData, bar.AskData, bar.Symbol));
         }
 
         private void InitDefaultSubscription()
         {
-            _defaultSubscription = FeedProvider.GetQuoteSub();
-            _defaultSubscription.Modify(BufferedSymbols, 1);
             _defaultBarSub = FeedProvider.GetBarSub();
             _defaultBarSub.Modify(BufferedSymbols.Select(s => BarSubUpdate.Upsert(new BarSubEntry(s, ExecContext.TimeFrame))).ToList());
         }
 
         protected void AddSubscription(string symbol)
         {
-            _defaultSubscription.Modify(symbol, 1);
             _defaultBarSub.Modify(BarSubUpdate.Upsert(new BarSubEntry(symbol, ExecContext.TimeFrame)));
         }
 
         private void CancelDefaultSubscription()
         {
-            _defaultSubscription.Dispose();
-            _defaultSubscription = null;
             _defaultBarSub.Dispose();
             _defaultBarSub = null;
         }
