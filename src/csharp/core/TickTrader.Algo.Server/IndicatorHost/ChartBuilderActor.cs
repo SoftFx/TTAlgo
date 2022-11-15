@@ -15,10 +15,7 @@ namespace TickTrader.Algo.Server
     {
         private readonly IActorRef _parent;
         private readonly AlgoServerPrivate _server;
-        private readonly int _id;
-        private readonly string _symbol;
-        private readonly Feed.Types.Timeframe _timeframe;
-        private readonly Feed.Types.MarketSide _marketSide;
+        private readonly ChartInfo _info;
         private readonly Dictionary<string, IndicatorModel> _indicators = new();
         private readonly ActorEventSource<object> _proxyDownlinkSrc = new();
 
@@ -30,10 +27,7 @@ namespace TickTrader.Algo.Server
         {
             _parent = parent;
             _server = server;
-            _id = info.Id;
-            _symbol = info.Symbol;
-            _timeframe = info.Timeframe;
-            _marketSide = info.MarketSide;
+            _info = info;
 
             Receive<ChartBuilderModel.StartCmd>(Start);
             Receive<ChartBuilderModel.StopCmd>(Stop);
@@ -43,6 +37,7 @@ namespace TickTrader.Algo.Server
             Receive<ChartHostProxy.UpdateIndicatorRequest>(UpdateIndicator);
             Receive<ChartHostProxy.RemoveIndicatorRequest>(RemoveIndicator);
             Receive<ChartHostProxy.AttachDownlinkCmd>(AttachProxyDownlink);
+            Receive<ChartHostProxy.ChangeTimeframeCmd>(ChangeTimeframe);
 
             Receive<RunningStateChanged>(OnRunningStateChanged);
             Receive<PluginModelUpdate>(OnPluginUpdated);
@@ -67,9 +62,9 @@ namespace TickTrader.Algo.Server
             if (_isStarted)
                 return;
 
-            await StartAllIndicators();
-
             _isStarted = true;
+
+            await StartAllIndicators();
         }
 
         private async Task Stop(ChartBuilderModel.StopCmd cmd)
@@ -77,9 +72,9 @@ namespace TickTrader.Algo.Server
             if (!_isStarted)
                 return;
 
-            await StopAllIndicators();
-
             _isStarted = false;
+
+            await StopAllIndicators();
         }
 
         private async Task Clear(ChartBuilderModel.ClearCmd cmd)
@@ -95,6 +90,21 @@ namespace TickTrader.Algo.Server
         {
             foreach (var indicator in _indicators.Values)
                 indicator.PluginRef.Tell(update);
+        }
+
+        private async Task ChangeTimeframe(ChartHostProxy.ChangeTimeframeCmd cmd)
+        {
+            _info.Timeframe = cmd.Timeframe;
+
+            if (!_isStarted)
+                return;
+
+            await StopAllIndicators();
+
+            if (!_isStarted)
+                return;
+
+            await StartAllIndicators();
         }
 
         private async Task AddIndicator(ChartHostProxy.AddIndicatorRequest request)
@@ -246,12 +256,17 @@ namespace TickTrader.Algo.Server
 
         ExecutorConfig IPluginHost.CreateExecutorConfig(string pluginId, string accId, PluginConfig pluginConfig)
         {
+            pluginConfig = pluginConfig.Clone();
+            pluginConfig.MainSymbol.Name = _info.Symbol;
+            pluginConfig.MainSymbol.Origin = SymbolConfig.Types.SymbolOrigin.Online;
+            pluginConfig.Timeframe = _info.Timeframe;
+
             var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(pluginConfig) };
             config.WorkingDirectory = _server.Env.AlgoWorkingFolder;
             config.LogDirectory = _server.Env.GetPluginLogsFolder(pluginId);
             config.InitPriorityInvokeStrategy();
             config.InitSlidingBuffering(4000);
-            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+            config.InitBarStrategy(_info.MarketSide);
 
             return config;
         }

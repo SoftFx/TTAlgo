@@ -11,23 +11,22 @@ namespace TickTrader.Algo.Server
     public class ChartHostProxy : IAsyncDisposable
     {
         private readonly IActorRef _actor, _parent;
-        private readonly ChartInfo _info;
         private readonly Channel<object> _downlink;
         private readonly VarDictionary<string, PluginOutputModel> _indicators = new();
 
 
-        public IChartInfo Info => _info;
+        public IChartInfo Info { get; }
 
         public IVarSet<string, PluginOutputModel> Indicators => _indicators;
 
         public IVarList<OutputSeriesProxy> Outputs { get; }
 
 
-        public ChartHostProxy(IActorRef actor, IActorRef parent, ChartInfo info)
+        public ChartHostProxy(IActorRef actor, IActorRef parent, IChartInfo info)
         {
             _actor = actor;
             _parent = parent;
-            _info = info;
+            Info = info;
             _downlink = DefaultChannelFactory.CreateForOneToOne<object>();
 
             Outputs = _indicators.TransformToList().Chain().SelectMany(m => m.Outputs);
@@ -39,12 +38,16 @@ namespace TickTrader.Algo.Server
             _downlink.Writer.TryComplete();
             Outputs.Dispose();
             _indicators.Clear();
-            await _parent.Ask(new IndicatorHostModel.RemoveChartCmd(_info.Id));
+            await _parent.Ask(new IndicatorHostModel.RemoveChartCmd(Info.Id));
         }
 
         public Task AddIndicator(PluginConfig config) => _actor.Ask(new AddIndicatorRequest(config));
 
+        public Task UpdateIndicator(PluginConfig config) => _actor.Ask(new UpdateIndicatorRequest(config));
+
         public Task RemoveIndicator(string pluginId) => _actor.Ask(new RemoveIndicatorRequest(pluginId));
+
+        public Task ChangeTimeframe(Feed.Types.Timeframe timeframe) => _actor.Ask(new ChangeTimeframeCmd(timeframe));
 
 
         internal async Task Init()
@@ -106,6 +109,8 @@ namespace TickTrader.Algo.Server
         public record UpdateIndicatorRequest(PluginConfig Config);
 
         public record RemoveIndicatorRequest(string PluginId);
+
+        public record ChangeTimeframeCmd(Feed.Types.Timeframe Timeframe);
 
         internal record AttachDownlinkCmd(ChannelWriter<object> Sink);
 

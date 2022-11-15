@@ -281,6 +281,7 @@ namespace TickTrader.BotTerminal
             //BarChart.DateAxisLabelFormat = dateLabelFormat;
             this.Chart = BarChart;
             BarChart.Activate(timeFrame);
+            _ = _chartHost.ChangeTimeframe(timeFrame);
             FilterChartBots();
         }
 
