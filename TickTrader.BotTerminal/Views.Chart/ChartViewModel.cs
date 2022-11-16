@@ -217,7 +217,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var dirName = $"{Symbol}.{SelectedTimeframe} {DateTime.UtcNow:yyyy-MM-dd hh-mm-ss.fff}";
+                var dirName = $"{Symbol}.{SelectedTimeframe} {DateTime.UtcNow:yyyy-MM-dd HH-mm-ss.fff}";
                 var dirPath = Path.Combine(EnvService.Instance.AppFolder, "ChartDumps", dirName);
                 PathHelper.EnsureDirectoryCreated(dirPath);
 
@@ -229,7 +229,7 @@ namespace TickTrader.BotTerminal
                     writer.WriteLine("Time,Open,High,Low,Close"); // header
                     foreach (var bar in BarChart.BarVector)
                     {
-                        writer.Write(bar.Date.ToUniversalTime().ToString("yyyy-MM-dd hh-mm-ss"));
+                        writer.Write(bar.Date.ToUniversalTime().ToString("yyyy-MM-dd HH-mm-ss"));
                         writer.Write(",");
                         writer.Write(bar.Open?.ToString(doubleFormat, CultureInfo.InvariantCulture));
                         writer.Write(",");

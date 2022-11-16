@@ -197,7 +197,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 writer.WriteLine("Time,Value,Metadata"); // header
                 foreach (var p in _orderedPoints.Snapshot)
                 {
-                    writer.Write(p.Time.ToUtcDateTime().ToString("yyyy-MM-dd hh-mm-ss"));
+                    writer.Write(p.Time.ToUtcDateTime().ToString("yyyy-MM-dd HH-mm-ss"));
                     writer.Write(",");
                     writer.Write(p.Value.ToString(doubleFormat, CultureInfo.InvariantCulture));
                     writer.Write(",");
