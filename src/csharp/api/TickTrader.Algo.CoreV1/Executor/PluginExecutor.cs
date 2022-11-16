@@ -46,7 +46,6 @@ namespace TickTrader.Algo.CoreV1
         private Task stopTask;
         private string workingFolder;
         private string botWorkingFolder;
-        private string _instanceId;
         private PluginPermissions _permissions;
         private States state;
         private Func<IFixtureContext, IExecutorFixture> _tradeFixtureFactory = c => new TradingFixture(c);
@@ -289,7 +288,7 @@ namespace TickTrader.Algo.CoreV1
                     //builder.TradeApi = accFixture;
                     _builder.Calculator = _calcFixture;
                     _builder.TradeHistoryProvider = new TradeHistoryAdapter(tradeHistoryProvider, _builder.Symbols);
-                    _builder.InstanceId = _instanceId;
+                    _builder.InstanceId = InstanceId;
                     //_builder.Isolated = _permissions.Isolated;
                     _builder.Permissions = _permissions;
                     _builder.Diagnostics = this;
