@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.Collections;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -58,14 +59,12 @@ namespace TickTrader.BotTerminal
             _algoEnv.LocalAgent.BotUpdated += BotOnUpdated;
             _algoEnv.LocalAgentVM.Bots.Updated += BotsOnUpdated;
 
-            _allIndicators.Updated += AllIndicators_Updated;
-            _allBots.Updated += AllBots_Updated;
+            Indicators.CollectionChanged += Indicators_CollectionChanged;
 
             SelectedTimeframe = period;
 
             CloseCommand = new GenericCommand(o => TryCloseAsync());
         }
-
 
         public string ChartWindowId { get; }
 
@@ -133,7 +132,7 @@ namespace TickTrader.BotTerminal
 
         public DynamicIndicatorObserver IndicatorObserver { get; }
 
-        public bool HasIndicators { get { return Indicators.Count() > 0; } }
+        public bool HasIndicators { get { return (Indicators as ICollection)?.Count > 0; } }
         public bool CanAddBot => false; /*Chart.TimeFrame != Feed.Types.Timeframe.Ticks;*/
         public bool CanAddIndicator => Chart.TimeFrame != Feed.Types.Timeframe.Ticks;
 
@@ -150,6 +149,8 @@ namespace TickTrader.BotTerminal
             _algoEnv.LocalAgent.BotUpdated -= BotOnUpdated;
             _algoEnv.LocalAgentVM.Bots.Updated -= BotsOnUpdated;
 
+            Indicators.CollectionChanged -= Indicators_CollectionChanged;
+
             _shell.ToolWndManager.CloseWindowByKey(this);
 
             BarChart.Dispose();
@@ -160,8 +161,6 @@ namespace TickTrader.BotTerminal
             Bots.Dispose();
 
             _chartBots.Clear();
-            _allIndicators.Updated -= AllIndicators_Updated;
-            _allBots.Updated -= AllBots_Updated;
             _allIndicators.Dispose();
             _allBots.Dispose();
 
@@ -352,49 +351,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void AllIndicators_Updated(ListUpdateArgs<PluginOutputModel> args)
+        private void Indicators_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            //var allOutputs = ChartControl.OutputGroups;
-
-            //if (args.Action == DLinqAction.Insert)
-            //{
-            //    allOutputs.Add(new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb, IsCrosshairEnabled));
-            //}
-            //else if (args.Action == DLinqAction.Replace)
-            //{
-            //    var index = allOutputs.IndexOf(allOutputs.Values.First(o => o.Model == args.OldItem));
-            //    allOutputs[index].Dispose();
-            //    allOutputs[index] = new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb, IsCrosshairEnabled);
-            //}
-            //else if (args.Action == DLinqAction.Remove)
-            //{
-            //    var output = allOutputs.Values.First(o => o.Model == args.OldItem);
-            //    output.Dispose();
-            //    allOutputs.Remove(output);
-            //}
             NotifyOfPropertyChange(nameof(HasIndicators));
-        }
-
-        private void AllBots_Updated(ListUpdateArgs<AlgoBotViewModel> args)
-        {
-            //var allOutputs = ChartControl.OutputGroups;
-
-            //if (args.Action == DLinqAction.Insert)
-            //{
-            //    allOutputs.Add(new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb, IsCrosshairEnabled));
-            //}
-            //else if (args.Action == DLinqAction.Replace)
-            //{
-            //    var index = allOutputs.IndexOf(allOutputs.Values.First(o => o.Model == args.OldItem.Model));
-            //    allOutputs[index].Dispose();
-            //    allOutputs[index] = new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb, IsCrosshairEnabled);
-            //}
-            //else if (args.Action == DLinqAction.Remove)
-            //{
-            //    var output = allOutputs.Values.First(o => o.Model == args.OldItem.Model);
-            //    output.Dispose();
-            //    allOutputs.Remove(output);
-            //}
         }
 
         private void InitChart()
