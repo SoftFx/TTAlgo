@@ -116,6 +116,10 @@
                         </MenuItem.ItemTemplate>
                     </MenuItem>
 
+                    <Separator/>
+
+                    <MenuItem Header="Dump chart data" cal:Message.Attach="DumpChartData" />
+
                 </ContextMenu>
             </Grid.ContextMenu>
             <Grid.RowDefinitions>

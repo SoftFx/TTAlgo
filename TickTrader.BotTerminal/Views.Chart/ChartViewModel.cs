@@ -2,6 +2,8 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
@@ -210,6 +212,44 @@ namespace TickTrader.BotTerminal
         }
 
         #region Algo
+
+        public void DumpChartData()
+        {
+            try
+            {
+                var dirName = $"{Symbol}.{SelectedTimeframe} {DateTime.UtcNow:yyyy-MM-dd hh-mm-ss.fff}";
+                var dirPath = Path.Combine(EnvService.Instance.AppFolder, "ChartDumps", dirName);
+                PathHelper.EnsureDirectoryCreated(dirPath);
+
+                var doubleFormat = "F" + smb.Digits.ToString();
+                var path = Path.Combine(dirPath, "_bars.csv");
+                using (var file = File.Open(path, FileMode.Create))
+                using (var writer = new StreamWriter(file, System.Text.Encoding.UTF8))
+                {
+                    writer.WriteLine("Time,Open,High,Low,Close"); // header
+                    foreach (var bar in BarChart.BarVector)
+                    {
+                        writer.Write(bar.Date.ToUniversalTime().ToString("yyyy-MM-dd hh-mm-ss"));
+                        writer.Write(",");
+                        writer.Write(bar.Open?.ToString(doubleFormat, CultureInfo.InvariantCulture));
+                        writer.Write(",");
+                        writer.Write(bar.High?.ToString(doubleFormat, CultureInfo.InvariantCulture));
+                        writer.Write(",");
+                        writer.Write(bar.Low?.ToString(doubleFormat, CultureInfo.InvariantCulture));
+                        writer.Write(",");
+                        writer.Write(bar.Close?.ToString(doubleFormat, CultureInfo.InvariantCulture));
+
+                        writer.WriteLine();
+                    }
+                }
+
+                IndicatorObserver.DumpPoints(dirPath);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to dump points");
+            }
+        }
 
         public void OpenPlugin(object descriptorObj)
         {

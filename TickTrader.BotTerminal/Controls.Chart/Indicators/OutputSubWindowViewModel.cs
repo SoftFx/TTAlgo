@@ -65,6 +65,15 @@ namespace TickTrader.BotTerminal.Controls.Chart
             }
         }
 
+        public void DumpPoints(string dirPath)
+        {
+            foreach (var output in _outputList.Snapshot)
+            {
+                output.DumpPoints(dirPath, _digits);
+            }
+        }
+
+
 
         internal void AddOutput(OutputSeriesModel output)
         {

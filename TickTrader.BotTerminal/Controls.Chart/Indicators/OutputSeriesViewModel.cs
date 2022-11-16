@@ -9,6 +9,8 @@ using static TickTrader.Algo.Domain.Metadata.Types;
 using Machinarium.Qnil;
 using TickTrader.Algo.Server;
 using System.Linq;
+using System.IO;
+using System.Globalization;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {
@@ -18,6 +20,8 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
 
         void UpdatePoints();
+
+        void DumpPoints(string dirPath, int symbolDigits);
     }
 
 
@@ -110,6 +114,8 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public void Dispose() { }
 
         public void UpdatePoints() { }
+
+        public void DumpPoints(string dirPath, int symbolDigits) { }
     }
 
 
@@ -117,6 +123,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
     {
         private readonly OutputSeriesProxy _output;
         private readonly VarDictionary<UtcTicks, OutputPoint> _points = new();
+        private readonly IVarList<OutputPoint> _orderedPoints;
         private readonly IObservableList<IndicatorPoint> _observablePoints;
 
 
@@ -126,7 +133,8 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public DynamicOutputSeriesViewModel(OutputSeriesProxy output, IndicatorChartSettings settings)
         {
             _output = output;
-            _observablePoints = _points.OrderBy((k, v) => k).Chain().Select(IndicatorPointsFactory.GetDefaultPoint).Chain().AsObservable();
+            _orderedPoints = _points.OrderBy((k, v) => k);
+            _observablePoints = _orderedPoints.Select(IndicatorPointsFactory.GetDefaultPoint).Chain().AsObservable();
             Series = CartesianOutputSeries.CreateSeries(output.Descriptor, output.Config, settings);
             Series.Values = _observablePoints;
         }
@@ -135,6 +143,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public void Dispose()
         {
             _observablePoints.Dispose();
+            _orderedPoints.Dispose();
         }
 
         public void UpdatePoints()
@@ -170,6 +179,34 @@ namespace TickTrader.BotTerminal.Controls.Chart
                             _points[point.Time] = point;
                         }
                         break;
+                }
+            }
+        }
+
+        public void DumpPoints(string dirPath, int symbolDigits)
+        {
+            var precision = _output.Descriptor.Precision;
+            if (precision == -1)
+                precision = symbolDigits;
+            var doubleFormat = "F" + precision.ToString();
+
+            var path = Path.Combine(dirPath, $"{_output.PluginId} - {_output.SeriesId}.csv");
+            using (var file = File.Open(path, FileMode.Create))
+            using (var writer = new StreamWriter(file, System.Text.Encoding.UTF8))
+            {
+                writer.WriteLine("Time,Value,Metadata"); // header
+                foreach (var p in _orderedPoints.Snapshot)
+                {
+                    writer.Write(p.Time.ToUtcDateTime().ToString("yyyy-MM-dd hh-mm-ss"));
+                    writer.Write(",");
+                    writer.Write(p.Value.ToString(doubleFormat, CultureInfo.InvariantCulture));
+                    writer.Write(",");
+                    if (p.Metadata != null)
+                    {
+                        writer.Write(p.Metadata);
+                    }
+
+                    writer.WriteLine();
                 }
             }
         }

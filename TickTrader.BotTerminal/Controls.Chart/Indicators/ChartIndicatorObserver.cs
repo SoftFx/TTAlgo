@@ -48,6 +48,14 @@ namespace TickTrader.BotTerminal.Controls.Chart
         }
 
 
+        public void DumpPoints(string dirPath)
+        {
+            Overlay.DumpPoints(dirPath);
+            foreach (var wnd in SubWindows)
+                wnd.DumpPoints(dirPath);
+        }
+
+
         private void AddOutput(OutputSeriesProxy output)
         {
             lock (_syncObj)
