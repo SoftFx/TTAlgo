@@ -156,8 +156,10 @@ namespace TickTrader.Algo.Account.Fdk2
             public void Update(BarUpdateSummary update)
             {
                 // temp fix, replace when new flag is added on TTS
-                var closeOnly = update.AskVolumeDelta == null && update.BidVolumeDelta == null;
-                if (!closeOnly && (update.AskClose.HasValue || update.BidClose.HasValue))
+                // reverted because there are more issues with VolumeDelta
+                //var closeOnly = update.AskVolumeDelta == null && update.BidVolumeDelta == null;
+                //if (!closeOnly && (update.AskClose.HasValue || update.BidClose.HasValue))
+                if (update.AskClose.HasValue || update.BidClose.HasValue)
                 {
                     var askClose = update.AskClose ?? CurrentBars[0].AskData.Close;
                     var bidClose = update.BidClose ?? CurrentBars[0].BidData.Close;
