@@ -95,7 +95,7 @@ namespace TickTrader.BotTerminal
             return new FileParameterConfig()
             {
                 PropertyId = Id,
-                FileName = FullPath,
+                FileName = string.IsNullOrEmpty(FileName) ? FileName : FullPath,
             };
         }
 
