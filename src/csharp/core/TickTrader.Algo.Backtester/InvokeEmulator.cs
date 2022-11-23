@@ -88,7 +88,12 @@ namespace TickTrader.Algo.Backtester
             _accEventQueue.Enqueue(e);
         }
 
-        public override void EnqueueBar(BarRateUpdate update)
+        public override void EnqueueQuote(QuoteInfo quote)
+        {
+            throw new InvalidOperationException("InvokeEmulator does not accept quote updates!");
+        }
+
+        public override void EnqueueBar(BarUpdate update)
         {
             throw new InvalidOperationException("InvokeEmulator does not accept bar updates!");
         }
@@ -497,7 +502,7 @@ namespace TickTrader.Algo.Backtester
 
             DelayExecution();
 
-            var bufferUpdate = OnFeedUpdate(rate);
+            //var bufferUpdate = OnFeedUpdate(rate);
             RateUpdated?.Invoke(rate);
             _collector.OnRateUpdate(rate);
 

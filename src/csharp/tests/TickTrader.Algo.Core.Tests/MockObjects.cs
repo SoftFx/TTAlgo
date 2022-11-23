@@ -93,7 +93,9 @@ namespace TickTrader.Algo.Core.Tests
         {
         }
 
-        public void EnqueueBar(BarRateUpdate update) { }
+        public void EnqueueQuote(QuoteInfo quote) { }
+
+        public void EnqueueBar(BarUpdate update) { }
 
         public void EnqueueEvent(IAccountApiEvent apiEvent)
         {

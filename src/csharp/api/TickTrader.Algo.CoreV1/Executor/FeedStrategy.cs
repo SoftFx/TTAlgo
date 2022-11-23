@@ -60,6 +60,7 @@ namespace TickTrader.Algo.CoreV1
             RateDispenser.Start();
             InitDefaultSubscription();
             FeedProvider.BarUpdated += Feed_BarUpdated;
+            FeedProvider.QuoteUpdated += Feed_QuoteUpdated;
 
             ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
             ExecContext.Builder.CustomFeedProvider = this;
@@ -69,6 +70,7 @@ namespace TickTrader.Algo.CoreV1
         {
             RateDispenser.Stop();
             FeedProvider.BarUpdated -= Feed_BarUpdated;
+            FeedProvider.QuoteUpdated -= Feed_QuoteUpdated;
 
             CancelDefaultSubscription();
         }
@@ -103,10 +105,9 @@ namespace TickTrader.Algo.CoreV1
             builder.StopBatch();
         }
 
-        private void Feed_BarUpdated(BarUpdate bar)
-        {
-            ExecContext.EnqueueBar(new BarRateUpdate(bar.BidData, bar.AskData, bar.Symbol));
-        }
+        private void Feed_BarUpdated(BarUpdate bar) => ExecContext.EnqueueBar(bar);
+
+        private void Feed_QuoteUpdated(QuoteInfo quote) => ExecContext.EnqueueQuote(quote);
 
         private void InitDefaultSubscription()
         {
@@ -125,32 +126,44 @@ namespace TickTrader.Algo.CoreV1
             _defaultBarSub = null;
         }
 
-        internal BufferUpdateResult ApplyUpdate(IRateInfo update)
+        internal BufferUpdateResult ApplyUpdate(FeedUpdateSummary feedUpdate)
         {
-            var node = _marketFixture.Market.GetUpdateNode(update);
+            var market = _marketFixture.Market;
+            foreach (var quote in feedUpdate.NewQuotes)
+            {
+                var node = market.GetSymbolNodeOrNull(quote.Symbol);
+                node?.SymbolInfo.UpdateRate(quote);
+            }
 
-            var result = UpdateBuffers(update);
-
+            var result = new BufferUpdateResult();
             var modelUpdate = new BufferUpdateResult();
+            foreach (var update in feedUpdate.BarUpdates)
+            {
+                var tmpRes = UpdateBuffers(update);
+                result += tmpRes;
+
+                if (!ModelTimeline.IsRealTime && update.Symbol == _mainSymbol)
+                {
+                    _mainSymbolUpdateResult += tmpRes;
+                    modelUpdate += ModelTimeline.Update(update.LastQuote.Time);
+                }
+            }
+
             if (ModelTimeline.IsRealTime)
             {
                 CalculateIndicators(result);
             }
-            else
+            else if (modelUpdate.ExtendedBy > 0)
             {
-                if (update.Symbol == _mainSymbol)
-                {
-                    _mainSymbolUpdateResult += result;
-                    modelUpdate += ModelTimeline.Update(update.LastQuote.Time);
-                }
-                if (modelUpdate.ExtendedBy > 0)
-                {
-                    CalculateIndicators(_mainSymbolUpdateResult);
-                    _mainSymbolUpdateResult = new BufferUpdateResult();
-                }
+                CalculateIndicators(_mainSymbolUpdateResult);
+                _mainSymbolUpdateResult = new BufferUpdateResult();
             }
 
-            RateDispenser.OnUpdateEvent(node);
+            foreach (var quote in feedUpdate.NewQuotes)
+            {
+                var node = market.GetSymbolNodeOrNull(quote.Symbol);
+                RateDispenser.OnUpdateEvent(node);
+            }
 
             if (ModelTimeline.IsRealTime || modelUpdate.ExtendedBy > 0)
                 ExecContext.Builder.InvokeOnModelTick();

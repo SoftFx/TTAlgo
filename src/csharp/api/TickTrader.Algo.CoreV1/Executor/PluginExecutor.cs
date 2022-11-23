@@ -815,7 +815,9 @@ namespace TickTrader.Algo.CoreV1
             iStrategy.EnqueueCustomInvoke(action);
         }
 
-        void IFixtureContext.EnqueueBar(BarRateUpdate update) => iStrategy.EnqueueBar(update);
+        void IFixtureContext.EnqueueQuote(QuoteInfo quote) => iStrategy.EnqueueQuote(quote);
+
+        void IFixtureContext.EnqueueBar(BarUpdate update) => iStrategy.EnqueueBar(update);
 
         public void EnqueueEvent(IAccountApiEvent accEvent)
         {

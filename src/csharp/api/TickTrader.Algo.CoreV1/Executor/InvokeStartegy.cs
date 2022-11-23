@@ -39,7 +39,8 @@ namespace TickTrader.Algo.CoreV1
         public abstract void Start();
         public abstract Task Stop(bool quick);
         public abstract void Abort();
-        public abstract void EnqueueBar(BarRateUpdate update);
+        public abstract void EnqueueQuote(QuoteInfo quote);
+        public abstract void EnqueueBar(BarUpdate update);
         public abstract void EnqueueCustomInvoke(Action<PluginBuilder> a);
         public abstract void EnqueueTradeUpdate(Action<PluginBuilder> a);
         public abstract void EnqueueEvent(IAccountApiEvent e);
@@ -49,7 +50,7 @@ namespace TickTrader.Algo.CoreV1
 
         protected virtual void OnReinit() { }
 
-        internal BufferUpdateResult OnFeedUpdate(IRateInfo update)
+        internal BufferUpdateResult OnFeedUpdate(FeedUpdateSummary update)
         {
             return FStartegy.ApplyUpdate(update);
         }
@@ -66,7 +67,7 @@ namespace TickTrader.Algo.CoreV1
         private object syncObj = new object();
         private Task currentTask;
         private Task stopTask;
-        private FeedQueue feedQueue;
+        private FeedQueue2 feedQueue;
         private Queue<Action<PluginBuilder>> tradeQueue;
         private Queue<Action<PluginBuilder>> eventQueue;
         private Queue<IAccountApiEvent> _accEventQueue;
@@ -79,7 +80,7 @@ namespace TickTrader.Algo.CoreV1
 
         protected override void OnInit()
         {
-            feedQueue = new FeedQueue(FStartegy);
+            feedQueue = new FeedQueue2();
             tradeQueue = new Queue<Action<PluginBuilder>>();
             eventQueue = new Queue<Action<PluginBuilder>>();
             _accEventQueue = new Queue<IAccountApiEvent>();
@@ -96,7 +97,19 @@ namespace TickTrader.Algo.CoreV1
 
         public override int FeedQueueSize => 0;
 
-        public override void EnqueueBar(BarRateUpdate update)
+        public override void EnqueueQuote(QuoteInfo quote)
+        {
+            lock (syncObj)
+            {
+                if (execStopFlag)
+                    return;
+
+                feedQueue.Enqueue(quote);
+                WakeUpWorker();
+            }
+        }
+
+        public override void EnqueueBar(BarUpdate update)
         {
             lock (syncObj)
             {
@@ -237,8 +250,8 @@ namespace TickTrader.Algo.CoreV1
         {
             try
             {
-                if (item is IRateInfo rateInfo)
-                    OnFeedUpdate(rateInfo);
+                if (item is FeedUpdateSummary feedUpdate)
+                    OnFeedUpdate(feedUpdate);
                 else if (item is Action<PluginBuilder> action)
                     action(Builder);
                 else if (item is IAccountApiEvent accEvent)
@@ -391,7 +404,7 @@ namespace TickTrader.Algo.CoreV1
             else if (tradeQueue.Count > 0)
                 return tradeQueue.Dequeue();
             else if (feedQueue.Count > 0)
-                return feedQueue.Dequeue();
+                return feedQueue.GetFeedUpdate();
             else
                 return null;
         }
