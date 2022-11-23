@@ -190,7 +190,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 precision = symbolDigits;
             var doubleFormat = "F" + precision.ToString();
 
-            var path = Path.Combine(dirPath, $"{_output.PluginId} - {_output.SeriesId}.csv");
+            var path = Path.Combine(dirPath, $"{_output.PluginId} - {_output.Descriptor.Id}.csv");
             using (var file = File.Open(path, FileMode.Create))
             using (var writer = new StreamWriter(file, System.Text.Encoding.UTF8))
             {

@@ -12,13 +12,22 @@ namespace TickTrader.Algo.Server
         private List<OutputSeriesUpdate> _pendingUpdates = new(DefaultUpdateCount);
 
 
-        public string PluginId { get; init; }
+        public string PluginId { get; }
 
-        public OutputDescriptor Descriptor { get; set; }
+        public OutputDescriptor Descriptor { get; }
 
         public IOutputConfig Config { get; set; }
 
-        public string SeriesId => Descriptor.Id;
+        public string SeriesId { get; }
+
+
+        public OutputSeriesProxy(string pluginId, OutputDescriptor descriptor)
+        {
+            PluginId = pluginId;
+            Descriptor = descriptor;
+
+            SeriesId = $"ind/{pluginId}/{descriptor.Id}";
+        }
 
 
         public IEnumerable<OutputSeriesUpdate> TakePendingUpdates()

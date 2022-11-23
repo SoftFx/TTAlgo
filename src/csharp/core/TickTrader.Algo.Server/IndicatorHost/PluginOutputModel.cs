@@ -39,10 +39,8 @@ namespace TickTrader.Algo.Server
             var properties = info.Config.UnpackProperties();
             foreach (var outputInfo in info.Descriptor_.Outputs)
             {
-                _outputs.Add(new OutputSeriesProxy
+                _outputs.Add(new OutputSeriesProxy(Id, outputInfo)
                 {
-                    PluginId = Id,
-                    Descriptor = outputInfo,
                     Config = properties.FirstOrDefault(c => c.PropertyId == outputInfo.Id) as IOutputConfig,
                 });
                 _outputIndexLookup[outputInfo.Id] = cnt++;
