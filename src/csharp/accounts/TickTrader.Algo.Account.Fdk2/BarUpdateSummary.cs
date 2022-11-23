@@ -12,6 +12,8 @@ namespace TickTrader.Algo.Account.Fdk2
 
         public bool IsReset { get; set; }
 
+        public bool CloseOnly { get; set; }
+
         public double? AskClose { get; set; }
 
         public double? BidClose { get; set; }
@@ -26,7 +28,7 @@ namespace TickTrader.Algo.Account.Fdk2
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"{Symbol}, reset = {IsReset}, ask = {AskClose}, bid = {BidClose}, askVolDelta = {AskVolumeDelta}, bidVolDelta = {BidVolumeDelta}");
+            sb.AppendLine($"{Symbol}, reset = {IsReset}, closeOnly = {CloseOnly}, ask = {AskClose}, bid = {BidClose}, askVolDelta = {AskVolumeDelta}, bidVolDelta = {BidVolumeDelta}");
             if (Details?.Length > 0)
             {
                 foreach (var d in Details)

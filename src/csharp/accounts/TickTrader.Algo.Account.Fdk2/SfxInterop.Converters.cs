@@ -847,6 +847,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 BidClose = fdkUpdate.BidClose,
                 AskVolumeDelta = fdkUpdate.AskVolumeDelta,
                 BidVolumeDelta = fdkUpdate.BidVolumeDelta,
+                CloseOnly = fdkUpdate.IsClosedBarUpdate,
             };
             if (fdkUpdate.Updates?.Count > 0)
             {
