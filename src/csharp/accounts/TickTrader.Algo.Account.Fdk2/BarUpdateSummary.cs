@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 };
 
                 if (Volume.HasValue) // Volume available only in TTS 1.57
-                    data.TickVolume = (long)Volume.Value;
+                    data.RealVolume = Volume.Value;
 
                 return data;
             }
@@ -100,7 +100,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 data.Low = Low.Value;
 
                 if (Volume.HasValue) // Volume available only in TTS 1.57
-                    data.TickVolume = (long)Volume.Value;
+                    data.RealVolume = Volume.Value;
             }
             else
             {

@@ -167,8 +167,8 @@ namespace TickTrader.Algo.Account.Fdk2
                     {
                         bar.AskData.Close = askClose;
                         bar.BidData.Close = bidClose;
-                        bar.AskData.TickVolume += (long)askVolDelta;
-                        bar.BidData.TickVolume += (long)bidVolDelta;
+                        bar.AskData.RealVolume += askVolDelta;
+                        bar.BidData.RealVolume += bidVolDelta;
                     }
                 }
 
