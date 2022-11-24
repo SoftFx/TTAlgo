@@ -245,10 +245,20 @@ namespace TickTrader.Algo.Account
                             ? await history.GetBarPage(req.Symbol, req.MarketSide, req.Timeframe, searchRes.ReqFrom, searchRes.ReqCount.Value)
                             : (await history.GetBarList(req.Symbol, req.MarketSide, req.Timeframe, req.From, req.To)).ToArray();
 
-                        var futureCache = req.MarketSide == Feed.Types.MarketSide.Ask ? _futureAsks : _futureBids;
-                        barsRes = searchRes.CheckFutureUpdates
-                            ? MergeBarsResult(requestRes, cache, futureCache, req.From, req.To, req.Count)
-                            : MergeBarsResult(requestRes, cache, searchRes);
+                        if (searchRes.CheckFutureUpdates)
+                        {
+                            var futureCache = req.MarketSide == Feed.Types.MarketSide.Ask ? _futureAsks : _futureBids;
+
+                            // Future cache can contain update to last bar
+                            // We need to apply this update to simplify merge calculations
+                            ApplyPendingLastUpdate(requestRes, cache, futureCache);
+
+                            barsRes = MergeBarsResult(requestRes, cache, futureCache, req.From, req.To, req.Count);
+                        }
+                        else
+                        {
+                            barsRes = MergeBarsResult(requestRes, cache, searchRes);
+                        }
 
                         MergeCacheWithRequest(requestRes, cache);
                     }
@@ -302,28 +312,6 @@ namespace TickTrader.Algo.Account
                 foreach (var upd in _futureBids)
                     ApplyUpdate(_bidBars, upd);
                 _futureBids.Clear();
-            }
-
-            private void ApplyPendingLastUpdates()
-            {
-                if (_askBars.Count > 0 && _futureAsks.Count > 0)
-                {
-                    var update = _futureAsks[0];
-                    var lastIndex = _askBars.Count - 1;
-                    if (_askBars[lastIndex].OpenTime == update.OpenTime)
-                        _askBars[lastIndex] = update;
-
-                    _futureAsks.Dequeue();
-                }
-                if (_bidBars.Count > 0 && _futureBids.Count > 0)
-                {
-                    var update = _futureBids[0];
-                    var lastIndex = _bidBars.Count - 1;
-                    if (_bidBars[lastIndex].OpenTime == update.OpenTime)
-                        _bidBars[lastIndex] = update;
-
-                    _futureBids.Dequeue();
-                }
             }
 
             private CacheSearchResult SearchCache(CircularItemCache<BarData> cache, UtcTicks reqFrom, UtcTicks reqTo, int? reqCount)
@@ -490,14 +478,31 @@ namespace TickTrader.Algo.Account
                 return res;
             }
 
+            private void ApplyPendingLastUpdate(BarData[] requestRes, CircularItemCache<BarData> cache, CircularList<BarData> futureCache)
+            {
+                if (futureCache.Count > 0)
+                {
+                    var update = futureCache[0];
+                    // First cache search can happen on empty cache before first update arrives
+                    // In this case last bar in request can have an update in future cache
+                    if (cache.Count == 0 && requestRes[^1].OpenTime == update.OpenTime)
+                    {
+                        requestRes[^1] = futureCache[0];
+                        futureCache.Dequeue();
+                    }
+                    // This update doesn't change cache range so search result should be still relevant
+                    else if (cache.Count > 0 && cache[^1].OpenTime == update.OpenTime)
+                    {
+                        cache[^1] = update;
+                        futureCache.Dequeue();
+                    }
+                }
+            }
+
             private BarData[] MergeBarsResult(BarData[] requestRes, CircularItemCache<BarData> cache, CircularList<BarData> futureCache, UtcTicks reqFrom, UtcTicks reqTo, int? reqCount)
             {
                 // The fact that we made a request and need future updates mean that full cache range is involved
                 // So we need to check what part of future updates are needed
-
-                // update last bars to simplify merge calculations
-                // this doesn't change cache range so search result should be still relevant
-                ApplyPendingLastUpdates();
 
                 BarData[] res = Array.Empty<BarData>();
                 if (reqCount < 0)
