@@ -485,7 +485,7 @@ namespace TickTrader.Algo.Account
                     var update = futureCache[0];
                     // First cache search can happen on empty cache before first update arrives
                     // In this case last bar in request can have an update in future cache
-                    if (cache.Count == 0 && requestRes[^1].OpenTime == update.OpenTime)
+                    if (cache.Count == 0 && requestRes.Length > 0 && requestRes[^1].OpenTime == update.OpenTime)
                     {
                         requestRes[^1] = futureCache[0];
                         futureCache.Dequeue();
