@@ -1,33 +1,42 @@
-﻿namespace TickTrader.Algo.Indicators.Trend.MovingAverage
+﻿using System;
+
+namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
     internal class SMA2 : IMovAvgAlgo
     {
-        private readonly MovAvgArgs _args;
         private readonly MovAvgCache _cache;
+        private readonly Func<double> _calcAvgFunc;
 
         private double _partialSum, _sum;
 
 
-        public SMA2(MovAvgArgs args)
+        public MovAvgArgs Args { get; }
+
+        public double Average { get; private set; }
+
+        public double Sum => _sum;
+
+
+        public SMA2(MovAvgArgs args, bool onlyFullMode = true)
         {
-            _args = args;
+            Args = args;
             _cache = new MovAvgCache(args.Period);
+
+            if (onlyFullMode)
+                _calcAvgFunc = CalcAvgOnlyFull;
+            else
+                _calcAvgFunc = CalcAvgAny;
         }
 
 
-        public void OnInit()
+        public void Reset()
         {
+            Average = double.NaN;
             _cache.Reset();
             _partialSum = _sum = 0;
         }
 
-        public void OnReset()
-        {
-            _cache.Reset();
-            _partialSum = _sum = 0;
-        }
-
-        public void OnAdded(double value)
+        public void Add(double value)
         {
             _cache.Add(value);
 
@@ -40,19 +49,29 @@
 
             _partialSum = sum;
             _sum = sum + value;
+
+            Average = _calcAvgFunc();
         }
 
-        public void OnLastUpdated(double value)
+        public void UpdateLast(double value)
         {
             _cache.UpdateLast(value);
 
             _sum = _partialSum + value;
+
+            Average = _calcAvgFunc();
         }
 
-        public double Calculate()
+
+        private double CalcAvgOnlyFull()
         {
-            var period = _args.Period;
+            var period = Args.Period;
             return _cache.CacheSize < period ? double.NaN : _sum / period;
+        }
+
+        private double CalcAvgAny()
+        {
+            return _sum / Args.Period;
         }
     }
 }

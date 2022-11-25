@@ -6,25 +6,10 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 {
-    internal class AnotherSma : SMA
-    {
-        public double Sum => _sum;
-
-        public AnotherSma(int period) : base(period)
-        {
-        }
-
-        protected override void SetCurrentResult()
-        {
-            Average = _sum / Period;
-        }
-    }
-
     [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index Avg", Version = "1.4")]
     public class RangeBoundChannelIndex : DigitalIndicatorBase, IRangeBoundChannelIndexAvg
     {
-        private IMA _ma;
-        private AnotherSma _stdMa, _std2Ma;
+        private SMA2 _ma, _stdMa, _std2Ma;
         private List<double> _calcCache;
         private DateTime _lastUpdated;
 
@@ -76,15 +61,14 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 
         private void InitializeIndicator()
         {
-            _ma = new AnotherSma(CountBars);
-            _ma.Init();
+            var args = new MovAvgArgs((MovingAverageMethod)(-1), CountBars, double.NaN);
+            _ma = new SMA2(args, false);
             _calcCache = new List<double>(CountBars + 1);
             _lastUpdated = DateTime.MinValue;
 
-            _stdMa = new AnotherSma(Std);
-            _std2Ma = new AnotherSma(Std);
-            _stdMa.Init();
-            _std2Ma.Init();
+            args = new MovAvgArgs((MovingAverageMethod)(-1), Std, double.NaN);
+            _stdMa = new SMA2(args, false);
+            _std2Ma = new SMA2(args, false);
         }
 
         protected override void Init()

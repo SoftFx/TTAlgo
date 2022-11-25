@@ -2,35 +2,33 @@
 {
     internal class LWMA2 : IMovAvgAlgo
     {
-        private readonly MovAvgArgs _args;
         private readonly MovAvgCache _cache;
 
         private int _indexSum;
         private double _partialSum, _sum;
 
 
+        public MovAvgArgs Args { get; }
+
+        public double Average { get; private set; }
+
+
         public LWMA2(MovAvgArgs args)
         {
-            _args = args;
+            Args = args;
             _cache = new MovAvgCache(args.Period);
         }
 
 
-        public void OnInit()
+        public void Reset()
         {
+            Average = double.NaN;
             _cache.Reset();
             _indexSum = 0;
             _partialSum = _sum = double.NaN;
         }
 
-        public void OnReset()
-        {
-            _cache.Reset();
-            _indexSum = 0;
-            _partialSum = _sum = double.NaN;
-        }
-
-        public void OnAdded(double value)
+        public void Add(double value)
         {
             _cache.Add(value);
 
@@ -44,18 +42,23 @@
 
             _partialSum = sum;
             _sum = sum + value * cacheSize;
+
+            Average = Calculate();
         }
 
-        public void OnLastUpdated(double value)
+        public void UpdateLast(double value)
         {
             _cache.UpdateLast(value);
 
             _sum = _partialSum + value * _cache.CacheSize;
+
+            Average = Calculate();
         }
 
-        public double Calculate()
+
+        private double Calculate()
         {
-            return _cache.CacheSize < _args.Period ? double.NaN : _sum / _indexSum;
+            return _cache.CacheSize < Args.Period ? double.NaN : _sum / _indexSum;
         }
     }
 }

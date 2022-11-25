@@ -3,20 +3,6 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
-    internal interface IMovAvgAlgo
-    {
-        void OnInit();
-
-        void OnReset();
-
-        void OnAdded(double value);
-
-        void OnLastUpdated(double value);
-
-        double Calculate();
-    }
-
-
     internal readonly struct MovAvgArgs
     {
         public MovingAverageMethod Method { get; }
@@ -35,45 +21,42 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
     }
 
 
+    internal interface IMovAvgAlgo
+    {
+        MovAvgArgs Args { get; }
+
+        double Average { get; }
+
+
+        void Reset();
+
+        void Add(double value);
+
+        void UpdateLast(double value);
+    }
+
+
     internal class MovAvg : IMA
     {
-        private readonly MovAvgArgs _args;
         private readonly IMovAvgAlgo _algo;
 
 
-        public double Average { get; private set; }
+        public double Average => _algo.Average;
 
 
-        private MovAvg(MovAvgArgs args, IMovAvgAlgo algo)
+        internal MovAvg(IMovAvgAlgo algo)
         {
-            _args = args;
             _algo = algo;
         }
 
 
-        public void Init()
-        {
-            Average = double.NaN;
-            _algo.OnInit();
-        }
+        public void Init() => _algo.Reset();
 
-        public void Reset()
-        {
-            Average = double.NaN;
-            _algo.OnReset();
-        }
+        public void Reset() => _algo.Reset();
 
-        public void Add(double value)
-        {
-            _algo.OnAdded(value);
-            Average = _algo.Calculate();
-        }
+        public void Add(double value) => _algo.Add(value);
 
-        public void UpdateLast(double value)
-        {
-            _algo.OnLastUpdated(value);
-            Average = _algo.Calculate();
-        }
+        public void UpdateLast(double value) => _algo.UpdateLast(value);
 
 
         internal static MovAvg Create(int period, MovingAverageMethod method, double smoothFactor = double.NaN)
@@ -96,7 +79,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
                 default: throw new ArgumentException("Unknown Moving Average method.");
             }
 
-            return new MovAvg(args, algo);
+            return new MovAvg(algo);
         }
     }
 }

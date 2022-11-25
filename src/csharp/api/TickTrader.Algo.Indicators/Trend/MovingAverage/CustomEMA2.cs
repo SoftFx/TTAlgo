@@ -2,29 +2,30 @@
 {
     internal class CustomEMA2 : IMovAvgAlgo
     {
-        private readonly MovAvgArgs _args;
         private readonly MovAvgCache _cache;
 
         private double _prev, _current;
 
 
+        public MovAvgArgs Args { get; }
+
+        public double Average { get; private set; }
+
+
         public CustomEMA2(MovAvgArgs args)
         {
-            _args = args;
-            _cache = new MovAvgCache(_args.Period);
+            Args = args;
+            _cache = new MovAvgCache(Args.Period);
         }
 
-        public void OnInit()
+
+        public void Reset()
         {
+            Average = double.NaN;
             _prev = _current = double.NaN;
         }
 
-        public void OnReset()
-        {
-            _prev = _current = double.NaN;
-        }
-
-        public void OnAdded(double value)
+        public void Add(double value)
         {
             _cache.Add(value);
 
@@ -37,7 +38,7 @@
             }
             else
             {
-                var k = _args.SmoothFactor;
+                var k = Args.SmoothFactor;
 
                 var prev = cache[0];
                 for (var i = 1; i < cacheSize - 1; i++)
@@ -46,9 +47,11 @@
                 _prev = prev;
                 _current = k * value + (1 - k) * prev;
             }
+
+            Average = _current;
         }
 
-        public void OnLastUpdated(double value)
+        public void UpdateLast(double value)
         {
             _cache.UpdateLast(value);
 
@@ -58,14 +61,11 @@
             }
             else
             {
-                var k = _args.SmoothFactor;
+                var k = Args.SmoothFactor;
                 _current = k * value + (1 - k) * _prev;
             }
-        }
 
-        public double Calculate()
-        {
-            return _current;
+            Average = _current;
         }
     }
 }

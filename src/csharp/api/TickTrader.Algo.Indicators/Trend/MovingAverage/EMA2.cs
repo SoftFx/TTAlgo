@@ -2,32 +2,31 @@
 {
     internal class EMA2 : IMovAvgAlgo
     {
-        private readonly MovAvgArgs _args;
-
         private int _calcState;
         private double _prev, _current;
 
 
+        public MovAvgArgs Args { get; }
+
+        public double Average { get; private set; }
+
+
         public EMA2(MovAvgArgs args)
         {
-            _args = args;
+            Args = args;
         }
 
-        public void OnInit()
+
+        public void Reset()
         {
+            Average = double.NaN;
             _calcState = 0;
             _prev = _current = double.NaN;
         }
 
-        public void OnReset()
+        public void Add(double value)
         {
-            _calcState = 0;
-            _prev = _current = double.NaN;
-        }
-
-        public void OnAdded(double value)
-        {
-            var k = _args.SmoothFactor;
+            var k = Args.SmoothFactor;
 
             if (_calcState == 0)
             {
@@ -40,9 +39,11 @@
                 _current = k * value + (1 - k) * _prev;
                 _calcState = 2;
             }
+
+            Average = _current;
         }
 
-        public void OnLastUpdated(double value)
+        public void UpdateLast(double value)
         {
             if (_calcState == 1)
             {
@@ -50,14 +51,11 @@
             }
             else if (_calcState == 2)
             {
-                var k = _args.SmoothFactor;
+                var k = Args.SmoothFactor;
                 _current = k * value + (1 - k) * _prev;
             }
-        }
 
-        public double Calculate()
-        {
-            return _current;
+            Average = _current;
         }
     }
 }

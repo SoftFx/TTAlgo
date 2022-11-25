@@ -2,39 +2,37 @@
 {
     internal class SMMA2 : IMovAvgAlgo
     {
-        private readonly MovAvgArgs _args;
         private readonly MovAvgCache _cache;
 
         private int _calcState;
         private double _prev, _prevSum, _sum, _current;
 
 
+        public MovAvgArgs Args { get; }
+
+        public double Average { get; private set; }
+
+
         public SMMA2(MovAvgArgs args)
         {
-            _args = args;
+            Args = args;
             _cache = new MovAvgCache(args.Period);
         }
 
 
-        public void OnInit()
+        public void Reset()
         {
+            Average = double.NaN;
             _cache.Reset();
             _calcState = 0;
             _prev = _prevSum = _sum = _current = double.NaN;
         }
 
-        public void OnReset()
-        {
-            _cache.Reset();
-            _calcState = 0;
-            _prev = _prevSum = _sum = _current = double.NaN;
-        }
-
-        public void OnAdded(double value)
+        public void Add(double value)
         {
             _cache.Add(value);
 
-            var period = _args.Period;
+            var period = Args.Period;
             var cache = _cache.Cache;
             var cacheSize = _cache.CacheSize;
 
@@ -63,13 +61,15 @@
 
                 _calcState = 2;
             }
+
+            Average = _current;
         }
 
-        public void OnLastUpdated(double value)
+        public void UpdateLast(double value)
         {
             _cache.UpdateLast(value);
 
-            var period = _args.Period;
+            var period = Args.Period;
             if (_cache.CacheSize < period)
                 return;
 
@@ -84,11 +84,7 @@
                 _current = _sum / period;
             }
 
-        }
-
-        public double Calculate()
-        {
-            return _current;
+            Average = _current;
         }
     }
 }
