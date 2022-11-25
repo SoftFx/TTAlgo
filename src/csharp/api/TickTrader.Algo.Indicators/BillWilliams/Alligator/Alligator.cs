@@ -3,7 +3,7 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
 {
-    [Indicator(Category = "Bill Williams", DisplayName = "Alligator", Version = "1.0")]
+    [Indicator(Category = "Bill Williams", DisplayName = "Alligator", Version = "1.1")]
     public class Alligator : Indicator, IAlligator
     {
         private IMovingAverage _jaws, _teeth, _lips;

@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.AverageTrueRange
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Average True Range", Version = "1.0")]
+    [Indicator(Category = "Oscillators", DisplayName = "Average True Range", Version = "1.1")]
     public class AverageTrueRange : Indicator, IAverageTrueRange
     {
         private IMovAvgAlgo _ma;

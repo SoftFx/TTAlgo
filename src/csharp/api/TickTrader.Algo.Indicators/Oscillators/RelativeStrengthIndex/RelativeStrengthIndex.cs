@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Relative Strength Index", Version = "1.0")]
+    [Indicator(Category = "Oscillators", DisplayName = "Relative Strength Index", Version = "1.1")]
     public class RelativeStrengthIndex : Indicator, IRelativeStrenghtIndex
     {
         private IMovAvgAlgo _uMa, _dMa;

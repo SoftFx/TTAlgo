@@ -3,7 +3,7 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Trend.BollingerBands
 {
-    [Indicator(Category = "Trend", DisplayName = "Bollinger Bands", Version = "1.0")]
+    [Indicator(Category = "Trend", DisplayName = "Bollinger Bands", Version = "1.1")]
     public class BollingerBands : Indicator, IBoolingerBands
     {
         private IStandardDeviation _stdDev;

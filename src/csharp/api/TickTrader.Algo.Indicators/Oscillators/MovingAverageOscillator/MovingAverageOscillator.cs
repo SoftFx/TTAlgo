@@ -3,7 +3,7 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Moving Average of Oscillator", Version = "1.0")]
+    [Indicator(Category = "Oscillators", DisplayName = "Moving Average of Oscillator", Version = "1.1")]
     public class MovingAverageOscillator : Indicator, IMovingAverageOscillator
     {
         private IMacd _macd;

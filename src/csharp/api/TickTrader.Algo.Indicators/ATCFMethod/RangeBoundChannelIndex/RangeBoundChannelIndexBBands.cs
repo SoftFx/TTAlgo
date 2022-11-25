@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 {
-    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index BBands", Version = "1.0")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index BBands", Version = "1.1")]
     public class RangeBoundChannelIndexBBands : DigitalIndicatorBase, IRangeBoundChannelIndexBBands
     {
         private IMovAvgAlgo _stdMa, _std2Ma;

@@ -6,7 +6,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 {
-    [Indicator(Category = "Trend", DisplayName = "Average Directional Movement Index", Version = "1.0")]
+    [Indicator(Category = "Trend", DisplayName = "Average Directional Movement Index", Version = "1.1")]
     public class AverageDirectionalMovementIndex : Indicator, IAverageDirectionalMovementIndex
     {
         private IMovAvgAlgo _plusMa, _minusMa, _adxMa;

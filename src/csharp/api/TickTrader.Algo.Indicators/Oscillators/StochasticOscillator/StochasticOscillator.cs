@@ -6,7 +6,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Stochastic Oscillator", Version = "1.0")]
+    [Indicator(Category = "Oscillators", DisplayName = "Stochastic Oscillator", Version = "1.1")]
     public class StochasticOscillator : Indicator, IStochasticOscillator
     {
         private IMovAvgAlgo _dMa, _numMa, _denumMa;
