@@ -75,7 +75,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
             }
             if (!double.IsNaN(_rangeMa.Average) && Math.Abs(_rangeMa.Average) < 1e-12)
             {
-                RviAverage[i] = _moveMa.Average*_moveMa.Period;
+                RviAverage[i] = _moveMa.Average*Period;
             }
             else
             {

@@ -2,10 +2,6 @@
 {
     internal interface IMA
     {
-        int Period { get; }
-
-        int Accumulated { get; }
-        double LastAdded { get; }
         double Average { get; }
 
         void Init();

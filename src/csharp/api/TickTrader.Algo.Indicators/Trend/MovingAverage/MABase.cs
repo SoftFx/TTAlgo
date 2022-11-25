@@ -55,35 +55,37 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         internal static IMA CreateMaInstance(int period, MovingAverageMethod targetMethod, double smoothFactor = double.NaN)
         {
-            IMA instance;
-            if (double.IsNaN(smoothFactor))
-            {
-                smoothFactor = 2.0/(period + 1);
-            }
-            switch (targetMethod)
-            {
-                case MovingAverageMethod.Simple:
-                    instance = new SMA(period);
-                    break;
-                case MovingAverageMethod.Exponential:
-                    instance = new EMA(period, smoothFactor);
-                    break;
-                case MovingAverageMethod.Smoothed:
-                    instance = new SMMA(period);
-                    break;
-                case MovingAverageMethod.LinearWeighted:
-                    instance = new LWMA(period);
-                    break;
-                case MovingAverageMethod.CustomExponential:
-                    instance = new CustomEMA(period, smoothFactor);
-                    break;
-                case MovingAverageMethod.Triangular:
-                    instance = new TriMA(period);
-                    break;
-                default:
-                    throw new ArgumentException("Unknown Moving Average method.");
-            }
-            return instance;
+            return MovAvg.Create(period, targetMethod, smoothFactor);
+
+            //IMA instance;
+            //if (double.IsNaN(smoothFactor))
+            //{
+            //    smoothFactor = 2.0/(period + 1);
+            //}
+            //switch (targetMethod)
+            //{
+            //    case MovingAverageMethod.Simple:
+            //        instance = new SMA(period);
+            //        break;
+            //    case MovingAverageMethod.Exponential:
+            //        instance = new EMA(period, smoothFactor);
+            //        break;
+            //    case MovingAverageMethod.Smoothed:
+            //        instance = new SMMA(period);
+            //        break;
+            //    case MovingAverageMethod.LinearWeighted:
+            //        instance = new LWMA(period);
+            //        break;
+            //    case MovingAverageMethod.CustomExponential:
+            //        instance = new CustomEMA(period, smoothFactor);
+            //        break;
+            //    case MovingAverageMethod.Triangular:
+            //        instance = new TriMA(period);
+            //        break;
+            //    default:
+            //        throw new ArgumentException("Unknown Moving Average method.");
+            //}
+            //return instance;
         }
     }
 }
