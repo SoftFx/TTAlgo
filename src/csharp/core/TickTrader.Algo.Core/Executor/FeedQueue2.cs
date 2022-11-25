@@ -1,26 +1,19 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     public class FeedUpdateSummary
     {
-        public BarRateUpdate[] BarUpdates { get; }
+        public List<BarRateUpdate> BarUpdates { get; } = new List<BarRateUpdate>();
 
-        public QuoteInfo[] NewQuotes { get; }
-
-
-        public FeedUpdateSummary(BarRateUpdate[] barUpdates, QuoteInfo[] newQuotes)
-        {
-            BarUpdates = barUpdates;
-            NewQuotes = newQuotes;
-        }
+        public List<QuoteInfo> NewQuotes { get; } = new List<QuoteInfo>();
     }
+
 
     public interface IFeedQueue
     {
-        FeedUpdateSummary GetFeedUpdate();
+        void GetFeedUpdate(FeedUpdateSummary update);
     }
 
 
@@ -32,8 +25,6 @@ namespace TickTrader.Algo.Core
 
 
         public int Count => _queue.Count + _newQuotes.Count;
-
-        public IReadOnlyDictionary<string, QuoteInfo> PendingQuotes => _newQuotes;
 
 
         public void Enqueue(BarUpdate bar)
@@ -56,12 +47,15 @@ namespace TickTrader.Algo.Core
             _newQuotes[quote.Symbol] = quote;
         }
 
-        public FeedUpdateSummary GetFeedUpdate()
+        public void GetFeedUpdate(FeedUpdateSummary update)
         {
-            var barUpdates = _queue.ToArray();
-            var quoteUpdates = _newQuotes.Values.ToArray();
+            update.BarUpdates.Clear();
+            update.NewQuotes.Clear();
+
+            update.BarUpdates.AddRange(_queue);
+            update.NewQuotes.AddRange(_newQuotes.Values);
+
             Clear();
-            return new FeedUpdateSummary(barUpdates, quoteUpdates);
         }
 
         public void Clear()

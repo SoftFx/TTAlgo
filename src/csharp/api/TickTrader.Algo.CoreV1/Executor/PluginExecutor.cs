@@ -305,7 +305,7 @@ namespace TickTrader.Algo.CoreV1
 
                     _marketFixture.Init();
 
-                    iStrategy.Init(this, OnRuntimeException, _fStrategy);
+                    iStrategy.Init(this, OnRuntimeException, _fStrategy, _logger);
                     _fStrategy.Init(this, _bStrategy, _marketFixture);
                     setupActions.ForEach(a => a());
                     BindAllOutputs();
@@ -847,7 +847,7 @@ namespace TickTrader.Algo.CoreV1
 
         #region DiagnosticInfo
 
-        int DiagnosticInfo.FeedQueueSize { get { return iStrategy.FeedQueueSize; } }
+        int DiagnosticInfo.FeedQueueSize => iStrategy.FeedQueueSize;
 
         #endregion
     }

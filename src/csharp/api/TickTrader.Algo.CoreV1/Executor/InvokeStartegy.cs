@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
@@ -12,16 +13,16 @@ namespace TickTrader.Algo.CoreV1
     {
         private Action<Exception> _onRuntimeError;
 
-        internal InvokeStartegy()
-        {
-        }
+        protected IAlgoLogger _logger;
 
-        internal void Init(IFixtureContext context, Action<Exception> onRuntimeError, FeedStrategy fStrategy)
+
+        internal void Init(IFixtureContext context, Action<Exception> onRuntimeError, FeedStrategy fStrategy, IAlgoLogger logger)
         {
             Builder = context.Builder;
             MarketData = context.MarketData;
             _onRuntimeError = onRuntimeError;
             FStartegy = fStrategy;
+            _logger = logger;
             OnInit();
         }
 
@@ -61,10 +62,13 @@ namespace TickTrader.Algo.CoreV1
         }
     }
 
-    [Serializable]
+
     public class PriorityInvokeStartegy : InvokeStartegy
     {
-        private object syncObj = new object();
+        private readonly object _syncObj = new object();
+        private readonly FeedUpdateSummary _feedUpdate = new FeedUpdateSummary();
+
+
         private Task currentTask;
         private Task stopTask;
         private FeedQueue2 feedQueue;
@@ -78,6 +82,7 @@ namespace TickTrader.Algo.CoreV1
         private TaskCompletionSource<object> asyncStopDoneEvent;
         private TaskCompletionSource<bool> stopDoneEvent;
 
+
         protected override void OnInit()
         {
             feedQueue = new FeedQueue2();
@@ -88,18 +93,18 @@ namespace TickTrader.Algo.CoreV1
 
         protected override void OnReinit()
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
                 if (isStarted && currentThread != null && currentTask.Status == TaskStatus.Running && isProcessingTrades)
                     UnlockTradeUpdate();
             }
         }
 
-        public override int FeedQueueSize => 0;
+        public override int FeedQueueSize => feedQueue.Count;
 
         public override void EnqueueQuote(QuoteInfo quote)
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
                 if (execStopFlag)
                     return;
@@ -111,7 +116,7 @@ namespace TickTrader.Algo.CoreV1
 
         public override void EnqueueBar(BarUpdate update)
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
                 if (execStopFlag)
                     return;
@@ -123,7 +128,7 @@ namespace TickTrader.Algo.CoreV1
 
         public override void EnqueueTradeUpdate(Action<PluginBuilder> a)
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
                 if (execStopFlag)
                     return;
@@ -136,10 +141,10 @@ namespace TickTrader.Algo.CoreV1
 
         private void UnlockTradeUpdate()
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
                 if (isProcessingTrades)
-                    Monitor.Pulse(syncObj);
+                    Monitor.Pulse(_syncObj);
                 else
                     WakeUpWorker();
             }
@@ -147,7 +152,7 @@ namespace TickTrader.Algo.CoreV1
 
         public override void EnqueueCustomInvoke(Action<PluginBuilder> a) // use to execute some actions on plugin thread with high priority
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
                 if (execStopFlag)
                     return;
@@ -159,7 +164,7 @@ namespace TickTrader.Algo.CoreV1
 
         public override void EnqueueEvent(IAccountApiEvent e) // use only to fire events on plugin thread
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
                 if (execStopFlag)
                     return;
@@ -173,7 +178,7 @@ namespace TickTrader.Algo.CoreV1
         {
             Action<PluginBuilder> action;
 
-            lock (syncObj)
+            lock (_syncObj)
             {
                 isProcessingTrades = true;
                 action = DequeueNextTrade();
@@ -182,7 +187,7 @@ namespace TickTrader.Algo.CoreV1
             if (action != null)
                 ProcessItem(action);
 
-            lock (syncObj) isProcessingTrades = false;
+            lock (_syncObj) isProcessingTrades = false;
         }
 
         private Action<PluginBuilder> DequeueNextTrade()
@@ -190,7 +195,7 @@ namespace TickTrader.Algo.CoreV1
             if (tradeQueue.Count > 0)
                 return tradeQueue.Dequeue();
 
-            Monitor.Wait(syncObj);
+            Monitor.Wait(_syncObj);
 
             if (tradeQueue.Count > 0)
                 return tradeQueue.Dequeue();
@@ -213,14 +218,14 @@ namespace TickTrader.Algo.CoreV1
         {
             try
             {
-                lock (syncObj)
+                lock (_syncObj)
                     currentThread = Thread.CurrentThread;
 
                 while (true)
                 {
                     object item = null;
 
-                    lock (syncObj)
+                    lock (_syncObj)
                     {
                         item = DequeueNext();
                         if (item == null)
@@ -236,12 +241,12 @@ namespace TickTrader.Algo.CoreV1
             }
             catch (ThreadAbortException)
             {
-                lock (syncObj)
+                lock (_syncObj)
                 {
                     currentTask = null;
                     currentThread = null;
                 }
-                System.Diagnostics.Debug.WriteLine("Process Loop was aborted!");
+                _logger.Debug("Process Loop was aborted!");
                 Thread.ResetAbort();
             }
         }
@@ -266,9 +271,9 @@ namespace TickTrader.Algo.CoreV1
 
         public override void Start()
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
-                System.Diagnostics.Debug.WriteLine("STRATEGY START!");
+                _logger.Debug("STRATEGY START!");
 
                 if (isStarted)
                     throw new InvalidOperationException("Cannot start: Strategy is already running!");
@@ -282,9 +287,9 @@ namespace TickTrader.Algo.CoreV1
 
         public override Task Stop(bool quick)
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
-                System.Diagnostics.Debug.WriteLine("STRATEGY STOP! qucik=" + quick);
+                _logger.Debug("STRATEGY STOP! qucik=" + quick);
 
                 if (stopTask == null)
                     stopTask = DoStop(quick);
@@ -294,7 +299,7 @@ namespace TickTrader.Algo.CoreV1
 
         public override void Abort()
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
                 if (execStopFlag || asyncStopDoneEvent != null || stopDoneEvent != null)
                 {
@@ -317,7 +322,7 @@ namespace TickTrader.Algo.CoreV1
                 asyncStopDoneEvent = new TaskCompletionSource<object>();
                 EnqueueCustomInvoke(async b =>
                 {
-                    System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP!");
+                    _logger.Debug("STRATEGY ASYNC STOP!");
                     try
                     {
                         await b.InvokeAsyncStop();
@@ -326,7 +331,7 @@ namespace TickTrader.Algo.CoreV1
                     {
                         asyncStopDoneEvent?.TrySetResult(this);
                     }
-                    System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP DONE!");
+                    _logger.Debug("STRATEGY ASYNC STOP DONE!");
                 });
 
                 await asyncStopDoneEvent.Task.ConfigureAwait(false); // wait async stop to end
@@ -334,7 +339,7 @@ namespace TickTrader.Algo.CoreV1
             }
 
             bool aborted;
-            lock (syncObj)
+            lock (_syncObj)
             {
                 aborted = execStopFlag;
             }
@@ -346,12 +351,12 @@ namespace TickTrader.Algo.CoreV1
                 {
                     try
                     {
-                        System.Diagnostics.Debug.WriteLine("STRATEGY CALL OnStop()!");
+                        _logger.Debug("STRATEGY CALL OnStop()!");
                         b.InvokeOnStop();
                     }
                     finally
                     {
-                        lock (syncObj)
+                        lock (_syncObj)
                         {
                             ClearQueues();
                             execStopFlag = true; //  stop queue
@@ -364,7 +369,7 @@ namespace TickTrader.Algo.CoreV1
                 await stopDoneEvent.Task.ConfigureAwait(false);
                 stopDoneEvent = null;
 
-                System.Diagnostics.Debug.WriteLine("STRATEGY JOIN!");
+                _logger.Debug("STRATEGY JOIN!");
                 if (toWait != null)
                 {
                     try
@@ -373,17 +378,17 @@ namespace TickTrader.Algo.CoreV1
                     }
                     catch { } //we logging this case on ProcessLoop
                 }
-                System.Diagnostics.Debug.WriteLine("STRATEGY DONE JOIN!");
+                _logger.Debug("STRATEGY DONE JOIN!");
             }
 
-            lock (syncObj)
+            lock (_syncObj)
             {
                 ClearQueues();
                 execStopFlag = false;
                 isStarted = false;
                 stopTask = null;
 
-                System.Diagnostics.Debug.WriteLine("STRATEGY STOP COMPLETED!");
+                _logger.Debug("STRATEGY STOP COMPLETED!");
             }
         }
 
@@ -404,7 +409,10 @@ namespace TickTrader.Algo.CoreV1
             else if (tradeQueue.Count > 0)
                 return tradeQueue.Dequeue();
             else if (feedQueue.Count > 0)
-                return feedQueue.GetFeedUpdate();
+            {
+                feedQueue.GetFeedUpdate(_feedUpdate);
+                return _feedUpdate;
+            }
             else
                 return null;
         }
