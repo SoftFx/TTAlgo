@@ -36,30 +36,9 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
     }
 
 
-    internal class MovAvg : IMA
+    internal static class MovAvg
     {
-        private readonly IMovAvgAlgo _algo;
-
-
-        public double Average => _algo.Average;
-
-
-        internal MovAvg(IMovAvgAlgo algo)
-        {
-            _algo = algo;
-        }
-
-
-        public void Init() => _algo.Reset();
-
-        public void Reset() => _algo.Reset();
-
-        public void Add(double value) => _algo.Add(value);
-
-        public void UpdateLast(double value) => _algo.UpdateLast(value);
-
-
-        internal static MovAvg Create(int period, MovingAverageMethod method, double smoothFactor = double.NaN)
+        public static IMovAvgAlgo Create(int period, MovingAverageMethod method, double smoothFactor = double.NaN)
         {
             if (double.IsNaN(smoothFactor))
             {
@@ -79,7 +58,8 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
                 default: throw new ArgumentException("Unknown Moving Average method.");
             }
 
-            return new MovAvg(algo);
+            algo.Reset(); // init
+            return algo;
         }
     }
 }

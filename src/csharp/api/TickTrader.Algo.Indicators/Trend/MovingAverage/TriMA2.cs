@@ -2,7 +2,7 @@
 {
     internal class TriMA2 : IMovAvgAlgo
     {
-        private readonly MovAvg _innerSma, _outerSma;
+        private readonly SMA2 _innerSma, _outerSma;
 
 
         public MovAvgArgs Args { get; }
@@ -27,8 +27,9 @@
                 innerSmaPeriod = outerSmaPeriod = (period + 1) / 2;
             }
 
-            _innerSma = MovAvg.Create(innerSmaPeriod, Api.Indicators.MovingAverageMethod.Simple);
-            _outerSma = MovAvg.Create(outerSmaPeriod, Api.Indicators.MovingAverageMethod.Simple);
+
+            _innerSma = new SMA2(new MovAvgArgs(Api.Indicators.MovingAverageMethod.Simple, innerSmaPeriod, double.NaN));
+            _outerSma = new SMA2(new MovAvgArgs(Api.Indicators.MovingAverageMethod.Simple, outerSmaPeriod, double.NaN));
         }
 
 

@@ -61,14 +61,17 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 
         private void InitializeIndicator()
         {
-            var args = new MovAvgArgs((MovingAverageMethod)(-1), CountBars, double.NaN);
-            _ma = new SMA2(args, false);
+            var method = (MovingAverageMethod)(-1);
+            _ma = new SMA2(new MovAvgArgs(method, CountBars, double.NaN), false);
+            _ma.Reset();
             _calcCache = new List<double>(CountBars + 1);
             _lastUpdated = DateTime.MinValue;
 
-            args = new MovAvgArgs((MovingAverageMethod)(-1), Std, double.NaN);
+            var args = new MovAvgArgs(method, Std, double.NaN);
             _stdMa = new SMA2(args, false);
             _std2Ma = new SMA2(args, false);
+            _stdMa.Reset();
+            _std2Ma.Reset();
         }
 
         protected override void Init()

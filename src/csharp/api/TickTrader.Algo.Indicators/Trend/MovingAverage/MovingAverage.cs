@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
     [Indicator(Category = "Trend", DisplayName = "Moving Average", Version = "1.0")]
     public class MovingAverage : Indicator, IMovingAverage
     {
-        private IMA _maInstance;
+        private IMovAvgAlgo _maInstance;
         private IShift _shifter;
 
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
@@ -47,8 +47,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         protected void InitializeIndicator()
         {
-            _maInstance = MABase.CreateMaInstance(Period, TargetMethod, SmoothFactor);
-            _maInstance.Init();
+            _maInstance = MovAvg.Create(Period, TargetMethod, SmoothFactor);
             _shifter = new SimpleShifter(Shift);
             _shifter.Init();
         }

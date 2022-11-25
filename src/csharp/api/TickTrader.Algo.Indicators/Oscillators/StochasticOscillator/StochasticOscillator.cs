@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
     [Indicator(Category = "Oscillators", DisplayName = "Stochastic Oscillator", Version = "1.0")]
     public class StochasticOscillator : Indicator, IStochasticOscillator
     {
-        private IMA _dMa, _numMa, _denumMa;
+        private IMovAvgAlgo _dMa, _numMa, _denumMa;
 
         [Parameter(DefaultValue = 5, DisplayName = "%K Period")]
         public int KPeriod { get; set; }
@@ -54,12 +54,9 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
 
         protected void InitializeIndicator()
         {
-            _dMa = MABase.CreateMaInstance(DPeriod, TargetMethod);
-            _dMa.Init();
-            _numMa = MABase.CreateMaInstance(Slowing, MovingAverageMethod.Simple);
-            _numMa.Init();
-            _denumMa = MABase.CreateMaInstance(Slowing, MovingAverageMethod.Simple);
-            _denumMa.Init();
+            _dMa = MovAvg.Create(DPeriod, TargetMethod);
+            _numMa = MovAvg.Create(Slowing, MovingAverageMethod.Simple);
+            _denumMa = MovAvg.Create(Slowing, MovingAverageMethod.Simple);
         }
 
         protected override void Init()

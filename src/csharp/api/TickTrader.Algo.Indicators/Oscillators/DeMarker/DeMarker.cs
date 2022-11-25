@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.DeMarker
     [Indicator(Category = "Oscillators", DisplayName = "DeMarker", Version = "1.0")]
     public class DeMarker : Indicator, IDeMarker
     {
-        private IMA _smaDeMax, _smaDeMin;
+        private IMovAvgAlgo _smaDeMax, _smaDeMin;
 
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
@@ -32,10 +32,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.DeMarker
 
         protected void InitializeIndicator()
         {
-            _smaDeMax = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
-            _smaDeMax.Init();
-            _smaDeMin = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
-            _smaDeMin.Init();
+            _smaDeMax = MovAvg.Create(Period, MovingAverageMethod.Simple);
+            _smaDeMin = MovAvg.Create(Period, MovingAverageMethod.Simple);
         }
 
         protected override void Init()
