@@ -287,8 +287,16 @@ namespace TickTrader.BotTerminal
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
             InstanceId = _idProvider.GeneratePluginId(Descriptor);
 
-            AllowTrade = true;
-            Isolated = true;
+            if (Descriptor.Type == Metadata.Types.PluginType.TradeBot)
+            {
+                AllowTrade = true;
+                Isolated = true;
+            }
+            else
+            {
+                AllowTrade = false;
+                Isolated = false;
+            }
 
             foreach (var p in _allProperties)
                 p.Reset();
