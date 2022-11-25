@@ -405,8 +405,8 @@ namespace TickTrader.Algo.CoreV1
 
         internal void InvokeOnStart()
         {
-            InvokePluginMethod((b, p) => b.PluginProxy.InvokeOnStart(), true);
             Logger.OnStart();
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeOnStart(), true);
         }
 
         internal void InvokeOnStop()
