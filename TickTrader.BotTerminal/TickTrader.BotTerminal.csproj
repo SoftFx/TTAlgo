@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup Label="LiveCharts2 references">
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.514" Condition=" '$(UseLiveCharts2Src)' != 'true' " />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.603" Condition=" '$(UseLiveCharts2Src)' != 'true' " />
     <!-- Requires 'dotnet workload restore' to run correctly. Visual Studio gives incorrect error, you don't need to include project in solution -->
     <ProjectReference Include="..\..\LiveCharts2\src\skiasharp\LiveChartsCore.SkiaSharp.WPF\LiveChartsCore.SkiaSharpView.WPF.csproj" Condition=" '$(UseLiveCharts2Src)' == 'true' " />
   </ItemGroup>
