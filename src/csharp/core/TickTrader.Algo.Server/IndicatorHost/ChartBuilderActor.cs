@@ -218,16 +218,16 @@ namespace TickTrader.Algo.Server
 
         private async Task StartAllIndicators()
         {
-            await Task.WhenAll(_indicators.Values.Select(ind => StartIndicator(ind.PluginRef)));
-            //foreach (var indicator in _indicators.Values)
-            //    await StartIndicator(indicator.PluginRef);
+            //await Task.WhenAll(_indicators.Values.Select(ind => StartIndicator(ind.PluginRef)));
+            foreach (var indicator in _indicators.Values)
+                await StartIndicator(indicator.PluginRef);
         }
 
         private async Task StopAllIndicators()
         {
-            await Task.WhenAll(_indicators.Values.Select(ind => StopIndicator(ind.PluginRef)));
-            //foreach (var indicator in _indicators.Values)
-            //    await StopIndicator(indicator.PluginRef);
+            //await Task.WhenAll(_indicators.Values.Select(ind => StopIndicator(ind.PluginRef)));
+            foreach (var indicator in _indicators.Values)
+                await StopIndicator(indicator.PluginRef);
         }
 
 

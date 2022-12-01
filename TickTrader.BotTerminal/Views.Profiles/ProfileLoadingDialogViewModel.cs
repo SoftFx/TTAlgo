@@ -32,16 +32,18 @@ namespace TickTrader.BotTerminal
 
         protected override Task OnInitializeAsync(CancellationToken cancellationToken)
         {
-            ApplyProfile();
+            _ = ApplyProfile();
 
             return base.OnInitializeAsync(cancellationToken);
         }
 
-        private async void ApplyProfile()
+        private async Task ApplyProfile()
         {
             try
             {
                 await Task.Delay(Delay, _token); //give UI some time to display this window
+
+                await _agent.IndicatorHost.Stop();
 
                 _charts.CloseAllItems(_token);
                 _dockManagerService.RemoveViews();
