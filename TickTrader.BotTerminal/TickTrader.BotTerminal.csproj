@@ -17,12 +17,11 @@
     <SatelliteResourceLanguages>en-gb,ru-ru</SatelliteResourceLanguages>
 
     <UseLiveCharts2Src>false</UseLiveCharts2Src>
+    <UseAvalonDockSrc>false</UseAvalonDockSrc>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Caliburn.Micro" Version="4.0.209" />
-    <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
-    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.60.0" />
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
     <PackageReference Include="FontAwesome.Sharp" Version="5.15.4" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
@@ -50,6 +49,14 @@
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.603" Condition=" '$(UseLiveCharts2Src)' != 'true' " />
     <!-- Requires 'dotnet workload restore' to run correctly. Visual Studio gives incorrect error, you don't need to include project in solution -->
     <ProjectReference Include="..\..\LiveCharts2\src\skiasharp\LiveChartsCore.SkiaSharp.WPF\LiveChartsCore.SkiaSharpView.WPF.csproj" Condition=" '$(UseLiveCharts2Src)' == 'true' " />
+  </ItemGroup>
+
+  <ItemGroup Label="AvalonDock references">
+    <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" Condition=" '$(UseAvalonDockSrc)' != 'true' " />
+    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.60.0" Condition=" '$(UseAvalonDockSrc)' != 'true' " />
+    
+    <ProjectReference Include="..\..\AvalonDock\source\Components\AvalonDock\AvalonDock.csproj" Condition=" '$(UseAvalonDockSrc)' == 'true' " />
+    <ProjectReference Include="..\..\AvalonDock\source\Components\AvalonDock.Themes.VS2013\AvalonDock.Themes.VS2013.csproj" Condition=" '$(UseAvalonDockSrc)' == 'true' " />
   </ItemGroup>
 
   <ItemGroup>
