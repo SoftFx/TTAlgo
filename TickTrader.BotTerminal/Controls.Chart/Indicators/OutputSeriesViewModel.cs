@@ -111,7 +111,10 @@ namespace TickTrader.BotTerminal.Controls.Chart
         }
 
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            Series.Values = null;
+        }
 
         public void UpdatePoints() { }
 
@@ -142,6 +145,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         public void Dispose()
         {
+            Series.Values = null;
             _observablePoints.Dispose();
             _orderedPoints.Dispose();
         }
