@@ -73,32 +73,6 @@ namespace TickTrader.Algo.Core
             _quoteCount++;
         }
 
-        public void Append(BarRateUpdate barUpdate)
-        {
-            var quoteTime = OpenTime;
-
-            if (barUpdate.HasBid)
-            {
-                quoteTime = barUpdate.BidBar.CloseTime;
-                if (HasBid)
-                    BidBar.AppendPart(barUpdate.BidBar);
-                else
-                    BidBar = new BarData(barUpdate.BidBar);
-            }
-
-            if (barUpdate.HasAsk)
-            {
-                quoteTime = barUpdate.AskBar.CloseTime;
-                if (HasAsk)
-                    AskBar.AppendPart(barUpdate.AskBar);
-                else
-                    AskBar = new BarData(barUpdate.AskBar);
-            }
-
-            _lastQuote = new QuoteInfo(Symbol, quoteTime, barUpdate.BidBar?.Close, barUpdate.AskBar?.Close);
-            _quoteCount++;
-        }
-
         public void Replace(BarUpdate update)
         {
             BidBar = update.BidData;

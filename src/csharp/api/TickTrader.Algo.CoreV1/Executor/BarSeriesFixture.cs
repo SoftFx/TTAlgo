@@ -125,7 +125,8 @@ namespace TickTrader.Algo.CoreV1
                     return new BufferUpdateResult();
                 else if (barOpenTime == lastBar.OpenTime)
                 {
-                    lastBar.AppendPart(bar);
+                    Buffer[Buffer.Count - 1] = bar;
+                    //lastBar.AppendPart(bar);
                     return new BufferUpdateResult() { IsLastUpdated = true };
                 }
             }
@@ -191,7 +192,7 @@ namespace TickTrader.Algo.CoreV1
                 }
 
                 _futureBarCache.Add(bar); // place not found - add to future cache
-                LastBar = bar;
+                //LastBar = bar;
             }
             else
                 AppendBarToBuffer(bar);
