@@ -123,21 +123,6 @@ namespace TickTrader.Algo.CoreV1
             return overallResult;
         }
 
-        protected override IRateInfo Aggregate(IRateInfo last, QuoteInfo quote)
-        {
-            var bounds = _sampler.GetBar(quote.Time);
-
-            if (last != null && last.Time == bounds.Open)
-            {
-                ((BarRateUpdate)last).Append(quote);
-                return null;
-            }
-            else
-            {
-                return new BarRateUpdate(bounds.Open, bounds.Close, quote);
-            }
-        }
-
         protected override BarSeries GetBarSeries(string symbol)
         {
             return GetBarSeries(symbol, MainMarketSide);

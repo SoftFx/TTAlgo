@@ -33,7 +33,6 @@ namespace TickTrader.Algo.CoreV1
         internal abstract void OnInit();
         public FeedBufferStrategy BufferingStrategy { get; private set; }
         protected abstract BufferUpdateResult UpdateBuffers(IRateInfo update);
-        protected abstract IRateInfo Aggregate(IRateInfo last, QuoteInfo quote);
         protected abstract BarSeries GetBarSeries(string symbol);
         protected abstract BarSeries GetBarSeries(string symbol, Feed.Types.MarketSide side);
         protected abstract FeedStrategy CreateClone();
@@ -137,7 +136,7 @@ namespace TickTrader.Algo.CoreV1
 
             var result = new BufferUpdateResult();
             var modelUpdate = new BufferUpdateResult();
-            foreach (var update in feedUpdate.BarUpdates)
+            foreach (var update in feedUpdate.RateUpdates)
             {
                 var tmpRes = UpdateBuffers(update);
                 result += tmpRes;
@@ -181,11 +180,6 @@ namespace TickTrader.Algo.CoreV1
                 ExecContext.Builder.IncreaseVirtualPosition();
                 ExecContext.Builder.InvokeCalculate(false);
             }
-        }
-
-        internal IRateInfo InvokeAggregate(IRateInfo last, QuoteInfo quote)
-        {
-            return Aggregate(last, quote);
         }
 
         #region IFeedBufferController

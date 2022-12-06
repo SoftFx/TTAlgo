@@ -80,6 +80,16 @@ namespace TickTrader.Algo.Domain
             RealVolume += barPart.RealVolume;
             TickVolume += barPart.TickVolume;
         }
+
+        public void Replace(BarData bar)
+        {
+            Open = bar.Open;
+            Close = bar.Close;
+            High = bar.High;
+            Low = bar.Low;
+            RealVolume = bar.RealVolume;
+            TickVolume = bar.TickVolume;
+        }
     }
 
 

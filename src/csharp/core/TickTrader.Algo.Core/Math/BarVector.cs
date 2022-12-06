@@ -58,19 +58,9 @@ namespace TickTrader.Algo.Core
             _builder.AppendQuote(time, price, volume);
         }
 
-        public void AppendBar(BarData bar)
-        {
-            _builder.AppendBar(bar);
-        }
-
         public void AppendBarPart(BarData bar)
         {
             _builder.AppendBarPart(bar);
-        }
-
-        public BarData[] ToArray()
-        {
-            return _list.ToArray();
         }
 
         public BarData[] RemoveFromStart(int count)

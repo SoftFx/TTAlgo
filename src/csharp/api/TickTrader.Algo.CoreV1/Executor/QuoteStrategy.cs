@@ -24,11 +24,6 @@ namespace TickTrader.Algo.CoreV1
             return mainSeries.Update(update.LastQuote);
         }
 
-        protected override IRateInfo Aggregate(IRateInfo last, QuoteInfo quote)
-        {
-            return quote;
-        }
-
         protected override FeedStrategy CreateClone()
         {
             return new QuoteStrategy();

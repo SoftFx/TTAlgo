@@ -5,7 +5,7 @@ namespace TickTrader.Algo.Core
 {
     public class FeedUpdateSummary
     {
-        public List<BarRateUpdate> BarUpdates { get; } = new List<BarRateUpdate>();
+        public List<IRateInfo> RateUpdates { get; } = new List<IRateInfo>();
 
         public List<QuoteInfo> NewQuotes { get; } = new List<QuoteInfo>();
     }
@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
 
     public class FeedQueue2 : IFeedQueue
     {
-        private readonly Queue<BarRateUpdate> _queue = new Queue<BarRateUpdate>();
+        private readonly Queue<IRateInfo> _queue = new Queue<IRateInfo>();
         private readonly Dictionary<string, BarRateUpdate> _lastBars = new Dictionary<string, BarRateUpdate>();
         private readonly Dictionary<string, QuoteInfo> _newQuotes = new Dictionary<string, QuoteInfo>();
 
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Core
                 return; // Invalid time sequence
             else // if (!hasLastBar || (hasLastBar && bar.OpenTime > lastBar.OpenTime))
             {
-                var update = new BarRateUpdate(bar.BidData, bar.AskData, bar.Symbol);
+                var update = new BarRateUpdate(bar);
                 _lastBars[bar.Symbol] = update;
                 _queue.Enqueue(update);
             }
@@ -47,12 +47,18 @@ namespace TickTrader.Algo.Core
             _newQuotes[quote.Symbol] = quote;
         }
 
+        public void Enqueue(IRateInfo rate)
+        {
+            _queue.Enqueue(rate);
+            _newQuotes[rate.Symbol] = rate.LastQuote;
+        }
+
         public void GetFeedUpdate(FeedUpdateSummary update)
         {
-            update.BarUpdates.Clear();
+            update.RateUpdates.Clear();
             update.NewQuotes.Clear();
 
-            update.BarUpdates.AddRange(_queue);
+            update.RateUpdates.AddRange(_queue);
             update.NewQuotes.AddRange(_newQuotes.Values);
 
             Clear();

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.CoreV1;
@@ -14,7 +13,10 @@ namespace TickTrader.Algo.Backtester
     internal class InvokeEmulator : InvokeStartegy
     {
         private readonly object _syncState = new object();
-        private FeedQueue _feedQueue;
+        private readonly FeedUpdateSummary _feedUpdate = new FeedUpdateSummary();
+        private readonly FeedUpdateSummary _feedUpdate2 = new FeedUpdateSummary();
+
+        private FeedQueue2 _feedQueue;
         private DelayedEventsQueue _delayedQueue = new DelayedEventsQueue();
         private Queue<Action<PluginBuilder>> _tradeQueue = new Queue<Action<PluginBuilder>>();
         private Queue<Action<PluginBuilder>> _eventQueue = new Queue<Action<PluginBuilder>>();
@@ -69,7 +71,7 @@ namespace TickTrader.Algo.Backtester
 
         protected override void OnInit()
         {
-            _feedQueue = new FeedQueue(FStartegy);
+            _feedQueue = new FeedQueue2();
             MarketData.StartCalculators();
         }
 
@@ -413,6 +415,8 @@ namespace TickTrader.Algo.Backtester
         {
             if (item is IRateInfo rate)
                 EmulateRateUpdate(rate);
+            else if (item is FeedUpdateSummary update)
+                EmulateRateUpdates(update);
             else if (item is Action<PluginBuilder> action)
                 action(Builder);
             else if (item is IAccountApiEvent accEvent)
@@ -502,13 +506,25 @@ namespace TickTrader.Algo.Backtester
 
             DelayExecution();
 
-            //var bufferUpdate = OnFeedUpdate(rate);
+            var upd = _feedUpdate2;
+            upd.RateUpdates.Clear();
+            upd.NewQuotes.Clear();
+            upd.RateUpdates.Add(rate);
+            upd.NewQuotes.Add(rate.LastQuote);
+            OnFeedUpdate(upd);
+
             RateUpdated?.Invoke(rate);
             _collector.OnRateUpdate(rate);
 
             var acc = Builder.Account;
             if (acc.IsMarginType)
                 _collector.RegisterEquity(acc.Equity, acc.Margin);
+        }
+
+        private void EmulateRateUpdates(FeedUpdateSummary updateSummary)
+        {
+            foreach (var rate in updateSummary.RateUpdates)
+                EmulateRateUpdate(rate);
         }
 
         public override Task Stop(bool quick)
@@ -559,7 +575,10 @@ namespace TickTrader.Algo.Backtester
             else if (_tradeQueue.Count > 0)
                 return _tradeQueue.Dequeue();
             else if (_feedQueue.Count > 0)
-                return _feedQueue.Dequeue();
+            {
+                _feedQueue.GetFeedUpdate(_feedUpdate);
+                return _feedUpdate;
+            }
             else
                 return DequeueUpcoming(out _, false);
         }
@@ -592,7 +611,7 @@ namespace TickTrader.Algo.Backtester
             var feed = _feed as IFeedProvider;
             var lasts = feed.GetQuoteSnapshot();
 
-            foreach(var q in lasts)
+            foreach (var q in lasts)
             {
                 if (_settings.CommonSettings.Symbols.TryGetValue(q.Symbol, out var smbInfo))
                 {

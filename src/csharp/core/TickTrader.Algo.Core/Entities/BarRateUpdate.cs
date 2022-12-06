@@ -13,71 +13,47 @@ namespace TickTrader.Algo.Core
 
         public UtcTicks CloseTime { get; }
 
+        public bool IsPartialUpdate { get; private set; }
 
-        public BarRateUpdate(UtcTicks barStartTime, UtcTicks barEndTime, QuoteInfo quote)
-        {
-            OpenTime = barStartTime;
-            CloseTime = barEndTime;
-
-            if (quote.HasBid)
-                BidBar = new BarData(barStartTime, barEndTime, quote.Bid, 1);
-            if (quote.HasAsk)
-                AskBar = new BarData(barStartTime, barEndTime, quote.Ask, 1);
-
-            _lastQuote = quote;
-            Symbol = quote.Symbol;
-            _quoteCount = 1;
-        }
 
         public BarRateUpdate(BarData bidBar, BarData askBar, string symbol)
         {
-            OpenTime = bidBar.OpenTime;
-            CloseTime = bidBar.CloseTime;
+            IsPartialUpdate = true;
+
+            var bar = bidBar ?? askBar;
+            OpenTime = bar.OpenTime;
+            CloseTime = bar.CloseTime;
             BidBar = bidBar;
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteInfo(symbol, CloseTime.AddMs(-1), bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteInfo(symbol, CloseTime.AddMs(-1), bidBar?.Close, askBar?.Close);
         }
 
-        public BarRateUpdate(BarRateUpdate barUpdate)
+        public BarRateUpdate(BarUpdate update)
         {
-            Symbol = barUpdate.Symbol;
-            BidBar = barUpdate.BidBar;
-            AskBar = barUpdate.AskBar;
-            _lastQuote = barUpdate._lastQuote;
-            _quoteCount = barUpdate._quoteCount;
-            OpenTime = barUpdate.OpenTime;
-            CloseTime = barUpdate.CloseTime;
+            IsPartialUpdate = false;
+
+            var bar = update.BidData ?? update.AskData;
+            OpenTime = bar.OpenTime;
+            CloseTime = bar.CloseTime;
+            BidBar = update.BidData;
+            AskBar = update.AskData;
+            Symbol = update.Symbol;
+
+            _quoteCount = 1;
+            _lastQuote = new QuoteInfo(Symbol, CloseTime.AddMs(-1), BidBar?.Close, AskBar?.Close);
         }
 
-        public void Append(QuoteInfo quote)
-        {
-            if (quote.HasBid)
-            {
-                if (HasBid)
-                    BidBar.Append(quote.Bid, 1);
-                else
-                    BidBar = new BarData(OpenTime, CloseTime, quote.Bid, 1);
-            }
-
-            if (quote.HasAsk)
-            {
-                if (HasAsk)
-                    AskBar.Append(quote.Ask, 1);
-                else
-                    AskBar = new BarData(OpenTime, CloseTime, quote.Ask, 1);
-            }
-
-            _lastQuote = quote;
-            _quoteCount++;
-        }
 
         public void Replace(BarUpdate update)
         {
+            IsPartialUpdate = false;
+
             BidBar = update.BidData;
             AskBar = update.AskData;
 
+            _lastQuote = new QuoteInfo(Symbol, CloseTime.AddMs(-1), BidBar?.Close, AskBar?.Close);
             _quoteCount++;
         }
 

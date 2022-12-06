@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage;
 
 namespace TickTrader.Algo.Backtester
 {

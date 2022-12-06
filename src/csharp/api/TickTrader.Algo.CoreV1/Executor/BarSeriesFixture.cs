@@ -94,18 +94,18 @@ namespace TickTrader.Algo.CoreV1
             if (_marketSide == Feed.Types.MarketSide.Bid)
             {
                 if (update.HasBid)
-                    return Update(update.BidBar);
+                    return Update(update.BidBar, update.IsPartialUpdate);
             }
             else
             {
                 if (update.HasAsk)
-                    return Update(update.AskBar);
+                    return Update(update.AskBar, update.IsPartialUpdate);
             }
 
             return new BufferUpdateResult();
         }
 
-        public BufferUpdateResult Update(BarData bar)
+        public BufferUpdateResult Update(BarData bar, bool isPartialUpdate)
         {
             if (!IsLoaded)
                 return new BufferUpdateResult();
@@ -116,7 +116,6 @@ namespace TickTrader.Algo.CoreV1
                 return new BufferUpdateResult();
 
             if (Count > 0)
-
             {
                 var lastBar = LastBar;
 
@@ -125,8 +124,11 @@ namespace TickTrader.Algo.CoreV1
                     return new BufferUpdateResult();
                 else if (barOpenTime == lastBar.OpenTime)
                 {
-                    Buffer[Buffer.Count - 1] = bar;
-                    //lastBar.AppendPart(bar);
+                    if (isPartialUpdate)
+                        lastBar.AppendPart(bar);
+                    else
+                        lastBar.Replace(bar);
+
                     return new BufferUpdateResult() { IsLastUpdated = true };
                 }
             }
@@ -192,7 +194,7 @@ namespace TickTrader.Algo.CoreV1
                 }
 
                 _futureBarCache.Add(bar); // place not found - add to future cache
-                //LastBar = bar;
+                LastBar = bar;
             }
             else
                 AppendBarToBuffer(bar);
