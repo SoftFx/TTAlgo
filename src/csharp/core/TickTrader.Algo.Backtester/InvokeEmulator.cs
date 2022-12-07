@@ -456,13 +456,6 @@ namespace TickTrader.Algo.Backtester
             return true;
         }
 
-        public bool TryPeekNextRate(out IRateInfo info)
-        {
-            info = _feedReader?.NextRate;
-
-            return info is not null;
-        }
-
         private bool ReadNextFeed(out IRateInfo update)
         {
             if (_feedReader.IsCompeted)
