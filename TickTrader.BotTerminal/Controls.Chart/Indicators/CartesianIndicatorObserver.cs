@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 }
                 else
                 {
-                    if (_subWindows.TryGetValue(target, out var subWindow))
+                    if (!_subWindows.TryGetValue(target, out var subWindow))
                     {
                         subWindow = new OutputSubWindowViewModel(output.Config.Timeframe, digits);
                         _subWindows.Add(target, subWindow);
