@@ -141,7 +141,7 @@ namespace TickTrader.Algo.Runtime
 
         internal IQuoteSub GetQuoteSub() => new QuoteSubscription(_quoteSubManager);
 
-        internal IBarSub GetBarSub() => new BarSubscription(_barSubManager);
+        internal IBarSub GetBarSub() => new BarSubscription(_barSubManager, true);
 
         internal async Task<List<CurrencyInfo>> GetCurrencyListAsync()
         {

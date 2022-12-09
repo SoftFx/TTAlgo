@@ -12,6 +12,7 @@ namespace TickTrader.Algo.CoreV1
     {
         private MarketStateFixture _marketFixture;
         private IBarSub _defaultBarSub;
+        private IDisposable _barSubHandler;
         private readonly List<SetupAction> _setupActions = new List<SetupAction>();
         private string _mainSymbol;
         private BufferUpdateResult _mainSymbolUpdateResult;
@@ -58,7 +59,6 @@ namespace TickTrader.Algo.CoreV1
         {
             RateDispenser.Start();
             InitDefaultSubscription();
-            FeedProvider.BarUpdated += Feed_BarUpdated;
             FeedProvider.QuoteUpdated += Feed_QuoteUpdated;
 
             ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
@@ -68,7 +68,6 @@ namespace TickTrader.Algo.CoreV1
         internal virtual void Stop()
         {
             RateDispenser.Stop();
-            FeedProvider.BarUpdated -= Feed_BarUpdated;
             FeedProvider.QuoteUpdated -= Feed_QuoteUpdated;
 
             CancelDefaultSubscription();
@@ -112,6 +111,7 @@ namespace TickTrader.Algo.CoreV1
         {
             _defaultBarSub = FeedProvider.GetBarSub();
             _defaultBarSub.Modify(BufferedSymbols.Select(s => BarSubUpdate.Upsert(new BarSubEntry(s, ExecContext.TimeFrame))).ToList());
+            _barSubHandler = _defaultBarSub.AddHandler(bar => ExecContext.EnqueueBar(bar));
         }
 
         protected void AddSubscription(string symbol)
@@ -121,6 +121,7 @@ namespace TickTrader.Algo.CoreV1
 
         private void CancelDefaultSubscription()
         {
+            _barSubHandler.Dispose();
             _defaultBarSub.Dispose();
             _defaultBarSub = null;
         }

@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Account
             _quoteSub = new QuoteSubscription(quoteSubManager);
             _quoteSubHandler = _quoteSub.AddHandler(r => QuoteUpdated?.Invoke(r));
 
-            _barSub = new BarSubscription(barSubManager);
+            _barSub = new BarSubscription(barSubManager, false);
             _barSubHandler = _barSub.AddHandler(r => BarUpdated?.Invoke(r));
         }
 
@@ -102,7 +102,7 @@ namespace TickTrader.Algo.Account
 
         public IQuoteSub GetQuoteSub() => new QuoteSubscription(_quoteSubManager);
 
-        public IBarSub GetBarSub() => new BarSubscription(_barSubManager);
+        public IBarSub GetBarSub() => new BarSubscription(_barSubManager, false);
 
         #endregion
 

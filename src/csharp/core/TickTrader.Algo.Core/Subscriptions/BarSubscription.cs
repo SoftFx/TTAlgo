@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Async;
@@ -20,16 +21,19 @@ namespace TickTrader.Algo.Core.Subscriptions
     public class BarSubscription : IBarSub, IBarSubInternal
     {
         private readonly object _syncObj = new object();
-        private readonly HashSet<BarSubEntry> _subEntries = new HashSet<BarSubEntry>();
+        private readonly ConcurrentDictionary<BarSubEntry, byte> _subEntries = new ConcurrentDictionary<BarSubEntry, byte>();
+        private readonly BarSubEntry _dispatchEntry = new BarSubEntry();
         private readonly IBarSubManager _manager;
+        private readonly bool _useFiltering;
 
         private ChannelConsumerWrapper<BarUpdate> _barConsumer;
         private SubList<HandlerWrapper> _handlers;
 
 
-        public BarSubscription(IBarSubManager manager)
+        public BarSubscription(IBarSubManager manager, bool useFiltering)
         {
             _manager = manager;
+            _useFiltering = useFiltering;
 
             manager.Add(this);
         }
@@ -39,7 +43,7 @@ namespace TickTrader.Algo.Core.Subscriptions
         {
             _barConsumer?.Dispose();
             _manager.Remove(this);
-            _manager.Modify(this, _subEntries.Select(e => BarSubUpdate.Remove(e)).ToList());
+            _manager.Modify(this, _subEntries.Select(e => BarSubUpdate.Remove(e.Key)).ToList());
         }
 
 
@@ -92,15 +96,26 @@ namespace TickTrader.Algo.Core.Subscriptions
         private bool ApplyUpdate(BarSubUpdate update)
         {
             if (update.IsUpsertAction)
-                return _subEntries.Add(update.Entry);
+                return _subEntries.TryAdd(update.Entry, 0);
             else if (update.IsRemoveAction)
-                return _subEntries.Remove(update.Entry);
+                return _subEntries.TryRemove(update.Entry, out _);
 
             return false;
         }
 
         private void DispatchBar(BarUpdate bar)
         {
+            if (_useFiltering)
+            {
+                // Single consuming thread. Using cached object to reduce memory traffic
+                var entry = _dispatchEntry;
+                entry.Symbol = bar.Symbol;
+                entry.Timeframe = bar.Timeframe;
+
+                if (!_subEntries.ContainsKey(_dispatchEntry))
+                    return;
+            }
+
             var sublist = _handlers.Items;
             for (var i = 0; i < sublist.Length; i++)
             {
