@@ -106,7 +106,7 @@ namespace TickTrader.Algo.CoreV1
                 var askResult =  askFixture.Update(update);
                 if (update.Symbol != mainSeriesFixture.SymbolCode || MainMarketSide != Feed.Types.MarketSide.Ask)
                     askResult.ExtendedBy = 0;
-                overallResult += askResult;
+                overallResult = BufferUpdateResult.Combine(overallResult, askResult);
             }
 
             if (bidFixture != null)
@@ -114,7 +114,7 @@ namespace TickTrader.Algo.CoreV1
                 var bidResult = bidFixture.Update(update);
                 if (update.Symbol != mainSeriesFixture.SymbolCode || MainMarketSide != Feed.Types.MarketSide.Bid)
                     bidResult.ExtendedBy = 0;
-                overallResult += bidResult;
+                overallResult = BufferUpdateResult.Combine(overallResult, bidResult);
             }
 
             if (overallResult.ExtendedBy > 0)

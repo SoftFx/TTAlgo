@@ -14,13 +14,25 @@ namespace TickTrader.Algo.Core
         public bool IsLastUpdated { get; set; }
         public int ExtendedBy { get; set; }
 
+        public BufferUpdateResult(bool isLastUpdated, int extendBy)
+        {
+            IsLastUpdated = isLastUpdated;
+            ExtendedBy = extendBy;
+        }
+
+        public override string ToString()
+        {
+            return $"{IsLastUpdated}; {ExtendedBy}";
+        }
+
+        public static BufferUpdateResult Combine(BufferUpdateResult x, BufferUpdateResult y)
+        {
+            return new BufferUpdateResult(x.IsLastUpdated || y.IsLastUpdated, Math.Max(x.ExtendedBy, y.ExtendedBy));
+        }
+
         public static BufferUpdateResult operator +(BufferUpdateResult x, BufferUpdateResult y)
         {
-            return new BufferUpdateResult()
-            {
-                IsLastUpdated = x.IsLastUpdated || y.IsLastUpdated,
-                ExtendedBy = Math.Max(x.ExtendedBy, y.ExtendedBy)
-            };
+            return new BufferUpdateResult(x.IsLastUpdated || y.IsLastUpdated, x.ExtendedBy + y.ExtendedBy);
         }
     }
 
