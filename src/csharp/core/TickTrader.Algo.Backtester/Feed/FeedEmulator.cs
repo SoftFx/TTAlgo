@@ -183,9 +183,14 @@ namespace TickTrader.Algo.Backtester
 
         IBarSub IFeedProvider.GetBarSub() => new BarSubStub();
 
+        private class HandlerStub : IDisposable
+        {
+            public void Dispose() { }
+        }
+
         private class QuoteSubStub : IQuoteSub
         {
-            public IDisposable AddHandler(Action<QuoteInfo> handler) => null;
+            public IDisposable AddHandler(Action<QuoteInfo> handler) => new HandlerStub();
 
             public void Dispose() { }
 
@@ -196,7 +201,7 @@ namespace TickTrader.Algo.Backtester
 
         private class BarSubStub : IBarSub
         {
-            public IDisposable AddHandler(Action<BarUpdate> handler) => null;
+            public IDisposable AddHandler(Action<BarUpdate> handler) => new HandlerStub();
 
             public void Dispose() { }
 
