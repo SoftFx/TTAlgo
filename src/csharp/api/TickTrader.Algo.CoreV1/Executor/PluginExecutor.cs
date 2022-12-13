@@ -719,6 +719,7 @@ namespace TickTrader.Algo.CoreV1
 
         private void OnInternalException(Exception ex, bool isFatal)
         {
+            _logger.Error(ex, "Internal executor error");
             OnInternalError?.Invoke(new ExecutorInternalError(ex, isFatal));
         }
 
