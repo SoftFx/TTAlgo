@@ -1212,7 +1212,7 @@ namespace TickTrader.Algo.Backtester
             CancelOcoForOrder(order);
 
             // summary
-            _opSummary.AddCancelAction(order, TradeReportInfo.Types.Reason.OneCancelsTheOther);
+            _opSummary.AddCancelAction(order, trReason);
 
             return order;
         }
@@ -1272,7 +1272,7 @@ namespace TickTrader.Algo.Backtester
                 var ocoOrder = _acc.Orders.GetOrNull(order.Info.OcoRelatedOrderId);
 
                 if (ocoOrder != null)
-                    CancelOrder(ocoOrder, TradeReportInfo.Types.Reason.ClientRequest);
+                    CancelOrder(ocoOrder, TradeReportInfo.Types.Reason.OneCancelsTheOther);
             }
         }
 
