@@ -262,10 +262,22 @@ namespace TickTrader.Algo.BacktesterApi
         private sealed class RoundedDoubleConverter : ITypeConverter
         {
             private readonly string _doubleFormat;
+            private readonly double _bigValue;
 
             public RoundedDoubleConverter(int precision)
             {
-                _doubleFormat = $"F{precision}";
+                if (precision > 0 && precision <= 14)
+                {
+                    _doubleFormat = $"0.{new string('#', precision)}";
+                    // values can be too big for requested precision after decimal point
+                    // better switch to general format at this point
+                    _bigValue = Math.Pow(10, 14 - precision);
+                }
+                else
+                {
+                    _doubleFormat = "G";
+                    _bigValue = double.MaxValue;
+                }
             }
 
 
@@ -276,7 +288,10 @@ namespace TickTrader.Algo.BacktesterApi
 
             public string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
             {
-                return value is double dValue ? dValue.ToString(_doubleFormat) : string.Empty;
+                if (value is not double dValue)
+                    return string.Empty;
+
+                return dValue < _bigValue ? dValue.ToString(_doubleFormat) : dValue.ToString("G");
             }
         }
     }
