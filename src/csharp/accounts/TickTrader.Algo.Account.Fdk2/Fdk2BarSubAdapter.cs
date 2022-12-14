@@ -16,6 +16,8 @@ namespace TickTrader.Algo.Account.Fdk2
         private readonly ChannelConsumerWrapper<BarUpdateSummary> _consumer;
         //private readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<BarSubAdapter>();
 
+        private uint _version = 0;
+
 
         public BarSubAdapter(Action<Domain.BarUpdate> barUpdateCallback)
         {
@@ -87,6 +89,8 @@ namespace TickTrader.Algo.Account.Fdk2
 
             List<Domain.BarUpdate> res = default;
             var smb = update.Symbol;
+            var currentVersion = _version;
+            unchecked { _version++; }
 
             if (update.IsReset)
             {
@@ -99,7 +103,7 @@ namespace TickTrader.Algo.Account.Fdk2
                         group = new SymbolBarGroup();
                         _groups.Add(smb, group);
                     }
-                    group.Init(update);
+                    group.Init(update, currentVersion);
                     res = group.CurrentBars;
                 }
             }
@@ -107,7 +111,7 @@ namespace TickTrader.Algo.Account.Fdk2
             {
                 if (_groups.TryGetValue(smb, out var group))
                 {
-                    group.Update(update);
+                    group.Update(update, currentVersion);
                     res = group.CurrentBars;
                 }
             }
@@ -116,7 +120,8 @@ namespace TickTrader.Algo.Account.Fdk2
             {
                 foreach (var bar in res)
                 {
-                    _barUpdateCallback(bar.Clone()); // protective copy
+                    if (bar.Version == currentVersion) // this should remove duplicate updates when procession close only bars
+                        _barUpdateCallback(bar.Clone()); // protective copy
                 }
             }
         }
@@ -127,7 +132,7 @@ namespace TickTrader.Algo.Account.Fdk2
             public List<Domain.BarUpdate> CurrentBars { get; } = new List<Domain.BarUpdate>(16);
 
 
-            public void Init(BarUpdateSummary update)
+            public void Init(BarUpdateSummary update, uint version)
             {
                 CurrentBars.Clear();
 
@@ -138,7 +143,7 @@ namespace TickTrader.Algo.Account.Fdk2
                     var index = CurrentBars.IndexOf(b => b.Timeframe == d.Timeframe);
                     if (index < 0)
                     {
-                        CurrentBars.Add(new Domain.BarUpdate() { Symbol = update.Symbol, Timeframe = d.Timeframe });
+                        CurrentBars.Add(new Domain.BarUpdate() { Symbol = update.Symbol, Timeframe = d.Timeframe, Version = version }); ;
                         index = CurrentBars.Count - 1;
                     }
                     var bar = CurrentBars[index];
@@ -153,7 +158,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 }
             }
 
-            public void Update(BarUpdateSummary update)
+            public void Update(BarUpdateSummary update, uint version)
             {
                 if (!update.CloseOnly && (update.AskClose.HasValue || update.BidClose.HasValue))
                 //if (update.AskClose.HasValue || update.BidClose.HasValue)
@@ -175,6 +180,7 @@ namespace TickTrader.Algo.Account.Fdk2
                         bar.BidData.Close = bidClose;
                         bar.AskData.RealVolume += askVolDelta;
                         bar.BidData.RealVolume += bidVolDelta;
+                        bar.Version = version;
                     }
                 }
 
@@ -188,6 +194,7 @@ namespace TickTrader.Algo.Account.Fdk2
                         if (index >= 0)
                         {
                             var bar = CurrentBars[index];
+                            bar.Version = version;
                             var barData = d.MarketSide == Feed.Types.MarketSide.Ask ? bar.AskData : bar.BidData;
                             d.UpdateBarData(barData);
                             if (update.CloseOnly)

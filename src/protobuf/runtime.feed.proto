@@ -208,4 +208,5 @@ message BarUpdate {
     BarData ask_data = 3;
     BarData bid_data = 4;
     bool is_closed = 5;
+    uint32 version = 6;
 }
