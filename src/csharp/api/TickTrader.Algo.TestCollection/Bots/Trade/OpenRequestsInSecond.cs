@@ -6,8 +6,13 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.TestCollection.Bots.Trade
 {
     [TradeBot(DisplayName = "[T] Open Requests In Second", Version = "1.0")]
-    class OpenRequestsInSecond : TradeBot
+    sealed class OpenRequestsInSecond : TradeBot
     {
+        public enum OpenMode { Uniform, Exponential }
+
+        private readonly Random _random = new();
+
+
         private Stopwatch _stopwatch;
         private bool _run = false;
 
@@ -19,6 +24,12 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
 
         [Parameter(DefaultValue = 0.1)]
         public double Volume { get; set; }
+
+        [Parameter]
+        public bool UseTpSL { get; set; }
+
+        [Parameter(DisplayName = "Max TP/SL shift (pips)", DefaultValue = 100)]
+        public int MaxTpSlShift { get; set; }
 
 
         protected override void Init()
@@ -93,8 +104,20 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
             _run = false;
         }
 
-        private Task SendRequest(OrderSide side) => OpenOrderAsync(OpenOrderRequest.Template.Create().WithParams(Symbol.Name, side, OrderType.Market, Volume, 0.1, null).MakeRequest());
-    }
+        private Task SendRequest(OrderSide side)
+        {
+            var template = OpenOrderRequest.Template.Create().WithParams(Symbol.Name, side, OrderType.Market, Volume, 0.1, null);
 
-    public enum OpenMode { Uniform, Exponential }
+            if (UseTpSL)
+            {
+                var cur = side.IsBuy() ? Ask : Bid;
+                var shift = _random.Next(MaxTpSlShift) * Symbol.Point;
+
+                template.WithTakeProfit(cur + shift);
+                template.WithStopLoss(cur - shift);
+            }
+
+            return OpenOrderAsync(template.MakeRequest());
+        }
+    }
 }
