@@ -165,6 +165,12 @@ namespace TickTrader.Algo.Account.Fdk2
 
                     foreach (var bar in CurrentBars)
                     {
+                        // there can be a bar update for other periodicities
+                        // beetween closed and opened update for lower periodicities
+                        // we should not change closed bar
+                        if (bar.IsClosed)
+                            continue;
+
                         bar.AskData.Close = askClose;
                         bar.BidData.Close = bidClose;
                         bar.AskData.RealVolume += askVolDelta;
@@ -191,6 +197,10 @@ namespace TickTrader.Algo.Account.Fdk2
                                 if (update.BidClose.HasValue)
                                     bar.BidData.Close = update.BidClose.Value;
                             }
+
+                            // this check can probably be omitted, but it makes sense to update only when bar is opened or closed
+                            if (d.From.HasValue)
+                                bar.IsClosed = update.CloseOnly;
                         }
                     }
                 }

@@ -207,4 +207,5 @@ message BarUpdate {
     Feed.Timeframe timeframe = 2;
     BarData ask_data = 3;
     BarData bid_data = 4;
+    bool is_closed = 5;
 }
