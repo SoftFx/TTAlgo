@@ -11,6 +11,9 @@ namespace TickTrader.FeedStorage.Api.Tests
 {
     public abstract class ManageSymbolsTestsBase<TSettings> : TestsBase<TSettings> where TSettings : StorageSettings, new()
     {
+        protected const int TestTimeout = 30000;
+
+
         internal abstract ISymbolCollection Collection { get; }
 
         internal ManageSymbolsTestsBase() : base()
@@ -39,7 +42,7 @@ namespace TickTrader.FeedStorage.Api.Tests
         }
 
 
-        [Theory]
+        [Theory(Timeout = TestTimeout)]
         [InlineData(1)]
         [InlineData(10)]
         [InlineData(100)]
@@ -67,7 +70,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             AssertCollection(GetCatalogSymbols(newSymbols), newSymbols);
         }
 
-        [Theory]
+        [Theory(Timeout = TestTimeout)]
         [InlineData(1)]
         [InlineData(10)]
         [InlineData(100)]
@@ -95,7 +98,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             AssertCollection(received, newSymbols);
         }
 
-        [Theory]
+        [Theory(Timeout = TestTimeout)]
         [InlineData(1)]
         [InlineData(10)]
         [InlineData(100)]

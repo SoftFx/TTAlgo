@@ -18,7 +18,7 @@ namespace TickTrader.FeedStorage.Api.Tests
         }
 
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         public void Default_Initialization()
         {
             var expected = _feed.DefaultSymbol;
@@ -31,7 +31,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             AssertSymbols(_catalog.OnlineCollection[expected.Name], expected);
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         public async Task Disconnect_Client()
         {
             await _catalog.DisconnectClient();
@@ -41,7 +41,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             Assert.Equal(_catalog.OnlineCollection.StorageFolder, string.Empty);
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         public async Task Reconnect_Client()
         {
             await Disconnect_Client();
@@ -50,7 +50,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             Default_Initialization();
         }
 
-        [Theory]
+        [Theory(Timeout = TestTimeout)]
         [InlineData(StorageFolderOptions.NoHierarchy)]
         [InlineData(StorageFolderOptions.ServerHierarchy)]
         [InlineData(StorageFolderOptions.ServerClientHierarchy)]
@@ -68,7 +68,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             Assert.True(Directory.Exists(expectedPath));
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         public async Task Remove_DefaultSymbol()
         {
             var expected = _feed.DefaultSymbol;
@@ -89,7 +89,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             AssertSymbols(received, expected);
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         public async Task Update_DefaultSymbol()
         {
             ISymbolData receivedOld = null;

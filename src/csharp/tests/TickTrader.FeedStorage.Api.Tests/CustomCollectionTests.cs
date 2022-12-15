@@ -17,7 +17,7 @@ namespace TickTrader.FeedStorage.Api.Tests
         }
 
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         public void Default_Inilialization()
         {
             Assert.Empty(_catalog.AllSymbols);
@@ -25,7 +25,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             Assert.Equal(_catalog.CustomCollection.StorageFolder, _settings.GetExpectedPath());
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         public async Task Close_CustomStorage()
         {
             await _catalog.CloseCustomStorage();
@@ -35,14 +35,14 @@ namespace TickTrader.FeedStorage.Api.Tests
             Assert.Equal(_catalog.CustomCollection.StorageFolder, string.Empty);
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         public async Task Close_Full_CustomStorage()
         {
             await Add_Symbols(100);
             await Close_CustomStorage();
         }
 
-        [Theory]
+        [Theory(Timeout = TestTimeout)]
         [InlineData(1)]
         [InlineData(10)]
         [InlineData(100)]
