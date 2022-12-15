@@ -1,4 +1,5 @@
-﻿using LiveChartsCore;
+﻿using Caliburn.Micro;
+using LiveChartsCore;
 using Machinarium.Qnil;
 using System;
 using TickTrader.Algo.Domain;
@@ -6,7 +7,7 @@ using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {
-    public sealed class OutputSubWindowViewModel : IDisposable
+    public sealed class OutputSubWindowViewModel : PropertyChangedBase, IDisposable
     {
         private readonly VarDictionary<string, IOutputSeriesViewModel> _outputs = new();
         private readonly IVarList<IOutputSeriesViewModel> _outputList;

@@ -1,13 +1,15 @@
-﻿using Machinarium.Qnil;
+﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Server;
-using static TickTrader.Algo.Domain.Metadata.Types;
 using System.Threading.Tasks;
+using TickTrader.Algo.Server;
+
+using static TickTrader.Algo.Domain.Metadata.Types;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {
-    internal sealed class DynamicIndicatorObserver : IIndicatorObserver
+    internal sealed class DynamicIndicatorObserver : PropertyChangedBase, IIndicatorObserver
     {
         public static int FreeSubWindowId;
 
