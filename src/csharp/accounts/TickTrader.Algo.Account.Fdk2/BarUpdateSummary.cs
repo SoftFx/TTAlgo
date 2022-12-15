@@ -66,14 +66,14 @@ namespace TickTrader.Algo.Account.Fdk2
         public bool HasAllProperties => From.HasValue && Open.HasValue && High.HasValue && Low.HasValue;
 
 
-        public BarData CreateBarData(double? close)
+        public BarData CreateBarData(double close)
         {
-            if (close.HasValue && HasAllProperties && BarSampler.TryGet(Timeframe, out var sampler))
+            if (HasAllProperties && BarSampler.TryGet(Timeframe, out var sampler))
             {
                 var boundaries = sampler.GetBar(new UtcTicks(From.Value));
                 var data = new BarData(boundaries.Open, boundaries.Close)
                 {
-                    Close = close.Value,
+                    Close = close,
                     Open = Open.Value,
                     High = High.Value,
                     Low = Low.Value

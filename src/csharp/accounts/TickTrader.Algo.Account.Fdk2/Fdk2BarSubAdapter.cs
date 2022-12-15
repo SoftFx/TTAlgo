@@ -129,6 +129,9 @@ namespace TickTrader.Algo.Account.Fdk2
 
         private class SymbolBarGroup
         {
+            private double _lastAskClose, _lastBidClose;
+
+
             public List<Domain.BarUpdate> CurrentBars { get; } = new List<Domain.BarUpdate>(16);
 
 
@@ -149,22 +152,30 @@ namespace TickTrader.Algo.Account.Fdk2
                     var bar = CurrentBars[index];
 
                     var side = d.MarketSide;
-                    var close = side == Feed.Types.MarketSide.Ask ? update.AskClose : update.BidClose;
-                    var data = d.CreateBarData(close);
                     if (side == Feed.Types.MarketSide.Bid)
-                        bar.BidData = data;
+                    {
+                        var close = update.BidClose ?? 1;
+                        _lastBidClose = close;
+                        bar.BidData = d.CreateBarData(close);
+                    }
                     else if (side == Feed.Types.MarketSide.Ask)
-                        bar.AskData = data;
+                    {
+                        var close = update.AskClose ?? 1;
+                        _lastAskClose = close;
+                        bar.AskData = d.CreateBarData(close);
+                    }
                 }
             }
 
             public void Update(BarUpdateSummary update, uint version)
             {
+                var askClose = update.AskClose ?? _lastAskClose;
+                var bidClose = update.BidClose ?? _lastBidClose;
+                _lastAskClose = askClose;
+                _lastBidClose = bidClose;
+
                 if (!update.CloseOnly && (update.AskClose.HasValue || update.BidClose.HasValue))
-                //if (update.AskClose.HasValue || update.BidClose.HasValue)
                 {
-                    var askClose = update.AskClose ?? CurrentBars[0].AskData.Close;
-                    var bidClose = update.BidClose ?? CurrentBars[0].BidData.Close;
                     var askVolDelta = update.AskVolumeDelta ?? 0;
                     var bidVolDelta = update.BidVolumeDelta ?? 0;
 
@@ -197,17 +208,15 @@ namespace TickTrader.Algo.Account.Fdk2
                             bar.Version = version;
                             var barData = d.MarketSide == Feed.Types.MarketSide.Ask ? bar.AskData : bar.BidData;
                             d.UpdateBarData(barData);
-                            if (update.CloseOnly)
-                            {
-                                if (update.AskClose.HasValue)
-                                    bar.AskData.Close = update.AskClose.Value;
-                                if (update.BidClose.HasValue)
-                                    bar.BidData.Close = update.BidClose.Value;
-                            }
 
-                            // this check can probably be omitted, but it makes sense to update only when bar is opened or closed
-                            if (d.From.HasValue)
+                            if (update.CloseOnly || d.From.HasValue)
+                            {
                                 bar.IsClosed = update.CloseOnly;
+                                // when bar is closed or opened update for volume and close price is skipped
+                                // volume is available in update details, but close price still has old value
+                                bar.AskData.Close = askClose;
+                                bar.BidData.Close = bidClose;
+                            }
                         }
                     }
                 }
