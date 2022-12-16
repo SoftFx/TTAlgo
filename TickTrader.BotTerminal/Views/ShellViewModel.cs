@@ -176,9 +176,6 @@ namespace TickTrader.BotTerminal
 
         public void Connect()
         {
-            //ShootBots(out var isConfirmed);
-
-            //if (isConfirmed)
             Connect(null);
         }
 
@@ -186,9 +183,6 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                //ShootBots(out var isConfirmed);
-
-                //if (isConfirmed)
                 cManager.TriggerDisconnect();
             }
             catch (Exception ex)
@@ -196,24 +190,6 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex);
             }
         }
-
-        //public void ShootBots(out bool isConfirmed)
-        //{
-        //    isConfirmed = true;
-
-        //    if (ConnectionLock.IsLocked)
-        //    {
-        //        bool hasRunningBots = algoEnv.LocalAgent.HasRunningBots;
-
-        //        var exit = new ConfirmationDialogViewModel(DialogButton.YesNo, hasRunningBots ? DialogMode.Warning : DialogMode.Question, DialogMessages.LogoutTitle, DialogMessages.LogoutMessage, hasRunningBots ? DialogMessages.BotsWorkError : null);
-        //        wndManager.ShowDialog(exit, this);
-
-        //        isConfirmed = exit.DialogResult == DialogResult.OK;
-
-        //        if (isConfirmed)
-        //            StopTerminal(false);
-        //    }
-        //}
 
         public override async Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
@@ -232,7 +208,6 @@ namespace TickTrader.BotTerminal
 
         private async Task StopTerminal()
         {
-            //await storage.ProfileManager.Stop();
             await storage.ProfileManager.StopCurrentProfile();
 
             var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
@@ -264,7 +239,7 @@ namespace TickTrader.BotTerminal
         public void About()
         {
             AboutDialogViewModel model = new AboutDialogViewModel();
-            wndManager.ShowDialog(model, this);
+            _ = wndManager.ShowDialog(model, this);
         }
 
         public void Exit()

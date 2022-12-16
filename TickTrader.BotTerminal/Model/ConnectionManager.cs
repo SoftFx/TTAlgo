@@ -21,6 +21,7 @@ namespace TickTrader.BotTerminal
         private bool _loginFlag;
         private ClientModel.Data _client;
         private LocalAlgoAgent2 _agent;
+        private ProfileManager _profileManager;
 
         public ConnectionManager(ClientModel.Data client, PersistModel appStorage, EventJournal journal, LocalAlgoAgent2 agent)
         {
@@ -31,6 +32,7 @@ namespace TickTrader.BotTerminal
             this.authStorage = appStorage.AuthSettingsStorage;
             this.authStorage.Accounts.Updated += Storage_Changed;
             this.journal = journal;
+            _profileManager = appStorage.ProfileManager;
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
@@ -133,7 +135,10 @@ namespace TickTrader.BotTerminal
             try
             {
                 if (Connection.IsOnline)
+                {
+                    await _profileManager.StopCurrentProfile();
                     ClearCache();
+                }
 
                 var result = await Connection.Connect(login, password, server, cToken);
 
@@ -159,6 +164,8 @@ namespace TickTrader.BotTerminal
 
         public async Task Disconnect()
         {
+            await _profileManager.StopCurrentProfile();
+
             await Connection.Disconnect();
 
             if (!_loginFlag)

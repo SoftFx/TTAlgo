@@ -97,11 +97,6 @@ namespace TickTrader.BotTerminal
             {
                 await _profileManager.StopCurrentProfile();
 
-                //if (!await _profileManager.StopCurrentProfile(server, login))
-                //{
-                //    return;
-                //}
-
                 token.ThrowIfCancellationRequested();
 
                 _profileManager.LoadCachedProfile(server, login);
