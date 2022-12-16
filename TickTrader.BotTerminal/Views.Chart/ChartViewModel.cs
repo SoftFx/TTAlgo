@@ -59,6 +59,7 @@ namespace TickTrader.BotTerminal
             _algoEnv.LocalAgent.BotUpdated += BotOnUpdated;
             _algoEnv.LocalAgentVM.Bots.Updated += BotsOnUpdated;
 
+            _allIndicators.Updated += IndicatorsOnUpdated;
             Indicators.CollectionChanged += Indicators_CollectionChanged;
 
             SelectedTimeframe = period;
@@ -149,6 +150,7 @@ namespace TickTrader.BotTerminal
             _algoEnv.LocalAgent.BotUpdated -= BotOnUpdated;
             _algoEnv.LocalAgentVM.Bots.Updated -= BotsOnUpdated;
 
+            _allIndicators.Updated -= IndicatorsOnUpdated;
             Indicators.CollectionChanged -= Indicators_CollectionChanged;
 
             _shell.ToolWndManager.CloseWindowByKey(this);
@@ -444,6 +446,14 @@ namespace TickTrader.BotTerminal
                     var botVM = _algoEnv.LocalAgentVM.BotList.FirstOrDefault(b => b.InstanceId == bot.InstanceId);
                     AddChartBot(botVM);
                 }
+            }
+        }
+
+        private void IndicatorsOnUpdated(ListUpdateArgs<PluginOutputModel> args)
+        {
+            if (args.Action == DLinqAction.Remove)
+            {
+                _algoEnv.LocalAgent.IdProvider.UnregisterPluginId(args.OldItem.Id);
             }
         }
 

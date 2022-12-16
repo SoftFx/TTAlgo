@@ -40,5 +40,7 @@ namespace TickTrader.Algo.Core.Setup
         bool IsValidPluginId(Metadata.Types.PluginType pluginType, string pluginId);
 
         void RegisterPluginId(string pluginId);
+
+        void UnregisterPluginId(string pluginId);
     }
 }

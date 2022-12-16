@@ -511,20 +511,13 @@ namespace TickTrader.BotTerminal
 
         #region IPluginIdProvider
 
-        string IPluginIdProvider.GeneratePluginId(PluginDescriptor descriptor)
-        {
-            return descriptor.DisplayName;
-        }
+        string IPluginIdProvider.GeneratePluginId(PluginDescriptor descriptor) => descriptor.DisplayName;
 
-        bool IPluginIdProvider.IsValidPluginId(Metadata.Types.PluginType pluginType, string pluginId)
-        {
-            return true;
-        }
+        bool IPluginIdProvider.IsValidPluginId(Metadata.Types.PluginType pluginType, string pluginId) => true;
 
-        void IPluginIdProvider.RegisterPluginId(string pluginId)
-        {
-            return;
-        }
+        void IPluginIdProvider.RegisterPluginId(string pluginId) { }
+
+        void IPluginIdProvider.UnregisterPluginId(string pluginId) { }
 
         #endregion IPluginIdProvider
 

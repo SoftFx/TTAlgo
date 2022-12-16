@@ -427,7 +427,7 @@ namespace TickTrader.BotTerminal
                     case Update.Types.Action.Removed:
                         if (_bots.ContainsKey(update.Id))
                         {
-                            _idProvider.UnregisterPlugin(update.Id);
+                            _idProvider.UnregisterPluginId(update.Id);
                             _bots.Remove(update.Id);
                         }
                         break;
