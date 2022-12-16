@@ -29,9 +29,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         internal static SKColor DownColor { get; } = SKColors.OrangeRed;
 
-        internal static SolidColorPaint EmptyPaint { get; } = new SolidColorPaint(SKColor.Empty);
-
-        internal static SolidColorPaint CrosshairPaint { get; } = new SolidColorPaint(SKColors.DarkOliveGreen);
+        internal static SKColor CrosshairColor { get; } = SKColors.DarkOliveGreen;
 
 
         internal static void Init()
@@ -42,7 +40,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
                                        .HasMap<EventPoint>(EventPoint.MapPoint)
                                        .HasMap<IndicatorPoint>(IndicatorPoint.MapPoint));
         }
-        
+
         internal static Axis GetDefaultAxis(int textSize = 10)
         {
             return new Axis
@@ -114,7 +112,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             return new ColumnSeries<ObservablePoint>
             {
                 Values = new ObservablePoint[] { point },
-                Fill = EmptyPaint,
+                Fill = null,
 
                 DataLabelsSize = 11,
 

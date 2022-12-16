@@ -1,5 +1,6 @@
 ﻿using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
 using Machinarium.Qnil;
 using System.Windows;
 using System.Windows.Input;
@@ -24,6 +25,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         private readonly SupportPriceLine _bidSupportLine, _askSupportLine;
         private readonly YLabelAxis _yLabelAxis;
+        private readonly SolidColorPaint _crosshairPaint = new(Customizer.CrosshairColor); // LiveCharts don't cleanup paints on close, when static introduces memory leaks
 
 
         public ChartTypes ChartType
@@ -140,7 +142,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             if (obj is CartesianScrollBarChart chart)
             {
-                var paint = (bool)e.NewValue ? Customizer.CrosshairPaint : Customizer.EmptyPaint;
+                var paint = (bool)e.NewValue ? chart._crosshairPaint : null;
 
                 chart._xAxis.SetCrosshairColor(paint);
                 chart._yAxis.SetCrosshairColor(paint);

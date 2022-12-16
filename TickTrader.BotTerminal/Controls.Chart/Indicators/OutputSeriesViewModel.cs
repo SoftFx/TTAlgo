@@ -52,9 +52,9 @@ namespace TickTrader.BotTerminal.Controls.Chart
             {
                 series = new LineSeries<IndicatorPoint>
                 {
-                    Fill = Customizer.EmptyPaint,
+                    Fill = null,
                     Stroke = stroke,
-                    GeometryFill = color,
+                    GeometryFill = color, // ideally we want it null, but then legend shows random color
                     GeometrySize = 0,
                     LineSmoothness = 0,
                     TooltipLabelFormatter = p => p.Model.ToPointTooltipInfo(settings),
