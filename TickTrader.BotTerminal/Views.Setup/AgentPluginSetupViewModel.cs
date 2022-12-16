@@ -192,6 +192,8 @@ namespace TickTrader.BotTerminal
 
         public void AddNewAccount() => SelectedAgent.UpdatePluginAccountSettings(this);
 
+        public bool CanUploadNewPlugin() => SelectedPlugin?.Key?.PackageId != null;
+
         public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog(SelectedPlugin.Key.PackageId);
 
         public void Reset()
