@@ -91,7 +91,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
         internal static ColumnSeries<ObservablePoint> SetPeriod(this ColumnSeries<ObservablePoint> label, TradeChartSettings settings)
         {
-            label.DataLabelsFormatter = value => value.Model.X >= DateTime.MinValue.Ticks ? new DateTime((long)value.Model.X).ToString(settings.DateFormat) : null;
+            label.DataLabelsFormatter = value => value.Model.X >= DateTime.MinValue.Ticks ? new DateTime((long)value.Model.X).ToString(settings.DateFormat) : string.Empty;
 
             return label;
         }
@@ -100,7 +100,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             var label = GetDefaultLabel(point);
 
-            label.DataLabelsFormatter = value => value.Model.Y?.ToString(settings.PriceFormat);
+            label.DataLabelsFormatter = value => value.Model.Y?.ToString(settings.PriceFormat) ?? string.Empty;
             label.DataLabelsPadding = new Padding(55, 0, 0, -2);
             label.DataLabelsPosition = DataLabelsPosition.End;
 
