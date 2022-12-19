@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             // Apply defaults first and then extend with our custom types
             LiveCharts.Configure(LiveChartsSkiaSharp.DefaultPlatformBuilder);
-            LiveCharts.Configure(c => c.WithDefaultAnimationsSpeed(DefaultAnimationSpeed)
+            LiveCharts.Configure(c => c.WithAnimationsSpeed(DefaultAnimationSpeed)
                                        .HasMap<EventPoint>(EventPoint.MapPoint)
                                        .HasMap<IndicatorPoint>(IndicatorPoint.MapPoint));
         }
@@ -65,7 +65,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             axis.Padding = new Padding(-50, 0, 0, 5);
             axis.CrosshairPadding = new Padding(0, 0, 0, 58);
-            axis.Labeler = value => value >= DateTime.MinValue.Ticks ? new DateTime((long)value).ToString(settings.DateFormat) : null;
+            axis.Labeler = value => value >= DateTime.MinValue.Ticks ? new DateTime((long)value).ToString(settings.DateFormat) : string.Empty;
             axis.UnitWidth = settings.Period.ToTimespan().Ticks;
 
             axis.MinStep = GetPeriodStep(settings.Period);
