@@ -49,6 +49,8 @@ namespace TickTrader.Algo.Server
 
         public Task ChangeTimeframe(Feed.Types.Timeframe timeframe) => _actor.Ask(new ChangeTimeframeCmd(timeframe));
 
+        public Task ChangeBoundaries(int barsCount) => _actor.Ask(new ChangeBoundariesCmd(barsCount));
+
 
         internal async Task Init()
         {
@@ -111,6 +113,8 @@ namespace TickTrader.Algo.Server
         public record RemoveIndicatorRequest(string PluginId);
 
         public record ChangeTimeframeCmd(Feed.Types.Timeframe Timeframe);
+
+        public record ChangeBoundariesCmd(int? BarsCount);
 
         internal record AttachDownlinkCmd(ChannelWriter<object> Sink);
 

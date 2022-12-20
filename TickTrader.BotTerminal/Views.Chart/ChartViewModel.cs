@@ -15,6 +15,8 @@ using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
+    public enum ChartSize { B512 = 512, B1024 = 1024, B2048 = 2048, B4096 = 4096 }
+
     internal class ChartViewModel : Screen, IDropHandler
     {
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
@@ -40,7 +42,7 @@ namespace TickTrader.BotTerminal
             _shell = _algoEnv.Shell;
             smb = _algoEnv.ClientModel.Symbols.GetOrDefault(symbol);
 
-            _chartHost = algoEnv.LocalAgent.IndicatorHost.CreateChart(symbol, period, Feed.Types.MarketSide.Bid).Result;
+            _chartHost = algoEnv.LocalAgent.IndicatorHost.CreateChart(symbol, period, Feed.Types.MarketSide.Bid, (int)_selSize).Result;
             IndicatorObserver = new DynamicIndicatorObserver(_chartHost, smb.Digits);
 
             this.BarChart = new BarChartModel(smb, _algoEnv);
@@ -71,6 +73,8 @@ namespace TickTrader.BotTerminal
 
         public Feed.Types.Timeframe[] AvailablePeriods { get; } = TimeFrameModel.BarTimeFrames;
 
+        public ChartSize[] AvailableChartSizes { get; } = { ChartSize.B512, ChartSize.B1024, ChartSize.B2048, ChartSize.B4096 }; 
+
         public ChartModelBase Chart
         {
             get { return activeChart; }
@@ -96,6 +100,21 @@ namespace TickTrader.BotTerminal
 
                 ActivateBarChart(value);
                 NotifyOfPropertyChange(nameof(SelectedTimeframe));
+            }
+        }
+
+        private ChartSize _selSize = ChartSize.B512;
+
+        public ChartSize SelectedChartSize
+        {
+            get => _selSize;
+            set
+            {
+                if (_selSize == value)
+                    return;
+
+                _selSize = value;
+                ActivateChartSize((int)value);
             }
         }
 
@@ -321,17 +340,15 @@ namespace TickTrader.BotTerminal
         {
             //BarChart.DateAxisLabelFormat = dateLabelFormat;
             this.Chart = BarChart;
-            BarChart.Activate(timeFrame);
+            BarChart.Activate(timeFrame, (int)SelectedChartSize);
             _ = _chartHost.ChangeTimeframe(timeFrame);
             FilterChartBots();
         }
 
-        private void ActivateTickChart()
+        private void ActivateChartSize(int size)
         {
-            //this.Chart = tickChart;
-            //tickChart.Activate();
-            //barChart.Deactivate();
-            FilterChartBots();
+            BarChart.Activate(SelectedTimeframe, size);
+            _ = _chartHost.ChangeBoundaries(size);
         }
 
         private void Chart_ParamsLocked()

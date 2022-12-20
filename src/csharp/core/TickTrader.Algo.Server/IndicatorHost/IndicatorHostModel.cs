@@ -23,8 +23,9 @@ namespace TickTrader.Algo.Server
 
         public Task SetAccountProxy(IAccountProxy accProxy) => _actor.Ask(new SetAccountProxyCmd(accProxy));
 
-        public Task<ChartHostProxy> CreateChart(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide)
-            => _actor.Ask<ChartHostProxy>(new CreateChartRequest(symbol, timeframe, marketSide));
+        public Task<ChartHostProxy> CreateChart(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide,
+            int barsCount = ChartBuilderActor.DefaultBarsCount)
+                => _actor.Ask<ChartHostProxy>(new CreateChartRequest(symbol, timeframe, marketSide, barsCount));
 
 
         internal class StartCmd : Singleton<StartCmd> { }
@@ -35,7 +36,7 @@ namespace TickTrader.Algo.Server
 
         internal record SetAccountProxyCmd(IAccountProxy AccProxy);
 
-        internal record CreateChartRequest(string Symbol, Feed.Types.Timeframe Timeframe, Feed.Types.MarketSide MarketSide);
+        internal record CreateChartRequest(string Symbol, Feed.Types.Timeframe Timeframe, Feed.Types.MarketSide MarketSide, int BarsCount);
 
         internal record RemoveChartCmd(int ChartId);
     }

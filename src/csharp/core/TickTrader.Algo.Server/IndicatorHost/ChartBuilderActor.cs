@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
@@ -13,6 +12,8 @@ namespace TickTrader.Algo.Server
 {
     internal class ChartBuilderActor : Actor, IPluginHost
     {
+        public const int DefaultBarsCount = 512;
+
         private readonly IActorRef _parent;
         private readonly AlgoServerPrivate _server;
         private readonly ChartInfo _info;
@@ -38,6 +39,7 @@ namespace TickTrader.Algo.Server
             Receive<ChartHostProxy.RemoveIndicatorRequest>(RemoveIndicator);
             Receive<ChartHostProxy.AttachDownlinkCmd>(AttachProxyDownlink);
             Receive<ChartHostProxy.ChangeTimeframeCmd>(ChangeTimeframe);
+            Receive<ChartHostProxy.ChangeBoundariesCmd>(ChangeBoundaries);
 
             Receive<RunningStateChanged>(OnRunningStateChanged);
             Receive<PluginModelUpdate>(OnPluginUpdated);
@@ -95,6 +97,21 @@ namespace TickTrader.Algo.Server
         private async Task ChangeTimeframe(ChartHostProxy.ChangeTimeframeCmd cmd)
         {
             _info.Timeframe = cmd.Timeframe;
+
+            if (!_isStarted)
+                return;
+
+            await StopAllIndicators();
+
+            if (!_isStarted)
+                return;
+
+            await StartAllIndicators();
+        }
+
+        private async Task ChangeBoundaries(ChartHostProxy.ChangeBoundariesCmd cmd)
+        {
+            _info.Boundaries = new ChartBoundaries { BarsCount = cmd.BarsCount ?? DefaultBarsCount };
 
             if (!_isStarted)
                 return;
@@ -265,7 +282,7 @@ namespace TickTrader.Algo.Server
             config.WorkingDirectory = _server.Env.AlgoWorkingFolder;
             config.LogDirectory = _server.Env.GetPluginLogsFolder(pluginId);
             config.InitPriorityInvokeStrategy();
-            config.InitSlidingBuffering(4000);
+            config.InitSlidingBuffering(_info.Boundaries?.BarsCount ?? DefaultBarsCount);
             config.InitBarStrategy(_info.MarketSide);
 
             return config;

@@ -93,11 +93,14 @@ namespace TickTrader.Algo.Server
 
         private async Task<ChartHostProxy> CreateChart(IndicatorHostModel.CreateChartRequest request)
         {
-            var info = new ChartInfo();
-            info.Id = _freeChartId++;
-            info.Symbol = request.Symbol;
-            info.Timeframe = request.Timeframe;
-            info.MarketSide = request.MarketSide;
+            var info = new ChartInfo
+            {
+                Id = _freeChartId++,
+                Symbol = request.Symbol,
+                Timeframe = request.Timeframe,
+                MarketSide = request.MarketSide,
+                Boundaries = new ChartBoundaries { BarsCount = request.BarsCount }
+            };
 
             var chart = ChartBuilderActor.Create(Self, info, _server);
             if (_isStarted)

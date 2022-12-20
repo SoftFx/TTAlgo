@@ -9,6 +9,8 @@
         Feed.Types.Timeframe Timeframe { get; }
 
         Feed.Types.MarketSide MarketSide { get; }
+
+        IChartBoundaries Boundaries { get; }
     }
 
 
@@ -21,5 +23,7 @@
         public Feed.Types.Timeframe Timeframe { get; set; }
 
         public Feed.Types.MarketSide MarketSide { get; set; }
+
+        public IChartBoundaries Boundaries { get; set; }
     }
 }
