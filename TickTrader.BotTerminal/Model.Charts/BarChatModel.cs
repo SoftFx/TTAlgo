@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
 
             cToken.ThrowIfCancellationRequested();
 
-            BarVector.InitNewVector(TimeFrame, barArray);
+            BarVector.InitNewVector(TimeFrame, barArray, size: BarsCount);
 
             if (barArray.Length > 0)
                 InitBoundaries(barArray.Length, barArray.First().OpenTime.ToUtcDateTime(), barArray.Last().OpenTime.ToUtcDateTime());
