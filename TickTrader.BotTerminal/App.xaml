@@ -91,6 +91,7 @@
                 <ResourceDictionary Source="Views.FeedStorage/LoadingWindows/FeedImportView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/SymbolCfgEditorView.xaml" />
 
+                <ResourceDictionary Source="Views.BotsRepository/BotsRepositoryView.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
