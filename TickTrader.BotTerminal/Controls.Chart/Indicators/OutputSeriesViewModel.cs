@@ -11,6 +11,7 @@ using TickTrader.Algo.Server;
 using System.Linq;
 using System.IO;
 using System.Globalization;
+using Caliburn.Micro;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {
@@ -99,7 +100,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
     }
 
 
-    internal sealed class StaticOutputSeriesViewModel : IOutputSeriesViewModel
+    internal sealed class StaticOutputSeriesViewModel : PropertyChangedBase, IOutputSeriesViewModel
     {
         public ISeries Series { get; }
 
@@ -122,7 +123,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
     }
 
 
-    internal sealed class DynamicOutputSeriesViewModel : IOutputSeriesViewModel
+    internal sealed class DynamicOutputSeriesViewModel : PropertyChangedBase, IOutputSeriesViewModel
     {
         private readonly OutputSeriesProxy _output;
         private readonly VarDictionary<UtcTicks, OutputPoint> _points = new();
