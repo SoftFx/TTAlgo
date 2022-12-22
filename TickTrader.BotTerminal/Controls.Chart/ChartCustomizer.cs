@@ -193,7 +193,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
                     StrokeThickness = 0.1f,
                 },
 
-                TooltipLabelFormatter = m => m.Model?.ToolTip,
+                TooltipLabelFormatter = m => m.Model?.ToolTip ?? string.Empty,
 
                 GeometrySize = 20,
                 ZIndex = 10,
