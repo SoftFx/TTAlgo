@@ -22,8 +22,9 @@ namespace TickTrader.BotTerminal
         private CancellationTokenSource _updateSetupMetadataSrc;
         private TaskCompletionSource<SetupMetadata> _updateSetupMetadataTaskSrc;
         private CancellationToken _updateSetupToken;
-        private bool _hasPendingRequest;
+
         private string _requestError;
+        private bool _hasPendingRequest;
         private bool _showFileProgress;
 
         public IObservableList<AlgoAgentViewModel> Agents { get; }
@@ -42,6 +43,7 @@ namespace TickTrader.BotTerminal
                     _selectedAgent.Model.BotStateChanged -= BotStateChanged;
                     _selectedAgent.Model.AccessLevelChanged -= OnAccessLevelChanged;
                 }
+
                 _selectedAgent = value;
                 NotifyOfPropertyChange(nameof(SelectedAgent));
                 NotifyOfPropertyChange(nameof(IsNotTerminal));
@@ -73,6 +75,11 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoPluginViewModel> Plugins { get; private set; }
 
+        public List<AlgoPluginViewModel> AvailableBots { get; private set; }
+
+        public List<AlgoPluginViewModel> SelectedPluginVersions { get; private set; }
+
+
         public AlgoPluginViewModel SelectedPlugin
         {
             get { return _selectedPlugin; }
@@ -89,7 +96,10 @@ namespace TickTrader.BotTerminal
                     return;
                 }
 
+                SelectedPluginVersions = Plugins.Where(u => u.DisplayName == _selectedPlugin.DisplayName).ToList();
+
                 NotifyOfPropertyChange(nameof(SelectedPlugin));
+                NotifyOfPropertyChange(nameof(SelectedPluginVersions));
                 NotifyOfPropertyChange(nameof(CanOk));
                 UpdateSetup();
             }
@@ -103,6 +113,8 @@ namespace TickTrader.BotTerminal
 
         public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest && SelectedPlugin != null
             && (IsNewMode ? SelectedAgent.Model.AccessManager.CanAddPlugin() : SelectedAgent.Model.AccessManager.CanChangePluginConfig());
+
+        public bool IsNotTerminal => Mode == PluginSetupMode.New && SelectedAgent.Name != LocalAlgoAgent.LocalAgentName;
 
         public Metadata.Types.PluginType Type { get; }
 
@@ -156,6 +168,7 @@ namespace TickTrader.BotTerminal
 
         public ProgressViewModel FileProgress { get; }
 
+
         private AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, string accountId, PluginKey pluginKey, Metadata.Types.PluginType type, SetupContextInfo setupContext, PluginSetupMode mode)
         {
             _algoEnv = algoEnv;
@@ -164,9 +177,9 @@ namespace TickTrader.BotTerminal
             SetupContext = setupContext;
 
             Agents = algoEnv.Agents.AsObservable();
-            SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName) ?? (Agents.Any() ? Agents.First() : null);
-            SelectedAccount = Accounts.FirstOrDefault(a => a.AccountId.Equals(accountId)) ?? (Accounts.Any() ? Accounts.First() : null);
-            SelectedPlugin = Plugins.FirstOrDefault(i => i.Key.Equals(pluginKey)) ?? (Plugins.Any() ? Plugins.First() : null);
+            SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName) ?? Agents.FirstOrDefault();
+            SelectedAccount = Accounts.FirstOrDefault(a => a.AccountId.Equals(accountId)) ?? Accounts.FirstOrDefault();
+            SelectedPlugin = Plugins.FirstOrDefault(i => i.Key.Equals(pluginKey)) ?? Plugins.FirstOrDefault();
             PluginType = GetPluginTypeDisplayName(Type);
 
             ShowFileProgress = false;
@@ -188,7 +201,6 @@ namespace TickTrader.BotTerminal
             DisplayName = $"{bot.InstanceId} Bot Instance";
         }
 
-        public bool IsNotTerminal => Mode == PluginSetupMode.New && SelectedAgent.Name != LocalAlgoAgent.LocalAgentName;
 
         public void AddNewAccount() => SelectedAgent.UpdatePluginAccountSettings(this);
 
@@ -244,12 +256,6 @@ namespace TickTrader.BotTerminal
             return base.CanCloseAsync(cancellationToken);
         }
 
-        //public override void CanClose(Action<bool> callback)
-        //{
-        //    callback(true);
-        //    Dispose();
-        //}
-
         public PluginConfig GetConfig()
         {
             var res = Setup.Save();
@@ -281,9 +287,11 @@ namespace TickTrader.BotTerminal
         {
             Accounts = SelectedAgent.Accounts.AsObservable();
             Plugins = SelectedAgent.Plugins.Where(p => p.Descriptor.Type == Type).AsObservable();
+            AvailableBots = Plugins.DistinctBy(u => u.Descriptor.DisplayName).ToList();
 
             NotifyOfPropertyChange(nameof(Accounts));
             NotifyOfPropertyChange(nameof(Plugins));
+            NotifyOfPropertyChange(nameof(AvailableBots));
 
             SelectedAccount = Accounts.FirstOrDefault();
             SelectedPlugin = Plugins.FirstOrDefault();
@@ -336,14 +344,14 @@ namespace TickTrader.BotTerminal
                 Setup.ValidityChanged -= Validate;
         }
 
-        private string GetPluginTypeDisplayName(Metadata.Types.PluginType type)
+        private static string GetPluginTypeDisplayName(Metadata.Types.PluginType type)
         {
-            switch (type)
+            return type switch
             {
-                case Metadata.Types.PluginType.TradeBot: return "Bot";
-                case Metadata.Types.PluginType.Indicator: return "Indicator";
-                default: return "PluginType";
-            }
+                Metadata.Types.PluginType.TradeBot => "Bot",
+                Metadata.Types.PluginType.Indicator => "Indicator",
+                _ => "PluginType",
+            };
         }
 
         private async void UpdateSetupMetadata()
@@ -414,7 +422,7 @@ namespace TickTrader.BotTerminal
             ShowFileProgress = true;
             try
             {
-                foreach (var (fileName, path) in fileUploadList)
+                foreach (var (_, path) in fileUploadList)
                 {
                     if (System.IO.File.Exists(path) && System.IO.Path.GetFullPath(path) == path)
                     {

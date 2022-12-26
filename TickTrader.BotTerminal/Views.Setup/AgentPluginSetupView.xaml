@@ -80,6 +80,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="90"/>
@@ -87,13 +88,24 @@
                 <ColumnDefinition Width="90"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+
             <Label Grid.Row="0" Grid.Column="0" Content="{Binding PluginType}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
                       IsEditable="True"
                       IsEnabled="{Binding IsNewMode}"
-                      ItemsSource="{Binding Plugins}"
+                      ItemsSource="{Binding AvailableBots}"
                       SelectedItem="{Binding SelectedPlugin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       DisplayMemberPath="DisplayName"/>
+
+            <Label Grid.Row="1" Grid.Column="0" Content="Version" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
+                      IsEditable="True"
+                      IsEnabled="{Binding IsNewMode}"
+                      ItemsSource="{Binding SelectedPluginVersions}"
+                      SelectedItem="{Binding SelectedPlugin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      DisplayMemberPath="DisplayNameWithVersion"
+                      ToolTip="{Binding SelectedPlugin.FullPackagePath}"/>
+
             <Button Grid.Row="2" Grid.ColumnSpan="4" 
                     Content="Upload..." 
                     cal:Message.Attach="UploadNewPlugin" 

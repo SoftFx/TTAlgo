@@ -1,15 +1,14 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 using System.IO;
-using Caliburn.Micro;
-using TickTrader.Algo.Core.Lib;
-using System.Diagnostics;
 using System.Windows;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoPluginViewModel : PropertyChangedBase
+    internal sealed class AlgoPluginViewModel : PropertyChangedBase
     {
         private const string UnknownPath = "Unknown path";
 
@@ -21,6 +20,7 @@ namespace TickTrader.BotTerminal
 
         public enum GroupType { Unknown, Indicators, Bots }
 
+
         public PluginInfo PluginInfo { get; }
 
         public PackageInfo PackageInfo { get; }
@@ -31,7 +31,9 @@ namespace TickTrader.BotTerminal
 
         public PluginDescriptor Descriptor { get; }
 
-        public string DisplayName => Descriptor.UiDisplayName;
+        public GroupType CurrentGroup { get; }
+
+        public string Description { get; }
 
         public string PackageName { get; }
 
@@ -41,11 +43,12 @@ namespace TickTrader.BotTerminal
 
         public string DisplayPackagePath { get; }
 
+
         public Metadata.Types.PluginType Type => Descriptor.Type;
 
-        public string Description { get; }
+        public string DisplayName => Descriptor.DisplayName;
 
-        public GroupType CurrentGroup { get; }
+        public string DisplayNameWithVersion => Descriptor.UiDisplayName;
 
         public string Category => Descriptor.Category; //used in ContextMenu AddIndicator/AddBot
 
@@ -56,6 +59,7 @@ namespace TickTrader.BotTerminal
         public bool IsTradeBot => Descriptor.IsTradeBot;
 
         public bool IsIndicator => Descriptor.IsIndicator;
+
 
         public AlgoPluginViewModel(PluginInfo info, AlgoAgentViewModel agent)
         {
@@ -83,6 +87,7 @@ namespace TickTrader.BotTerminal
                 Description = string.Join(Environment.NewLine, Descriptor.Description, string.Empty, $"Algo Package {PackageName} at {PackageDirectory}").Trim();
             }
         }
+
 
         public void RemovePackage()
         {

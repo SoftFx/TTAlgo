@@ -17,7 +17,7 @@
                     <Setter Property="BorderThickness" Value="0"/>
                 </Style>
 
-                <Style x:Key="ReposItemStyle" TargetType="{x:Type ListViewItem}">
+                <Style TargetType="{x:Type ListViewItem}">
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -37,7 +37,7 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Bold"/>
-                        <ListView Grid.Row="1" ItemsSource="{Binding CurrentBots}" ItemContainerStyle="{StaticResource ReposItemStyle}">
+                        <ListView Grid.Row="1" ItemsSource="{Binding CurrentBots}">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <Border BorderThickness="0 0 0 1" BorderBrush="LightGray" Margin="0 2">
@@ -61,12 +61,12 @@
                 </TabItem>
                 <TabItem Header="Browse">
                     <TabItem.Content>
-                        <ListView ItemsSource="{Binding Releases}" ItemContainerStyle="{StaticResource ReposItemStyle}">
+                        <ListView ItemsSource="{Binding Releases}">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="10 5">
                                         <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Bold"/>
-                                        <ListView ItemsSource="{Binding Plugins}" ItemContainerStyle="{StaticResource ReposItemStyle}">
+                                        <ListView ItemsSource="{Binding Plugins}">
                                             <ListView.ItemTemplate>
                                                 <DataTemplate>
                                                     <Grid Margin="10 0">
