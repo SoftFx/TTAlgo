@@ -52,8 +52,8 @@
   </ItemGroup>
 
   <ItemGroup Label="AvalonDock references">
-    <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" Condition=" '$(UseAvalonDockSrc)' != 'true' " />
-    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.60.0" Condition=" '$(UseAvalonDockSrc)' != 'true' " />
+    <PackageReference Include="Dirkster.AvalonDock" Version="4.71.0" Condition=" '$(UseAvalonDockSrc)' != 'true' " />
+    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.71.0" Condition=" '$(UseAvalonDockSrc)' != 'true' " />
     
     <ProjectReference Include="..\..\AvalonDock\source\Components\AvalonDock\AvalonDock.csproj" Condition=" '$(UseAvalonDockSrc)' == 'true' " />
     <ProjectReference Include="..\..\AvalonDock\source\Components\AvalonDock.Themes.VS2013\AvalonDock.Themes.VS2013.csproj" Condition=" '$(UseAvalonDockSrc)' == 'true' " />
