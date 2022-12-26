@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.PkgStorage;
+﻿using TickTrader.Algo.Package;
 
 namespace TickTrader.Algo.Server
 {

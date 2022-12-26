@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -8,6 +7,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Runtime;
 using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
@@ -57,8 +57,8 @@ namespace TickTrader.Algo.Server
             Receive<OutputSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
             Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
             Receive<PluginExitedMsg>(OnExited);
-            Receive<RuntimeCrashedMsg>(OnRuntimeCrashed);
-            Receive<RuntimeInvalidMsg>(OnRuntimeInvalid);
+            Receive<RuntimeControlModel.RuntimeCrashedMsg>(OnRuntimeCrashed);
+            Receive<RuntimeControlModel.RuntimeInvalidMsg>(OnRuntimeInvalid);
             Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdated);
 
             Receive<PluginListenerProxy.AttachProxyDownlinkCmd>(AttachProxyDownlink);
@@ -222,7 +222,7 @@ namespace TickTrader.Algo.Server
             _host.UpdateRunningState(_id, false).Forget();
         }
 
-        private void OnRuntimeCrashed(RuntimeCrashedMsg msg)
+        private void OnRuntimeCrashed(RuntimeControlModel.RuntimeCrashedMsg msg)
         {
             if (!_state.IsStopped())
             {
@@ -238,7 +238,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private void OnRuntimeInvalid(RuntimeInvalidMsg msg)
+        private void OnRuntimeInvalid(RuntimeControlModel.RuntimeInvalidMsg msg)
         {
             if (_state.IsRunning())
             {
@@ -537,9 +537,5 @@ namespace TickTrader.Algo.Server
                 OutputSink = outputSink;
             }
         }
-
-        internal class RuntimeCrashedMsg : Singleton<RuntimeCrashedMsg> { }
-
-        internal class RuntimeInvalidMsg : Singleton<RuntimeInvalidMsg> { }
     }
 }

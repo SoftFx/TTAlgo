@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.PkgStorage;
-using TickTrader.Algo.Runtime;
+using TickTrader.Algo.Package;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.Runtime
 {
-    internal class RuntimeManager
+    public class RuntimeManager
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<RuntimeManager>();
 

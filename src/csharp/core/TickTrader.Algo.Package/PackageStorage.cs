@@ -10,9 +10,8 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.Algo.Package;
 
-namespace TickTrader.Algo.PkgStorage
+namespace TickTrader.Algo.Package
 {
     public class PackageVersionUpdate
     {

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
+using TickTrader.Algo.Runtime;
 
 namespace TickTrader.Algo.Server
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.PkgStorage
+namespace TickTrader.Algo.Package
 {
     internal static class Errors
     {

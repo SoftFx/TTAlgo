@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.PkgStorage
+namespace TickTrader.Algo.Package
 {
     public class PackageRef
     {

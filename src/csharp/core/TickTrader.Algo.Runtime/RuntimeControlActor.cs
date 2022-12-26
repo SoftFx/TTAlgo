@@ -9,9 +9,8 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
-using TickTrader.Algo.Runtime;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.Runtime
 {
     internal class RuntimeControlActor : Actor
     {
@@ -332,7 +331,7 @@ namespace TickTrader.Algo.Server
             if (crashed)
             {
                 _activeExecutorsCnt = 0;
-                NotifyAttachedPlugins(PluginActor.RuntimeCrashedMsg.Instance);
+                NotifyAttachedPlugins(RuntimeControlModel.RuntimeCrashedMsg.Instance);
             }
         }
 
@@ -538,7 +537,7 @@ namespace TickTrader.Algo.Server
 
                 _isInvalid = true;
                 _owner.OnRuntimeInvalid(_pkgId, _id);
-                NotifyAttachedPlugins(PluginActor.RuntimeInvalidMsg.Instance);
+                NotifyAttachedPlugins(RuntimeControlModel.RuntimeInvalidMsg.Instance);
             }
         }
 
