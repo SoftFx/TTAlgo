@@ -6,8 +6,9 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.Runtime;
 
-namespace TickTrader.Algo.Runtime
+namespace TickTrader.Algo.Server
 {
     public class RuntimeManager
     {

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -27,6 +27,7 @@
     <ProjectReference Include="..\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Runtime\TickTrader.Algo.Runtime.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.ServerCore\TickTrader.Algo.ServerCore.csproj" />
   </ItemGroup>
 
 </Project>

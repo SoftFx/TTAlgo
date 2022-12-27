@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using TickTrader.Algo.Account;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -32,7 +33,7 @@ namespace TickTrader.Algo.Server
             Receive<IndicatorHostModel.SetAccountProxyCmd>(SetAccProxy);
             Receive<IndicatorHostModel.CreateChartRequest, ChartHostProxy>(CreateChart);
             Receive<IndicatorHostModel.RemoveChartCmd>(RemoveChart);
-            Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdate);
+            Receive<RuntimeControlModel.PkgRuntimeUpdateMsg>(OnPkgRuntimeUpdate);
             Receive<AccountRpcController.AttachSessionCmd, AccountRpcHandler>(AttachSession);
             Receive<AccountRpcController.DetachSessionCmd>(DetachSession);
         }
@@ -125,7 +126,7 @@ namespace TickTrader.Algo.Server
             await ShutdownChart(chartId, chart);
         }
 
-        private void OnPkgRuntimeUpdate(AlgoServerActor.PkgRuntimeUpdate update)
+        private void OnPkgRuntimeUpdate(RuntimeControlModel.PkgRuntimeUpdateMsg update)
         {
             foreach (var chart in _charts.Values)
                 chart.Tell(update);

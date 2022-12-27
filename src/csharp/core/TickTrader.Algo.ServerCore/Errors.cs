@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Server
 {
-    internal static class Errors
+    public static class Errors
     {
         public static Exception DuplicatePlugin(string pluginId) => new AlgoException($"Plugin '{pluginId}' already exists");
 

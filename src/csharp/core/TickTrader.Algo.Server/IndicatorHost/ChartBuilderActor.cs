@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Server
             Receive<ChartBuilderModel.StartCmd>(Start);
             Receive<ChartBuilderModel.StopCmd>(Stop);
             Receive<ChartBuilderModel.ClearCmd>(Clear);
-            Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdate);
+            Receive<RuntimeControlModel.PkgRuntimeUpdateMsg>(OnPkgRuntimeUpdate);
             Receive<ChartHostProxy.AddIndicatorRequest>(AddIndicator);
             Receive<ChartHostProxy.UpdateIndicatorRequest>(UpdateIndicator);
             Receive<ChartHostProxy.RemoveIndicatorRequest>(RemoveIndicator);
@@ -88,7 +88,7 @@ namespace TickTrader.Algo.Server
                 await ShutdownIndicator(pair.Key, pair.Value.PluginRef);
         }
 
-        private void OnPkgRuntimeUpdate(AlgoServerActor.PkgRuntimeUpdate update)
+        private void OnPkgRuntimeUpdate(RuntimeControlModel.PkgRuntimeUpdateMsg update)
         {
             foreach (var indicator in _indicators.Values)
                 indicator.PluginRef.Tell(update);

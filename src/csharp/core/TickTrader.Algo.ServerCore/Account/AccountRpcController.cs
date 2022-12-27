@@ -13,9 +13,9 @@ namespace TickTrader.Algo.Server
     // Not thread safe. Requires actor context
     public class AccountRpcController
     {
-        internal record AttachSessionCmd(RpcSession Session);
+        public record AttachSessionCmd(RpcSession Session);
 
-        internal record DetachSessionCmd(string SessionId);
+        public record DetachSessionCmd(string SessionId);
 
 
         private readonly Dictionary<string, RpcSession> _sessions = new();

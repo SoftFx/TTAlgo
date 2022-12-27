@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Server
         public int MaxLastLogs { get; set; } = 200;
 
 
-        internal PluginListenerProxy(IActorRef server, string pluginId)
+        public PluginListenerProxy(IActorRef server, string pluginId)
         {
             _server = server;
             _pluginId = pluginId;
@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Server
         public async Task Init()
         {
             _initTaskSrc = new TaskCompletionSource<bool>();
-            await _server.Ask(new LocalAlgoServer.ExecPluginCmd(_pluginId, new AttachProxyDownlinkCmd(_downlink)));
+            await _server.Ask(new PluginOwner.ExecPluginCmd(_pluginId, new AttachProxyDownlinkCmd(_downlink)));
             _ = Task.Run(() => _downlink.Consume(ProcessMsg));
             await _initTaskSrc.Task;
         }

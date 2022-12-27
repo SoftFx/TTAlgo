@@ -7,12 +7,11 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.Algo.Runtime;
 using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
 {
-    internal class PluginActor : Actor
+    public class PluginActor : Actor
     {
         private readonly IPluginHost _host;
         private readonly string _id, _accId;
@@ -59,7 +58,7 @@ namespace TickTrader.Algo.Server
             Receive<PluginExitedMsg>(OnExited);
             Receive<RuntimeControlModel.RuntimeCrashedMsg>(OnRuntimeCrashed);
             Receive<RuntimeControlModel.RuntimeInvalidMsg>(OnRuntimeInvalid);
-            Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdated);
+            Receive<RuntimeControlModel.PkgRuntimeUpdateMsg>(OnPkgRuntimeUpdated);
 
             Receive<PluginListenerProxy.AttachProxyDownlinkCmd>(AttachProxyDownlink);
         }
@@ -248,7 +247,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private void OnPkgRuntimeUpdated(AlgoServerActor.PkgRuntimeUpdate update)
+        private void OnPkgRuntimeUpdated(RuntimeControlModel.PkgRuntimeUpdateMsg update)
         {
             if (update.PkgId != _config.Key.PackageId)
                 return;
@@ -486,13 +485,13 @@ namespace TickTrader.Algo.Server
         }
 
 
-        internal class StartCmd : Singleton<StartCmd> { }
+        public class StartCmd : Singleton<StartCmd> { }
 
-        internal class StopCmd : Singleton<StopCmd> { }
+        public class StopCmd : Singleton<StopCmd> { }
 
-        internal class ShutdownCmd : Singleton<ShutdownCmd> { }
+        public class ShutdownCmd : Singleton<ShutdownCmd> { }
 
-        internal class UpdateConfigCmd
+        public class UpdateConfigCmd
         {
             public PluginConfig NewConfig { get; }
 
@@ -502,7 +501,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        internal class AttachLogsChannelCmd
+        public class AttachLogsChannelCmd
         {
             public ChannelWriter<PluginLogRecord> LogSink { get; }
 
@@ -515,7 +514,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        internal class AttachStatusChannelCmd
+        public class AttachStatusChannelCmd
         {
             public ChannelWriter<PluginStatusUpdate> StatusSink { get; }
 
@@ -528,7 +527,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        internal class AttachOutputsChannelCmd
+        public class AttachOutputsChannelCmd
         {
             public ChannelWriter<OutputSeriesUpdate> OutputSink { get; }
 

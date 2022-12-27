@@ -5,7 +5,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
-namespace TickTrader.Algo.Runtime
+namespace TickTrader.Algo.Server
 {
     public static class RuntimeControlModel
     {
@@ -31,5 +31,7 @@ namespace TickTrader.Algo.Runtime
         public class RuntimeCrashedMsg : Singleton<RuntimeCrashedMsg> { }
 
         public class RuntimeInvalidMsg : Singleton<RuntimeInvalidMsg> { }
+
+        public record PkgRuntimeUpdateMsg(string PkgId, string RuntimeId);
     }
 }

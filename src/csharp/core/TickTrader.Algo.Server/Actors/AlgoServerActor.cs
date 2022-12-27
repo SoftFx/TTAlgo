@@ -184,7 +184,7 @@ namespace TickTrader.Algo.Server
             {
                 runtimeId = CreatePkgRuntime(pkgId);
             }
-            var pkgUpdate = new PkgRuntimeUpdate(pkgId, runtimeId);
+            var pkgUpdate = new RuntimeControlModel.PkgRuntimeUpdateMsg(pkgId, runtimeId);
             _plugins.TellAllPlugins(pkgUpdate);
             _indicatorHost?.Tell(pkgUpdate);
         }
@@ -200,7 +200,7 @@ namespace TickTrader.Algo.Server
                 _runtimes.MarkPkgRuntimeObsolete(pkgId);
 
                 var runtimeId = CreatePkgRuntime(pkgId);
-                _plugins.TellAllPlugins(new PkgRuntimeUpdate(pkgId, runtimeId));
+                _plugins.TellAllPlugins(new RuntimeControlModel.PkgRuntimeUpdateMsg(pkgId, runtimeId));
             }
         }
 
@@ -285,19 +285,6 @@ namespace TickTrader.Algo.Server
             public LoadLegacyStateCmd(ServerSavedState savedState)
             {
                 SavedState = savedState;
-            }
-        }
-
-        internal class PkgRuntimeUpdate
-        {
-            public string PkgId { get; }
-
-            public string RuntimeId { get; }
-
-            public PkgRuntimeUpdate(string pkgId, string runtimeId)
-            {
-                PkgId = pkgId;
-                RuntimeId = runtimeId;
             }
         }
     }

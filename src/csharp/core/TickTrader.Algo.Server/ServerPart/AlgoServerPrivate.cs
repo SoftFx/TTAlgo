@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Settings;
@@ -14,7 +13,7 @@ namespace TickTrader.Algo.Server
 {
     internal class AlgoServerPrivate : IRpcHost, IRuntimeOwner, IPluginHost
     {
-        private static readonly int _serverProcId = Process.GetCurrentProcess().Id;
+        private static readonly int _serverProcId = System.Environment.ProcessId;
 
         private readonly IActorRef _server, _eventBus;
 

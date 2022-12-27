@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using TickTrader.Algo.Account;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
