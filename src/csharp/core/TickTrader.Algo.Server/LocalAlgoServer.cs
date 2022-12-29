@@ -161,19 +161,6 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        internal class ExecPluginCmd
-        {
-            public string PluginId { get; }
-
-            public object Command { get; }
-
-            public ExecPluginCmd(string pluginId, object command)
-            {
-                PluginId = pluginId;
-                Command = command;
-            }
-        }
-
         internal class IndicatorHostRequest : Singleton<IndicatorHostRequest> { }
     }
 }

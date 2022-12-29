@@ -47,7 +47,7 @@ namespace TickTrader.Algo.PkgStorage
             _eventBus = EventBus.Create(this);
             _pkgStorage = new PackageStorage(_eventBus);
 
-            await _pkgStorage.Start(settings, _ => { });
+            await _pkgStorage.Start(settings);
         }
 
         public async Task Deinit()

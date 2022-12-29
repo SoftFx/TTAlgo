@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Package
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<PackageStorage>();
 
-        private readonly IActorRef _eventBus;
+        private readonly IActorRef _observer;
         private readonly Dictionary<string, IActorRef> _repositories = new Dictionary<string, IActorRef>();
         private readonly Dictionary<string, int> _packageVersions = new Dictionary<string, int>();
         private readonly Dictionary<string, string> _pkgIdToRefMap = new Dictionary<string, string>();
@@ -40,19 +40,16 @@ namespace TickTrader.Algo.Package
         private string _uploadLocationId, _uploadDir;
         private Channel<PackageFileUpdate> _updateChannel;
         private Task _updateConsumerTask;
-        private Action<PackageVersionUpdate> _pkgRefUpdateCallback;
 
 
-        public PackageStorage(IActorRef eventBus)
+        public PackageStorage(IActorRef observer)
         {
-            _eventBus = eventBus;
+            _observer = observer;
         }
 
 
-        public async Task Start(PkgStorageSettings settings, Action<PackageVersionUpdate> pkgRefUpdateCallback)
+        public async Task Start(PkgStorageSettings settings)
         {
-            _pkgRefUpdateCallback = pkgRefUpdateCallback;
-
             _updateChannel = DefaultChannelFactory.CreateForManyToOne<PackageFileUpdate>();
             _updateConsumerTask = _updateChannel.Consume(HandlePackageUpdate);
 
@@ -105,7 +102,7 @@ namespace TickTrader.Algo.Package
                 var gotLocked = pkgRef.IncrementRef();
                 if (gotLocked && !pkgRef.IsObsolete)
                 {
-                    _eventBus.Tell(new PackageStateUpdate(pkgRef.PkgId, pkgRef.IsLocked));
+                    _observer.Tell(new PackageStateUpdate(pkgRef.PkgId, pkgRef.IsLocked));
                 }
                 return true;
             }
@@ -120,7 +117,7 @@ namespace TickTrader.Algo.Package
                 var gotUnlocked = pkgRef.DecrementRef();
                 if (gotUnlocked && !pkgRef.IsObsolete)
                 {
-                    _eventBus.Tell(new PackageStateUpdate(pkgRef.PkgId, pkgRef.IsLocked));
+                    _observer.Tell(new PackageStateUpdate(pkgRef.PkgId, pkgRef.IsLocked));
                 }
                 return true;
             }
@@ -271,14 +268,14 @@ namespace TickTrader.Algo.Package
                     _pkgIdToRefMap[pkgId] = refId;
                     _pkgRefMap[refId] = new PackageRef(refId, update.PkgInfo, update.PkgBytes);
                     var pkgInfo = update.PkgInfo;
-                    _eventBus.Tell(pkgRef != null ? PackageUpdate.Updated(pkgId, pkgInfo) : PackageUpdate.Added(pkgId, pkgInfo));
-                    _pkgRefUpdateCallback?.Invoke(new PackageVersionUpdate(pkgId, refId));
+                    _observer.Tell(pkgRef != null ? PackageUpdate.Updated(pkgId, pkgInfo) : PackageUpdate.Added(pkgId, pkgInfo));
+                    _observer.Tell(new PackageVersionUpdate(pkgId, refId));
                     break;
                 case PkgUpdateAction.Remove:
                     _pkgIdToRefMap.Remove(pkgId);
                     _pkgRefMap.Remove(pkgRef?.Id);
-                    _eventBus.Tell(PackageUpdate.Removed(pkgId));
-                    _pkgRefUpdateCallback?.Invoke(new PackageVersionUpdate(pkgId, null));
+                    _observer.Tell(PackageUpdate.Removed(pkgId));
+                    _observer.Tell(new PackageVersionUpdate(pkgId, null));
                     break;
             }
         }

@@ -47,6 +47,10 @@ namespace TickTrader.Algo.Server
             Receive<NeedLegacyStateRequest, bool>(_ => !File.Exists(_env.ServerStateFilePath));
             Receive<LoadLegacyStateCmd>(cmd => _savedState.LoadSavedState(cmd.SavedState));
 
+            Receive<PackageUpdate>(upd => _eventBus.Tell(upd));
+            Receive<PackageStateUpdate>(upd => _eventBus.Tell(upd));
+            Receive<PackageVersionUpdate>(upd => OnPackageRefUpdate(upd));
+
             Receive<AlgoServerPrivate.RuntimeRequest, IActorRef>(r => _runtimes.GetRuntime(r.Id));
             Receive<AlgoServerPrivate.PkgRuntimeIdRequest, string>(r => _runtimes.GetPkgRuntimeId(r.PkgId));
             Receive<AlgoServerPrivate.RuntimeStoppedMsg>(msg => _runtimes.OnRuntimeStopped(msg.Id));
@@ -84,7 +88,7 @@ namespace TickTrader.Algo.Server
 
             Receive<PluginAlertsRequest, AlertRecordInfo[]>(r => _alerts.GetAlerts(r));
             Receive<LocalAlgoServer.SubscribeToAlertsCmd>(cmd => _alerts.AttachAlertChannel(cmd.AlertSink));
-            Receive<LocalAlgoServer.ExecPluginCmd>(cmd => _plugins.ExecCmd(cmd.PluginId, cmd.Command));
+            Receive<PluginOwner.ExecPluginCmd>(cmd => _plugins.ExecCmd(cmd.PluginId, cmd.Command));
             Receive<LocalAlgoServer.IndicatorHostRequest, IndicatorHostModel>(_ => new IndicatorHostModel(_indicatorHost ?? throw new AlgoException("Indicator host not enabled")));
         }
 
@@ -113,7 +117,7 @@ namespace TickTrader.Algo.Server
                 MonitoringSettings = _settings.MonitoringSettings,
             };
 
-            _pkgStorage = new PackageStorage(_eventBus);
+            _pkgStorage = new PackageStorage(Self);
             _runtimes = new RuntimeManager(_serverPrivate);
             _accounts = new AccountManager(_serverPrivate);
             _plugins = new PluginManager(_serverPrivate);
@@ -130,7 +134,7 @@ namespace TickTrader.Algo.Server
         {
             _logger.Debug("Starting...");
 
-            await _pkgStorage.Start(_settings.PkgStorage, OnPackageRefUpdate);
+            await _pkgStorage.Start(_settings.PkgStorage);
 
             await _pkgStorage.WhenLoaded();
 
