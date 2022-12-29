@@ -401,7 +401,8 @@ namespace TickTrader.Algo.Server
             }
             finally
             {
-                ScheduleKillProcess();
+                if (_state != RuntimeState.Stopped)
+                    ScheduleKillProcess();
             }
         }
 
