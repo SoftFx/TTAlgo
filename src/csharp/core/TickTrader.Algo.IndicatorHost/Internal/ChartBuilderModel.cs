@@ -2,7 +2,7 @@
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.IndicatorHost
 {
     public class ChartBuilderModel
     {

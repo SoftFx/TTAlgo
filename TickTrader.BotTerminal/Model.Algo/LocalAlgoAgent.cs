@@ -14,19 +14,16 @@ namespace TickTrader.BotTerminal
     {
         public const string LocalAgentName = "AlgoTerminal";
 
-        public static AlgoServerSettings GetSettings()
+        public static AlgoHostSettings GetHostSettings()
         {
-            var settings = new AlgoServerSettings();
-            settings.HostSettings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
-            settings.EnableAccountLogs = Properties.Settings.Default.EnableConnectionLogs;
-            settings.EnableIndicatorHost = true;
-            settings.HostSettings.RuntimeSettings.RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
-            settings.HostSettings.RuntimeSettings.EnableDevMode = Properties.Settings.Default.EnableDevMode;
-            settings.HostSettings.PkgStorage.Assemblies.Add(typeof(MovingAverage).Assembly);
-            settings.HostSettings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder);
-            settings.HostSettings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
+            var settings = new AlgoHostSettings();
+            settings.RuntimeSettings.RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
+            settings.RuntimeSettings.EnableDevMode = Properties.Settings.Default.EnableDevMode;
+            settings.PkgStorage.Assemblies.Add(typeof(MovingAverage).Assembly);
+            settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder);
+            settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
             if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                settings.HostSettings.PkgStorage.AddLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder);
+                settings.PkgStorage.AddLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder);
 
             return settings;
         }

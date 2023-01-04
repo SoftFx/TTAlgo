@@ -6,7 +6,7 @@ using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.IndicatorHost
 {
     public class ChartHostProxy : IAsyncDisposable
     {

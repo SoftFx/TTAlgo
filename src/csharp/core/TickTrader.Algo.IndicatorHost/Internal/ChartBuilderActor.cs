@@ -1,21 +1,21 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
 using TickTrader.Algo.Server.Persistence;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.IndicatorHost
 {
     internal class ChartBuilderActor : Actor, IPluginHost
     {
         public const int DefaultBarsCount = 512;
 
-        private readonly IActorRef _parent;
-        private readonly AlgoServerPrivate _server;
+        private readonly IActorRef _algoHost;
+        private readonly EnvService _env;
         private readonly ChartInfo _info;
         private readonly Dictionary<string, IndicatorModel> _indicators = new();
         private readonly ActorEventSource<object> _proxyDownlinkSrc = new();
@@ -24,11 +24,11 @@ namespace TickTrader.Algo.Server
         private bool _isStarted;
 
 
-        public ChartBuilderActor(IActorRef parent, ChartInfo info, AlgoServerPrivate server)
+        public ChartBuilderActor(ChartInfo info, IActorRef algoHost, EnvService env)
         {
-            _parent = parent;
-            _server = server;
             _info = info;
+            _algoHost = algoHost;
+            _env = env;
 
             Receive<ChartBuilderModel.StartCmd>(Start);
             Receive<ChartBuilderModel.StopCmd>(Stop);
@@ -47,9 +47,9 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public static IActorRef Create(IActorRef parent, ChartInfo info, AlgoServerPrivate server)
+        public static IActorRef Create(ChartInfo info, IActorRef algoHost, EnvService env)
         {
-            return ActorSystem.SpawnLocal(() => new ChartBuilderActor(parent, info, server), $"{nameof(ChartBuilderActor)} {info.Id}");
+            return ActorSystem.SpawnLocal(() => new ChartBuilderActor(info, algoHost, env), $"{nameof(ChartBuilderActor)} {info.Id}");
         }
 
 
@@ -263,13 +263,13 @@ namespace TickTrader.Algo.Server
 
         void IPluginHost.OnPluginStateUpdated(PluginStateUpdate update) => Self.Tell(update);
 
-        void IPluginHost.OnPluginAlert(string pluginId, PluginLogRecord record) => _server.Alerts.SendPluginAlert(pluginId, record);
+        void IPluginHost.OnPluginAlert(string pluginId, PluginLogRecord record) { } // => _server.Alerts.SendPluginAlert(pluginId, record);
 
-        void IPluginHost.OnGlobalAlert(string msg) => _server.Alerts.SendServerAlert(msg);
+        void IPluginHost.OnGlobalAlert(string msg) { } // => _server.Alerts.SendServerAlert(msg);
 
-        Task<string> IPluginHost.GetPkgRuntimeId(string pkgId) => _server.GetPkgRuntimeId(pkgId);
+        Task<string> IPluginHost.GetPkgRuntimeId(string pkgId) => RuntimeServerModel.GetPkgRuntimeId(_algoHost, pkgId);
 
-        Task<IActorRef> IPluginHost.GetRuntime(string runtimeId) => _server.GetRuntime(runtimeId);
+        Task<IActorRef> IPluginHost.GetRuntime(string runtimeId) => RuntimeServerModel.GetRuntime(_algoHost, runtimeId);
 
         ExecutorConfig IPluginHost.CreateExecutorConfig(string pluginId, string accId, PluginConfig pluginConfig)
         {
@@ -280,8 +280,8 @@ namespace TickTrader.Algo.Server
 
             var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = false };
             config.SetPluginConfig(pluginConfig);
-            config.WorkingDirectory = _server.Env.AlgoWorkingFolder;
-            config.LogDirectory = _server.Env.GetPluginLogsFolder(pluginId);
+            config.WorkingDirectory = _env.AlgoWorkingFolder;
+            config.LogDirectory = _env.GetPluginLogsFolder(pluginId);
             config.InitPriorityInvokeStrategy();
             config.InitSlidingBuffering(_info.Boundaries?.BarsCount ?? DefaultBarsCount);
             config.InitBarStrategy(_info.MarketSide);

@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Server;
+using TickTrader.Algo.IndicatorHost;
 using TickTrader.BotTerminal.Controls.Chart;
 using TickTrader.BotTerminal.Lib;
 

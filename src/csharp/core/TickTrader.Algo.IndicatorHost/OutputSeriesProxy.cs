@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.IndicatorHost
 {
     public class OutputSeriesProxy
     {

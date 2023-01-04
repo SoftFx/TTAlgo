@@ -7,7 +7,7 @@ using System;
 using TickTrader.Algo.Domain;
 using static TickTrader.Algo.Domain.Metadata.Types;
 using Machinarium.Qnil;
-using TickTrader.Algo.Server;
+using TickTrader.Algo.IndicatorHost;
 using System.Linq;
 using System.IO;
 using System.Globalization;

@@ -65,7 +65,6 @@ namespace TickTrader.Algo.Server
             _mappings = reductions.CreateMappings();
 
             _pkgStorage = new PackageStorage(Self);
-            _settings.RuntimeSettings.WorkingDirectory ??= _settings.DataFolder;
             _runtimes = new RuntimeManager(Self, _settings.RuntimeSettings);
 
             _internalApiServer = new RpcServer(new TcpFactory(), new RpcResolver(Self));

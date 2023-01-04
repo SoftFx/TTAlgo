@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Server;
+﻿using TickTrader.Algo.IndicatorHost;
 
 namespace TickTrader.BotTerminal
 {

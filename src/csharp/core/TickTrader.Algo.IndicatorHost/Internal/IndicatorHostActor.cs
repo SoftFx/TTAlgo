@@ -4,8 +4,9 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.IndicatorHost
 {
     internal class IndicatorHostActor : Actor
     {
@@ -14,17 +15,20 @@ namespace TickTrader.Algo.Server
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<IndicatorHostActor>();
 
         private readonly Dictionary<int, IActorRef> _charts = new();
-        private readonly AlgoServerPrivate _server;
+        private readonly IActorRef _algoHost;
+        private readonly IndicatorHostSettings _settings;
 
+        private EnvService _env;
         private IAccountProxy _accProxy;
         private AccountRpcController _accountRpcController;
         private bool _isStarted;
         private int _freeChartId;
 
 
-        public IndicatorHostActor(AlgoServerPrivate server)
+        private IndicatorHostActor(IActorRef algoHost, IndicatorHostSettings settings)
         {
-            _server = server;
+            _algoHost = algoHost;
+            _settings = settings;
 
             Receive<IndicatorHostModel.StartCmd>(Start);
             Receive<IndicatorHostModel.StopCmd>(Stop);
@@ -32,20 +36,26 @@ namespace TickTrader.Algo.Server
             Receive<IndicatorHostModel.SetAccountProxyCmd>(SetAccProxy);
             Receive<IndicatorHostModel.CreateChartRequest, ChartHostProxy>(CreateChart);
             Receive<IndicatorHostModel.RemoveChartCmd>(RemoveChart);
+
+            Receive<PackageUpdate>(upd => { });
+            Receive<PackageStateUpdate>(upd => { });
             Receive<RuntimeControlModel.PkgRuntimeUpdateMsg>(OnPkgRuntimeUpdate);
+            Receive<RuntimeServerModel.AccountControlRequest, IActorRef>(GetAccountControlInternal);
+
             Receive<AccountRpcModel.AttachSessionCmd, AccountRpcHandler>(AttachSession);
             Receive<AccountRpcModel.DetachSessionCmd>(DetachSession);
         }
 
 
-        public static IActorRef Create(AlgoServerPrivate server)
+        public static IActorRef Create(IActorRef algoHost, IndicatorHostSettings settigns)
         {
-            return ActorSystem.SpawnLocal(() => new IndicatorHostActor(server), $"{nameof(IndicatorHostActor)}");
+            return ActorSystem.SpawnLocal(() => new IndicatorHostActor(algoHost, settigns), $"{nameof(IndicatorHostActor)}");
         }
 
 
         protected override void ActorInit(object initMsg)
         {
+            _env = new EnvService(_settings.DataFolder);
             _accountRpcController = new AccountRpcController(_logger, AccId);
         }
 
@@ -102,7 +112,7 @@ namespace TickTrader.Algo.Server
                 Boundaries = new ChartBoundaries { BarsCount = request.BarsCount }
             };
 
-            var chart = ChartBuilderActor.Create(Self, info, _server);
+            var chart = ChartBuilderActor.Create(info, _algoHost, _env);
             if (_isStarted)
                 await ChartBuilderModel.Start(chart);
 
@@ -141,6 +151,8 @@ namespace TickTrader.Algo.Server
         {
             _accountRpcController.DetachSession(cmd.SessionId);
         }
+
+        private IActorRef GetAccountControlInternal(RuntimeServerModel.AccountControlRequest request) => request.Id == AccId ? Self : null;
 
 
         private async Task ShutdownChart(int chartId, IActorRef chart)

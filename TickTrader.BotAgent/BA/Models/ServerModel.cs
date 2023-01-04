@@ -42,8 +42,9 @@ namespace TickTrader.BotAgent.BA.Models
             var settings = new AlgoServerSettings();
             var monitoringSettings = config.GetMonitoringSettings();
 
-            settings.HostSettings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
+            settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
             settings.EnableAccountLogs = config.GetFdkSettings().EnableLogs;
+
             settings.HostSettings.RuntimeSettings.RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
             settings.HostSettings.RuntimeSettings.EnableDevMode = config.GetAlgoSettings().EnableDevMode;
             settings.HostSettings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder);

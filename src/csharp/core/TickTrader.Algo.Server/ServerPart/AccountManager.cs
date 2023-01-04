@@ -158,6 +158,12 @@ namespace TickTrader.Algo.Server
             return account;
         }
 
+        internal IActorRef GetAccountRefOrDefault(string accId)
+        {
+            _ = _accounts.TryGetValue(accId, out var account);
+            return account;
+        }
+
         internal async Task RemoveAccountInternal(string accId, IActorRef account)
         {
             await _server.SavedState.RemoveAccount(accId);

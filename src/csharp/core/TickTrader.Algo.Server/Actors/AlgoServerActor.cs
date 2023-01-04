@@ -18,15 +18,13 @@ namespace TickTrader.Algo.Server
         private readonly AlgoServerSettings _settings;
 
         private EnvService _env;
-        private IActorRef _eventBus, _stateManager, _indicatorHost;
+        private IActorRef _eventBus, _stateManager;
         private ServerStateModel _savedState;
         private AlertManagerModel _alerts;
         private AlgoServerPrivate _serverPrivate;
         private AccountManager _accounts;
         private PluginManager _plugins;
         private PluginFileManager _pluginFiles;
-
-        private MappingCollectionInfo _mappings;
 
 
         private AlgoServerActor(IActorRef algoHost, AlgoServerSettings settings)
@@ -81,7 +79,6 @@ namespace TickTrader.Algo.Server
             Receive<PluginAlertsRequest, AlertRecordInfo[]>(r => _alerts.GetAlerts(r));
             Receive<LocalAlgoServer.SubscribeToAlertsCmd>(cmd => _alerts.AttachAlertChannel(cmd.AlertSink));
             Receive<PluginOwner.ExecPluginCmd>(cmd => _plugins.ExecCmd(cmd.PluginId, cmd.Command));
-            Receive<LocalAlgoServer.IndicatorHostRequest, IndicatorHostModel>(_ => new IndicatorHostModel(_indicatorHost ?? throw new AlgoException("Indicator host not enabled")));
         }
 
 
@@ -93,11 +90,7 @@ namespace TickTrader.Algo.Server
 
         protected override void ActorInit(object initMsg)
         {
-            var reductions = new ReductionCollection();
-            reductions.LoadDefaultReductions();
-            _mappings = reductions.CreateMappings();
-
-            _env = new EnvService(_settings.HostSettings.DataFolder);
+            _env = new EnvService(_settings.DataFolder);
             _eventBus = ServerBusActor.Create();
             _stateManager = ServerStateManager.Create(_env.ServerStateFilePath);
             _alerts = new AlertManagerModel(AlertManager.Create(_settings.MonitoringSettings));
@@ -111,9 +104,6 @@ namespace TickTrader.Algo.Server
             _accounts = new AccountManager(_serverPrivate);
             _plugins = new PluginManager(_serverPrivate);
             _pluginFiles = new PluginFileManager(_serverPrivate);
-
-            if (_settings.EnableIndicatorHost)
-                _indicatorHost = IndicatorHostActor.Create(_serverPrivate);
         }
 
 
@@ -138,9 +128,6 @@ namespace TickTrader.Algo.Server
 
             await _plugins.Shutdown();
 
-            if (_indicatorHost != null)
-                await _indicatorHost.Ask(IndicatorHostModel.ShutdownCmd.Instance);
-
             await _accounts.Shutdown();
 
             _logger.Debug("Stopped");
@@ -150,7 +137,6 @@ namespace TickTrader.Algo.Server
         private void OnPackageRuntimeUpdate(RuntimeControlModel.PkgRuntimeUpdateMsg pkgUpdate)
         {
             _plugins.TellAllPlugins(pkgUpdate);
-            _indicatorHost?.Tell(pkgUpdate);
         }
 
         private async Task RemoveAccount(RemoveAccountRequest request)
@@ -190,10 +176,8 @@ namespace TickTrader.Algo.Server
         private IActorRef GetAccountControlInternal(RuntimeServerModel.AccountControlRequest request)
         {
             var accId = request.Id;
-            if (accId == IndicatorHostActor.AccId)
-                return _indicatorHost;
 
-            return _accounts.GetAccountRefOrThrow(accId);
+            return _accounts.GetAccountRefOrDefault(accId);
         }
 
 

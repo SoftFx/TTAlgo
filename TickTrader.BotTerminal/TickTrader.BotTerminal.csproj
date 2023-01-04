@@ -34,6 +34,7 @@
     <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.IndicatorHost\TickTrader.Algo.IndicatorHost.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Client\TickTrader.Algo.Server.PublicAPI.Client.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Converters\TickTrader.Algo.Server.PublicAPI.Converters.csproj" />

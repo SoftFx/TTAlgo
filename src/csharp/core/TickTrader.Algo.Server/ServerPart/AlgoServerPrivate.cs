@@ -36,10 +36,6 @@ namespace TickTrader.Algo.Server
 
         internal void SendUpdate(IMessage update) => _eventBus.Tell(update);
 
-        internal Task<IActorRef> GetRuntime(string id) => RuntimeServerModel.GetRuntime(_server, id);
-
-        internal Task<string> GetPkgRuntimeId(string pkgId) => RuntimeServerModel.GetPkgRuntimeId(_server, pkgId);
-
 
         #region IPluginHost implementation
 

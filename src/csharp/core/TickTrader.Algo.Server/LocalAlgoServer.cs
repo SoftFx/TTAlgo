@@ -2,7 +2,6 @@
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Package;
@@ -32,7 +31,8 @@ namespace TickTrader.Algo.Server
         private static readonly SetupContextInfo _setupContext = new SetupContextInfo(Feed.Types.Timeframe.M1,
             new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
-        private IActorRef _server, _host;
+        private IActorRef _server, _algoHost;
+        private bool _ownsAlgoHost;
 
 
         public ServerBusModel EventBus { get; } = new ServerBusModel();
@@ -43,25 +43,34 @@ namespace TickTrader.Algo.Server
         public LocalAlgoServer() { }
 
 
-        public async Task Init(AlgoServerSettings settings)
+        public async Task Init(AlgoServerSettings settings, IActorRef algoHost = null)
         {
-            _host = AlgoHostActor.Create(settings.HostSettings);
-            _server = AlgoServerActor.Create(_host, settings);
-            await AlgoHostModel.AddConsumer(_host, _server);
+            _algoHost = algoHost;
+            if (algoHost == null)
+            {
+                _ownsAlgoHost = true;
+                settings.HostSettings.RuntimeSettings.WorkingDirectory ??= settings.DataFolder;
+                _algoHost = AlgoHostActor.Create(settings.HostSettings);
+            }
+
+            _server = AlgoServerActor.Create(_algoHost, settings);
+            await AlgoHostModel.AddConsumer(_algoHost, _server);
             EventBus.Init(await _server.Ask<IActorRef>(AlgoServerActor.EventBusRequest.Instance));
         }
 
 
         public async Task Start()
         {
-            await AlgoHostModel.Start(_host);
+            if (_ownsAlgoHost)
+                await AlgoHostModel.Start(_algoHost);
             await _server.Ask(AlgoServerActor.StartCmd.Instance);
         }
 
         public async Task Stop()
         {
             await _server.Ask(AlgoServerActor.StopCmd.Instance);
-            await AlgoHostModel.Stop(_host);
+            if (_ownsAlgoHost)
+                await AlgoHostModel.Stop(_algoHost);
         }
 
         public Task<bool> NeedLegacyState() => _server.Ask<bool>(AlgoServerActor.NeedLegacyStateRequest.Instance);
@@ -107,8 +116,6 @@ namespace TickTrader.Algo.Server
 
         public PluginListenerProxy GetPluginListenerProxy(string pluginId) => new PluginListenerProxy(_server, pluginId);
 
-        public Task<IndicatorHostModel> GetIndicatorHost() => _server.Ask<IndicatorHostModel>(IndicatorHostRequest.Instance);
-
 
         internal class PluginExistsRequest
         {
@@ -139,7 +146,5 @@ namespace TickTrader.Algo.Server
                 AlertSink = alertSink;
             }
         }
-
-        internal class IndicatorHostRequest : Singleton<IndicatorHostRequest> { }
     }
 }

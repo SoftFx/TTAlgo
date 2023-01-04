@@ -2,9 +2,9 @@
 {
     public class AlgoServerSettings
     {
-        public bool EnableAccountLogs { get; set; }
+        public string DataFolder { get; set; }
 
-        public bool EnableIndicatorHost { get; set; }
+        public bool EnableAccountLogs { get; set; }
 
         public AlgoHostSettings HostSettings { get; set; } = new AlgoHostSettings();
 
