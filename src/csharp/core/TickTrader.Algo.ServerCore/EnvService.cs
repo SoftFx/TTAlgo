@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Server
@@ -24,8 +23,6 @@ namespace TickTrader.Algo.Server
 
         public string ServerStateFilePath { get; }
 
-        public string RuntimeExePath { get; }
-
 
         public EnvService(string appFolder)
         {
@@ -39,8 +36,6 @@ namespace TickTrader.Algo.Server
             FeedHistoryCacheFolder = Path.Combine(appFolder, "FeedCache");
             AppDataFolder = Path.Combine(appFolder, "Settings");
             ServerStateFilePath = Path.Combine(AppDataFolder, "server.state.json");
-
-            RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
 
             PathHelper.EnsureDirectoryCreated(appFolder);
             PathHelper.EnsureDirectoryCreated(AlgoRepositoryFolder);

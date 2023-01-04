@@ -1,5 +1,6 @@
 ﻿using Machinarium.Qnil;
 using System;
+using System.IO;
 using System.Linq;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -16,15 +17,16 @@ namespace TickTrader.BotTerminal
         public static AlgoServerSettings GetSettings()
         {
             var settings = new AlgoServerSettings();
-            settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
+            settings.HostSettings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
             settings.EnableAccountLogs = Properties.Settings.Default.EnableConnectionLogs;
             settings.EnableIndicatorHost = true;
-            settings.RuntimeSettings.EnableDevMode = Properties.Settings.Default.EnableDevMode;
-            settings.PkgStorage.Assemblies.Add(typeof(MovingAverage).Assembly);
-            settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder);
-            settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
+            settings.HostSettings.RuntimeSettings.RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
+            settings.HostSettings.RuntimeSettings.EnableDevMode = Properties.Settings.Default.EnableDevMode;
+            settings.HostSettings.PkgStorage.Assemblies.Add(typeof(MovingAverage).Assembly);
+            settings.HostSettings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder);
+            settings.HostSettings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
             if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                settings.PkgStorage.AddLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder);
+                settings.HostSettings.PkgStorage.AddLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder);
 
             return settings;
         }

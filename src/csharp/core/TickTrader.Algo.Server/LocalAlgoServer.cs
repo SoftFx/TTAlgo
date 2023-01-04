@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Server
         private static readonly SetupContextInfo _setupContext = new SetupContextInfo(Feed.Types.Timeframe.M1,
             new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
-        private IActorRef _server;
+        private IActorRef _server, _host;
 
 
         public ServerBusModel EventBus { get; } = new ServerBusModel();
@@ -45,20 +45,32 @@ namespace TickTrader.Algo.Server
 
         public async Task Init(AlgoServerSettings settings)
         {
-            _server = AlgoServerActor.Create(settings);
+            _host = AlgoHostActor.Create(settings.HostSettings);
+            _server = AlgoServerActor.Create(_host, settings);
+            await AlgoHostModel.AddConsumer(_host, _server);
             EventBus.Init(await _server.Ask<IActorRef>(AlgoServerActor.EventBusRequest.Instance));
         }
 
 
-        public Task Start() => _server.Ask(AlgoServerActor.StartCmd.Instance);
-        public Task Stop() => _server.Ask(AlgoServerActor.StopCmd.Instance);
+        public async Task Start()
+        {
+            await AlgoHostModel.Start(_host);
+            await _server.Ask(AlgoServerActor.StartCmd.Instance);
+        }
+
+        public async Task Stop()
+        {
+            await _server.Ask(AlgoServerActor.StopCmd.Instance);
+            await AlgoHostModel.Stop(_host);
+        }
+
         public Task<bool> NeedLegacyState() => _server.Ask<bool>(AlgoServerActor.NeedLegacyStateRequest.Instance);
         public Task LoadLegacyState(ServerSavedState savedState) => _server.Ask(new AlgoServerActor.LoadLegacyStateCmd(savedState));
 
         public Task<PackageListSnapshot> GetPackageSnapshot() => EventBus.GetPackageSnapshot();
-        public Task<bool> PackageWithNameExists(string pkgName) => _server.Ask<bool>(new PkgFileExistsRequest(pkgName));
-        public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath) => _server.Ask<string>(new UploadPackageCmd(request, pkgFilePath));
-        public Task<byte[]> GetPackageBinary(string pkgId) => _server.Ask<byte[]>(new PkgBinaryRequest(pkgId));
+        public Task<bool> PackageWithNameExists(string pkgName) => _server.Ask<bool>(new AlgoHostModel.PkgFileExistsRequest(pkgName));
+        public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath) => _server.Ask<string>(new AlgoHostModel.UploadPackageCmd(request, pkgFilePath));
+        public Task<byte[]> GetPackageBinary(string pkgId) => _server.Ask<byte[]>(new AlgoHostModel.PkgBinaryRequest(pkgId));
         public Task RemovePackage(RemovePackageRequest request) => _server.Ask<RemovePackageRequest>(request);
         public Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request) => _server.Ask<MappingCollectionInfo>(request);
 
@@ -97,39 +109,6 @@ namespace TickTrader.Algo.Server
 
         public Task<IndicatorHostModel> GetIndicatorHost() => _server.Ask<IndicatorHostModel>(IndicatorHostRequest.Instance);
 
-
-        internal class PkgFileExistsRequest
-        {
-            public string PkgName { get; }
-
-            public PkgFileExistsRequest(string pkgName)
-            {
-                PkgName = pkgName;
-            }
-        }
-
-        internal class UploadPackageCmd
-        {
-            public UploadPackageRequest Request { get; }
-
-            public string FilePath { get; }
-
-            public UploadPackageCmd(UploadPackageRequest request, string filePath)
-            {
-                Request = request;
-                FilePath = filePath;
-            }
-        }
-
-        internal class PkgBinaryRequest
-        {
-            public string Id { get; }
-
-            public PkgBinaryRequest(string id)
-            {
-                Id = id;
-            }
-        }
 
         internal class PluginExistsRequest
         {

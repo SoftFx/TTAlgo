@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Account;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -12,7 +11,7 @@ namespace TickTrader.Algo.Server
     {
         public const string AccId = "acc/indicators";
 
-        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlgoServerActor>();
+        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<IndicatorHostActor>();
 
         private readonly Dictionary<int, IActorRef> _charts = new();
         private readonly AlgoServerPrivate _server;
@@ -34,8 +33,8 @@ namespace TickTrader.Algo.Server
             Receive<IndicatorHostModel.CreateChartRequest, ChartHostProxy>(CreateChart);
             Receive<IndicatorHostModel.RemoveChartCmd>(RemoveChart);
             Receive<RuntimeControlModel.PkgRuntimeUpdateMsg>(OnPkgRuntimeUpdate);
-            Receive<AccountRpcController.AttachSessionCmd, AccountRpcHandler>(AttachSession);
-            Receive<AccountRpcController.DetachSessionCmd>(DetachSession);
+            Receive<AccountRpcModel.AttachSessionCmd, AccountRpcHandler>(AttachSession);
+            Receive<AccountRpcModel.DetachSessionCmd>(DetachSession);
         }
 
 
@@ -132,13 +131,13 @@ namespace TickTrader.Algo.Server
                 chart.Tell(update);
         }
 
-        private AccountRpcHandler AttachSession(AccountRpcController.AttachSessionCmd cmd)
+        private AccountRpcHandler AttachSession(AccountRpcModel.AttachSessionCmd cmd)
         {
             var accState = _isStarted ? Domain.Account.Types.ConnectionState.Online : Domain.Account.Types.ConnectionState.Offline;
             return _accountRpcController.AttachSession(cmd.Session, accState);
         }
 
-        private void DetachSession(AccountRpcController.DetachSessionCmd cmd)
+        private void DetachSession(AccountRpcModel.DetachSessionCmd cmd)
         {
             _accountRpcController.DetachSession(cmd.SessionId);
         }

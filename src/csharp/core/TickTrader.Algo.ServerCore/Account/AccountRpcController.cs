@@ -13,11 +13,6 @@ namespace TickTrader.Algo.Server
     // Not thread safe. Requires actor context
     public class AccountRpcController
     {
-        public record AttachSessionCmd(RpcSession Session);
-
-        public record DetachSessionCmd(string SessionId);
-
-
         private readonly Dictionary<string, RpcSession> _sessions = new();
         private readonly Dictionary<string, AccountRpcHandler> _sessionHandlers = new();
         private readonly IAlgoLogger _logger;

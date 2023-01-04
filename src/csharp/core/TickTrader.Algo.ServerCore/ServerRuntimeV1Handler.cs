@@ -1,26 +1,24 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using TickTrader.Algo.Account;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
-using TickTrader.Algo.Runtime;
 
 namespace TickTrader.Algo.Server
 {
-    internal class ServerRuntimeV1Handler : IRpcHandler
+    public class ServerRuntimeV1Handler : IRpcHandler
     {
         private readonly ConcurrentDictionary<string, AccountRpcHandler> _accProxies = new ConcurrentDictionary<string, AccountRpcHandler>();
 
-        private readonly AlgoServerPrivate _server;
+        private readonly IActorRef _host;
         private IActorRef _runtime;
         private RpcSession _session;
 
 
-        public ServerRuntimeV1Handler(AlgoServerPrivate server)
+        public ServerRuntimeV1Handler(IActorRef host)
         {
-            _server = server;
+            _host = host;
         }
 
 
@@ -57,7 +55,7 @@ namespace TickTrader.Algo.Server
             if (_runtime != null)
                 return Any.Pack(new ErrorResponse { Message = "Runtime already attached!" });
 
-            _runtime = await _server.GetRuntime(request.Id);
+            _runtime = await RuntimeServerModel.GetRuntime(_host, request.Id);
             var success = false;
             if (_runtime != null)
                 success = await RuntimeControlModel.ConnectSession(_runtime, _session);
@@ -70,8 +68,8 @@ namespace TickTrader.Algo.Server
             var request = payload.Unpack<AttachAccountRequest>();
 
             var accId = request.AccountId;
-            var accControl = await _server.GetAccountControl(accId);
-            var handler = await AccountControlModel.AttachSession(accControl, _session);
+            var accControl = await RuntimeServerModel.GetAccountControl(_host, accId);
+            var handler = await AccountRpcModel.AttachSession(accControl, _session);
             _accProxies.TryAdd(accId, handler);
 
             return RpcHandler.VoidResponse;
@@ -83,8 +81,8 @@ namespace TickTrader.Algo.Server
 
             var accId = request.AccountId;
             _accProxies.TryRemove(accId, out var _);
-            var accControl = await _server.GetAccountControl(accId);
-            await AccountControlModel.DetachSession(accControl, _session.Id);
+            var accControl = await RuntimeServerModel.GetAccountControl(_host, accId);
+            await AccountRpcModel.DetachSession(accControl, _session.Id);
 
             return RpcHandler.VoidResponse;
         }

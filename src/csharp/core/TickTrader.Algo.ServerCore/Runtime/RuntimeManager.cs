@@ -6,23 +6,32 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Runtime;
 
 namespace TickTrader.Algo.Server
 {
-    public class RuntimeManager
+    public class RuntimeManager : IRuntimeOwner
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<RuntimeManager>();
+        private static readonly int _serverProcId = System.Environment.ProcessId;
 
-        private readonly IRuntimeOwner _owner;
-        private readonly Dictionary<string, IActorRef> _runtimeMap = new Dictionary<string, IActorRef>();
-        private readonly Dictionary<string, string> _pkgRuntimeMap = new Dictionary<string, string>();
-        private readonly Dictionary<string, int> _runtumeVersions = new Dictionary<string, int>();
+        private readonly IActorRef _host;
+        private readonly RuntimeSettings _settings;
+        private readonly Dictionary<string, IActorRef> _runtimeMap = new();
+        private readonly Dictionary<string, string> _pkgRuntimeMap = new();
+        private readonly Dictionary<string, int> _runtumeVersions = new();
 
 
-        public RuntimeManager(IRuntimeOwner owner)
+        public string ApiAddress { get; set; }
+
+        public int ApiPort { get; set; }
+
+
+        public RuntimeManager(IActorRef host, RuntimeSettings settings)
         {
-            _owner = owner;
+            _host = host;
+            _settings = settings;
         }
 
 
@@ -73,7 +82,7 @@ namespace TickTrader.Algo.Server
             var config = new RuntimeConfig { Id = id, PackageId = pkgId, PackageBinary = pkgBin };
 
             _pkgRuntimeMap[pkgId] = id;
-            _runtimeMap[id] = RuntimeControlActor.Create(_owner, config, pkgRef.PkgInfo);
+            _runtimeMap[id] = RuntimeControlActor.Create(this, config, pkgRef.PkgInfo);
 
             return id;
         }
@@ -100,14 +109,20 @@ namespace TickTrader.Algo.Server
         }
 
 
-        internal class RuntimeStoppedMsg
-        {
-            public string Id { get; }
+        #region IRuntimeOwner implementation
 
-            public RuntimeStoppedMsg(string id)
-            {
-                Id = id;
-            }
-        }
+        string IRuntimeOwner.RuntimeExePath => _settings.RuntimeExePath;
+
+        string IRuntimeOwner.WorkingDirectory => _settings.WorkingDirectory;
+
+        bool IRuntimeOwner.EnableDevMode => _settings.EnableDevMode;
+
+        RpcProxyParams IRuntimeOwner.GetRpcParams() => new() { Address = ApiAddress, Port = ApiPort, ParentProcId = _serverProcId };
+
+        void IRuntimeOwner.OnRuntimeStopped(string runtimeId) => RuntimeServerModel.OnRuntimeStopped(_host, runtimeId);
+
+        void IRuntimeOwner.OnRuntimeInvalid(string pkgId, string runtimeId) => RuntimeServerModel.OnPkgRuntimeInvalid(_host, pkgId, runtimeId);
+
+        #endregion IRuntimeOwner implementation
     }
 }

@@ -278,7 +278,8 @@ namespace TickTrader.Algo.Server
             pluginConfig.MainSymbol.Origin = SymbolConfig.Types.SymbolOrigin.Online;
             pluginConfig.Timeframe = _info.Timeframe;
 
-            var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(pluginConfig) };
+            var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = false };
+            config.SetPluginConfig(pluginConfig);
             config.WorkingDirectory = _server.Env.AlgoWorkingFolder;
             config.LogDirectory = _server.Env.GetPluginLogsFolder(pluginId);
             config.InitPriorityInvokeStrategy();

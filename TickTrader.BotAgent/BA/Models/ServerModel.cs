@@ -42,11 +42,12 @@ namespace TickTrader.BotAgent.BA.Models
             var settings = new AlgoServerSettings();
             var monitoringSettings = config.GetMonitoringSettings();
 
-            settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
+            settings.HostSettings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
             settings.EnableAccountLogs = config.GetFdkSettings().EnableLogs;
-            settings.RuntimeSettings.EnableDevMode = config.GetAlgoSettings().EnableDevMode;
-            settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder);
-            settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
+            settings.HostSettings.RuntimeSettings.RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
+            settings.HostSettings.RuntimeSettings.EnableDevMode = config.GetAlgoSettings().EnableDevMode;
+            settings.HostSettings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder);
+            settings.HostSettings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
 
             settings.MonitoringSettings.QuoteMonitoring = new()
             {
