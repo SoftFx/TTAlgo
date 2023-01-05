@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
@@ -15,6 +16,8 @@ namespace TickTrader.Algo.IndicatorHost
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<IndicatorHostActor>();
 
         private readonly Dictionary<int, IActorRef> _charts = new();
+        private readonly ActorEventSource<object> _proxyDownlinkSrc = new();
+        private readonly TimeKeyGenerator _timeGen = new();
         private readonly IActorRef _algoHost;
         private readonly IndicatorHostSettings _settings;
 
@@ -37,13 +40,18 @@ namespace TickTrader.Algo.IndicatorHost
             Receive<IndicatorHostModel.CreateChartRequest, ChartHostProxy>(CreateChart);
             Receive<IndicatorHostModel.RemoveChartCmd>(RemoveChart);
 
-            Receive<PackageUpdate>(upd => { });
-            Receive<PackageStateUpdate>(upd => { });
+            Receive<PackageUpdate>(upd => _proxyDownlinkSrc.DispatchEvent(upd));
+            Receive<PackageStateUpdate>(upd => _proxyDownlinkSrc.DispatchEvent(upd));
             Receive<RuntimeControlModel.PkgRuntimeUpdateMsg>(OnPkgRuntimeUpdate);
             Receive<RuntimeServerModel.AccountControlRequest, IActorRef>(GetAccountControlInternal);
 
             Receive<AccountRpcModel.AttachSessionCmd, AccountRpcHandler>(AttachSession);
             Receive<AccountRpcModel.DetachSessionCmd>(DetachSession);
+
+            Receive<IndicatorHostProxy.AttachDownlinkCmd>(cmd => _proxyDownlinkSrc.Subscribe(cmd.Sink));
+
+            Receive<ChartBuilderActor.PluginAlertMsg>(OnPluginAlertMsg);
+            Receive<ChartBuilderActor.GlobalAlertMsg>(OnGlobalAlertMsg);
         }
 
 
@@ -112,7 +120,7 @@ namespace TickTrader.Algo.IndicatorHost
                 Boundaries = new ChartBoundaries { BarsCount = request.BarsCount }
             };
 
-            var chart = ChartBuilderActor.Create(info, _algoHost, _env);
+            var chart = ChartBuilderActor.Create(Self, info, _algoHost, _env);
             if (_isStarted)
                 await ChartBuilderModel.Start(chart);
 
@@ -161,6 +169,46 @@ namespace TickTrader.Algo.IndicatorHost
                 .OnException(ex => _logger.Error(ex, $"Failed to clear chart {chartId}"));
             await ActorSystem.StopActor(chart)
                 .OnException(ex => _logger.Error(ex, $"Failed to stop actor {chart.Name}"));
+        }
+
+        private void OnPluginAlertMsg(ChartBuilderActor.PluginAlertMsg msg)
+        {
+            var log = msg.LogRecord;
+            if (log == null)
+                return;
+
+            var pluginId = msg.Id;
+            var severity = msg.LogRecord.Severity;
+            if (severity != PluginLogRecord.Types.LogSeverity.Alert)
+            {
+                _logger.Error($"Received log with severity '{severity}' from plugin '{pluginId}'");
+                return;
+            }
+
+            var alert = new AlertRecordInfo
+            {
+                PluginId = pluginId,
+                Message = log.Message,
+                TimeUtc = log.TimeUtc,
+                Type = AlertRecordInfo.Types.AlertType.Plugin,
+            };
+
+            _proxyDownlinkSrc.DispatchEvent(alert);
+        }
+
+        private void OnGlobalAlertMsg(ChartBuilderActor.GlobalAlertMsg msg)
+        {
+            var alert = new AlertRecordInfo
+            {
+                PluginId = "<IndicatorHost>",
+                Message = msg.Message,
+                // In concurrent scenarios we can't guarantee time sequence to be ascending when we receive messages from many thread.
+                // Therefore we have to assign our own time. Plugin alerts time is assigned on plugin thread within log time sequence
+                TimeUtc = _timeGen.NextKey(DateTime.UtcNow),
+                Type = AlertRecordInfo.Types.AlertType.Server,
+            };
+
+            _proxyDownlinkSrc.DispatchEvent(alert);
         }
     }
 }

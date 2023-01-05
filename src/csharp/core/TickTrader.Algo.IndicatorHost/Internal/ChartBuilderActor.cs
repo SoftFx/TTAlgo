@@ -14,7 +14,7 @@ namespace TickTrader.Algo.IndicatorHost
     {
         public const int DefaultBarsCount = 512;
 
-        private readonly IActorRef _algoHost;
+        private readonly IActorRef _parent, _algoHost;
         private readonly EnvService _env;
         private readonly ChartInfo _info;
         private readonly Dictionary<string, IndicatorModel> _indicators = new();
@@ -24,8 +24,9 @@ namespace TickTrader.Algo.IndicatorHost
         private bool _isStarted;
 
 
-        public ChartBuilderActor(ChartInfo info, IActorRef algoHost, EnvService env)
+        public ChartBuilderActor(IActorRef parent, ChartInfo info, IActorRef algoHost, EnvService env)
         {
+            _parent = parent;
             _info = info;
             _algoHost = algoHost;
             _env = env;
@@ -47,9 +48,9 @@ namespace TickTrader.Algo.IndicatorHost
         }
 
 
-        public static IActorRef Create(ChartInfo info, IActorRef algoHost, EnvService env)
+        public static IActorRef Create(IActorRef parent, ChartInfo info, IActorRef algoHost, EnvService env)
         {
-            return ActorSystem.SpawnLocal(() => new ChartBuilderActor(info, algoHost, env), $"{nameof(ChartBuilderActor)} {info.Id}");
+            return ActorSystem.SpawnLocal(() => new ChartBuilderActor(parent, info, algoHost, env), $"{nameof(ChartBuilderActor)} {info.Id}");
         }
 
 
@@ -263,9 +264,9 @@ namespace TickTrader.Algo.IndicatorHost
 
         void IPluginHost.OnPluginStateUpdated(PluginStateUpdate update) => Self.Tell(update);
 
-        void IPluginHost.OnPluginAlert(string pluginId, PluginLogRecord record) { } // => _server.Alerts.SendPluginAlert(pluginId, record);
+        void IPluginHost.OnPluginAlert(string pluginId, PluginLogRecord record) => _parent.Tell(new PluginAlertMsg(pluginId, record));
 
-        void IPluginHost.OnGlobalAlert(string msg) { } // => _server.Alerts.SendServerAlert(msg);
+        void IPluginHost.OnGlobalAlert(string msg) => _parent.Tell(new GlobalAlertMsg(msg));
 
         Task<string> IPluginHost.GetPkgRuntimeId(string pkgId) => RuntimeServerModel.GetPkgRuntimeId(_algoHost, pkgId);
 
@@ -291,6 +292,10 @@ namespace TickTrader.Algo.IndicatorHost
 
         #endregion IPluginHost implementation
 
+
+        internal record PluginAlertMsg(string Id, PluginLogRecord LogRecord);
+
+        internal record GlobalAlertMsg(string Message);
 
         private record RunningStateChanged(string PluginId, bool IsRunning);
 

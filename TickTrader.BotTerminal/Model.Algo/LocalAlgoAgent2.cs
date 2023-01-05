@@ -173,6 +173,7 @@ namespace TickTrader.BotTerminal
                 new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
             await InitServerListener(_server);
+            IndicatorHost.OnAlert.Subscribe(ProcessServerAlerts);
         }
 
         public PluginListenerProxy GetPluginListener(string pluginId) => _server.GetPluginListenerProxy(pluginId);
