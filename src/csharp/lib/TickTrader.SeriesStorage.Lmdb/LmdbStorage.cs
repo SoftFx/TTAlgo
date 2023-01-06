@@ -48,7 +48,7 @@ namespace TickTrader.SeriesStorage.Lmdb
             }
             catch (Exception ex)
             {
-                _env.Dispose();
+                _env?.Dispose();
                 _env = null;
                 throw LmdbException.Convert(ex);
             }
