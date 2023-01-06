@@ -38,8 +38,10 @@ var backtesterApiProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/co
 var backtesterApiBinPath = outputPath.Combine("backtester-api");
 var backtesterHostProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/apps/TickTrader.Algo.BacktesterV1Host/TickTrader.Algo.BacktesterV1Host.csproj");
 var backtesterHostBinPath = outputPath.Combine("backtester-host");
-var pkgStorageProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.PkgStorage/TickTrader.Algo.PkgStorage.csproj");
-var pkgStorageBinPath = outputPath.Combine("pkg-storage");
+var runtimeHostProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/apps/TickTrader.Algo.RuntimeV1Host/TickTrader.Algo.RuntimeV1Host.csproj");
+var runtimeHostBinPath = outputPath.Combine("runtime-host");
+var indicatorHostProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.IndicatorHost/TickTrader.Algo.IndicatorHost.csproj");
+var indicatorHostBinPath = outputPath.Combine("indicator-host");
 var vsExtensionPath = sourcesDirPath.CombineWithFilePath($"src/csharp/sdk/TickTrader.Algo.VS.Package/bin/{configuration}/TickTrader.Algo.VS.Package.vsix");
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -346,23 +348,41 @@ Task("PublishBacktesterHost")
    }
 });
 
-Task("PublishPkgStorage")
+Task("PublishRuntimeHost")
    .IsDependentOn("Test")
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPkgStorage") : null;
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishRuntimeHost") : null;
 
    try
    {
-      DotNetPublish(pkgStorageProjectPath.FullPath, new DotNetPublishSettings {
+      DotNetPublish(runtimeHostProjectPath.FullPath, new DotNetPublishSettings {
          Configuration = configuration,
          Verbosity = details,
          NoBuild = true,
-         OutputDirectory = pkgStorageBinPath,
-         Framework = "net472"
+         OutputDirectory = runtimeHostBinPath,
       });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-      DeleteFiles(pkgStorageBinPath.CombineWithFilePath("libgrpc_csharp_ext*").ToString());
+Task("PublishIndicatorHost")
+   .IsDependentOn("Test")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishIndicatorHost") : null;
+
+   try
+   {
+      DotNetPublish(indicatorHostProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = indicatorHostBinPath,
+      });
    }
    finally
    {
@@ -378,7 +398,8 @@ Task("PublishAllProjects")
    .IsDependentOn("PublishSymbolStorage")
    .IsDependentOn("PublishBacktesterApi")
    .IsDependentOn("PublishBacktesterHost")
-   .IsDependentOn("PublishPkgStorage");
+   .IsDependentOn("PublishRuntimeHost")
+   .IsDependentOn("PublishIndicatorHost");
 
 Task("PrepareArtifacts")
    .IsDependentOn("PublishAllProjects")
@@ -399,6 +420,9 @@ Task("PrepareArtifacts")
 
       var configuratorInstallPath = serverBinPath.Combine("Configurator");
       CopyDirectory(configuratorBinPath, configuratorInstallPath);
+
+      var indicatorHostRuntimePath = indicatorHostBinPath.Combine("bin").Combine("runtime");
+      CopyDirectory(runtimeHostBinPath, indicatorHostRuntimePath);
    }
    finally
    {
@@ -421,7 +445,7 @@ Task("ZipArtifacts")
       Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
       Zip(backtesterApiBinPath, artifactsPath.CombineWithFilePath($"BacktesterApi {buildId}.zip"));
       Zip(backtesterHostBinPath, artifactsPath.CombineWithFilePath($"BacktesterV1Host {buildId}.x64.zip"));
-      Zip(pkgStorageBinPath, artifactsPath.CombineWithFilePath($"PkgStorage {buildId}.net472.zip"));
+      Zip(indicatorHostBinPath, artifactsPath.CombineWithFilePath($"IndicatorHost {buildId}.zip"));
    }
    finally
    {
