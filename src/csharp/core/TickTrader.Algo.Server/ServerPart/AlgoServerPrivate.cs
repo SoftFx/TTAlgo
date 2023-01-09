@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Server
 
         ExecutorConfig IPluginHost.CreateExecutorConfig(string pluginId, string accId, PluginConfig pluginConfig)
         {
-            var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = true };
+            var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = true, SaveLogsOnDisk = true };
             config.SetPluginConfig(pluginConfig);
             config.WorkingDirectory = Env.GetPluginWorkingFolder(pluginId);
             config.LogDirectory = Env.GetPluginLogsFolder(pluginId);

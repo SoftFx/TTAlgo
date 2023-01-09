@@ -49,6 +49,7 @@ message ExecutorConfig {
     google.protobuf.Any invoke_strategy_config = 8;
     google.protobuf.Any main_series = 9;
     string account_id = 10;
+    bool save_logs_on_disk = 11;
 }
 
 message BarStratefyConfig {

@@ -279,10 +279,9 @@ namespace TickTrader.Algo.IndicatorHost
             pluginConfig.MainSymbol.Origin = SymbolConfig.Types.SymbolOrigin.Online;
             pluginConfig.Timeframe = _info.Timeframe;
 
-            var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = false };
+            var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = true, SaveLogsOnDisk = false };
             config.SetPluginConfig(pluginConfig);
             config.WorkingDirectory = _env.AlgoWorkingFolder;
-            config.LogDirectory = _env.GetPluginLogsFolder(pluginId);
             config.InitPriorityInvokeStrategy();
             config.InitSlidingBuffering(_info.Boundaries?.BarsCount ?? DefaultBarsCount);
             config.InitBarStrategy(_info.MarketSide);
