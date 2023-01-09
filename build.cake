@@ -40,6 +40,8 @@ var backtesterHostProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/a
 var backtesterHostBinPath = outputPath.Combine("backtester-host");
 var runtimeHostProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/apps/TickTrader.Algo.RuntimeV1Host/TickTrader.Algo.RuntimeV1Host.csproj");
 var runtimeHostBinPath = outputPath.Combine("runtime-host");
+var pkgLoaderProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.PkgLoader/TickTrader.Algo.PkgLoader.csproj");
+var pkgLoaderBinPath = outputPath.Combine("pkg-loader");
 var indicatorHostProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.IndicatorHost/TickTrader.Algo.IndicatorHost.csproj");
 var indicatorHostBinPath = outputPath.Combine("indicator-host");
 var vsExtensionPath = sourcesDirPath.CombineWithFilePath($"src/csharp/sdk/TickTrader.Algo.VS.Package/bin/{configuration}/TickTrader.Algo.VS.Package.vsix");
@@ -369,6 +371,28 @@ Task("PublishRuntimeHost")
    }
 });
 
+Task("PublishPkgLoader")
+   .IsDependentOn("Test")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPkgLoader") : null;
+
+   try
+   {
+      DotNetPublish(pkgLoaderProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = pkgLoaderBinPath,
+         Framework = "net6.0",
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
+
 Task("PublishIndicatorHost")
    .IsDependentOn("Test")
    .Does(() =>
@@ -399,6 +423,7 @@ Task("PublishAllProjects")
    .IsDependentOn("PublishBacktesterApi")
    .IsDependentOn("PublishBacktesterHost")
    .IsDependentOn("PublishRuntimeHost")
+   .IsDependentOn("PublishPkgLoader")
    .IsDependentOn("PublishIndicatorHost");
 
 Task("PrepareArtifacts")
@@ -421,6 +446,7 @@ Task("PrepareArtifacts")
       var configuratorInstallPath = serverBinPath.Combine("Configurator");
       CopyDirectory(configuratorBinPath, configuratorInstallPath);
 
+      CopyDirectory(pkgLoaderBinPath.FullPath, indicatorHostBinPath);
       var indicatorHostRuntimePath = indicatorHostBinPath.Combine("bin").Combine("runtime");
       CopyDirectory(runtimeHostBinPath, indicatorHostRuntimePath);
    }
