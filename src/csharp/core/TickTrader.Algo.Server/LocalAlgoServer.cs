@@ -78,9 +78,9 @@ namespace TickTrader.Algo.Server
 
         public Task<PackageListSnapshot> GetPackageSnapshot() => EventBus.GetPackageSnapshot();
         public Task<bool> PackageWithNameExists(string pkgName) => _server.Ask<bool>(new AlgoHostModel.PkgFileExistsRequest(pkgName));
-        public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath) => _server.Ask<string>(new AlgoHostModel.UploadPackageCmd(request, pkgFilePath));
+        public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath) => AlgoHostModel.UploadPackage(_server, request, pkgFilePath);
         public Task<byte[]> GetPackageBinary(string pkgId) => _server.Ask<byte[]>(new AlgoHostModel.PkgBinaryRequest(pkgId));
-        public Task RemovePackage(RemovePackageRequest request) => _server.Ask<RemovePackageRequest>(request);
+        public Task RemovePackage(RemovePackageRequest request) => AlgoHostModel.RemovePackage(_server, request);
         public Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request) => _server.Ask<MappingCollectionInfo>(request);
 
         public Task<AccountListSnapshot> GetAccounts() => EventBus.GetAccountSnapshot();

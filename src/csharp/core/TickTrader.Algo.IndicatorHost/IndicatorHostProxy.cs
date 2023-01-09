@@ -4,6 +4,8 @@ using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 
 namespace TickTrader.Algo.IndicatorHost
@@ -19,14 +21,15 @@ namespace TickTrader.Algo.IndicatorHost
         private Channel<object> _downlink;
 
 
-        public IEventSource<PackageUpdate> OnPkgUpdated => _pkgUpdateEventSrc;
-
-        public IEventSource<PackageStateUpdate> OnPkgStateUpdated => _pkgStateUpdateEventSrc;
+        public IPkgStorage PkgStorage { get; }
 
         public IEventSource<AlertRecordInfo> OnAlert => _alertEventSrc;
 
 
-        public IndicatorHostProxy() { }
+        public IndicatorHostProxy()
+        {
+             PkgStorage = new PkgStorageAdapter(this);
+        }
 
 
         public async Task Init(IndicatorHostSettings settings, IActorRef algoHost = null)
@@ -80,5 +83,34 @@ namespace TickTrader.Algo.IndicatorHost
 
 
         internal record AttachDownlinkCmd(ChannelWriter<object> Sink);
+
+
+        private class PkgStorageAdapter : IPkgStorage
+        {
+            private readonly ChannelEventSource<PackageUpdate> _pkgUpdateEventSrc = new();
+            private readonly ChannelEventSource<PackageStateUpdate> _pkgStateUpdateEventSrc = new();
+            private readonly IndicatorHostProxy _parent;
+
+
+            public IEventSource<PackageUpdate> OnPkgUpdated => _pkgUpdateEventSrc;
+
+            public IEventSource<PackageStateUpdate> OnPkgStateUpdated => _pkgStateUpdateEventSrc;
+
+
+            public PkgStorageAdapter(IndicatorHostProxy parent)
+            {
+                _parent = parent;
+            }
+
+
+            public void OnPkgUpdate(PackageUpdate upd) => _pkgUpdateEventSrc.Send(upd);
+
+            public void OnPkgStateUpdate(PackageStateUpdate upd) => _pkgStateUpdateEventSrc.Send(upd);
+
+            public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath) => AlgoHostModel.UploadPackage(_parent._algoHost, request, pkgFilePath);
+
+            public Task RemovePackage(RemovePackageRequest request) => AlgoHostModel.RemovePackage(_parent._algoHost, request);
+        }
+
     }
 }

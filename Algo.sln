@@ -146,8 +146,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.FeedStorage.Api.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.BacktesterApi", "src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj", "{D50FAF09-2A1B-44D6-A791-8D4C5221518F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.PkgStorage", "src\csharp\core\TickTrader.Algo.PkgStorage\TickTrader.Algo.PkgStorage.csproj", "{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Server.PublicAPI.Adapter", "src\csharp\core\TickTrader.Algo.Server.PublicAPI.Adapter\TickTrader.Algo.Server.PublicAPI.Adapter.csproj", "{104A1694-9ACA-4476-BB4F-8CD1A2736625}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Server.PublicAPI.Client", "src\csharp\core\TickTrader.Algo.Server.PublicAPI.Client\TickTrader.Algo.Server.PublicAPI.Client.csproj", "{CF0B54CB-C444-4934-9AC5-82067294E3AD}"
@@ -160,7 +158,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.RuntimeV1Ho
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.IndicatorHost", "src\csharp\core\TickTrader.Algo.IndicatorHost\TickTrader.Algo.IndicatorHost.csproj", "{E9DCA7E7-DCD8-4CCF-A1CB-EDC6156EC26B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.ServerCore", "src\csharp\core\TickTrader.Algo.ServerCore\TickTrader.Algo.ServerCore.csproj", "{83D7627F-D4E4-414B-BE44-33B64FB7FB13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.ServerCore", "src\csharp\core\TickTrader.Algo.ServerCore\TickTrader.Algo.ServerCore.csproj", "{83D7627F-D4E4-414B-BE44-33B64FB7FB13}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -832,18 +830,6 @@ Global
 		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Release|x64.Build.0 = Release|Any CPU
 		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Release|x86.ActiveCfg = Release|Any CPU
 		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Release|x86.Build.0 = Release|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Debug|x64.Build.0 = Debug|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Debug|x86.Build.0 = Debug|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Release|x64.ActiveCfg = Release|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Release|x64.Build.0 = Release|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Release|x86.ActiveCfg = Release|Any CPU
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9}.Release|x86.Build.0 = Release|Any CPU
 		{104A1694-9ACA-4476-BB4F-8CD1A2736625}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{104A1694-9ACA-4476-BB4F-8CD1A2736625}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{104A1694-9ACA-4476-BB4F-8CD1A2736625}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -990,7 +976,6 @@ Global
 		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10} = {D4DDCC9E-81DB-4294-9060-A8C1AB363672}
 		{5BC1C82B-CC91-4DA8-A10F-CEC097ABC326} = {EFB9D6C3-7008-41DF-A75B-6C0E8DEF0CDA}
 		{D50FAF09-2A1B-44D6-A791-8D4C5221518F} = {C5AE642C-4A61-47BD-9272-69909998B71D}
-		{1435DA05-AFCE-4EFA-A4EF-AB04F4E29BF9} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{104A1694-9ACA-4476-BB4F-8CD1A2736625} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{CF0B54CB-C444-4934-9AC5-82067294E3AD} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{4CE6C5D7-6C50-4EDB-94AF-B58860735312} = {C5AE642C-4A61-47BD-9272-69909998B71D}
