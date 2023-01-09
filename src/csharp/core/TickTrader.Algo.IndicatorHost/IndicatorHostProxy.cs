@@ -12,23 +12,25 @@ namespace TickTrader.Algo.IndicatorHost
 {
     public class IndicatorHostProxy
     {
-        private readonly ChannelEventSource<PackageUpdate> _pkgUpdateEventSrc = new();
-        private readonly ChannelEventSource<PackageStateUpdate> _pkgStateUpdateEventSrc = new();
+        private readonly PkgStorageAdapter _pkgStorageAdapter;
         private readonly ChannelEventSource<AlertRecordInfo> _alertEventSrc = new();
+        private readonly ChannelEventSource<IndicatorLogRecord> _indicatorLogEventSrc = new();
 
         private IActorRef _algoHost, _indicatorHost;
         private bool _ownsAlgoHost;
         private Channel<object> _downlink;
 
 
-        public IPkgStorage PkgStorage { get; }
+        public IPkgStorage PkgStorage => _pkgStorageAdapter;
 
         public IEventSource<AlertRecordInfo> OnAlert => _alertEventSrc;
+
+        public IEventSource<IndicatorLogRecord> OnIndicatorLog => _indicatorLogEventSrc;
 
 
         public IndicatorHostProxy()
         {
-             PkgStorage = new PkgStorageAdapter(this);
+             _pkgStorageAdapter = new PkgStorageAdapter(this);
         }
 
 
@@ -75,9 +77,10 @@ namespace TickTrader.Algo.IndicatorHost
         {
             switch (msg)
             {
-                case PackageUpdate pkgUpdate: _pkgUpdateEventSrc.Send(pkgUpdate); break;
-                case PackageStateUpdate stateUpdate: _pkgStateUpdateEventSrc.Send(stateUpdate); break;
+                case PackageUpdate pkgUpdate: _pkgStorageAdapter.OnPkgUpdate(pkgUpdate); break;
+                case PackageStateUpdate stateUpdate: _pkgStorageAdapter.OnPkgStateUpdate(stateUpdate); break;
                 case AlertRecordInfo alertMsg: _alertEventSrc.Send(alertMsg); break;
+                case IndicatorLogRecord indicatorLog: _indicatorLogEventSrc.Send(indicatorLog); break;
             }
         }
 

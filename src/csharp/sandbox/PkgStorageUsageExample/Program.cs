@@ -26,7 +26,7 @@ namespace PkgStorageUsageExample
 
             var indicatorHost = new IndicatorHostProxy();
 
-            indicatorHost.PkgStorage.OnPkgUpdated.Subscribe(update => Console.WriteLine($"{update.Action} {update.Id}"));
+            indicatorHost.PkgStorage.OnPkgUpdated.Subscribe(update => Console.WriteLine($"-------> {update.Action} {update.Id}"));
 
             await indicatorHost.Init(settings);
         }

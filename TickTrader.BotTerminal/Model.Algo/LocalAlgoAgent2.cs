@@ -30,6 +30,7 @@ namespace TickTrader.BotTerminal
         private readonly VarDictionary<string, AccountModelInfo> _accounts;
         private readonly VarDictionary<string, LocalTradeBot> _bots;
         private readonly PluginIdProvider _idProvider;
+        private readonly EventJournal _eventJournal;
 
         private IActorRef _algoHost;
         private LocalAlgoServer _server;
@@ -80,8 +81,10 @@ namespace TickTrader.BotTerminal
         public event Action AccessLevelChanged = delegate { };
 
 
-        public LocalAlgoAgent2(PersistModel storage)
+        public LocalAlgoAgent2(PersistModel storage, EventJournal journal)
         {
+            _eventJournal = journal;
+
             _syncContext = new DispatcherSync();
 
             _packages = new VarDictionary<string, PackageInfo>();
@@ -173,7 +176,8 @@ namespace TickTrader.BotTerminal
                 new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
             await InitServerListener(_server);
-            IndicatorHost.OnAlert.Subscribe(ProcessServerAlerts);
+            IndicatorHost.OnAlert.Subscribe(ProcessAlert);
+            IndicatorHost.OnIndicatorLog.Subscribe(ProcessIndicatorLog);
         }
 
         public PluginListenerProxy GetPluginListener(string pluginId) => _server.GetPluginListenerProxy(pluginId);
@@ -300,7 +304,7 @@ namespace TickTrader.BotTerminal
         {
             var alertChannel = DefaultChannelFactory.CreateForOneToOne<AlertRecordInfo>();
             await server.SubscribeToAlerts(alertChannel.Writer);
-            _ = alertChannel.Consume(ProcessServerAlerts);
+            _ = alertChannel.Consume(ProcessAlert);
 
             var updateChannel = DefaultChannelFactory.CreateForOneToOne<IMessage>();
             await server.EventBus.SubscribeToUpdates(updateChannel.Writer, true);
@@ -308,11 +312,19 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void ProcessServerAlerts(AlertRecordInfo alert)
+        private void ProcessAlert(AlertRecordInfo alert)
         {
             _syncContext.Invoke(() =>
             {
                 AlertModel.AddAlert(alert);
+            });
+        }
+
+        private void ProcessIndicatorLog(IndicatorLogRecord record)
+        {
+            _syncContext.Invoke(() =>
+            {
+                _eventJournal.Add(EventMessage.Create(record));
             });
         }
 

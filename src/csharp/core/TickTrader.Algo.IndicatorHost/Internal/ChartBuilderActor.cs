@@ -22,6 +22,7 @@ namespace TickTrader.Algo.IndicatorHost
 
         private IAlgoLogger _logger;
         private bool _isStarted;
+        private string _chartDisplayName;
 
 
         public ChartBuilderActor(IActorRef parent, ChartInfo info, IActorRef algoHost, EnvService env)
@@ -57,6 +58,7 @@ namespace TickTrader.Algo.IndicatorHost
         protected override void ActorInit(object initMsg)
         {
             _logger = AlgoLoggerFactory.GetLogger(Name);
+            InitChartDisplayName();
         }
 
 
@@ -100,10 +102,14 @@ namespace TickTrader.Algo.IndicatorHost
             _info.Timeframe = cmd.Timeframe;
 
             if (!_isStarted)
+            {
+                InitChartDisplayName();
                 return;
+            }
 
             await StopAllIndicators();
 
+            InitChartDisplayName();
             if (!_isStarted)
                 return;
 
@@ -142,8 +148,9 @@ namespace TickTrader.Algo.IndicatorHost
             var plugin = PluginActor.Create(this, savedState);
             var indicator = new IndicatorModel(plugin);
             _indicators[pluginId] = indicator;
-            await plugin.Ask(new PluginActor.AttachOutputsChannelCmd(indicator.OutputChannel));
+            await indicator.Init();
             _ = indicator.OutputChannel.Consume(update => _proxyDownlinkSrc.DispatchEvent(new ChartHostProxy.OutputDataUpdatedMsg(pluginId, update)));
+            _ = indicator.LogChannel.Consume(log => _parent.Tell(new IndicatorLogRecord(pluginId, _info.Id, _chartDisplayName, log)));
 
             if (_isStarted)
                 await StartIndicator(plugin);
@@ -175,7 +182,7 @@ namespace TickTrader.Algo.IndicatorHost
             if (_isStarted)
                 await StopIndicator(indicator.PluginRef);
 
-            indicator.OutputChannel.Writer.TryComplete();
+            indicator.Deinit();
             _proxyDownlinkSrc.DispatchEvent(PluginModelUpdate.Removed(pluginId));
 
             await ShutdownIndicator(pluginId, indicator.PluginRef);
@@ -248,6 +255,11 @@ namespace TickTrader.Algo.IndicatorHost
                 await StopIndicator(indicator.PluginRef);
         }
 
+        private void InitChartDisplayName()
+        {
+            _chartDisplayName = $"{_info.Symbol}, {_info.Timeframe}";
+        }
+
 
         #region IPluginHost implementation
 
@@ -311,14 +323,29 @@ namespace TickTrader.Algo.IndicatorHost
 
             public Channel<OutputSeriesUpdate> OutputChannel { get; }
 
+            public Channel<PluginLogRecord> LogChannel { get; }
+
 
             public IndicatorModel(IActorRef plugin)
             {
                 PluginRef = plugin;
 
                 OutputChannel = DefaultChannelFactory.CreateForOneToOne<OutputSeriesUpdate>();
+                LogChannel = DefaultChannelFactory.CreateForOneToOne<PluginLogRecord>();
             }
 
+
+            public async Task Init()
+            {
+                await PluginRef.Ask(new PluginActor.AttachOutputsChannelCmd(OutputChannel));
+                await PluginRef.Ask(new PluginActor.AttachLogsChannelCmd(LogChannel, false));
+            }
+
+            public void Deinit()
+            {
+                OutputChannel.Writer.TryComplete();
+                LogChannel.Writer.TryComplete();
+            }
 
             public void OnModelUpdate(PluginModelUpdate update)
             {

@@ -52,6 +52,7 @@ namespace TickTrader.Algo.IndicatorHost
 
             Receive<ChartBuilderActor.PluginAlertMsg>(OnPluginAlertMsg);
             Receive<ChartBuilderActor.GlobalAlertMsg>(OnGlobalAlertMsg);
+            Receive<IndicatorLogRecord>(l => _proxyDownlinkSrc.DispatchEvent(l));
         }
 
 

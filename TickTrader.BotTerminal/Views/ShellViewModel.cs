@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
             ConnectionLock = new UiLock();
             wndManager = new WindowManager(this);
 
-            Agent = new LocalAlgoAgent2(storage);
+            Agent = new LocalAlgoAgent2(storage, eventJournal);
 
             cManager = new ConnectionManager(commonClient, storage, eventJournal, Agent);
             clientModel = new TraderClientModel(commonClient);
