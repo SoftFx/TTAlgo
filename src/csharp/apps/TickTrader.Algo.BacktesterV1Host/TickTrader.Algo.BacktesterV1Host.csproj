@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\core\TickTrader.Algo.Backtester\TickTrader.Algo.Backtester.csproj" />
-    <ProjectReference Include="..\..\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.PkgLoader\TickTrader.Algo.PkgLoader.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj" />
     <ProjectReference Include="..\..\lib\TickTrader.Algo.Logging\TickTrader.Algo.Logging.csproj" />

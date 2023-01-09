@@ -12,9 +12,8 @@ using System.Globalization;
 using System.IO;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Logging;
-using TickTrader.Algo.Package;
+using TickTrader.Algo.PkgLoader;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Server.Common;
 using TickTrader.BotAgent.Hosting;
@@ -43,8 +42,7 @@ namespace TickTrader.BotAgent
 
             AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
 
-            PackageLoadContext.Init(Algo.Isolation.PackageLoadContextProvider.Create);
-            PackageExplorer.Init<PackageV1Explorer>();
+            PkgLoader.InitDefaults();
 
             var logger = LogManager.GetLogger(nameof(Program));
 
