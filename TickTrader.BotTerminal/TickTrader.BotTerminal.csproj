@@ -23,7 +23,7 @@
   <ItemGroup>
     <PackageReference Include="Caliburn.Micro" Version="5.0.5-beta" />
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
-    <PackageReference Include="FontAwesome.Sharp" Version="6.1.1" />
+    <PackageReference Include="FontAwesome.Sharp" Version="6.2.1" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageReference Include="NLog" Version="4.7.15" />
     <PackageReference Include="Octokit" Version="4.0.3" />
@@ -69,6 +69,7 @@
     </Resource>
     <Resource Include="Resx\Logo\algoLogoLight.ico" />
     <Resource Include="Resx\Logo\algoLogoLight128.ico" />
+    <Resource Include="Resx\Logo\icon_logo_inversion.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -89,6 +90,7 @@
     <None Remove="Resx\Logo\algoLogoDark128.ico" />
     <None Remove="Resx\Logo\algoLogoLight.ico" />
     <None Remove="Resx\Logo\algoLogoLight128.ico" />
+    <None Remove="Resx\Logo\icon_logo_inversion.png" />
     <Page Remove="Resx\Styles.SystemDefault\ComboBox.Msdn.xaml" />
     <Page Remove="Resx\Styles.SystemDefault\ComboBox.xaml" />
     <Page Remove="Resx\Styles.SystemDefault\ComboBoxItem.xaml" />

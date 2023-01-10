@@ -23,7 +23,14 @@ namespace Machinarium.Var
 
     public class IntProperty : PropertyBase<IntVar, int> { }
 
-    public class BoolProperty : PropertyBase<BoolVar, bool> { }
+    public class BoolProperty : PropertyBase<BoolVar, bool>
+    {
+        public new BoolProperty AddPreTrigger(Action<bool> trigger) => (BoolProperty)base.AddPreTrigger(trigger);
+
+        public new BoolProperty AddPostTrigger(Action<bool> trigger) => (BoolProperty)base.AddPostTrigger(trigger);
+    }
+
+    public class StrProperty : PropertyBase<Var<string>, string> { }
 
     public class DoubleProperty : PropertyBase<DoubleVar, double> { }
 

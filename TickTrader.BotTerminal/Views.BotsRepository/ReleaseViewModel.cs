@@ -6,6 +6,6 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
     {
         public string Name { get; init; }
 
-        public ObservableCollection<AssetViewModel> Plugins { get; } = new();
+        public ObservableCollection<BotMetainfoViewModel> Plugins { get; } = new();
     }
 }

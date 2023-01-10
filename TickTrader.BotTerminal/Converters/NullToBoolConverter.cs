@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Data;
 
 namespace TickTrader.BotTerminal
@@ -37,12 +32,9 @@ namespace TickTrader.BotTerminal
             throw new NotImplementedException();
         }
 
-        private bool IsEmptyValue(object value)
+        private static bool IsEmptyValue(object value)
         {
-            if (value is string)
-                return string.IsNullOrEmpty(value as string);
-            else
-                return value == null;
+            return value is string strVal ? string.IsNullOrEmpty(strVal) : value == null;
         }
     }
 }

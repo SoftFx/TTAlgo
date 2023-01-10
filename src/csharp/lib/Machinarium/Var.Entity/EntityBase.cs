@@ -68,6 +68,18 @@ namespace Machinarium.Var
             return property;
         }
 
+        protected StrProperty AddStrProperty(string initialValue = null, string notifyName = null)
+        {
+            var property = new StrProperty
+            {
+                Value = initialValue,
+                Name = notifyName,
+            };
+
+            AddChild(property);
+            return property;
+        }
+
         protected DoubleProperty AddDoubleProperty(double initialValue = 0, string notifyName = null)
         {
             var property = new DoubleProperty

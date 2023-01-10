@@ -7,13 +7,13 @@ namespace TickTrader.BotTerminal
         public UpdateBind() : base()
         {
             UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-            Mode = BindingMode.OneWay;
+            Mode = BindingMode.TwoWay;
         }
 
         public UpdateBind(string path) : base(path)
         {
             UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-            Mode = BindingMode.OneWay;
+            Mode = BindingMode.TwoWay;
         }
     }
 }

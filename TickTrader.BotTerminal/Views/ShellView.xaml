@@ -49,6 +49,9 @@
             <MenuItem Header="Sounds" IsChecked="{l:Setting EnableSounds}" IsCheckable="True"></MenuItem>
             <MenuItem Header="Restart Bots On Startup" IsChecked="{l:Setting RestartBotsOnStartup}" IsCheckable="True"></MenuItem>
         </MenuItem>
+        <MenuItem Header="Bots">
+            <MenuItem Header="Manager..." cal:Message.Attach="OpenBotsRepository"/>
+        </MenuItem>
         <MenuItem Header="{l:Resx Menu_Profile}" DataContext="{Binding ProfileManager}">
             <MenuItem Header="{l:Resx Menu_LoadProfile}" ItemsSource="{Binding Profiles}"
                       cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
@@ -59,7 +62,6 @@
             <MenuItem Header="{l:Resx Menu_InstallVSPackage}" cal:Message.Attach="InstallVSPackage"/>
             <Separator/>
             <MenuItem Header="Symbol Manager..." cal:Message.Attach="OpenStorageManager"/>
-            <MenuItem Header="Bots repository..." cal:Message.Attach="OpenBotsRepository"/>
             <MenuItem Header="Backtester..." cal:Message.Attach="OpenBacktester"/>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Help}">
