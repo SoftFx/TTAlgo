@@ -124,13 +124,13 @@ namespace TickTrader.Algo.Server
             {
                 var client = new ClientModel.ControlHandler2(_server.GetDefaultClientSettings($"test{Guid.NewGuid():N}"));
 
-                await client.OpenHandler();
+                await client.Init();
 
                 var lastError = await client.Connection.Connect(userId, creds.GetPassword(), server, CancellationToken.None);
 
                 await client.Connection.Disconnect();
 
-                await client.CloseHandler();
+                await client.Deinit();
 
                 return lastError;
             }

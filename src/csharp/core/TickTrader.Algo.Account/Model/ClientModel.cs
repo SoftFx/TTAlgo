@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Account
         private QuoteMonitoringModel _quoteMonitoring;
         private QuoteSubManager _rootQuoteSubManager;
         private BarSubManager _rootBarSubManager;
-        private bool _allowSubModification;
+        private bool _allowSubModification, _deinitCalled;
         private ConnectionModel _connection;
         private TradeSubManager _tradeSubManager;
 
@@ -97,6 +97,13 @@ namespace TickTrader.Algo.Account
             };
         }
 
+        private async Task Deinit()
+        {
+            _deinitCalled = true;
+            await ActorSystem.StopActor(_syncFeedProvider)
+                .OnException(ex => _logger.Error(ex, $"Failed to stop {nameof(SyncFeedProviderActor)}"));
+        }
+
         private void FeedProxy_Tick(QuoteInfo q)
         {
             _quoteMonitoring?.CheckQuoteDelay(q);
@@ -152,25 +159,29 @@ namespace TickTrader.Algo.Account
 
         public class ControlHandler2 : Handler<ClientModel>
         {
+            private readonly AccountModelSettings _settings;
+
             public ControlHandler2(AccountModelSettings settings)
                 : base(SpawnLocal<ClientModel>(null, $"ClientModel {Interlocked.Increment(ref _actorNameIdSeed)}"))
             {
-                Actor.Send(a => a.Init(settings));
+                _settings = settings;
             }
 
             public string Id => Actor.ActorName;
 
             public ConnectionModel.Handler Connection { get; private set; }
 
-            public async Task OpenHandler()
+            public async Task Init()
             {
+                await Actor.Call(a => a.Init(_settings));
                 Connection = new ConnectionModel.Handler(await Actor.Call(a => a._connection.Ref));
                 await Connection.OpenHandler();
             }
 
-            public async Task CloseHandler()
+            public async Task Deinit()
             {
                 await Connection.CloseHandler();
+                await Actor.Call(a => a.Deinit());
             }
 
             public Task<List<Domain.SymbolInfo>> GetSymbols() => Actor.Call(a => a.ExecDataRequest(c => c.GetSymbolsCopy()));
@@ -402,7 +413,8 @@ namespace TickTrader.Algo.Account
                 await _feedProcessor.Stop();
                 _logger.Debug("Stopped feed stream.");
 
-                await SyncFeedProviderModel.Reset(_syncFeedProvider);
+                if (!_deinitCalled)
+                    await SyncFeedProviderModel.Reset(_syncFeedProvider);
 
                 await _feedHistory.Stop();
                 _logger.Debug("Stopped feed history.");
