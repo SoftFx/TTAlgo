@@ -127,7 +127,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             if (obj is CartesianScrollBarChart chart)
             {
-                chart.BarsSource.ResetVisuals();
+                chart.BarsSource?.ResetVisuals();
                 chart.UpdateDrawableSeries();
                 chart.InitStartPosition();
             }
