@@ -98,7 +98,7 @@
                 <TextBlock Grid.Row="0" Style="{StaticResource PropertyNameStyle}" Text="Author:"/>
                 <TextBlock Grid.Row="1" Style="{StaticResource PropertyNameStyle}" Text="Source:"/>
 
-                <TextBlock Grid.Row="2" Style="{StaticResource PropertyNameStyle}" Text="Lisense:"/>
+                <TextBlock Grid.Row="2" Style="{StaticResource PropertyNameStyle}" Text="Copyright:"/>
 
                 <TextBlock Grid.Row="3" Style="{StaticResource PropertyNameStyle}" Text="Category:"/>
                 <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource PropertyValueStyle}" Text="{Binding Category.Value}"/>
@@ -424,7 +424,7 @@
                             <CheckBox Grid.Column="0" IsChecked="{l:UpdateBind SelectAllBots.Value}"/>
                             <TextBox Grid.Column="1" Margin="10 0" FontSize="14" Height="26" />
 
-                            <CheckBox Grid.Column="3" Content="Only updates" IsChecked="{l:UpdateBind OnlyWithUpdates.Value}"/>
+                            <CheckBox Grid.Column="3" Content="Updates only" IsChecked="{l:UpdateBind OnlyWithUpdates.Value}"/>
                             <l:FlatButton Grid.Column="4" Margin="10 0 0 0" Content="Update All"
                                           cal:Message.Attach="UpdateAllSelectedBots"
                                           IsEnabled="{l:UpdateBind CanUpdateBots.Value}"

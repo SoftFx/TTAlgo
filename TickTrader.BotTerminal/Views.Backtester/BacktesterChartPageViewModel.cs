@@ -117,7 +117,7 @@ namespace TickTrader.BotTerminal
             //ChartControlModel.SetTimeframe(timeframe);
             ////ChartControlModel.SymbolInfo.Value = mainSymbol;
 
-            BarVector.InitNewVector(Period.Value, bars, _mainSymbol);
+            BarVector.InitNewVector(Period.Value, bars, _mainSymbol, int.MaxValue);
             TradeEventHandler.LoadTradeEvents(tradeHistory);
 
 

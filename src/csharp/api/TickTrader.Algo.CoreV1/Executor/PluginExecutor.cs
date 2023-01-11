@@ -577,13 +577,13 @@ namespace TickTrader.Algo.CoreV1
             return (OutputFixture<T>)fixture;
         }
 
-        public LogFixture InitLogging(string logDir)
+        public LogFixture InitLogging(string logDir, bool saveOnDisk)
         {
             lock (_sync)
             {
                 ThrowIfRunning();
                 if (_pluginLoggerFixture == null)
-                    _pluginLoggerFixture = new LogFixture(this, _metadata.Descriptor.IsTradeBot, logDir);
+                    _pluginLoggerFixture = new LogFixture(this, _metadata.Descriptor.IsTradeBot, logDir, saveOnDisk);
                 _pluginLogger = _pluginLoggerFixture;
                 return _pluginLoggerFixture;
             }
@@ -595,7 +595,7 @@ namespace TickTrader.Algo.CoreV1
             BotWorkingFolder = config.WorkingDirectory;
 
             if (config.IsLoggingEnabled)
-                InitLogging(config.LogDirectory);
+                InitLogging(config.LogDirectory, config.SaveLogsOnDisk);
 
             MainSymbolCode = pluginConfig.MainSymbol.Name;
             TimeFrame = pluginConfig.Timeframe;

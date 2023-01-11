@@ -44,8 +44,8 @@ namespace TickTrader.Algo.Server
             Receive<ChangeAccountRequest>(Change);
             Receive<AccountMetadataRequest, AccountMetadataInfo>(GetMetadata);
             Receive<TestAccountRequest, ConnectionErrorInfo>(TestConnection);
-            Receive<AccountRpcController.AttachSessionCmd, AccountRpcHandler>(AttachSession);
-            Receive<AccountRpcController.DetachSessionCmd>(DetachSession);
+            Receive<AccountRpcModel.AttachSessionCmd, AccountRpcHandler>(AttachSession);
+            Receive<AccountRpcModel.DetachSessionCmd>(DetachSession);
 
             Receive<ManageConnectionCmd>(ManageConnectionLoop);
             Receive<ScheduleDisconnectCmd>(ScheduleDisconnect);
@@ -330,7 +330,7 @@ namespace TickTrader.Algo.Server
         }
 
 
-        private AccountRpcHandler AttachSession(AccountRpcController.AttachSessionCmd cmd)
+        private AccountRpcHandler AttachSession(AccountRpcModel.AttachSessionCmd cmd)
         {
             var sessionHandler = _rpcController.AttachSession(cmd.Session, (Domain.Account.Types.ConnectionState)_state);
 
@@ -342,7 +342,7 @@ namespace TickTrader.Algo.Server
             return sessionHandler;
         }
 
-        private void DetachSession(AccountRpcController.DetachSessionCmd cmd)
+        private void DetachSession(AccountRpcModel.DetachSessionCmd cmd)
         {
             _rpcController.DetachSession(cmd.SessionId);
 

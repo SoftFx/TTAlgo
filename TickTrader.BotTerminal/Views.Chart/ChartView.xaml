@@ -46,6 +46,11 @@
                             SelectedItem="{Binding SelectedTimeframe, Mode=TwoWay}"
                             IsEnabled="{Binding UiLock.IsNotLocked}"/>
 
+                    <l:MenuItemSelector Header="Bars count"
+                            ItemsSource="{Binding AvailableChartSizes}"
+                            SelectedItem="{Binding SelectedChartSize, Mode=TwoWay}"
+                            IsEnabled="{Binding UiLock.IsNotLocked}"/>
+
                     <Separator/>
 
                     <MenuItem Header="Crosshair" IsCheckable="True" IsChecked="{Binding EnableCrosshair}"/>

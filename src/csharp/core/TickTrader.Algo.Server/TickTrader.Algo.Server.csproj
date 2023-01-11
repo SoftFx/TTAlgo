@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -23,10 +23,11 @@
     <ProjectReference Include="..\..\lib\TickTrader.Algo.Async\TickTrader.Algo.Async.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.PkgStorage\TickTrader.Algo.PkgStorage.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Runtime\TickTrader.Algo.Runtime.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.ServerCore\TickTrader.Algo.ServerCore.csproj" />
   </ItemGroup>
 
 </Project>

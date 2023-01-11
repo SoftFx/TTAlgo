@@ -3,7 +3,7 @@ using LiveChartsCore;
 using Machinarium.Qnil;
 using System;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Server;
+using TickTrader.Algo.IndicatorHost;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {

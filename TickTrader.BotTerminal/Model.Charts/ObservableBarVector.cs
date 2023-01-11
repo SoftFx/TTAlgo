@@ -11,12 +11,11 @@ namespace TickTrader.BotTerminal
 {
     public sealed class ObservableBarVector : ObservableRangeCollection<FinancialPoint>
     {
-        private const int DefaultBarVectorSize = 4000;
-
-        private readonly int _maxVectorSize;
+        private const int DefaultBarVectorSize = 512;
 
         private Feed.Types.Timeframe _timeFrame;
         private BarSampler _sampler;
+        private int _maxVectorSize;
 
 
         internal string Symbol { get; private set; }
@@ -48,9 +47,10 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void InitNewVector(Feed.Types.Timeframe timeFrame, IEnumerable<BarData> vector, string symbol = null)
+        public void InitNewVector(Feed.Types.Timeframe timeFrame, IEnumerable<BarData> vector, string symbol = null, int? size = null)
         {
             Timeframe = timeFrame;
+            _maxVectorSize = size ?? DefaultBarVectorSize;
             Symbol = symbol ?? Symbol;
 
             Clear();

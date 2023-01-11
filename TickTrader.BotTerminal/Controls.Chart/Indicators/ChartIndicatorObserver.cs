@@ -3,7 +3,7 @@ using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Server;
+using TickTrader.Algo.IndicatorHost;
 
 using static TickTrader.Algo.Domain.Metadata.Types;
 

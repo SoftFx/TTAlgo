@@ -8,30 +8,37 @@ namespace TickTrader.Algo.CoreV1
     {
         private readonly TimeKeyGenerator _keyGen = new TimeKeyGenerator();
         private readonly IFixtureContext _context;
-        private readonly bool _isTradeBot;
+        private readonly bool _isTradeBot, _saveOnDisk;
         private readonly string _logDir;
 
         private IPluginLogWriter _logWriter;
 
-        internal LogFixture(IFixtureContext context, bool isTradeBot, string logDir)
+        internal LogFixture(IFixtureContext context, bool isTradeBot, string logDir, bool saveOnDisk)
         {
             _context = context;
             _isTradeBot = isTradeBot;
             _logDir = logDir;
+            _saveOnDisk = saveOnDisk;
         }
 
         public void Start()
         {
-            _logWriter = PluginLogWriter.Create();
-            _logWriter.Start(_logDir);
+            if (_saveOnDisk)
+            {
+                _logWriter = PluginLogWriter.Create();
+                _logWriter.Start(_logDir);
+            }
 
             _context.Builder.Logger = this;
         }
 
         public Task Stop()
         {
-            _logWriter.Stop();
-            _logWriter = null;
+            if (_logWriter != null)
+            {
+                _logWriter.Stop();
+                _logWriter = null;
+            }
 
             return Task.CompletedTask;
         }
@@ -124,7 +131,7 @@ namespace TickTrader.Algo.CoreV1
             if (_isTradeBot)
             {
                 AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Bot started");
-                _logWriter.OnBotStarted();
+                _logWriter?.OnBotStarted();
             }
             else AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Indicator started");
         }
@@ -135,7 +142,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Bot stopped");
                 AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
-                _logWriter.OnBotStopped();
+                _logWriter?.OnBotStopped();
             }
             else AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Indicator stopped");
         }
@@ -152,7 +159,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Bot aborted");
                 AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
-                _logWriter.OnBotStopped();
+                _logWriter?.OnBotStopped();
             }
         }
 

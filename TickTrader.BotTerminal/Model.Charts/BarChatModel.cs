@@ -10,11 +10,11 @@ namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        internal const int BarsCount = 4000;
-
         public ObservableBarVector BarVector { get; }
 
         public override IEnumerable<ChartTypes> AvailableChartTypes { get; }
+
+        public int BarsCount { get; private set; }
 
 
         public BarChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv) : base(symbol, algoEnv)
@@ -31,9 +31,10 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void Activate(Feed.Types.Timeframe timeframe)
+        public void Activate(Feed.Types.Timeframe timeframe, int size)
         {
             TimeFrame = timeframe;
+            BarsCount = size;
             base.Activate();
         }
 
@@ -54,7 +55,7 @@ namespace TickTrader.BotTerminal
 
             cToken.ThrowIfCancellationRequested();
 
-            BarVector.InitNewVector(TimeFrame, barArray);
+            BarVector.InitNewVector(TimeFrame, barArray, size: BarsCount);
 
             if (barArray.Length > 0)
                 InitBoundaries(barArray.Length, barArray.First().OpenTime.ToUtcDateTime(), barArray.Last().OpenTime.ToUtcDateTime());

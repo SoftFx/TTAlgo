@@ -6,11 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.IndicatorHost;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Server.PublicAPI.Converters;
@@ -28,7 +30,9 @@ namespace TickTrader.BotTerminal
         private readonly VarDictionary<string, AccountModelInfo> _accounts;
         private readonly VarDictionary<string, LocalTradeBot> _bots;
         private readonly PluginIdProvider _idProvider;
+        private readonly EventJournal _eventJournal;
 
+        private IActorRef _algoHost;
         private LocalAlgoServer _server;
         private ApiMetadataInfo _apiMetadata;
         private MappingCollectionInfo _mappings;
@@ -63,7 +67,7 @@ namespace TickTrader.BotTerminal
 
         public MappingCollectionInfo Mappings => _mappings;
 
-        public IndicatorHostModel IndicatorHost { get; private set; }
+        public IndicatorHostProxy IndicatorHost { get; private set; }
 
 
         public event Action<PackageInfo> PackageStateChanged = delegate { };
@@ -77,8 +81,10 @@ namespace TickTrader.BotTerminal
         public event Action AccessLevelChanged = delegate { };
 
 
-        public LocalAlgoAgent2(PersistModel storage)
+        public LocalAlgoAgent2(PersistModel storage, EventJournal journal)
         {
+            _eventJournal = journal;
+
             _syncContext = new DispatcherSync();
 
             _packages = new VarDictionary<string, PackageInfo>();
@@ -116,7 +122,12 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                await Task.Run(() => _server.Stop());
+                await Task.Run(async () =>
+                {
+                    await IndicatorHost.Shutdown();
+                    await _server.Stop();
+                    await AlgoHostModel.Stop(_algoHost);
+                });
             }
             catch (Exception ex)
             {
@@ -127,15 +138,36 @@ namespace TickTrader.BotTerminal
 
         private async Task Init(PersistModel storage)
         {
-            var settings = LocalAlgoAgent.GetSettings();
+            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var hostSettings = LocalAlgoAgent.GetHostSettings();
+            hostSettings.RuntimeSettings.WorkingDirectory = baseDir;
+            _algoHost = AlgoHostActor.Create(hostSettings);
+
+            var indicatorHostSettings = new IndicatorHostSettings
+            {
+                DataFolder = baseDir,
+                HostSettings = hostSettings,
+            };
+
+            IndicatorHost = new IndicatorHostProxy();
+            await IndicatorHost.Init(indicatorHostSettings, _algoHost);
+
+            var serverSettings = new AlgoServerSettings
+            {
+                DataFolder = baseDir,
+                EnableAccountLogs = Properties.Settings.Default.EnableConnectionLogs,
+                HostSettings = hostSettings,
+            };
 
             _server = new LocalAlgoServer();
-            await _server.Init(settings);
+            await _server.Init(serverSettings, _algoHost);
             if (await _server.NeedLegacyState())
             {
                 var serverSavedState = LocalAlgoAgent.BuildServerSavedState(storage);
                 await _server.LoadLegacyState(serverSavedState);
             }
+
+            await AlgoHostModel.Start(_algoHost);
             await _server.Start();
 
             _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
@@ -144,8 +176,8 @@ namespace TickTrader.BotTerminal
                 new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
             await InitServerListener(_server);
-
-            IndicatorHost = await _server.GetIndicatorHost();
+            IndicatorHost.OnAlert.Subscribe(ProcessAlert);
+            IndicatorHost.OnIndicatorLog.Subscribe(ProcessIndicatorLog);
         }
 
         public PluginListenerProxy GetPluginListener(string pluginId) => _server.GetPluginListenerProxy(pluginId);
@@ -272,7 +304,7 @@ namespace TickTrader.BotTerminal
         {
             var alertChannel = DefaultChannelFactory.CreateForOneToOne<AlertRecordInfo>();
             await server.SubscribeToAlerts(alertChannel.Writer);
-            _ = alertChannel.Consume(ProcessServerAlerts);
+            _ = alertChannel.Consume(ProcessAlert);
 
             var updateChannel = DefaultChannelFactory.CreateForOneToOne<IMessage>();
             await server.EventBus.SubscribeToUpdates(updateChannel.Writer, true);
@@ -280,11 +312,19 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void ProcessServerAlerts(AlertRecordInfo alert)
+        private void ProcessAlert(AlertRecordInfo alert)
         {
             _syncContext.Invoke(() =>
             {
                 AlertModel.AddAlert(alert);
+            });
+        }
+
+        private void ProcessIndicatorLog(IndicatorLogRecord record)
+        {
+            _syncContext.Invoke(() =>
+            {
+                _eventJournal.Add(EventMessage.Create(record));
             });
         }
 

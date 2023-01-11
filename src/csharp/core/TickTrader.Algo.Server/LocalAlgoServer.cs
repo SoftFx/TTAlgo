@@ -2,7 +2,6 @@
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Package;
@@ -32,7 +31,8 @@ namespace TickTrader.Algo.Server
         private static readonly SetupContextInfo _setupContext = new SetupContextInfo(Feed.Types.Timeframe.M1,
             new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
-        private IActorRef _server;
+        private IActorRef _server, _algoHost;
+        private bool _ownsAlgoHost;
 
 
         public ServerBusModel EventBus { get; } = new ServerBusModel();
@@ -43,23 +43,44 @@ namespace TickTrader.Algo.Server
         public LocalAlgoServer() { }
 
 
-        public async Task Init(AlgoServerSettings settings)
+        public async Task Init(AlgoServerSettings settings, IActorRef algoHost = null)
         {
-            _server = AlgoServerActor.Create(settings);
+            _algoHost = algoHost;
+            if (algoHost == null)
+            {
+                _ownsAlgoHost = true;
+                settings.HostSettings.RuntimeSettings.WorkingDirectory ??= settings.DataFolder;
+                _algoHost = AlgoHostActor.Create(settings.HostSettings);
+            }
+
+            _server = AlgoServerActor.Create(_algoHost, settings);
+            await AlgoHostModel.AddConsumer(_algoHost, _server);
             EventBus.Init(await _server.Ask<IActorRef>(AlgoServerActor.EventBusRequest.Instance));
         }
 
 
-        public Task Start() => _server.Ask(AlgoServerActor.StartCmd.Instance);
-        public Task Stop() => _server.Ask(AlgoServerActor.StopCmd.Instance);
+        public async Task Start()
+        {
+            if (_ownsAlgoHost)
+                await AlgoHostModel.Start(_algoHost);
+            await _server.Ask(AlgoServerActor.StartCmd.Instance);
+        }
+
+        public async Task Stop()
+        {
+            await _server.Ask(AlgoServerActor.StopCmd.Instance);
+            if (_ownsAlgoHost)
+                await AlgoHostModel.Stop(_algoHost);
+        }
+
         public Task<bool> NeedLegacyState() => _server.Ask<bool>(AlgoServerActor.NeedLegacyStateRequest.Instance);
         public Task LoadLegacyState(ServerSavedState savedState) => _server.Ask(new AlgoServerActor.LoadLegacyStateCmd(savedState));
 
         public Task<PackageListSnapshot> GetPackageSnapshot() => EventBus.GetPackageSnapshot();
-        public Task<bool> PackageWithNameExists(string pkgName) => _server.Ask<bool>(new PkgFileExistsRequest(pkgName));
-        public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath) => _server.Ask<string>(new UploadPackageCmd(request, pkgFilePath));
-        public Task<byte[]> GetPackageBinary(string pkgId) => _server.Ask<byte[]>(new PkgBinaryRequest(pkgId));
-        public Task RemovePackage(RemovePackageRequest request) => _server.Ask<RemovePackageRequest>(request);
+        public Task<bool> PackageWithNameExists(string pkgName) => _server.Ask<bool>(new AlgoHostModel.PkgFileExistsRequest(pkgName));
+        public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath) => AlgoHostModel.UploadPackage(_server, request, pkgFilePath);
+        public Task<byte[]> GetPackageBinary(string pkgId) => _server.Ask<byte[]>(new AlgoHostModel.PkgBinaryRequest(pkgId));
+        public Task RemovePackage(RemovePackageRequest request) => AlgoHostModel.RemovePackage(_server, request);
         public Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request) => _server.Ask<MappingCollectionInfo>(request);
 
         public Task<AccountListSnapshot> GetAccounts() => EventBus.GetAccountSnapshot();
@@ -95,41 +116,6 @@ namespace TickTrader.Algo.Server
 
         public PluginListenerProxy GetPluginListenerProxy(string pluginId) => new PluginListenerProxy(_server, pluginId);
 
-        public Task<IndicatorHostModel> GetIndicatorHost() => _server.Ask<IndicatorHostModel>(IndicatorHostRequest.Instance);
-
-
-        internal class PkgFileExistsRequest
-        {
-            public string PkgName { get; }
-
-            public PkgFileExistsRequest(string pkgName)
-            {
-                PkgName = pkgName;
-            }
-        }
-
-        internal class UploadPackageCmd
-        {
-            public UploadPackageRequest Request { get; }
-
-            public string FilePath { get; }
-
-            public UploadPackageCmd(UploadPackageRequest request, string filePath)
-            {
-                Request = request;
-                FilePath = filePath;
-            }
-        }
-
-        internal class PkgBinaryRequest
-        {
-            public string Id { get; }
-
-            public PkgBinaryRequest(string id)
-            {
-                Id = id;
-            }
-        }
 
         internal class PluginExistsRequest
         {
@@ -160,20 +146,5 @@ namespace TickTrader.Algo.Server
                 AlertSink = alertSink;
             }
         }
-
-        internal class ExecPluginCmd
-        {
-            public string PluginId { get; }
-
-            public object Command { get; }
-
-            public ExecPluginCmd(string pluginId, object command)
-            {
-                PluginId = pluginId;
-                Command = command;
-            }
-        }
-
-        internal class IndicatorHostRequest : Singleton<IndicatorHostRequest> { }
     }
 }

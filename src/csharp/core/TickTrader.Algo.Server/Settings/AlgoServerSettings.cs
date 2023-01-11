@@ -1,6 +1,4 @@
-﻿using TickTrader.Algo.PkgStorage;
-
-namespace TickTrader.Algo.Server
+﻿namespace TickTrader.Algo.Server
 {
     public class AlgoServerSettings
     {
@@ -8,11 +6,7 @@ namespace TickTrader.Algo.Server
 
         public bool EnableAccountLogs { get; set; }
 
-        public bool EnableIndicatorHost { get; set; }
-
-        public PkgStorageSettings PkgStorage { get; } = new PkgStorageSettings();
-
-        public RuntimeSettings RuntimeSettings { get; } = new RuntimeSettings();
+        public AlgoHostSettings HostSettings { get; set; } = new AlgoHostSettings();
 
         public MonitoringSettings MonitoringSettings { get; } = new MonitoringSettings();
     }

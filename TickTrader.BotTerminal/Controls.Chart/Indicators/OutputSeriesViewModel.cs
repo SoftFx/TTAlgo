@@ -7,10 +7,12 @@ using System;
 using TickTrader.Algo.Domain;
 using static TickTrader.Algo.Domain.Metadata.Types;
 using Machinarium.Qnil;
-using TickTrader.Algo.Server;
+using TickTrader.Algo.IndicatorHost;
 using System.Linq;
 using System.IO;
 using System.Globalization;
+using Caliburn.Micro;
+using System.Collections.Generic;
 
 namespace TickTrader.BotTerminal.Controls.Chart
 {
@@ -99,7 +101,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
     }
 
 
-    internal sealed class StaticOutputSeriesViewModel : IOutputSeriesViewModel
+    internal sealed class StaticOutputSeriesViewModel : PropertyChangedBase, IOutputSeriesViewModel
     {
         public ISeries Series { get; }
 
@@ -122,11 +124,10 @@ namespace TickTrader.BotTerminal.Controls.Chart
     }
 
 
-    internal sealed class DynamicOutputSeriesViewModel : IOutputSeriesViewModel
+    internal sealed class DynamicOutputSeriesViewModel : PropertyChangedBase, IOutputSeriesViewModel
     {
         private readonly OutputSeriesProxy _output;
-        private readonly VarDictionary<UtcTicks, OutputPoint> _points = new();
-        private readonly IVarList<OutputPoint> _orderedPoints;
+        private readonly SortedVarSetList<OutputPoint> _points = new(PointTimeComparer.Instance);
         private readonly IObservableList<IndicatorPoint> _observablePoints;
 
 
@@ -136,8 +137,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public DynamicOutputSeriesViewModel(OutputSeriesProxy output, IndicatorChartSettings settings)
         {
             _output = output;
-            _orderedPoints = _points.OrderBy((k, v) => k);
-            _observablePoints = _orderedPoints.Select(IndicatorPointsFactory.GetDefaultPoint).Chain().AsObservable();
+            _observablePoints = _points.Select(IndicatorPointsFactory.GetDefaultPoint).Chain().AsObservable();
             Series = CartesianOutputSeries.CreateSeries(output.Descriptor, output.Config, settings);
             Series.Values = _observablePoints;
         }
@@ -147,7 +147,6 @@ namespace TickTrader.BotTerminal.Controls.Chart
         {
             Series.Values = null;
             _observablePoints.Dispose();
-            _orderedPoints.Dispose();
         }
 
         public void UpdatePoints()
@@ -159,16 +158,18 @@ namespace TickTrader.BotTerminal.Controls.Chart
                 {
                     case DataSeriesUpdate.Types.Action.Append:
                     case DataSeriesUpdate.Types.Action.Update:
+                        for (var i = 0; i < update.BufferTruncatedBy; i++)
+                            _points.RemoveAt(0);
                         foreach (var wirePoint in update.Points)
                         {
                             if (double.IsNaN(wirePoint.Value))
                             {
-                                _points.Remove(new UtcTicks(wirePoint.Time));
+                                _points.Remove(new OutputPoint(new UtcTicks(wirePoint.Time), double.NaN));
                             }
                             else
                             {
                                 var point = wirePoint.Unpack();
-                                _points[point.Time] = point;
+                                _points.Add(point);
                             }
                         }
                         break;
@@ -180,7 +181,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
                                 continue; // NaN values don't exist on chart
 
                             var point = wirePoint.Unpack();
-                            _points[point.Time] = point;
+                            _points.Add(point);
                         }
                         break;
                 }
@@ -199,7 +200,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
             using (var writer = new StreamWriter(file, System.Text.Encoding.UTF8))
             {
                 writer.WriteLine("Time,Value,Metadata"); // header
-                foreach (var p in _orderedPoints.Snapshot)
+                foreach (var p in _points.Values)
                 {
                     writer.Write(p.Time.ToUtcDateTime().ToString("yyyy-MM-dd HH-mm-ss"));
                     writer.Write(",");
@@ -213,6 +214,12 @@ namespace TickTrader.BotTerminal.Controls.Chart
                     writer.WriteLine();
                 }
             }
+        }
+
+
+        private sealed class PointTimeComparer : Algo.Core.Lib.Singleton<PointTimeComparer>, IComparer<OutputPoint>
+        {
+            public int Compare(OutputPoint x, OutputPoint y) => x.Time.CompareTo(y.Time);
         }
     }
 }

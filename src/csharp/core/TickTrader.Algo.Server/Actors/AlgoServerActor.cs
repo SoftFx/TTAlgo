@@ -5,39 +5,30 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.Algo.Package;
-using TickTrader.Algo.PkgStorage;
-using TickTrader.Algo.Rpc;
-using TickTrader.Algo.Rpc.OverTcp;
 using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
 {
     internal class AlgoServerActor : Actor
     {
-        public const string InternalApiAddress = "127.0.0.1";
-
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlgoServerActor>();
 
+        private readonly IActorRef _algoHost;
         private readonly AlgoServerSettings _settings;
 
         private EnvService _env;
-        private IActorRef _eventBus, _stateManager, _indicatorHost;
+        private IActorRef _eventBus, _stateManager;
         private ServerStateModel _savedState;
         private AlertManagerModel _alerts;
         private AlgoServerPrivate _serverPrivate;
-        private PackageStorage _pkgStorage;
-        private RuntimeManager _runtimes;
         private AccountManager _accounts;
         private PluginManager _plugins;
         private PluginFileManager _pluginFiles;
-        private RpcServer _internalApiServer;
-
-        private MappingCollectionInfo _mappings;
 
 
-        private AlgoServerActor(AlgoServerSettings settings)
+        private AlgoServerActor(IActorRef algoHost, AlgoServerSettings settings)
         {
+            _algoHost = algoHost;
             _settings = settings;
 
             Receive<EventBusRequest, IActorRef>(_ => _eventBus);
@@ -47,17 +38,19 @@ namespace TickTrader.Algo.Server
             Receive<NeedLegacyStateRequest, bool>(_ => !File.Exists(_env.ServerStateFilePath));
             Receive<LoadLegacyStateCmd>(cmd => _savedState.LoadSavedState(cmd.SavedState));
 
-            Receive<AlgoServerPrivate.RuntimeRequest, IActorRef>(r => _runtimes.GetRuntime(r.Id));
-            Receive<AlgoServerPrivate.PkgRuntimeIdRequest, string>(r => _runtimes.GetPkgRuntimeId(r.PkgId));
-            Receive<AlgoServerPrivate.RuntimeStoppedMsg>(msg => _runtimes.OnRuntimeStopped(msg.Id));
-            Receive<AlgoServerPrivate.PkgRuntimeInvalidMsg>(OnPkgRuntimeInvalid);
-            Receive<AlgoServerPrivate.AccountControlRequest, IActorRef>(GetAccountControlInternal);
+            Receive<PackageUpdate>(upd => _eventBus.Tell(upd));
+            Receive<PackageStateUpdate>(upd => _eventBus.Tell(upd));
+            Receive<RuntimeControlModel.PkgRuntimeUpdateMsg>(upd => OnPackageRuntimeUpdate(upd));
 
-            Receive<LocalAlgoServer.PkgFileExistsRequest, bool>(r => _pkgStorage.PackageFileExists(r.PkgName));
-            Receive<LocalAlgoServer.PkgBinaryRequest, byte[]>(r => _pkgStorage.GetPackageBinary(r.Id));
-            Receive<LocalAlgoServer.UploadPackageCmd, string>(cmd => _pkgStorage.UploadPackage(cmd.Request, cmd.FilePath));
-            Receive<RemovePackageRequest>(r => _pkgStorage.RemovePackage(r));
-            Receive<MappingsInfoRequest, MappingCollectionInfo>(_ => _mappings);
+            Receive<RuntimeServerModel.RuntimeRequest, IActorRef>(r => _algoHost.Ask<IActorRef>(r));
+            Receive<RuntimeServerModel.PkgRuntimeIdRequest, string>(r => _algoHost.Ask<string>(r));
+            Receive<RuntimeServerModel.AccountControlRequest, IActorRef>(GetAccountControlInternal);
+
+            Receive<AlgoHostModel.PkgFileExistsRequest, bool>(r => _algoHost.Ask<bool>(r));
+            Receive<AlgoHostModel.PkgBinaryRequest, byte[]>(r => _algoHost.Ask<byte[]>(r));
+            Receive<AlgoHostModel.UploadPackageCmd, string>(cmd => _algoHost.Ask<string>(cmd));
+            Receive<RemovePackageRequest>(r => _algoHost.Ask(r));
+            Receive<MappingsInfoRequest, MappingCollectionInfo>(r => _algoHost.Ask<MappingCollectionInfo>(r));
 
             Receive<AddAccountRequest, string>(r => _accounts.AddAccount(r));
             Receive<ChangeAccountRequest>(r => _accounts.ChangeAccount(r));
@@ -84,23 +77,18 @@ namespace TickTrader.Algo.Server
 
             Receive<PluginAlertsRequest, AlertRecordInfo[]>(r => _alerts.GetAlerts(r));
             Receive<LocalAlgoServer.SubscribeToAlertsCmd>(cmd => _alerts.AttachAlertChannel(cmd.AlertSink));
-            Receive<LocalAlgoServer.ExecPluginCmd>(cmd => _plugins.ExecCmd(cmd.PluginId, cmd.Command));
-            Receive<LocalAlgoServer.IndicatorHostRequest, IndicatorHostModel>(_ => new IndicatorHostModel(_indicatorHost ?? throw new AlgoException("Indicator host not enabled")));
+            Receive<PluginOwner.ExecPluginCmd>(cmd => _plugins.ExecCmd(cmd.PluginId, cmd.Command));
         }
 
 
-        public static IActorRef Create(AlgoServerSettings settings)
+        public static IActorRef Create(IActorRef algoHost, AlgoServerSettings settings)
         {
-            return ActorSystem.SpawnLocal(() => new AlgoServerActor(settings), $"{nameof(AlgoServerActor)}");
+            return ActorSystem.SpawnLocal(() => new AlgoServerActor(algoHost, settings), $"{nameof(AlgoServerActor)}");
         }
 
 
         protected override void ActorInit(object initMsg)
         {
-            var reductions = new ReductionCollection();
-            reductions.LoadDefaultReductions();
-            _mappings = reductions.CreateMappings();
-
             _env = new EnvService(_settings.DataFolder);
             _eventBus = ServerBusActor.Create();
             _stateManager = ServerStateManager.Create(_env.ServerStateFilePath);
@@ -109,36 +97,18 @@ namespace TickTrader.Algo.Server
             _serverPrivate = new AlgoServerPrivate(Self, _env, _eventBus, _savedState, _alerts)
             {
                 AccountOptions = Account.ConnectionOptions.CreateForServer(_settings.EnableAccountLogs, _env.LogFolder),
-                RuntimeSettings = _settings.RuntimeSettings,
                 MonitoringSettings = _settings.MonitoringSettings,
             };
 
-            _pkgStorage = new PackageStorage(_eventBus);
-            _runtimes = new RuntimeManager(_serverPrivate);
             _accounts = new AccountManager(_serverPrivate);
             _plugins = new PluginManager(_serverPrivate);
             _pluginFiles = new PluginFileManager(_serverPrivate);
-
-            _internalApiServer = new RpcServer(new TcpFactory(), _serverPrivate);
-
-            if (_settings.EnableIndicatorHost)
-                _indicatorHost = IndicatorHostActor.Create(_serverPrivate);
         }
 
 
         public async Task Start(StartCmd cmd)
         {
             _logger.Debug("Starting...");
-
-            await _pkgStorage.Start(_settings.PkgStorage, OnPackageRefUpdate);
-
-            await _pkgStorage.WhenLoaded();
-
-            await _internalApiServer.Start(InternalApiAddress, 0);
-            _logger.Info($"Started AlgoServer internal API on port {_internalApiServer.BoundPort}");
-
-            _serverPrivate.Address = InternalApiAddress;
-            _serverPrivate.BoundPort = _internalApiServer.BoundPort;
 
             var stateSnapshot = await _savedState.GetSnapshot();
 
@@ -157,73 +127,15 @@ namespace TickTrader.Algo.Server
 
             await _plugins.Shutdown();
 
-            if (_indicatorHost != null)
-                await _indicatorHost.Ask(IndicatorHostModel.ShutdownCmd.Instance);
-
-            await _pkgStorage.Stop();
-
-            await _runtimes.Shutdown();
-
             await _accounts.Shutdown();
-
-            await _internalApiServer.Stop();
 
             _logger.Debug("Stopped");
         }
 
 
-        private void OnPackageRefUpdate(PackageVersionUpdate update)
+        private void OnPackageRuntimeUpdate(RuntimeControlModel.PkgRuntimeUpdateMsg pkgUpdate)
         {
-            var pkgId = update.PkgId;
-            var pkgRefId = update.LatestPkgRefId;
-
-            _runtimes.MarkPkgRuntimeObsolete(pkgId);
-
-            string runtimeId = null;
-            if (!string.IsNullOrEmpty(pkgRefId))
-            {
-                runtimeId = CreatePkgRuntime(pkgId);
-            }
-            var pkgUpdate = new PkgRuntimeUpdate(pkgId, runtimeId);
             _plugins.TellAllPlugins(pkgUpdate);
-            _indicatorHost?.Tell(pkgUpdate);
-        }
-
-        private void OnPkgRuntimeInvalid(AlgoServerPrivate.PkgRuntimeInvalidMsg msg)
-        {
-            var pkgId = msg.PkgId;
-
-            // Runtime can be marked obsolete after sending notification about invalid state
-            // We need to check if sender runtime is still package runtime
-            if (_runtimes.GetPkgRuntimeId(pkgId) == msg.RuntimeId)
-            {
-                _runtimes.MarkPkgRuntimeObsolete(pkgId);
-
-                var runtimeId = CreatePkgRuntime(pkgId);
-                _plugins.TellAllPlugins(new PkgRuntimeUpdate(pkgId, runtimeId));
-            }
-        }
-
-        private string CreatePkgRuntime(string pkgId)
-        {
-            var pkgRef = _pkgStorage.GetPkgRef(pkgId);
-
-            if (pkgRef == null)
-            {
-                _logger.Debug($"Skipped creating runtime for package '{pkgId}': no package");
-                return null;
-            }
-            else if (!pkgRef.PkgInfo.IsValid)
-            {
-                _logger.Debug($"Skipped creating runtime for pkg ref '{pkgRef.Id}': invalid package");
-                return null;
-            }
-            else
-            {
-                var runtimeId = _runtimes.CreatePkgRuntime(pkgRef);
-                _logger.Debug($"Package '{pkgId}' current runtime: {runtimeId}");
-                return runtimeId;
-            }
         }
 
         private async Task RemoveAccount(RemoveAccountRequest request)
@@ -260,13 +172,11 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private IActorRef GetAccountControlInternal(AlgoServerPrivate.AccountControlRequest request)
+        private IActorRef GetAccountControlInternal(RuntimeServerModel.AccountControlRequest request)
         {
             var accId = request.Id;
-            if (accId == IndicatorHostActor.AccId)
-                return _indicatorHost;
 
-            return _accounts.GetAccountRefOrThrow(accId);
+            return _accounts.GetAccountRefOrDefault(accId);
         }
 
 
@@ -285,19 +195,6 @@ namespace TickTrader.Algo.Server
             public LoadLegacyStateCmd(ServerSavedState savedState)
             {
                 SavedState = savedState;
-            }
-        }
-
-        internal class PkgRuntimeUpdate
-        {
-            public string PkgId { get; }
-
-            public string RuntimeId { get; }
-
-            public PkgRuntimeUpdate(string pkgId, string runtimeId)
-            {
-                PkgId = pkgId;
-                RuntimeId = runtimeId;
             }
         }
     }
