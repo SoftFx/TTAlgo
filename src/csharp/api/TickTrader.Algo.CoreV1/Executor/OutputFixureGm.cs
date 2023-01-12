@@ -46,7 +46,7 @@ namespace TickTrader.Algo.CoreV1
             _sendUpdates = sendUpdates;
         }
 
-        public void BindTo(IReaonlyDataBuffer buffer, ITimeRef timeRef)
+        public void BindTo(IReadOnlyDataBuffer buffer, ITimeRef timeRef)
         {
             BindTo((OutputBuffer<T>)buffer, timeRef);
         }

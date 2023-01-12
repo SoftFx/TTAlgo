@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
         UiLock ConnectionLock { get; }
         WindowManager ToolWndManager { get; }
         IProfileLoader ProfileLoader { get; }
-        LocalAlgoAgent Agent { get; }
+        LocalAlgoAgent2 Agent { get; }
         DockManagerService DockManagerService { get; }
         ConnectionManager ConnectionManager { get; }
         AlertViewModel AlertsManager { get; }

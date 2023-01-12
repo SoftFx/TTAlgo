@@ -1,5 +1,4 @@
 ﻿using ActorSharp;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,23 +50,23 @@ namespace TickTrader.Algo.Account
             }
 
             /// Warning: This method downloads all bars into a collection of unlimmited size! Use wisely!
-            public Task<List<BarData>> GetBarList(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+            public Task<List<BarData>> GetBarList(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
             {
                 return Actor.Call(a => a.GetBarList(symbol, marketSide, timeframe, from, to));
             }
 
             /// Warning: This method downloads all bars into a collection of unlimmited size! Use wisely!
-            public Task<List<QuoteInfo>> GetQuoteList(string symbol, Timestamp from, Timestamp to, bool includeLevel2)
+            public Task<List<QuoteInfo>> GetQuoteList(string symbol, UtcTicks from, UtcTicks to, bool includeLevel2)
             {
                 return Actor.Call(a => a.GetQuoteList(symbol, from, to, includeLevel2));
             }
 
-            public Task<BarData[]> GetBarPage(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp startTime, int count)
+            public Task<BarData[]> GetBarPage(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks startTime, int count)
             {
                 return Actor.Call(a => a.GetBarPage(symbol, marketSide, timeframe, startTime, count));
             }
 
-            public Task<QuoteInfo[]> GetQuotePage(string symbol, Timestamp startTime, int count, bool includeLevel2)
+            public Task<QuoteInfo[]> GetQuotePage(string symbol, UtcTicks startTime, int count, bool includeLevel2)
             {
                 return Actor.Call(a => a.GetQuotePage(symbol, startTime, count, includeLevel2));
             }
@@ -113,20 +112,19 @@ namespace TickTrader.Algo.Account
             return _feedProxy?.GetAvailableRange(symbol, marketSide, timeframe) ?? Task.FromResult<(DateTime?, DateTime?)>(default);
         }
 
-        private async Task<BarData[]> GetBarPage(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int pageSize)
+        private async Task<BarData[]> GetBarPage(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int pageSize)
         {
             var pages = new List<BarData[]>();
 
             var isBackward = pageSize < 0;
             pageSize = Math.Abs(pageSize);
 
-            var fromTime = new UtcTicks(from);
             while (pageSize > 0)
             {
-                if (!isBackward && fromTime > UtcTicks.Now)
+                if (!isBackward && from > UtcTicks.Now)
                     break; // we get last bar somehow even it is out of our requested frame
 
-                var page = await _feedProxy.DownloadBarPage(symbol, fromTime.ToTimestamp(), isBackward ? -pageSize : pageSize, marketSide, timeframe);
+                var page = await _feedProxy.DownloadBarPage(symbol, from, isBackward ? -pageSize : pageSize, marketSide, timeframe);
 
                 if (page.Length == 0)
                     break;
@@ -134,7 +132,7 @@ namespace TickTrader.Algo.Account
                 pages.Add(page);
                 pageSize -= page.Length;
 
-                fromTime = isBackward
+                from = isBackward
                     ? page.First().OpenTime.AddMs(-1)
                     : page.Last().CloseTime.AddMs(1);
             }
@@ -142,20 +140,19 @@ namespace TickTrader.Algo.Account
             return pages.ConcatAll();
         }
 
-        private async Task<QuoteInfo[]> GetQuotePage(string symbol, Timestamp from, int count, bool includeLevel2)
+        private async Task<QuoteInfo[]> GetQuotePage(string symbol, UtcTicks from, int count, bool includeLevel2)
         {
             var pages = new List<QuoteInfo[]>();
 
             var isBackward = count < 0;
             count = Math.Abs(count);
 
-            var fromTime = new UtcTicks(from);
             while (count > 0)
             {
-                if (!isBackward && fromTime > UtcTicks.Now)
+                if (!isBackward && from > UtcTicks.Now)
                     break; // we get last bar somehow even it is out of our requested frame
 
-                var page = await _feedProxy.DownloadQuotePage(symbol, fromTime.ToTimestamp(), isBackward ? -count : count, includeLevel2);
+                var page = await _feedProxy.DownloadQuotePage(symbol, from, isBackward ? -count : count, includeLevel2);
 
                 if (page.Length == 0)
                     break;
@@ -163,7 +160,7 @@ namespace TickTrader.Algo.Account
                 pages.Add(page);
                 count -= page.Length;
 
-                fromTime = isBackward
+                from = isBackward
                     ? page.First().Time.AddMs(-1)
                     : page.Last().Time.AddMs(1);
             }
@@ -171,15 +168,13 @@ namespace TickTrader.Algo.Account
             return pages.ConcatAll();
         }
 
-        private async Task<List<BarData>> GetBarList(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        private async Task<List<BarData>> GetBarList(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
             var result = new List<BarData>();
 
-            var fromTime = new UtcTicks(from);
-            var toTime = new UtcTicks(to);
             while (true)
             {
-                var page = await _feedProxy.DownloadBarPage(symbol, fromTime.ToTimestamp(), 4000, marketSide, timeframe);
+                var page = await _feedProxy.DownloadBarPage(symbol, from, 4000, marketSide, timeframe);
 
                 if (page == null || page.Length == 0)
                     return result;
@@ -188,10 +183,10 @@ namespace TickTrader.Algo.Account
 
                 foreach (var bar in page)
                 {
-                    if (bar.OpenTime <= toTime)
+                    if (bar.OpenTime <= to)
                     {
                         result.Add(bar);
-                        fromTime = bar.CloseTime;
+                        from = bar.CloseTime;
                     }
                     else
                         return result;
@@ -202,15 +197,13 @@ namespace TickTrader.Algo.Account
             }
         }
 
-        private async Task<List<QuoteInfo>> GetQuoteList(string symbol, Timestamp from, Timestamp to, bool includeLevel2)
+        private async Task<List<QuoteInfo>> GetQuoteList(string symbol, UtcTicks from, UtcTicks to, bool includeLevel2)
         {
             var result = new List<QuoteInfo>();
 
-            var fromTime = new UtcTicks(from);
-            var toTime = new UtcTicks(to);
             while (true)
             {
-                var page = await _feedProxy.DownloadQuotePage(symbol, fromTime.ToTimestamp(), 4000, includeLevel2);
+                var page = await _feedProxy.DownloadQuotePage(symbol, from, 4000, includeLevel2);
 
                 if (page == null || page.Length == 0)
                     return result;
@@ -219,10 +212,10 @@ namespace TickTrader.Algo.Account
 
                 foreach (var quote in page)
                 {
-                    if (quote.Time <= toTime)
+                    if (quote.Time <= to)
                     {
                         result.Add(quote);
-                        fromTime = quote.Time;
+                        from = quote.Time;
                     }
                     else
                         return result;

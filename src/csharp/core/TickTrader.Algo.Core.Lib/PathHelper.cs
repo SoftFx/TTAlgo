@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -26,6 +27,19 @@ namespace TickTrader.Algo.Core.Lib
 
             return path;
         }
+
+        public static void SetDirectoryCompression(string path)
+        {
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                if (Directory.Exists(path) && (File.GetAttributes(path) & FileAttributes.Compressed) != FileAttributes.Compressed)
+                {
+                    var info = new ProcessStartInfo("compact.exe", $"/C \"{path}\"") { CreateNoWindow = true, UseShellExecute = false, };
+                    Process.Start(info);
+                }
+            }
+        }
+
 
         public static bool IsPathAbsolute(string path)
         {

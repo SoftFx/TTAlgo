@@ -5,7 +5,6 @@ package ticktrader.algo.domain;
 option csharp_namespace = "TickTrader.Algo.Domain";
 
 import "google/protobuf/wrappers.proto";
-import "google/protobuf/timestamp.proto";
 
 import "common.proto";
 
@@ -130,15 +129,15 @@ message QuoteChunk {
     repeated QuoteData quotes = 2;
 }
 
-message FeedSnapshotRequest { } // returns QuotePage
+message QuoteSnapshotRequest { } // returns QuotePage
 
-message FeedSubscriptionUpdate {
+message QuoteSubUpdate {
     string symbol = 1;
     int32 depth = 2;
 }
 
-message ModifyFeedSubscriptionRequest { // returns QuotePage
-    repeated FeedSubscriptionUpdate updates = 1;
+message ModifyQuoteSubRequest { // returns QuotePage
+    repeated QuoteSubUpdate updates = 1;
 }
 
 message BarInfo {
@@ -174,8 +173,8 @@ message BarListRequest {
     string symbol = 1;
     Feed.MarketSide market_side = 2;
     Feed.Timeframe timeframe = 3;
-    google.protobuf.Timestamp from = 4;
-    google.protobuf.Timestamp to = 5;
+    int64 from_ticks = 4;
+    int64 to_ticks = 5;
     google.protobuf.Int32Value count = 6;
 }
 
@@ -184,7 +183,30 @@ message EndOfListResponse { }
 message QuoteListRequest {
     string symbol = 1;
     bool level2 = 2;
-    google.protobuf.Timestamp from = 3;
-    google.protobuf.Timestamp to = 4;
+    int64 from_ticks = 3;
+    int64 to_ticks = 4;
     google.protobuf.Int32Value count = 5;
+}
+
+message BarSubEntry {
+    string symbol = 1;
+    Feed.Timeframe timeframe = 2;
+}
+
+message BarSubUpdate {
+    BarSubEntry entry = 1;
+    bool change_flag = 2; // true insert, false remove
+}
+
+message ModifyBarSubRequest { // returns BarPage
+    repeated BarSubUpdate updates = 1;
+}
+
+message BarUpdate {
+    string symbol = 1;
+    Feed.Timeframe timeframe = 2;
+    BarData ask_data = 3;
+    BarData bid_data = 4;
+    bool is_closed = 5;
+    uint32 version = 6;
 }

@@ -132,8 +132,7 @@
 
             if (SkipRounding(val, step))
                 return val;
-
-            var fracPart = ToFraction(val, step, out var numerator, out var denominator, out var negative, out var intStep);
+            var fracPart = ToFraction(val, step, out var numerator, out var denominator, out _, out var intStep);
             if (fracPart.Gte(intStep / 2.0))
                 numerator += intStep;
             if (fracPart.Lte(-intStep / 2.0))
@@ -159,12 +158,6 @@
             if (negative && !fracPart.E(0))
                 numerator -= intStep;
             return FractionToDouble(numerator, denominator);
-        }
-
-        public static double FloorToStep(this double val, double step)
-        {
-            var dv = System.Math.Floor(val / step);
-            return dv * step;
         }
 
         /// <summary>
@@ -220,7 +213,7 @@
         /// <returns>Rounded value</returns>
         public static double? Round(this double? val, double step)
         {
-            return !val.HasValue ? default(double?) : val.Value.Round(step);
+            return val?.Round(step);
         }
 
         /// <summary>

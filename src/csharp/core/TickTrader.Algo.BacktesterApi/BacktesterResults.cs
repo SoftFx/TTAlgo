@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
+using static TickTrader.Algo.BacktesterApi.CsvMapping;
 
 namespace TickTrader.Algo.BacktesterApi
 {
@@ -160,12 +161,21 @@ namespace TickTrader.Algo.BacktesterApi
         private static void SaveAsCsv<T, TMap>(Stream stream, IEnumerable<T> data)
             where TMap : ClassMap<T>
         {
-            using (var writer = new StreamWriter(stream))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-            {
-                csv.Context.RegisterClassMap<TMap>();
-                csv.WriteRecords(data);
-            }
+            using var writer = new StreamWriter(stream);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+
+            csv.Context.RegisterClassMap<TMap>();
+            csv.WriteRecords(data);
+        }
+
+        private static void SaveAsCsv<T, TMap>(Stream stream, TMap map, IEnumerable<T> data)
+            where TMap : ClassMap<T>
+        {
+            using var writer = new StreamWriter(stream);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+
+            csv.Context.RegisterClassMap(map);
+            csv.WriteRecords(data);
         }
 
         private static T ReadAsJson<T>(Stream stream, long length)
@@ -329,6 +339,16 @@ namespace TickTrader.Algo.BacktesterApi
                     SaveAsCsv<T, TMap>(file, data);
             }
 
+            public static void SaveRoundedCsv<T, TMap>(string path, IEnumerable<T> data, int precision)
+                where T : IOutputPoint
+                where TMap : RoundClassMap<T>, new()
+            {
+                var map = new TMap();
+
+                using (var file = File.Open(path, FileMode.Create))
+                    SaveAsCsv(file, map.SetPricision(precision), data);
+            }
+
             public static T TryReadJson<T>(string path)
             {
                 if (!TryGetFileStream(path, out var file))
@@ -392,7 +412,7 @@ namespace TickTrader.Algo.BacktesterApi
                 var dirNamePrefix = Path.GetFileNameWithoutExtension(configPath);
 
                 var cnt = 0;
-                while (cnt < 16)
+                while (cnt++ < 16)
                 {
                     var dirPath = Path.Combine(parentDir, $"{dirNamePrefix}.{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss", CultureInfo.InvariantCulture)}");
                     if (!Directory.Exists(dirPath))
@@ -429,25 +449,25 @@ namespace TickTrader.Algo.BacktesterApi
 
             public static void SavePluginInfo(string resultsDirPath, PluginDescriptor pluginInfo) => AsFile.SaveProtoJson(Path.Combine(resultsDirPath, PluginInfoFileName), pluginInfo, PluginDescriptor.JsonFormatter);
 
-            public static void SaveBarData(string filePath, IEnumerable<BarData> bars) => AsFile.SaveCsv<BarData, CsvMapping.ForBarData>(filePath, bars);
+            public static void SaveBarData(string filePath, IEnumerable<BarData> bars) => AsFile.SaveCsv<BarData, ForBarData>(filePath, bars);
 
             public static void SaveFeedData(string resultsDirPath, string symbolName, IEnumerable<BarData> bars) => SaveBarData(Path.Combine(resultsDirPath, $"{FeedFilePrefix}{symbolName}.csv"), bars);
 
-            public static void SaveOutputData(string resultsDirPath, string outputName, IReadOnlyList<OutputPoint> points)
+            public static void SaveOutputData(string resultsDirPath, string outputName, int precision, IReadOnlyList<OutputPoint> points)
             {
                 var filePath = Path.Combine(resultsDirPath, $"{OutputFilePrefix}{outputName}.csv");
                 var first = points[0];
                 if (first.Metadata is MarkerInfo)
-                    AsFile.SaveCsv<CsvMapping.MarkerPointWrapper, CsvMapping.ForMarkerPoint>(filePath, points.Select(p => new CsvMapping.MarkerPointWrapper(p)));
+                    AsFile.SaveRoundedCsv<MarkerPointWrapper, ForMarkerPoint>(filePath, points.Select(p => new MarkerPointWrapper(p)), precision);
                 else
-                    AsFile.SaveCsv<OutputPoint, CsvMapping.ForDoublePoint>(filePath, points);
+                    AsFile.SaveRoundedCsv<OutputPoint, ForDoublePoint>(filePath, points, precision);
             }
 
             public static void SaveEquity(string resultsDirPath, IEnumerable<BarData> bars) => SaveBarData(Path.Combine(resultsDirPath, EquityFileName), bars);
 
             public static void SaveMargin(string resultsDirPath, IEnumerable<BarData> bars) => SaveBarData(Path.Combine(resultsDirPath, MarginFileName), bars);
 
-            public static void SaveTradeHistory(string resultsDirPath, IEnumerable<TradeReportInfo> reports) => AsFile.SaveCsv<TradeReportInfo, CsvMapping.ForTradeReport>(Path.Combine(resultsDirPath, "trade-history.csv"), reports);
+            public static void SaveTradeHistory(string resultsDirPath, IEnumerable<TradeReportInfo> reports) => AsFile.SaveCsv<TradeReportInfo, ForTradeReport>(Path.Combine(resultsDirPath, "trade-history.csv"), reports);
         }
 
 

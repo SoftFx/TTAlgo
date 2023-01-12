@@ -1072,7 +1072,23 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 Message = info.Message,
                 PluginId = info.PluginId,
                 TimeUtc = info.TimeUtc,
+                Type = info.Type.ToServer(),
             };
+        }
+
+        public static Domain.AlertRecordInfo.Types.AlertType ToServer(this AlertRecordInfo.Types.AlertType type)
+        {
+            switch (type)
+            {
+                case AlertRecordInfo.Types.AlertType.Plugin:
+                    return Domain.AlertRecordInfo.Types.AlertType.Plugin;
+                case AlertRecordInfo.Types.AlertType.Server:
+                    return Domain.AlertRecordInfo.Types.AlertType.Server;
+                case AlertRecordInfo.Types.AlertType.Monitoring:
+                    return Domain.AlertRecordInfo.Types.AlertType.Monitoring;
+                default:
+                    throw new ArgumentException($"Unsupported alert type {type}");
+            }
         }
     }
 }

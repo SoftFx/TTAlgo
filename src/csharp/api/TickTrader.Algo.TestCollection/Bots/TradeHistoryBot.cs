@@ -57,8 +57,8 @@ namespace TickTrader.Algo.TestCollection.Bots
                             break;
 
                         case TradeHistoryFilters.ThisYear:
-                            var from = new DateTime(DateTime.Now.Year, 1, 1);
-                            var to = new DateTime(DateTime.Now.Year + 1, 1, 1);
+                            var from = new DateTime(UtcNow.Year, 1, 1);
+                            var to = new DateTime(UtcNow.Year + 1, 1, 1);
 
                             if (HistoryType == HistoryType.Trades)
                                 PrintList(Account.TradeHistory.GetRange(from, to, options));
@@ -67,8 +67,8 @@ namespace TickTrader.Algo.TestCollection.Bots
                             break;
 
                         case TradeHistoryFilters.PreviousYear:
-                            from = new DateTime(DateTime.Now.Year - 1, 1, 1);
-                            to = new DateTime(DateTime.Now.Year, 1, 1);
+                            from = new DateTime(UtcNow.Year - 1, 1, 1);
+                            to = new DateTime(UtcNow.Year, 1, 1);
 
                             if (HistoryType == HistoryType.Trades)
                                 PrintList(Account.TradeHistory.GetRange(from, to, options));
@@ -103,8 +103,8 @@ namespace TickTrader.Algo.TestCollection.Bots
                             break;
 
                         case TradeHistoryFilters.ThisYear:
-                            var from = new DateTime(DateTime.Now.Year, 1, 1);
-                            var to = new DateTime(DateTime.Now.Year + 1, 1, 1);
+                            var from = new DateTime(UtcNow.Year, 1, 1);
+                            var to = new DateTime(UtcNow.Year + 1, 1, 1);
 
                             if (HistoryType == HistoryType.Trades)
                                 await PrintList(Account.TradeHistory.GetRangeAsync(from, to, options));
@@ -113,8 +113,8 @@ namespace TickTrader.Algo.TestCollection.Bots
                             break;
 
                         case TradeHistoryFilters.PreviousYear:
-                            from = new DateTime(DateTime.Now.Year - 1, 1, 1);
-                            to = new DateTime(DateTime.Now.Year, 1, 1);
+                            from = new DateTime(UtcNow.Year - 1, 1, 1);
+                            to = new DateTime(UtcNow.Year, 1, 1);
 
                             if (HistoryType == HistoryType.Trades)
                                 await PrintList(Account.TradeHistory.GetRangeAsync(from, to, options));
@@ -143,7 +143,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             }
         }
 
-        private async Task PrintList<T>(IAsyncEnumerator<T> e) where T : class
+        private async Task PrintList<T>(Api.IAsyncEnumerator<T> e) where T : class
         {
             while (await e.Next())
             {

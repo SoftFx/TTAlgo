@@ -13,6 +13,8 @@ namespace TickTrader.FeedStorage.Api.Tests
         internal const Feed.Types.Timeframe DefaultTimeframe = Feed.Types.Timeframe.M1;
         internal const Feed.Types.MarketSide DefaultSide = Feed.Types.MarketSide.Bid;
 
+        private const int TestTimeout = 10000;
+
 
         internal static readonly int[] DataCounts = new int[] { 1, 10, 10000, 100000 };
 
@@ -88,7 +90,7 @@ namespace TickTrader.FeedStorage.Api.Tests
         }
 
 
-        [Theory]
+        [Theory(Timeout = TestTimeout)]
         [MemberData(nameof(CountAndDirectionsCmb))]
         public async Task Download_Bars(int count, bool reverse)
         {
@@ -105,7 +107,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             AssertList(originValues, receivedBars);
         }
 
-        [Theory]
+        [Theory(Timeout = TestTimeout)]
         [MemberData(nameof(CountAndDirectionsCmb))]
         public async Task Download_Ticks(int count, bool reverse)
         {
@@ -124,7 +126,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             AssertList(originValues, receivedTicks);
         }
 
-        [Theory]
+        [Theory(Timeout = TestTimeout)]
         [MemberData(nameof(BarTimeframeDirectionsCmb))]
         public async Task Get_BarStream(Feed.Types.Timeframe timeframe, bool reverse)
         {
@@ -141,7 +143,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             AssertList(originValues, receivedBars);
         }
 
-        [Theory]
+        [Theory(Timeout = TestTimeout)]
         [MemberData(nameof(TickTimeframeDirectionsCmb))]
         public async Task Get_TickStream(Feed.Types.Timeframe timeframe, bool reverse)
         {
@@ -158,7 +160,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             AssertList(originValues, receivedBars);
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         [Trait("Category", "Negative")]
         public async Task Get_Nonexisted_Stream_1()
         {
@@ -167,7 +169,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             Assert.Null(stream);
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         [Trait("Category", "Negative")]
         public async Task Get_Nonexisted_Stream_2()
         {
@@ -178,7 +180,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             Assert.Null(stream);
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         [Trait("Category", "Negative")]
         public async Task Get_Nonexisted_Stream_3()
         {
@@ -189,7 +191,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             Assert.Null(stream);
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         [Trait("Category", "Negative")]
         public async Task Get_Nonexisted_Stream_4()
         {
@@ -200,7 +202,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             Assert.Null(stream);
         }
 
-        [Fact]
+        [Fact(Timeout = TestTimeout)]
         [Trait("Category", "Negative")]
         public async Task Get_Nonexisted_Stream_5()
         {

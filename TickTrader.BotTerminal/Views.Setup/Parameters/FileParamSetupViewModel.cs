@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using TickTrader.Algo.Core.Setup;
@@ -8,6 +9,8 @@ namespace TickTrader.BotTerminal
 {
     public class FileParamSetupViewModel : ParameterSetupViewModel
     {
+        private readonly bool _isRequired;
+
         private string _filePath;
         private string _fileName;
 
@@ -17,7 +20,7 @@ namespace TickTrader.BotTerminal
 
         public string FileName
         {
-            get { return _fileName; }
+            get => _fileName;
             set
             {
                 if (FileName == value)
@@ -26,22 +29,13 @@ namespace TickTrader.BotTerminal
                 _fileName = value;
                 CheckFileName();
                 NotifyOfPropertyChange(nameof(FileName));
-
-                try
-                {
-                    if (FilePath != null)
-                    {
-                        _filePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(FilePath), _fileName);
-                        NotifyOfPropertyChange(nameof(FilePath));
-                    }
-                }
-                catch (ArgumentException) { }
+                NotifyOfPropertyChange(nameof(FullPath));
             }
         }
 
         public string FilePath
         {
-            get { return _filePath; }
+            get => _filePath;
             set
             {
                 if (FilePath == value)
@@ -49,29 +43,24 @@ namespace TickTrader.BotTerminal
 
                 _filePath = value;
                 NotifyOfPropertyChange(nameof(FilePath));
-                try
-                {
-                    if (FilePath != null)
-                    {
-                        _fileName = System.IO.Path.GetFileName(FilePath);
-                        CheckFileName();
-                        NotifyOfPropertyChange(nameof(FileName));
-                    }
-                }
-                catch (ArgumentException) { }
+                NotifyOfPropertyChange(nameof(FullPath));
             }
         }
+
+        public string FullPath => string.IsNullOrEmpty(FilePath) ? FileName : Path.Combine(FilePath, FileName);
 
 
         public FileParamSetupViewModel(ParameterDescriptor descriptor)
             : base(descriptor)
         {
-            DefaultFile = descriptor.DefaultValue as string ?? string.Empty;
+            _isRequired = descriptor.IsRequired;
+            DefaultFile = descriptor.DefaultValue ?? string.Empty;
+
 
             var filterEntries = descriptor.FileFilters
                .Where(s => !string.IsNullOrWhiteSpace(s.FileMask) && !string.IsNullOrWhiteSpace(s.FileTypeName));
 
-            var filterStrBuilder = new StringBuilder();
+            var filterStrBuilder = new StringBuilder(1 << 4);
             foreach (var entry in filterEntries)
             {
                 if (filterStrBuilder.Length > 0)
@@ -84,44 +73,46 @@ namespace TickTrader.BotTerminal
 
         public override string ToString()
         {
-            return $"{DisplayName}: {FilePath}";
+            return $"{DisplayName}: {FullPath}";
         }
 
         public override void Reset()
         {
-            FilePath = DefaultFile;
+            FileName = DefaultFile;
         }
 
         public override void Load(IPropertyConfig srcProperty)
         {
-            var typedSrcProperty = srcProperty as FileParameterConfig;
-            if (typedSrcProperty != null)
+            if (srcProperty is FileParameterConfig typedSrcProperty)
             {
-                FilePath = typedSrcProperty.FileName;
+                FileName = Path.GetFileName(typedSrcProperty.FileName);
+                FilePath = Path.GetDirectoryName(typedSrcProperty.FileName);
             }
         }
 
         public override IPropertyConfig Save()
         {
-            return new FileParameterConfig() { PropertyId = Id, FileName = FilePath };
+            return new FileParameterConfig()
+            {
+                PropertyId = Id,
+                FileName = string.IsNullOrEmpty(FileName) ? FileName : FullPath,
+            };
         }
+
 
         private void CheckFileName()
         {
-            if (string.IsNullOrEmpty(FileName))
+            if (_isRequired && string.IsNullOrEmpty(FileName))
             {
                 Error = new ErrorMsgModel(ErrorMsgCodes.RequiredButNotSet);
                 return;
             }
 
-            var incorrectSymbols = System.IO.Path.GetInvalidFileNameChars();
+            var incorrectSymbols = Path.GetInvalidFileNameChars();
 
-            bool ok = FileName.All(s => !incorrectSymbols.Contains(s));
+            bool hasInvalid = FileName.Any(s => incorrectSymbols.Contains(s));
 
-            if (!ok)
-                Error = new ErrorMsgModel(ErrorMsgCodes.InvalidCharacters);
-            else
-                Error = null;
+            Error = hasInvalid ? new ErrorMsgModel(ErrorMsgCodes.InvalidCharacters) : null;
         }
     }
 }

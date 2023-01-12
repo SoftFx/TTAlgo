@@ -11,8 +11,8 @@ namespace TickTrader.Algo.CoreV1
     {
         private QuoteSeriesFixture mainSeries;
 
-        public override IFeedBuffer MainBuffer { get { return mainSeries; } }
-        public override int BufferSize { get { return mainSeries.Count; } }
+        public override IFeedBuffer MainBuffer => mainSeries;
+        public override int BufferSize => mainSeries.Count;
         public override IEnumerable<string> BufferedSymbols => mainSeries.SymbolCode.Yield();
 
         public QuoteStrategy()
@@ -22,11 +22,6 @@ namespace TickTrader.Algo.CoreV1
         protected override BufferUpdateResult UpdateBuffers(IRateInfo update)
         {
             return mainSeries.Update(update.LastQuote);
-        }
-
-        protected override IRateInfo Aggregate(IRateInfo last, QuoteInfo quote)
-        {
-            return quote;
         }
 
         protected override FeedStrategy CreateClone()
@@ -63,7 +58,7 @@ namespace TickTrader.Algo.CoreV1
             throw new NotImplementedException();
         }
 
-        [Serializable]
+
         public class MapAction<TVal> : InputSetupAction
         {
             public MapAction(string inputName, string symbol, Func<QuoteInfo, TVal> selector) : base(inputName, symbol)

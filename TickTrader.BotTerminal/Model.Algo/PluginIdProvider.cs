@@ -7,15 +7,9 @@ namespace TickTrader.BotTerminal
 {
     internal class PluginIdProvider : IPluginIdProvider
     {
-        private PluginIdHelper _pluginsIdHelper;
-        private Dictionary<string, int> _plugins;
+        private readonly PluginIdHelper _pluginsIdHelper = new();
+        private readonly Dictionary<string, byte> _plugins = new();
 
-
-        public PluginIdProvider()
-        {
-            _plugins = new Dictionary<string, int>();
-            _pluginsIdHelper = new PluginIdHelper();
-        }
 
         public string GeneratePluginId(PluginDescriptor descriptor)
         {
@@ -44,7 +38,7 @@ namespace TickTrader.BotTerminal
             _plugins.Add(pluginId, 1);
         }
 
-        public void UnregisterPlugin(string pluginId)
+        public void UnregisterPluginId(string pluginId)
         {
             if (_plugins.ContainsKey(pluginId))
             {

@@ -13,6 +13,18 @@ namespace TickTrader.Algo.Domain
 
     public partial class TradeHistoryRequest
     {
+        public UtcTicks? From
+        {
+            get => FromTicks.ToUtcTicks();
+            set => FromTicks = value.ToInt64();
+        }
+
+        public UtcTicks? To
+        {
+            get => ToTicks.ToUtcTicks();
+            set => ToTicks = value.ToInt64();
+        }
+
         public HistoryRequestOptions Options
         {
             get => (HistoryRequestOptions)OptionsBitmask;
@@ -22,6 +34,18 @@ namespace TickTrader.Algo.Domain
 
     public partial class TriggerHistoryRequest
     {
+        public UtcTicks? From
+        {
+            get => FromTicks.ToUtcTicks();
+            set => FromTicks = value.ToInt64();
+        }
+
+        public UtcTicks? To
+        {
+            get => ToTicks.ToUtcTicks();
+            set => ToTicks = value.ToInt64();
+        }
+
         public HistoryRequestOptions Options
         {
             get => (HistoryRequestOptions)OptionsBitmask;

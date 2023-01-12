@@ -10,30 +10,34 @@ using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.Server
 {
-    internal class AlertManager : Actor
+    internal sealed class AlertManager : Actor
     {
         private const int MaxCachedAlerts = 10_000;
 
         private readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlertManager>();
 
-        private readonly MessageCache<AlertRecordInfo> _cache = new MessageCache<AlertRecordInfo>(MaxCachedAlerts);
-        private readonly ActorEventSource<AlertRecordInfo> _alertEventSrc = new ActorEventSource<AlertRecordInfo>();
-        private readonly TimeKeyGenerator _timeGen = new TimeKeyGenerator();
+        private readonly MessageCache<AlertRecordInfo> _cache = new(MaxCachedAlerts);
+        private readonly ActorEventSource<AlertRecordInfo> _alertEventSrc = new();
+        private readonly TimeKeyGenerator _timeGen = new();
+        private readonly MonitoringSettings _settings;
 
 
-        private AlertManager()
+        private AlertManager(MonitoringSettings settings)
         {
+            _settings = settings;
+
             Receive<PluginAlertMsg>(OnPluginAlert);
             Receive<ServerAlertMsg>(OnServerAlert);
+            Receive<MonitoringAlertMsg>(OnMonitoringAlert);
 
             Receive<AttachAlertChannelCmd>(AttachAlertChannel);
             Receive<PluginAlertsRequest, AlertRecordInfo[]>(GetAlerts);
         }
 
 
-        public static IActorRef Create()
+        public static IActorRef Create(MonitoringSettings settings)
         {
-            return ActorSystem.SpawnLocal(() => new AlertManager(), $"{nameof(AlertManager)}");
+            return ActorSystem.SpawnLocal(() => new AlertManager(settings), $"{nameof(AlertManager)}");
         }
 
 
@@ -56,6 +60,7 @@ namespace TickTrader.Algo.Server
                 PluginId = pluginId,
                 Message = log.Message,
                 TimeUtc = log.TimeUtc,
+                Type = AlertRecordInfo.Types.AlertType.Plugin,
             };
 
             AddAlert(alert);
@@ -70,6 +75,22 @@ namespace TickTrader.Algo.Server
                 // In concurrent scenarios we can't guarantee time sequence to be ascending when we receive messages from many thread.
                 // Therefore we have to assign our own time. Plugin alerts time is assigned on plugin thread within log time sequence
                 TimeUtc = _timeGen.NextKey(DateTime.UtcNow),
+                Type = AlertRecordInfo.Types.AlertType.Server,
+            };
+
+            AddAlert(alert);
+        }
+
+        private void OnMonitoringAlert(MonitoringAlertMsg msg)
+        {
+            var alert = new AlertRecordInfo
+            {
+                PluginId = $"<Monitoring-{msg.AccountId}>",
+                Message = msg.Message,
+                // In concurrent scenarios we can't guarantee time sequence to be ascending when we receive messages from many thread.
+                // Therefore we have to assign our own time. Plugin alerts time is assigned on plugin thread within log time sequence
+                TimeUtc = _timeGen.NextKey(DateTime.UtcNow),
+                Type = AlertRecordInfo.Types.AlertType.Monitoring,
             };
 
             AddAlert(alert);
@@ -102,6 +123,19 @@ namespace TickTrader.Algo.Server
         {
             _cache.Add(alert);
             _alertEventSrc.DispatchEvent(alert);
+
+            switch (alert.Type)
+            {
+                case AlertRecordInfo.Types.AlertType.Server:
+                    _logger.Error(alert.Message);
+                    break;
+                case AlertRecordInfo.Types.AlertType.Monitoring:
+                    if (_settings.QuoteMonitoring.SaveOnDisk)
+                        _logger.Info(alert.Message);
+                    break;
+                default:
+                    break;
+            }
         }
 
 
@@ -128,7 +162,17 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        internal class AttachAlertChannelCmd
+        internal sealed class MonitoringAlertMsg : ServerAlertMsg
+        {
+            public string AccountId { get; }
+
+            public MonitoringAlertMsg(string message, string accId) : base(message)
+            {
+                AccountId = accId;
+            }
+        }
+
+        internal sealed class AttachAlertChannelCmd
         {
             public ChannelWriter<AlertRecordInfo> AlertSink { get; }
 

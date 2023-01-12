@@ -121,12 +121,12 @@ namespace TickTrader.BotTerminal
 
         void IClientFeedProvider.DownloadBars(ActorSharp.BlockingChannel<BarData> stream, string symbol, DateTime from, DateTime to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
         {
-            Connection.FeedProxy.DownloadBars(stream, symbol, from.ToTimestamp(), to.ToTimestamp(), marketSide, timeframe);
+            Connection.FeedProxy.DownloadBars(stream, symbol, from.ToUtcTicks(), to.ToUtcTicks(), marketSide, timeframe);
         }
 
         void IClientFeedProvider.DownloadQuotes(ActorSharp.BlockingChannel<QuoteInfo> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
-            Connection.FeedProxy.DownloadQuotes(stream, symbol, from.ToTimestamp(), to.ToTimestamp(), includeLevel2);
+            Connection.FeedProxy.DownloadQuotes(stream, symbol, from.ToUtcTicks(), to.ToUtcTicks(), includeLevel2);
         }
 
 
@@ -152,5 +152,27 @@ namespace TickTrader.BotTerminal
         public IVarSet<string, CurrencyInfo> Currencies => _core.Currencies;
         public IObservableList<CurrencyInfo> SortedCurrencies { get; }
         public IObservableList<string> SortedCurrenciesNames { get; }
+        public BarDistributor BarDistributor => _core.BarDistributor;
+
+
+        public IAccountProxy GetAccountProxy()
+        {
+            var feedAdapter = new PluginFeedProvider(_core.Cache, _core.QuoteSubManager, _core.BarSubManager, _core.FeedHistory, _core.SyncFeedProvider);
+            var res = new LocalAccountProxy("")
+            {
+                Feed = feedAdapter,
+                FeedHistory = feedAdapter,
+                Metadata = feedAdapter,
+                AccInfoProvider = new PluginTradeInfoProvider(_core.Cache),
+                TradeExecutor = _core.TradeApi,
+                TradeHistoryProvider = _core.TradeHistory.AlgoAdapter,
+            };
+
+            return res;
+        }
+
+
+        public Task<BarData[]> GetBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
+            => SyncFeedProviderModel.GetBarList(_core.SyncFeedProvider, symbol, timeframe, marketSide, from, UtcTicks.Default, count);
     }
 }

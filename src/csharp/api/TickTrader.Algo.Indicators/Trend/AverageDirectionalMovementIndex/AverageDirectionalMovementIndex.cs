@@ -6,10 +6,10 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 {
-    [Indicator(Category = "Trend", DisplayName = "Average Directional Movement Index", Version = "1.0")]
+    [Indicator(Category = "Trend", DisplayName = "Average Directional Movement Index", Version = "1.1")]
     public class AverageDirectionalMovementIndex : Indicator, IAverageDirectionalMovementIndex
     {
-        private IMA _plusMa, _minusMa, _adxMa;
+        private IMovAvgAlgo _plusMa, _minusMa, _adxMa;
 
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
@@ -47,12 +47,9 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
         protected void InitializeIndicator()
         {
             Price = AppliedPriceHelper.GetDataSeries(Bars, TargetPrice);
-            _plusMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential);
-            _plusMa.Init();
-            _minusMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential);
-            _minusMa.Init();
-            _adxMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential);
-            _adxMa.Init();
+            _plusMa = MovAvg.Create(Period, MovingAverageMethod.Exponential);
+            _minusMa = MovAvg.Create(Period, MovingAverageMethod.Exponential);
+            _adxMa = MovAvg.Create(Period, MovingAverageMethod.Exponential);
         }
 
         protected override void Init()

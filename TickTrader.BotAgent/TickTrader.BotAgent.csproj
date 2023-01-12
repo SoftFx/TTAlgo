@@ -40,9 +40,10 @@
     </None>
     <ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.PkgLoader\TickTrader.Algo.PkgLoader.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Adapter\TickTrader.Algo.Server.PublicAPI.Adapter.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\TickTrader.Algo.Logging\TickTrader.Algo.Logging.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -64,6 +65,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="4.0.1" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
+    <PackageReference Include="Telegram.Bot" Version="18.0.0" />
   </ItemGroup>
 
   <Target Name="NpmInstall" BeforeTargets="PreComputeCompileTypeScriptWithTSConfig">

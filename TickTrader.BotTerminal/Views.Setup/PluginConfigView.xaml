@@ -235,10 +235,10 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBox Name="input" Text="{Binding FileName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                               Foreground="{DynamicResource Shell_PrimaryForeground}" ToolTip="{Binding FilePath}" />
+                               Foreground="{DynamicResource Shell_PrimaryForeground}" ToolTip="{Binding FullPath}" />
             <l:FlatButton Grid.Column="1" Content="..." Style="{DynamicResource ParamUtilityButtonStyle}" Padding="3,0,3,0">
                 <i:Interaction.Behaviors>
-                    <l:OpenFileDialogBehavior FileName="{Binding FilePath}" Filter="{Binding Filter}"/>
+                    <l:OpenFileDialogBehavior FileName="{Binding FileName}" FilePath="{Binding FilePath}" Filter="{Binding Filter}"/>
                 </i:Interaction.Behaviors>
             </l:FlatButton>
         </Grid>

@@ -13,6 +13,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
+using TickTrader.BotAgent.WebAdmin.Server.Services;
 using TickTrader.BotAgent.WebAdmin.Server.Settings;
 
 namespace TickTrader.BotAgent.WebAdmin
@@ -31,8 +32,12 @@ namespace TickTrader.BotAgent.WebAdmin
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
+
             services.Configure<ServerCredentials>(Configuration.GetSection(nameof(AppSettings.Credentials)));
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.Configure<NotificationSettings>(Configuration.GetSection(nameof(AppSettings.Notification)));
+
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>(); //??
+
             services.Configure<IConfiguration>(Configuration);
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
 
@@ -81,7 +86,7 @@ namespace TickTrader.BotAgent.WebAdmin
             });
 
             services.AddGrpc();
-            services.AddSingleton<AlgoServerPublicImpl>(s => s.GetRequiredService<PublicApiServer>().Impl);
+            services.AddSingleton(s => s.GetRequiredService<PublicApiServer>().Impl);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

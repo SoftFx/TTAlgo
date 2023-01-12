@@ -13,10 +13,14 @@ namespace TickTrader.Algo.Backtester
     internal class InvokeEmulator : InvokeStartegy
     {
         private readonly object _syncState = new object();
-        private FeedQueue _feedQueue;
+        private readonly FeedUpdateSummary _feedUpdate = new FeedUpdateSummary();
+        private readonly FeedUpdateSummary _feedUpdate2 = new FeedUpdateSummary();
+
+        private FeedQueue2 _feedQueue;
         private DelayedEventsQueue _delayedQueue = new DelayedEventsQueue();
         private Queue<Action<PluginBuilder>> _tradeQueue = new Queue<Action<PluginBuilder>>();
         private Queue<Action<PluginBuilder>> _eventQueue = new Queue<Action<PluginBuilder>>();
+        private Queue<IAccountApiEvent> _accEventQueue = new Queue<IAccountApiEvent>();
         private FeedEmulator _feed;
         private TimeSeriesAggregator _eventAggr = new TimeSeriesAggregator();
         private IBacktesterSettings _settings;
@@ -43,6 +47,11 @@ namespace TickTrader.Algo.Backtester
             _exStartAction = executor.Start;
             _extStopAction = executor.EmulateStop;
 
+            // init time point in case we don't have any feed
+            var start = settings.CommonSettings.EmulationPeriodStart;
+            start = start.Ticks > TimeSpan.FromMilliseconds(1).Ticks ? start.AddMilliseconds(-1) : DateTime.MinValue;
+            _timePoint = start;
+
             executor.OnExitRequest = _ => Cancel();
         }
 
@@ -62,7 +71,7 @@ namespace TickTrader.Algo.Backtester
 
         protected override void OnInit()
         {
-            _feedQueue = new FeedQueue(FStartegy);
+            _feedQueue = new FeedQueue2();
             MarketData.StartCalculators();
         }
 
@@ -76,14 +85,19 @@ namespace TickTrader.Algo.Backtester
                 _eventQueue.Enqueue(a);
         }
 
-        public override void EnqueueEvent(Action<PluginBuilder> a)
+        public override void EnqueueEvent(IAccountApiEvent e)
         {
-            _eventQueue.Enqueue(a);
+            _accEventQueue.Enqueue(e);
         }
 
-        public override void EnqueueQuote(Domain.QuoteInfo update)
+        public override void EnqueueQuote(QuoteInfo quote)
         {
             throw new InvalidOperationException("InvokeEmulator does not accept quote updates!");
+        }
+
+        public override void EnqueueBar(BarUpdate update)
+        {
+            throw new InvalidOperationException("InvokeEmulator does not accept bar updates!");
         }
 
         public override void EnqueueTradeUpdate(Action<PluginBuilder> a)
@@ -399,14 +413,14 @@ namespace TickTrader.Algo.Backtester
 
         private void ExecItem(object item)
         {
-            var rate = item as IRateInfo;
-            if (rate != null)
+            if (item is IRateInfo rate)
                 EmulateRateUpdate(rate);
-            else
-            {
-                var action = (Action<PluginBuilder>)item;
+            else if (item is FeedUpdateSummary update)
+                EmulateRateUpdates(update);
+            else if (item is Action<PluginBuilder> action)
                 action(Builder);
-            }
+            else if (item is IAccountApiEvent accEvent)
+                accEvent.Fire(Builder);
         }
 
         public void EmulateDelayedInvoke(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTradeAction)
@@ -485,13 +499,25 @@ namespace TickTrader.Algo.Backtester
 
             DelayExecution();
 
-            var bufferUpdate = OnFeedUpdate(rate);
+            var upd = _feedUpdate2;
+            upd.RateUpdates.Clear();
+            upd.NewQuotes.Clear();
+            upd.RateUpdates.Add(rate);
+            upd.NewQuotes.Add(rate.LastQuote);
+            OnFeedUpdate(upd);
+
             RateUpdated?.Invoke(rate);
             _collector.OnRateUpdate(rate);
 
             var acc = Builder.Account;
             if (acc.IsMarginType)
                 _collector.RegisterEquity(acc.Equity, acc.Margin);
+        }
+
+        private void EmulateRateUpdates(FeedUpdateSummary updateSummary)
+        {
+            foreach (var rate in updateSummary.RateUpdates)
+                EmulateRateUpdate(rate);
         }
 
         public override Task Stop(bool quick)
@@ -537,10 +563,15 @@ namespace TickTrader.Algo.Backtester
         {
             if (_eventQueue.Count > 0)
                 return _eventQueue.Dequeue();
+            else if (_accEventQueue.Count > 0)
+                return _accEventQueue.Dequeue();
             else if (_tradeQueue.Count > 0)
                 return _tradeQueue.Dequeue();
             else if (_feedQueue.Count > 0)
-                return _feedQueue.Dequeue();
+            {
+                _feedQueue.GetFeedUpdate(_feedUpdate);
+                return _feedUpdate;
+            }
             else
                 return DequeueUpcoming(out _, false);
         }
@@ -571,9 +602,9 @@ namespace TickTrader.Algo.Backtester
         private void ApplyLastQuotes()
         {
             var feed = _feed as IFeedProvider;
-            var lasts = feed.GetSnapshot();
+            var lasts = feed.GetQuoteSnapshot();
 
-            foreach(var q in lasts)
+            foreach (var q in lasts)
             {
                 if (_settings.CommonSettings.Symbols.TryGetValue(q.Symbol, out var smbInfo))
                 {

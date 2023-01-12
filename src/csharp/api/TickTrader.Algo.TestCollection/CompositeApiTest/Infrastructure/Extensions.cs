@@ -31,11 +31,5 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                     return false;
             }
         }
-
-        public static async Task WithTimeoutAfter(this Task task, TimeSpan timeout)
-        {
-            await task;
-            await Task.Delay(timeout);
-        }
     }
 }

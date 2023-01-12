@@ -36,14 +36,21 @@
                 <Label Grid.Row="6" Content="Path"/>
                 <TextBox Grid.Row="7" Text="{Binding Path, Mode=OneWay}" IsReadOnly="True"/>
                 <DockPanel Grid.Row="8" Style="{DynamicResource DockPanelAsToolBarStyle}">
-                    <l:FlatButton DockPanel.Dock="Left" Content="Upload file" Padding="5 0" 
+                    <l:FlatButton DockPanel.Dock="Left" Content="Show in folder" Padding="5 0"
                           Style="{DynamicResource PanelActionButtonStyle}"
+                          Visibility="{Binding IsLocalAgent, Converter={StaticResource BoolToVis}}"
+                          cal:Message.Attach="ShowFolder"/>
+                    <l:FlatButton DockPanel.Dock="Left" Content="Upload file" Padding="5 0"
+                          Style="{DynamicResource PanelActionButtonStyle}"
+                          Visibility="{Binding IsRemoteAgent, Converter={StaticResource BoolToVis}}"
                           cal:Message.Attach="UploadFile"/>
                     <l:FlatButton DockPanel.Dock="Left" Content="Download file" Padding="5 0" Margin="5 0 0 0"
                           Style="{DynamicResource PanelActionButtonStyle}"
+                          Visibility="{Binding IsRemoteAgent, Converter={StaticResource BoolToVis}}"
                           cal:Message.Attach="DownloadFile"/>
                     <l:FlatButton DockPanel.Dock="Left" Content="Delete file" Padding="5 0" Margin="5 0 0 0"
                           Style="{DynamicResource PanelActionButtonStyle}"
+                          Visibility="{Binding IsRemoteAgent, Converter={StaticResource BoolToVis}}"
                           cal:Message.Attach="DeleteFile"/>
                     <l:FlatButton DockPanel.Dock="Left" Content="Refresh" Padding="5 0" Margin="5 0 0 0"
                           Style="{DynamicResource PanelActionButtonStyle}"

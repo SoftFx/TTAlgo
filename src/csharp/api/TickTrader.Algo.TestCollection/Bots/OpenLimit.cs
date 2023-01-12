@@ -33,7 +33,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (double.IsNaN(ordPrice))
                 PrintError("Cannot open order: off quotes for " + Symbol.Name);
             else
-                OpenOrder(Symbol.Name, OrderType.Limit, Side, Volume, ordPrice, null, null, "OpenTimeComment " + DateTime.Now, Option, Tag);
+                OpenOrder(Symbol.Name, OrderType.Limit, Side, Volume, ordPrice, null, null, "OpenTimeComment " + UtcNow, Option, Tag);
             Exit();
         }
     }
@@ -52,8 +52,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         protected override void Init()
         {
             var ordPrice = Symbol.Bid + Symbol.Point * PriceDelta;
-            OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, Volume, ordPrice, null, null, "OpenTimeComment " + DateTime.Now);
-            OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Sell, Volume, ordPrice, null, null, "OpenTimeComment " + DateTime.Now, OrderExecOptions.ImmediateOrCancel);
+            OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, Volume, ordPrice, null, null, "OpenTimeComment " + UtcNow);
+            OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Sell, Volume, ordPrice, null, null, "OpenTimeComment " + UtcNow, OrderExecOptions.ImmediateOrCancel);
             Exit();
         }
     }

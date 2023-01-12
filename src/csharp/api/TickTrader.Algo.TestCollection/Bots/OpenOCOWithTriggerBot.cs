@@ -10,7 +10,7 @@ namespace TickTrader.Algo.TestCollection
 
         protected async override void Init()
         {
-            var utcTime = DateTime.UtcNow;
+            var utcTime = UtcNow;
             var otoTrigger = ContingentOrderTrigger.Create(utcTime.AddDays(1));
 
             //otoTrigger = ContingentOrderTrigger.Create(new DateTime(2021, 11, 19, 11, 03, 48, 0, DateTimeKind.Utc));

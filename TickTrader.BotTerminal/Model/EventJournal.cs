@@ -62,6 +62,12 @@ namespace TickTrader.BotTerminal
         {
             return new EventMessage(record.TimeUtc, record.Message, Convert(record.Severity));
         }
+
+        public static EventMessage Create(IndicatorLogRecord record)
+        {
+            var log = record.LogRecord;
+            return new EventMessage(log.TimeUtc, $"{record.PluginId} ({record.ChartName}): {log.Message}", Convert(log.Severity));
+        }
     }
 
 

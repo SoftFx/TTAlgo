@@ -3,7 +3,7 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.AwesomeOscillator
 {
-    [Indicator(Category = "Bill Williams", DisplayName = "Awesome Oscillator", Version = "1.0")]
+    [Indicator(Category = "Bill Williams", DisplayName = "Awesome Oscillator", Version = "1.1")]
     public class AwesomeOscillator : Indicator, IAwesomeOscillator
     {
         private IMovingAverage _slowSma, _fastSma;

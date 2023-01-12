@@ -20,15 +20,19 @@ namespace TickTrader.BotTerminal
         private EventJournal journal;
         private bool _loginFlag;
         private ClientModel.Data _client;
+        private LocalAlgoAgent2 _agent;
+        private ProfileManager _profileManager;
 
-        public ConnectionManager(ClientModel.Data client, PersistModel appStorage, EventJournal journal)
+        public ConnectionManager(ClientModel.Data client, PersistModel appStorage, EventJournal journal, LocalAlgoAgent2 agent)
         {
             _client = client;
+            _agent = agent;
 
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.authStorage = appStorage.AuthSettingsStorage;
             this.authStorage.Accounts.Updated += Storage_Changed;
             this.journal = journal;
+            _profileManager = appStorage.ProfileManager;
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
@@ -131,14 +135,19 @@ namespace TickTrader.BotTerminal
             try
             {
                 if (Connection.IsOnline)
+                {
+                    await _profileManager.StopCurrentProfile();
                     ClearCache();
+                }
 
                 var result = await Connection.Connect(login, password, server, cToken);
 
                 if (result.IsOk)
                 {
-                    SaveLogin(newCreds);
+                    var isNewLogin = SaveLogin(newCreds);
                     SetLoggedIn(true);
+                    if (isNewLogin)
+                        _ = AddAccountToLocalAgent(server, login, entryPassword);
                 }
 
                 _loginFlag = false;
@@ -155,6 +164,8 @@ namespace TickTrader.BotTerminal
 
         public async Task Disconnect()
         {
+            await _profileManager.StopCurrentProfile();
+
             await Connection.Disconnect();
 
             if (!_loginFlag)
@@ -203,11 +214,30 @@ namespace TickTrader.BotTerminal
             Accounts.Select(u => u.Server.Address).Distinct().Except(Servers.Select(u => u.Address)).ForEach(u => SaveNewServer(u)); //add cached servers
         }
 
-        private void SaveLogin(AccountAuthEntry entry)
+        private bool SaveLogin(AccountAuthEntry entry)
         {
-            authStorage.Update(new AccountStorageEntry(entry.Login, entry.Password, entry.Server.Address));
+            var isNewLogin = authStorage.Update(new AccountStorageEntry(entry.Login, entry.Password, entry.Server.Address));
             authStorage.UpdateLast(entry.Login, entry.Server.Address);
             authStorage.Save();
+            return isNewLogin;
+        }
+
+        private async Task AddAccountToLocalAgent(string server, string login, string pwd)
+        {
+            try
+            {
+                await _agent.AddAccount(new Algo.Domain.ServerControl.AddAccountRequest
+                {
+                    Server = server,
+                    UserId = login,
+                    DisplayName = $"{server} - {login}",
+                    Creds = new AccountCreds(pwd),
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to add account to local algo server");
+            }
         }
 
         private void Storage_Changed(ListUpdateArgs<AccountStorageEntry> e)

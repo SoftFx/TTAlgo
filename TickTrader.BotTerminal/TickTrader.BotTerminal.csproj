@@ -15,15 +15,15 @@
     <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
     <ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
     <SatelliteResourceLanguages>en-gb,ru-ru</SatelliteResourceLanguages>
+
+    <UseLiveCharts2Src>false</UseLiveCharts2Src>
+    <UseAvalonDockSrc>false</UseAvalonDockSrc>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Caliburn.Micro" Version="4.0.209" />
-    <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
-    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.60.0" />
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
     <PackageReference Include="FontAwesome.Sharp" Version="5.15.4" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.300" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageReference Include="NLog" Version="4.7.15" />
     <PackageReference Include="System.Management" Version="6.0.0" />
@@ -31,18 +31,32 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
-    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
-    <ProjectReference Include="..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\TickTrader.Algo.BacktesterV1Host.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation\TickTrader.Algo.Isolation.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.IndicatorHost\TickTrader.Algo.IndicatorHost.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.PkgLoader\TickTrader.Algo.PkgLoader.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Client\TickTrader.Algo.Server.PublicAPI.Client.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server.PublicAPI.Converters\TickTrader.Algo.Server.PublicAPI.Converters.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
     <ProjectReference Include="..\src\csharp\lib\Machinarium\Machinarium.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\TickTrader.Algo.Logging\TickTrader.Algo.Logging.csproj" />
     <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj" />
     <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
     <ProjectReference Include="..\TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Label="LiveCharts2 references">
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.700" Condition=" '$(UseLiveCharts2Src)' != 'true' " />
+    <!-- Requires 'dotnet workload restore' to run correctly. Visual Studio gives incorrect error, you don't need to include project in solution -->
+    <ProjectReference Include="..\..\LiveCharts2\src\skiasharp\LiveChartsCore.SkiaSharp.WPF\LiveChartsCore.SkiaSharpView.WPF.csproj" Condition=" '$(UseLiveCharts2Src)' == 'true' " />
+  </ItemGroup>
+
+  <ItemGroup Label="AvalonDock references">
+    <PackageReference Include="Dirkster.AvalonDock" Version="4.71.0" Condition=" '$(UseAvalonDockSrc)' != 'true' " />
+    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.71.0" Condition=" '$(UseAvalonDockSrc)' != 'true' " />
+    
+    <ProjectReference Include="..\..\AvalonDock\source\Components\AvalonDock\AvalonDock.csproj" Condition=" '$(UseAvalonDockSrc)' == 'true' " />
+    <ProjectReference Include="..\..\AvalonDock\source\Components\AvalonDock.Themes.VS2013\AvalonDock.Themes.VS2013.csproj" Condition=" '$(UseAvalonDockSrc)' == 'true' " />
   </ItemGroup>
 
   <ItemGroup>
@@ -139,7 +153,7 @@
       <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host\bin\$(Configuration)\net6.0\*.*" />
       <BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net6.0\*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)bin\runtime\" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\" SkipUnchangedFiles="true" />
   </Target>
 

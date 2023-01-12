@@ -19,14 +19,14 @@ namespace TickTrader.BotAgent.BA.Models
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<ServerModel>();
 
-        private static readonly EnvService envService = new EnvService(AppDomain.CurrentDomain.BaseDirectory);
+        private static readonly EnvService envService = new(AppDomain.CurrentDomain.BaseDirectory);
         private static readonly string cfgFilePath = Path.Combine(envService.AppFolder, "server.config.xml");
 
         [DataMember(Name = "accounts")]
-        private List<ClientModel> _accounts = new List<ClientModel>();
+        private List<ClientModel> _accounts = new();
 
         private ThreadPoolManager _threadPoolManager;
-        private LocalAlgoServer _algoServer = new LocalAlgoServer();
+        private LocalAlgoServer _algoServer = new();
 
         public static EnvService Environment => envService;
 
@@ -44,13 +44,19 @@ namespace TickTrader.BotAgent.BA.Models
 
             settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
             settings.EnableAccountLogs = config.GetFdkSettings().EnableLogs;
-            settings.RuntimeSettings.EnableDevMode = config.GetAlgoSettings().EnableDevMode;
-            settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder);
-            settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
 
-            settings.MonitoringSettings.QuoteMonitoring.EnableMonitoring = monitoringSettings.QuoteMonitoring.EnableMonitoring;
-            settings.MonitoringSettings.QuoteMonitoring.AccetableQuoteDelay = monitoringSettings.QuoteMonitoring.AccetableQuoteDelay;
-            settings.MonitoringSettings.QuoteMonitoring.AlertsDelay = monitoringSettings.QuoteMonitoring.AlertsDelay;
+            settings.HostSettings.RuntimeSettings.RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
+            settings.HostSettings.RuntimeSettings.EnableDevMode = config.GetAlgoSettings().EnableDevMode;
+            settings.HostSettings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder);
+            settings.HostSettings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
+
+            settings.MonitoringSettings.QuoteMonitoring = new()
+            {
+                EnableMonitoring = monitoringSettings.QuoteMonitoring.EnableMonitoring,
+                AccetableQuoteDelay = monitoringSettings.QuoteMonitoring.AccetableQuoteDelay,
+                AlertsDelay = monitoringSettings.QuoteMonitoring.AlertsDelay,
+                SaveOnDisk = monitoringSettings.QuoteMonitoring.SaveOnDisk,
+            };
 
             await _algoServer.Init(settings);
 

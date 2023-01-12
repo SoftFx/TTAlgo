@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.BacktesterApi;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
@@ -309,11 +310,19 @@ namespace TickTrader.BotTerminal
 
         private PluginConfig CreateDefaultPluginConfig()
         {
-            var setup = new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo());
+            var setup = new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), GetClientAccountMetadata());
             setup.Setup.SelectedModel.Value = SelectedModel.Value.ToApi();
             setup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
             setup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
             return setup.GetConfig();
+        }
+
+        private AccountMetadataInfo GetClientAccountMetadata()
+        {
+            var client = _client;
+            var accountMetadata = new AccountMetadataInfo(AccountId.Pack(client.Connection.CurrentServer, client.Connection.CurrentLogin),
+                client.SortedSymbols.Select(s => s.ToInfo()).ToList(), client.Cache.GetDefaultSymbol().ToInfo());
+            return accountMetadata;
         }
 
 
@@ -326,8 +335,8 @@ namespace TickTrader.BotTerminal
             _localWnd.OpenOrActivateWindow(SetupWndKey, () =>
             {
                 _openedPluginSetup = PluginConfig == null
-                    ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo())
-                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginConfig);
+                    ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), GetClientAccountMetadata())
+                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), GetClientAccountMetadata(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
                 _openedPluginSetup.Setup.SelectedModel.Value = SelectedModel.Value.ToApi();
                 _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
@@ -502,20 +511,13 @@ namespace TickTrader.BotTerminal
 
         #region IPluginIdProvider
 
-        string IPluginIdProvider.GeneratePluginId(PluginDescriptor descriptor)
-        {
-            return descriptor.DisplayName;
-        }
+        string IPluginIdProvider.GeneratePluginId(PluginDescriptor descriptor) => descriptor.DisplayName;
 
-        bool IPluginIdProvider.IsValidPluginId(Metadata.Types.PluginType pluginType, string pluginId)
-        {
-            return true;
-        }
+        bool IPluginIdProvider.IsValidPluginId(Metadata.Types.PluginType pluginType, string pluginId) => true;
 
-        void IPluginIdProvider.RegisterPluginId(string pluginId)
-        {
-            return;
-        }
+        void IPluginIdProvider.RegisterPluginId(string pluginId) { }
+
+        void IPluginIdProvider.UnregisterPluginId(string pluginId) { }
 
         #endregion IPluginIdProvider
 

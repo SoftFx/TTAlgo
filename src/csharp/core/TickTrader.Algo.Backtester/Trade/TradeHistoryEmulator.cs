@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Backtester
             _history = new List<TradeReportAdapter>();
         }
 
-        public IEnumerable<TradeReportInfo> LocalGetReports() => _history.Select(r => r.Info);
+        public IEnumerable<TradeReportInfo> LocalGetReports() => _history.Select(r => r.RoundVolumes().Info);
 
         #region TradeHistory implementation
 

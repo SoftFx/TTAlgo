@@ -32,13 +32,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             var inversed = !template.Copy(closeVolume);
 
-            await OpenOrderAndWaitExecution(template.ForGrossPositionPending(4, "First"));
-            await OpenOrderAndWaitExecution(inversed.ForGrossPositionPending(5, "Second"));
+            await OpenAndWaitExecution(template.ForGrossPositionPending(40, "First"));
+            await OpenAndWaitExecution(inversed.ForGrossPositionPending(50, "Second"));
 
             var resultTemplate = await TestCloseByOrders(template, inversed);
 
             if (!resultTemplate.IsNull)
+            {
+                await resultTemplate.Opened.Task;
                 await RemoveOrder(resultTemplate);
+            }
         }
     }
 }

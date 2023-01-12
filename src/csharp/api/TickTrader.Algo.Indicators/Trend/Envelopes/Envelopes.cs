@@ -3,7 +3,7 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Trend.Envelopes
 {
-    [Indicator(Category = "Trend", DisplayName = "Envelopes", Version = "1.0")]
+    [Indicator(Category = "Trend", DisplayName = "Envelopes", Version = "1.1")]
     public class Envelopes : Indicator, IEnvelopes
     {
         private IMovingAverage _middleLine;

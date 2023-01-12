@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
         public bool IsShadowCopy { get; private set; }
 
         // Needed there only to manage user subscription OnQuote() call
-        public FeedSubscriptionUpdate UserSubscriptionInfo { get; set; }
+        public QuoteSubUpdate UserSubscriptionInfo { get; set; }
 
 
         SymbolInfo ISymbolCalculator.SymbolInfo => (SymbolInfo)SymbolInfo;

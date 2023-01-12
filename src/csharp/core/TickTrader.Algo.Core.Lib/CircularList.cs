@@ -1,27 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace TickTrader.Algo.Core.Lib
 {
     public class CircularList<T> : IReadOnlyList<T>, IList<T>
     {
-        private static readonly T[] emptyBuffer = new T[0];
+        private int _begin = 0, _end = -1, _mask;
+        private T[] _buffer;
 
-        private int begin = 0;
-        private int end = -1;
-        private T[] buffer;
+
+        public T this[int index]
+        {
+            get => _buffer[CalculateBufferIndex(index)];
+            set => _buffer[CalculateBufferIndex(index)] = value;
+        }
+
+        public int Count { get; private set; }
+
+        public int Capacity => _buffer.Length;
+
 
         public CircularList()
         {
-            buffer = emptyBuffer;
+            _buffer = new T[16];
+            _mask = _buffer.Length - 1;
         }
 
         public CircularList(int capacity)
         {
-            buffer = new T[capacity];
+            _buffer = new T[RoundUpCapacity(capacity)];
+            _mask = _buffer.Length - 1;
         }
 
-        public int Capacity { get { return buffer.Length; } }
 
         public void Enqueue(T item)
         {
@@ -33,14 +44,13 @@ namespace TickTrader.Algo.Core.Lib
             if (Count == Capacity)
                 Expand();
 
-            if (++end >= Capacity)
-                end = 0;
+            _end = (_end + 1) & _mask;
 
-            buffer[end] = item;
+            _buffer[_end] = item;
             Count++;
         }
 
-        public void AddRange(IEnumerable<T> recRange)
+        public virtual void AddRange(IEnumerable<T> recRange)
         {
             // TO DO : optimization in case recRange is IList or ICollection
 
@@ -48,18 +58,26 @@ namespace TickTrader.Algo.Core.Lib
                 Add(rec);
         }
 
+        public virtual void AddRange(ReadOnlySpan<T> items)
+        {
+            // TO DO : optimization with Span.CopyTo
+
+            var n = items.Length;
+            for (var i = 0; i < n; i++)
+                Add(items[i]);
+        }
+
         public virtual T Dequeue()
         {
             if (Count == 0)
                 throw new InvalidOperationException("List is empty!");
 
-            T result = buffer[begin];
-            buffer[begin] = default(T);
+            T result = _buffer[_begin];
+            _buffer[_begin] = default(T);
 
             Count--;
 
-            if (++begin == Capacity)
-                begin = 0;
+            _begin = (_begin + 1) & _mask;
 
             return result;
         }
@@ -70,7 +88,7 @@ namespace TickTrader.Algo.Core.Lib
                 DoTruncateStart(Count);
         }
 
-        public virtual void TruncateStart(int tSize)
+        public void TruncateStart(int tSize)
         {
             if (tSize == 0)
                 return;
@@ -81,31 +99,32 @@ namespace TickTrader.Algo.Core.Lib
             DoTruncateStart(tSize);
         }
 
+
         protected virtual void DoTruncateStart(int tSize)
         {
-            if (begin <= end)
+            if (_begin <= _end)
             {
-                Array.Clear(buffer, begin, tSize);
-                begin += tSize;
+                Array.Clear(_buffer, _begin, tSize);
+                _begin += tSize;
             }
             else
             {
-                var firstPartLen = Capacity - begin;
+                var firstPartLen = Capacity - _begin;
                 if (tSize < firstPartLen)
                 {
-                    Array.Clear(buffer, begin, tSize);
-                    begin += tSize;
+                    Array.Clear(_buffer, _begin, tSize);
+                    _begin += tSize;
                 }
                 else if (tSize == firstPartLen)
                 {
-                    Array.Clear(buffer, begin, tSize);
-                    begin = 0;
+                    Array.Clear(_buffer, _begin, tSize);
+                    _begin = 0;
                 }
                 else
                 {
-                    Array.Clear(buffer, begin, firstPartLen);
-                    begin = tSize - firstPartLen;
-                    Array.Clear(buffer, 0, begin);
+                    Array.Clear(_buffer, _begin, firstPartLen);
+                    _begin = tSize - firstPartLen;
+                    Array.Clear(_buffer, 0, _begin);
                 }
             }
 
@@ -113,59 +132,75 @@ namespace TickTrader.Algo.Core.Lib
 
             if (Count == 0)
             {
-                begin = 0;
-                end = -1;
+                _begin = 0;
+                _end = -1;
             }
         }
 
-        public void TruncateEnd(int count)
-        {
-            throw new NotImplementedException();
-        }
 
         private void Expand()
         {
-            int expandBy = Capacity > 0 ? Capacity : 4;
+            var oldBuffer = _buffer;
+            _buffer = new T[2 * Capacity];
+            _mask = _buffer.Length - 1;
 
-            var oldBuffer = buffer;
-            buffer = new T[Capacity + expandBy];
+            CopyUnsafe(oldBuffer, _begin, _end, Count, _buffer.AsSpan());
 
-            if (Count != 0)
-            {
-                if (begin <= end)
-                    Array.Copy(oldBuffer, begin, buffer, 0, Count);
-                else
-                {
-                    var firstPartLength = oldBuffer.Length - begin;
-                    // copy first part
-                    Array.Copy(oldBuffer, begin, buffer, 0, firstPartLength);
-                    // copy second part
-                    Array.Copy(oldBuffer, 0, buffer, firstPartLength, end + 1);
-                }
-            }
-
-            begin = 0;
-            end = Count - 1;
+            _begin = 0;
+            _end = Count - 1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int CalculateBufferIndex(int queueIndex)
         {
             if (queueIndex < 0 || queueIndex >= Count)
                 throw new ArgumentOutOfRangeException();
 
-            int realIndex = begin + queueIndex;
-            if (realIndex >= buffer.Length)
-                realIndex -= buffer.Length;
-            return realIndex;
+            return (_begin + queueIndex) & _mask;
+            // This code is equivalent to one below
+            // Because buffer size guaranteed to be a power of 2 
+            //int realIndex = begin + queueIndex;
+            //if (realIndex >= buffer.Length)
+            //    realIndex -= buffer.Length;
+            //return realIndex;
         }
 
-        public T this[int index]
+
+        // Rounds up provided value to power of 2
+        private static int RoundUpCapacity(int capacity)
         {
-            get { return buffer[CalculateBufferIndex(index)]; }
-            set { buffer[CalculateBufferIndex(index)] = value; }
+            if (capacity <= 16)
+                return 16;
+
+            var v = capacity - 1; // workaround for case when already power of 2
+            v |= v >> 1;
+            v |= v >> 2;
+            v |= v >> 4;
+            v |= v >> 8;
+            v |= v >> 16;
+            return v + 1;
         }
 
-        public int Count { get; private set; }
+        private static void CopyUnsafe(T[] src, int begin, int end, int cnt, Span<T> dst)
+        {
+            if (cnt == 0)
+                return;
+
+            if (begin <= end)
+            {
+                src.AsSpan(begin, cnt).CopyTo(dst);
+            }
+            else
+            {
+                var part1 = src.AsSpan(begin);
+                part1.CopyTo(dst);
+                dst = dst.Slice(part1.Length);
+                src.AsSpan(0, end + 1).CopyTo(dst);
+            }
+        }
+
+
+        #region IList support
 
         public bool IsReadOnly => false;
 
@@ -173,26 +208,23 @@ namespace TickTrader.Algo.Core.Lib
         {
             if (Count != 0)
             {
-                if (begin <= end)
+                if (_begin <= _end)
                 {
-                    for (int i = begin; i <= end; i++)
-                        yield return buffer[i];
+                    for (int i = _begin; i <= _end; i++)
+                        yield return _buffer[i];
                 }
                 else
                 {
-                    for (int i = begin; i < buffer.Length; i++)
-                        yield return buffer[i];
+                    for (int i = _begin; i < _buffer.Length; i++)
+                        yield return _buffer[i];
 
-                    for (int i = 0; i <= end; i++)
-                        yield return buffer[i];
+                    for (int i = 0; i <= _end; i++)
+                        yield return _buffer[i];
                 }
             }
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
         public int IndexOf(T item)
         {
@@ -209,29 +241,29 @@ namespace TickTrader.Algo.Core.Lib
             return -1;
         }
 
-        public void Insert(int index, T item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Contains(T item)
-        {
-            throw new NotImplementedException();
-        }
+        public bool Contains(T item) => IndexOf(item) >= 0;
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            Array.Copy(this.buffer, 0, array, arrayIndex, this.Count);
+            if (Count == 0)
+                return; // nothing to copy
+
+            if (array == null)
+                throw new ArgumentNullException(nameof(array));
+            if (arrayIndex < 0 || arrayIndex >= array.Length)
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+            if (arrayIndex + Count > array.Length)
+                throw new ArgumentException("Array not large enough", nameof(array));
+
+            CopyUnsafe(_buffer, _begin, _end, Count, array.AsSpan(arrayIndex));
         }
 
-        public bool Remove(T item)
-        {
-            throw new NotImplementedException();
-        }
+        public void Insert(int index, T item) => throw new NotSupportedException("FIFO modication only");
+
+        public void RemoveAt(int index) => throw new NotSupportedException("FIFO modication only");
+
+        public bool Remove(T item) => throw new NotSupportedException("FIFO modification only");
+
+        #endregion IList support
     }
 }

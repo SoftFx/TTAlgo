@@ -1,6 +1,6 @@
 ﻿using ActorSharp;
-using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -29,8 +29,8 @@ namespace TickTrader.Algo.Account
         Task<PositionInfo[]> GetPositions();
 
         void GetTradeRecords(BlockingChannel<OrderInfo> rxStream);
-        void GetTradeHistory(ChannelWriter<TradeReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards);
-        void GetTriggerReportsHistory(ChannelWriter<TriggerReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards);
+        void GetTradeHistory(ChannelWriter<TradeReportInfo> rxStream, UtcTicks? from, UtcTicks? to, bool skipCancelOrders, bool backwards);
+        void GetTriggerReportsHistory(ChannelWriter<TriggerReportInfo> rxStream, UtcTicks? from, UtcTicks? to, bool skipCancelOrders, bool backwards);
 
         event Action<PositionExecReport> PositionReport;
         event Action<ExecutionReport> ExecutionReport;
@@ -49,6 +49,7 @@ namespace TickTrader.Algo.Account
         bool AutoSymbols { get; }
 
         event Action<QuoteInfo> Tick;
+        event Action<BarUpdate> BarUpdate;
         event Action<SymbolInfo[]> SymbolInfo;
         event Action<CurrencyInfo[]> CurrencyInfo;
 
@@ -57,13 +58,15 @@ namespace TickTrader.Algo.Account
         Task<QuoteInfo[]> SubscribeToQuotes(string[] symbols, int depth, int? frequency);
         Task<QuoteInfo[]> GetQuoteSnapshot(string[] symbols, int depth);
 
-        Task<BarData[]> DownloadBarPage(string symbol, Timestamp from, int count, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
-        Task<QuoteInfo[]> DownloadQuotePage(string symbol, Timestamp from, int count, bool includeLevel2);
+        Task<BarData[]> DownloadBarPage(string symbol, UtcTicks from, int count, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+        Task<QuoteInfo[]> DownloadQuotePage(string symbol, UtcTicks from, int count, bool includeLevel2);
 
-        void DownloadBars(BlockingChannel<BarData> stream, string symbol, Timestamp from, Timestamp to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+        void DownloadBars(BlockingChannel<BarData> stream, string symbol, UtcTicks from, UtcTicks to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
 
-        void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, Timestamp from, Timestamp to, bool includeLevel2);
+        void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, UtcTicks from, UtcTicks to, bool includeLevel2);
 
         Task<(DateTime?, DateTime?)> GetAvailableRange(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+
+        Task SubscribeToBars(List<BarSubUpdate> updates);
     }
 }

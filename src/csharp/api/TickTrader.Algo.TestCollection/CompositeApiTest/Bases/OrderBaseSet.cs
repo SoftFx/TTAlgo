@@ -1,18 +1,25 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal class OrderBaseSet
     {
-        public static Symbol Symbol { get; private set; }
+        internal static CompositeTradeApiTest Bot { get; set; }
 
-        public static OrderList Orders { get; private set; }
 
-        public static AccountTypes AccountType { get; private set; }
+        public static AccountTypes AccountType => Bot.Account.Type;
 
-        public static double BaseOrderVolume { get; private set; }
+        public static OrderList Orders => Bot.Account.Orders;
 
-        public static double PriceDelta { get; private set; }
+        public static Symbol Symbol => Bot.Symbol;
+
+        public static DateTime UtcNow => Bot.UtcNow;
+
+
+        public static double BaseOrderVolume => Bot.DefaultOrderVolume;
+
+        public static double PriceDelta => Bot.PriceDelta;
 
 
         public OrderType Type { get; protected set; }
@@ -26,6 +33,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
 
         public bool IsInstantOrder => Type == OrderType.Market || IsLimitIoC;
+
+        public bool IsPendingOrder => !IsInstantOrder;
 
         public bool IsLimitIoC => Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
@@ -43,6 +52,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool IsSupportedOTO => Type != OrderType.StopLimit;
 
+        public bool IsSupportedClose => Type == OrderType.Market || Type == OrderType.Position;
 
         public bool IsStopLimit => Type == OrderType.StopLimit;
 
@@ -58,13 +68,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        public static void FillBaseParameters(CompositeTradeApiTest bot)
+        public static void InitTemplate(CompositeTradeApiTest bot)
         {
-            BaseOrderVolume = bot.DefaultOrderVolume;
-            AccountType = bot.Account.Type;
-            PriceDelta = bot.PriceDelta;
-            Orders = bot.Account.Orders;
-            Symbol = bot.Symbol;
+            Bot = bot;
         }
 
 

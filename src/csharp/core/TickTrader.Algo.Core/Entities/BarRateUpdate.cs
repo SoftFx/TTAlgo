@@ -7,90 +7,53 @@ namespace TickTrader.Algo.Core
     {
         private QuoteInfo _lastQuote;
         private int _quoteCount;
-        private UtcTicks _openTime, _closeTime;
 
-        public BarRateUpdate(UtcTicks barStartTime, UtcTicks barEndTime, QuoteInfo quote)
-        {
-            _openTime = barStartTime;
-            _closeTime = barEndTime;
 
-            if (quote.HasBid)
-                BidBar = new BarData(barStartTime, barEndTime, quote.Bid, 1);
-            if (quote.HasAsk)
-                AskBar = new BarData(barStartTime, barEndTime, quote.Ask, 1);
+        public UtcTicks OpenTime { get; }
 
-            _lastQuote = quote;
-            Symbol = quote.Symbol;
-            _quoteCount = 1;
-        }
+        public UtcTicks CloseTime { get; }
+
+        public bool IsPartialUpdate { get; private set; }
+
 
         public BarRateUpdate(BarData bidBar, BarData askBar, string symbol)
         {
-            _openTime = bidBar.OpenTime;
-            _closeTime = bidBar.CloseTime;
+            IsPartialUpdate = true;
+
+            var bar = bidBar ?? askBar;
+            OpenTime = bar.OpenTime;
+            CloseTime = bar.CloseTime;
             BidBar = bidBar;
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteInfo(symbol, _closeTime.AddMs(-1), bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteInfo(symbol, CloseTime.AddMs(-1), bidBar?.Close, askBar?.Close);
         }
 
-        public BarRateUpdate(BarRateUpdate barUpdate)
+        public BarRateUpdate(BarUpdate update)
         {
-            Symbol = barUpdate.Symbol;
-            BidBar = barUpdate.BidBar;
-            AskBar = barUpdate.AskBar;
-            _lastQuote = barUpdate._lastQuote;
-            _quoteCount = barUpdate._quoteCount;
-            _openTime = barUpdate._openTime;
-            _closeTime = barUpdate._closeTime;
+            IsPartialUpdate = false;
+
+            var bar = update.BidData ?? update.AskData;
+            OpenTime = bar.OpenTime;
+            CloseTime = bar.CloseTime;
+            BidBar = update.BidData;
+            AskBar = update.AskData;
+            Symbol = update.Symbol;
+
+            _quoteCount = 1;
+            _lastQuote = new QuoteInfo(Symbol, CloseTime.AddMs(-1), BidBar?.Close, AskBar?.Close);
         }
 
-        public void Append(QuoteInfo quote)
+
+        public void Replace(BarUpdate update)
         {
-            if (quote.HasBid)
-            {
-                if (HasBid)
-                    BidBar.Append(quote.Bid, 1);
-                else
-                    BidBar = new BarData(_openTime, _closeTime, quote.Bid, 1);
-            }
+            IsPartialUpdate = false;
 
-            if (quote.HasAsk)
-            {
-                if (HasAsk)
-                    AskBar.Append(quote.Ask, 1);
-                else
-                    AskBar = new BarData(_openTime, _closeTime, quote.Ask, 1);
-            }
+            BidBar = update.BidData;
+            AskBar = update.AskData;
 
-            _lastQuote = quote;
-            _quoteCount++;
-        }
-
-        public void Append(BarRateUpdate barUpdate)
-        {
-            var quoteTime = _openTime;
-
-            if (barUpdate.HasBid)
-            {
-                quoteTime = barUpdate.BidBar.CloseTime;
-                if (HasBid)
-                    BidBar.AppendPart(barUpdate.BidBar);
-                else
-                    BidBar = new BarData(barUpdate.BidBar);
-            }
-
-            if (barUpdate.HasAsk)
-            {
-                quoteTime = barUpdate.AskBar.CloseTime;
-                if (HasAsk)
-                    AskBar.AppendPart(barUpdate.AskBar);
-                else
-                    AskBar = new BarData(barUpdate.AskBar);
-            }
-
-            _lastQuote = new QuoteInfo(Symbol, quoteTime, barUpdate.BidBar?.Close, barUpdate.AskBar?.Close);
+            _lastQuote = new QuoteInfo(Symbol, CloseTime.AddMs(-1), BidBar?.Close, AskBar?.Close);
             _quoteCount++;
         }
 
@@ -101,8 +64,8 @@ namespace TickTrader.Algo.Core
         public BarData AskBar { get; private set; }
         public QuoteInfo LastQuote => _lastQuote;
 
-        UtcTicks IRateInfo.Time => _openTime;
-        DateTime IRateInfo.TimeUtc => _openTime.ToUtcDateTime();
+        UtcTicks IRateInfo.Time => OpenTime;
+        DateTime IRateInfo.TimeUtc => OpenTime.ToUtcDateTime();
         double IRateInfo.Ask => AskBar.Close;
         double IRateInfo.AskHigh => AskBar.High;
         double IRateInfo.AskLow => AskBar.Low;

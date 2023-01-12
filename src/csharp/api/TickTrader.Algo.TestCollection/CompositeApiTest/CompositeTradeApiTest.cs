@@ -44,7 +44,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         [Parameter]
         public bool UseCloseByTests { get; set; }
 
-        [Parameter]
+        //[Parameter]
         public bool UseADCases { get; set; }
 
 
@@ -53,9 +53,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected override void Init()
         {
-            OrderBaseSet.FillBaseParameters(this);
+            OrderBaseSet.Bot = this;
             TestGroupBase.Bot = this;
             StatManagerFactory.Bot = this;
+
+            Events.Init(Account.Type);
         }
 
         protected async override void OnStart()
@@ -79,6 +81,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         protected override void OnStop()
         {
             GroupTestReport.ResetStaticFields();
+
+            Print($"Finish");
+
             Exit();
         }
 
@@ -91,15 +96,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             _testGroups = new List<(Predicate<OrderBaseSet>, TestGroupBase)>
             {
                 (s => UseModificationTests && !s.IsInstantOrder, new ModificationTests()),
-                (s => UseOCOTests && s.IsSupportedOCO, new OCOTests(UseADCases)),
-                (s => UseOTOTests && s.IsSupportedOTO, new OTOTests(UseOCOTests, UseADCases)),
+                (_ => UseExecutionTests, new ExecutionTests()),
                 (s => UseSlippageTests && s.IsSupportedSlippage, new SlippageTests()),
                 (s => UseCloseByTests && s.IsGrossAcc, new CloseByTests()),
-                (_ => UseExecutionTests, new ExecutionTests()),
+                (s => UseOCOTests && s.IsSupportedOCO, new OCOTests(UseADCases)),
+                (s => UseOTOTests && s.IsSupportedOTO, new OTOTests(UseOCOTests, UseADCases)),
                 (_ => UseADCases, new ADTests()),
             };
 
-            await Task.Delay(2000); // wait while all orders have been canceled
+            await Delay(2000); // wait while all orders have been canceled
         }
 
         private async Task RunAllTestGroups(OrderBaseSet set)

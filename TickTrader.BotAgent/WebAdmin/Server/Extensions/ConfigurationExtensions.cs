@@ -65,6 +65,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return configuration.GetSection(nameof(AppSettings.Monitoring)).Get<MonitoringSettings>();
         }
 
+        public static NotificationSettings GetNotificationSettings(this IConfiguration configuration)
+        {
+            return configuration.GetSection(nameof(AppSettings.Notification)).Get<NotificationSettings>();
+        }
+
+
         public static X509Certificate2 GetCertificate(this IConfiguration config, string contentRoot)
         {
             return _cert;

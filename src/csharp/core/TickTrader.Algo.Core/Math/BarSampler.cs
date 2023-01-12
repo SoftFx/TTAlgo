@@ -23,12 +23,14 @@ namespace TickTrader.Algo.Core
             CachedSamplers.Add(Feed.Types.Timeframe.S1, new DurationSampler(TimeSpan.FromSeconds(1)));
         }
 
-        public static BarSampler Get(Feed.Types.Timeframe timeFrame)
+        public static BarSampler Get(Feed.Types.Timeframe timeframe)
         {
-            if (CachedSamplers.TryGetValue(timeFrame, out var result))
-                return result;
-            throw new ArgumentException($"Timeframe '{timeFrame}' is not supported!");
+            if (!TryGet(timeframe, out var result))
+                throw new ArgumentException($"Timeframe '{timeframe}' is not supported!");
+            return result;
         }
+
+        public static bool TryGet(Feed.Types.Timeframe timeframe, out BarSampler sampler) => CachedSamplers.TryGetValue(timeframe, out sampler);
 
         public abstract BarBoundaries GetBar(UtcTicks timepoint);
     }

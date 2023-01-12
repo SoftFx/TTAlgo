@@ -1,3 +1,4 @@
+﻿using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Domain;
 
@@ -216,8 +217,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Succ_TryParse3()
         {
-            var expect = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, priceType: Feed.Types.MarketSide.Bid);
-            var result = FeedCacheKey.TryParse($"EURUSD_Online_Ticks_", out var actual);
+            var expect = new FeedCacheKey("a", Feed.Types.Timeframe.Ticks, priceType: Feed.Types.MarketSide.Bid);
+            var result = FeedCacheKey.TryParse($"a_Online_Ticks", out var actual);
 
             Assert.IsTrue(result);
             Assert.AreEqual(expect, actual);
@@ -238,6 +239,36 @@ namespace TickTrader.FeedStorage.Tests
         {
             var expect = new FeedCacheKey("eurusd_1_2_", Feed.Types.Timeframe.TicksLevel2, SymbolConfig.Types.SymbolOrigin.Custom, Feed.Types.MarketSide.Bid);
             var result = FeedCacheKey.TryParse($"eurusd_1_2__custom_tickslevel2", out var actual);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(expect, actual);
+        }
+
+        [TestMethod]
+        public void Succ_TryParse6()
+        {
+            var expect = new FeedCacheKey("eurusd_сustom", Feed.Types.Timeframe.Ticks, SymbolConfig.Types.SymbolOrigin.Custom, Feed.Types.MarketSide.Bid);
+            var result = FeedCacheKey.TryParse($"eurusd_сustom_custom_ticks", out var actual);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(expect, actual);
+        }
+
+        [TestMethod]
+        public void Succ_TryParse7()
+        {
+            var expect = new FeedCacheKey("eurusd_1_2_custom_", Feed.Types.Timeframe.M1, SymbolConfig.Types.SymbolOrigin.Online, Feed.Types.MarketSide.Bid);
+            var result = FeedCacheKey.TryParse($"EURUSD_1_2_CUSTOM__ONLINE_M1_BID", out var actual);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(expect, actual);
+        }
+
+        [TestMethod]
+        public void Succ_TryParse8()
+        {
+            var expect = new FeedCacheKey("eurusd_token_online_custom", Feed.Types.Timeframe.MN, SymbolConfig.Types.SymbolOrigin.Token, Feed.Types.MarketSide.Ask);
+            var result = FeedCacheKey.TryParse($"eurusd_token_online_custom_token_mN_aSk", out var actual);
 
             Assert.IsTrue(result);
             Assert.AreEqual(expect, actual);
@@ -373,6 +404,51 @@ namespace TickTrader.FeedStorage.Tests
         public void Fail_TryParse15()
         {
             var result = FeedCacheKey.TryParse("EURUSD_t_Online_MN_Bid_assas", out var key);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(key);
+        }
+
+        [TestMethod]
+        public void Fail_TryParse16()
+        {
+            var result = FeedCacheKey.TryParse("EURUSD_Online_a_MN_Bid", out var key);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(key);
+        }
+
+        [TestMethod]
+        public void Fail_TryParse17()
+        {
+            var result = FeedCacheKey.TryParse("EURUSD_Online__MN_Bid", out var key);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(key);
+        }
+
+        [TestMethod]
+        public void Fail_TryParse18()
+        {
+            var result = FeedCacheKey.TryParse("EURUSD_Online_ticks_Bid", out var key);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(key);
+        }
+
+        [TestMethod]
+        public void Fail_TryParse19()
+        {
+            var result = FeedCacheKey.TryParse($"EURUSD_Online_Ticks_", out var key);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(key);
+        }
+
+        [TestMethod]
+        public void Fail_TryParse20()
+        {
+            var result = FeedCacheKey.TryParse($"_Online_Ticks", out var key);
 
             Assert.IsFalse(result);
             Assert.IsNull(key);

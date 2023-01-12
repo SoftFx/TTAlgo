@@ -1,15 +1,11 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    //public enum BufferUpdateResults { Extended = 2, LastItemUpdated = 1, NotUpdated = 0 }
-
     public struct BufferUpdateResult
     {
         /// <summary>
@@ -18,13 +14,25 @@ namespace TickTrader.Algo.Core
         public bool IsLastUpdated { get; set; }
         public int ExtendedBy { get; set; }
 
+        public BufferUpdateResult(bool isLastUpdated, int extendBy)
+        {
+            IsLastUpdated = isLastUpdated;
+            ExtendedBy = extendBy;
+        }
+
+        public override string ToString()
+        {
+            return $"{IsLastUpdated}; {ExtendedBy}";
+        }
+
+        public static BufferUpdateResult Combine(BufferUpdateResult x, BufferUpdateResult y)
+        {
+            return new BufferUpdateResult(x.IsLastUpdated || y.IsLastUpdated, Math.Max(x.ExtendedBy, y.ExtendedBy));
+        }
+
         public static BufferUpdateResult operator +(BufferUpdateResult x, BufferUpdateResult y)
         {
-            return new BufferUpdateResult()
-            {
-                IsLastUpdated = x.IsLastUpdated || y.IsLastUpdated,
-                ExtendedBy = Math.Max(x.ExtendedBy, y.ExtendedBy)
-            };
+            return new BufferUpdateResult(x.IsLastUpdated || y.IsLastUpdated, x.ExtendedBy + y.ExtendedBy);
         }
     }
 
@@ -37,37 +45,30 @@ namespace TickTrader.Algo.Core
 
     public interface IFeedHistoryProvider
     {
-        List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to);
-        List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count);
-        List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2);
-        List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, int count, bool level2);
+        List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to);
+        List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count);
+        List<QuoteInfo> QueryQuotes(string symbol, UtcTicks from, UtcTicks to, bool level2);
+        List<QuoteInfo> QueryQuotes(string symbol, UtcTicks from, int count, bool level2);
 
-        Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to);
-        Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count);
-        Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2);
-        Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2);
+        Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to);
+        Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count);
+        Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, UtcTicks from, UtcTicks to, bool level2);
+        Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, UtcTicks from, int count, bool level2);
     }
 
     public interface IFeedProvider
     {
-        ISyncContext Sync { get; }
-        List<QuoteInfo> GetSnapshot();
-        Task<List<QuoteInfo>> GetSnapshotAsync();
-        IQuoteSub GetSubscription();
+        List<QuoteInfo> GetQuoteSnapshot();
+        Task<List<QuoteInfo>> GetQuoteSnapshotAsync();
+        IQuoteSub GetQuoteSub();
+        IBarSub GetBarSub();
 
-        event Action<QuoteInfo> RateUpdated;
-        event Action<List<QuoteInfo>> RatesUpdated;
-    }
-
-    public interface ILinkOutput<T> : IDisposable
-    {
-        event Action<T> MsgReceived;
+        event Action<QuoteInfo> QuoteUpdated;
+        event Action<BarUpdate> BarUpdated;
     }
 
     public interface IAccountInfoProvider
     {
-        void SyncInvoke(Action action);
-
         AccountInfo GetAccountInfo();
         List<OrderInfo> GetOrders();
         List<PositionInfo> GetPositions();

@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
 
     internal abstract record TradeEventSettings
     {
-        internal ObservableCollection<TradeEventPoint> Events { get; } = new();
+        internal ObservableCollection<EventPoint> Events { get; } = new();
 
 
         internal string Name { get; }
@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         internal SKColor Color { get; }
 
 
-        internal Func<BaseTransactionModel, TradeEventPoint> GetPoint { get; init; }
+        internal Func<BaseTransactionModel, EventPoint> GetPoint { get; init; }
 
 
         internal TradeEventSettings(EventType type, SKColor color)

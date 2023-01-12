@@ -42,17 +42,6 @@ namespace TickTrader.BotTerminal
             _storageController.TryResolveFormatError = ProfileResolver.TryResolveProfile;
         }
 
-        public async Task<bool> StopCurrentProfile(string server, string login)
-        {
-            if (Server == server && Login == login)
-            {
-                return false;
-            }
-
-            await StopCurrentProfile();
-            return true;
-        }
-
         public async Task StopCurrentProfile()
         {
             await _storageController.Close();
@@ -65,11 +54,6 @@ namespace TickTrader.BotTerminal
         public void StartCurrentProfile()
         {
             SaveLoop();
-        }
-
-        public async void Stop()
-        {
-            await StopCurrentProfile();
         }
 
         public void LoadCachedProfile(string server, string login)
@@ -85,6 +69,17 @@ namespace TickTrader.BotTerminal
             CurrentProfileFileName = $"{server}_{login}.profile";
 
             OpenCachedProfile();
+        }
+
+        public ProfileStorageModel LoadCachedProfileOnce(string server, string login)
+        {
+            if (string.IsNullOrEmpty(server))
+                throw new ArgumentException("Invalid server name");
+
+            if (string.IsNullOrEmpty(login))
+                throw new ArgumentException("Invalid login");
+
+            return _storageController.LoadOnce($"{server}_{login}.profile");
         }
 
         public void LoadUserProfile(string profileName)

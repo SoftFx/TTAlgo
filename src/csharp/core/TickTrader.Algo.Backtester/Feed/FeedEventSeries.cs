@@ -4,10 +4,17 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Backtester
 {
-    internal class FeedEventSeries : ITimeEventSeries, IDisposable
+    internal sealed class FeedEventSeries : ITimeEventSeries, IDisposable
     {
         private IEnumerator<IRateInfo> _e;
-        private IRateInfo _nextRate;
+
+
+        public IRateInfo NextRate { get; private set; }
+
+        public DateTime NextOccurrance { get; private set; }
+
+        public bool IsCompeted { get; private set; }
+
 
         public FeedEventSeries(FeedEmulator emulator)
         {
@@ -15,19 +22,17 @@ namespace TickTrader.Algo.Backtester
             MoveNext();
         }
 
-        public DateTime NextOccurrance { get; private set; }
-        public bool IsCompeted { get; private set; }
 
         public IRateInfo Take()
         {
-            var item = _nextRate;
+            var item = NextRate;
             MoveNext();
             return item;
         }
 
         TimeEvent ITimeEventSeries.Take()
         {
-            var item = _nextRate;
+            var item = NextRate;
             MoveNext();
             return new TimeEvent(item.TimeUtc, false, item);
         }
@@ -36,11 +41,14 @@ namespace TickTrader.Algo.Backtester
         {
             IsCompeted = !_e.MoveNext();
             if (IsCompeted)
+            {
+                NextRate = null;
                 NextOccurrance = DateTime.MaxValue;
+            }
             else
             {
-                _nextRate = _e.Current;
-                NextOccurrance = _nextRate.TimeUtc;
+                NextRate = _e.Current;
+                NextOccurrance = NextRate.TimeUtc;
             }
         }
 

@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,7 +10,7 @@
 
   <ItemGroup Label="FDK2 references">
     <ProjectReference Include="..\..\..\..\modules\FDK2\Client\Client.csproj" Condition=" '$(UseFdk2Src)' == 'true' " />
-    <PackageReference Include="SoftFX.FDK2" Version="2.29.2093-alpha" Condition=" '$(UseFdk2Src)' != 'true' " />
+    <PackageReference Include="SoftFX.FDK2" Version="2.32.2136" Condition=" '$(UseFdk2Src)' != 'true' " />
   </ItemGroup>
 
 </Project>

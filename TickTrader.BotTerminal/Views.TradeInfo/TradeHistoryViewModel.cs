@@ -275,7 +275,7 @@ namespace TickTrader.BotTerminal
             {
                 _tradesList.Clear();
 
-                var downloadTask = Task.Run(() => DownloadingFullHistoryAsync(from?.ToUniversalTime(), to?.ToUniversalTime(), SkipCancel, SkipTriggers, cToken));
+                var downloadTask = Task.Run(() => DownloadingFullHistoryAsync(from.ToUtcTicks(), to.ToUtcTicks(), SkipCancel, SkipTriggers, cToken));
                 DownloadObserver = new ObservableTask<int>(downloadTask);
 
                 await downloadTask;
@@ -288,7 +288,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task<int> DownloadingFullHistoryAsync(DateTime? from, DateTime? to, bool skipCancel, bool skipTriggers, CancellationToken token)
+        private async Task<int> DownloadingFullHistoryAsync(UtcTicks? from, UtcTicks? to, bool skipCancel, bool skipTriggers, CancellationToken token)
         {
             var ans = 0;
 

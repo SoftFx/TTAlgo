@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
@@ -24,7 +23,7 @@ namespace TickTrader.Algo.CoreV1
 
         public event Action Appended { add { } remove { } }
 
-        public void LoadFeed(Timestamp from, Timestamp to)
+        public void LoadFeed(UtcTicks from, UtcTicks to)
         {
             var data = Context.FeedHistory.QueryQuotes(SymbolCode, from, to, false);
             AppendData(data);
@@ -32,18 +31,18 @@ namespace TickTrader.Algo.CoreV1
 
         public void LoadFeed(int count)
         {
-            var to = (DateTime.Now + TimeSpan.FromDays(1)).ToTimestamp();
+            var to = UtcTicks.Now + TimeSpan.FromDays(1);
             var data = Context.FeedHistory.QueryQuotes(SymbolCode, to, -count, false);
             AppendData(data);
         }
 
-        public void LoadFeed(Timestamp from, int count)
+        public void LoadFeed(UtcTicks from, int count)
         {
             var data = Context.FeedHistory.QueryQuotes(SymbolCode, from, count, false);
             AppendData(data);
         }
 
-        public void LoadFeedFrom(Timestamp from)
+        public void LoadFeedFrom(UtcTicks from)
         {
             throw new NotImplementedException();
         }

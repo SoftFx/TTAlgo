@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
             AggregatedType = _varContext.AddProperty(order.Side.Aggregate(Type.Value));
 
             Created = _varContext.AddProperty(order.Created?.ToDateTime());
-            Expiration = _varContext.AddProperty(order.Expiration?.ToDateTime());
+            Expiration = _varContext.AddProperty(order.Expiration.ToDateTime());
 
             Comment = _varContext.AddProperty(order.Comment);
             Tag = _varContext.AddProperty(order.UserTag);
@@ -38,7 +38,7 @@ namespace TickTrader.BotTerminal
             Slippage = _varContext.AddProperty(order.Slippage);
 
             OtoTriggerType = _varContext.AddProperty(order.OtoTrigger?.Type.ToString());
-            OtoTime = _varContext.AddProperty(order.OtoTrigger?.TriggerTime?.ToDateTime());
+            OtoTime = _varContext.AddProperty(order.OtoTrigger?.TriggerTime.ToDateTime());
             OtoTriggeredById = _varContext.AddProperty(order.OtoTrigger?.OrderIdTriggeredBy);
 
             order.EssentialsChanged += OrderChanged;
@@ -108,7 +108,7 @@ namespace TickTrader.BotTerminal
             Commission.Value = _order.Commission;
 
             Created.Value = _order.Created?.ToDateTime();
-            Expiration.Value = _order.Expiration?.ToDateTime();
+            Expiration.Value = _order.Expiration.ToDateTime();
             Modified.Value = _order.Modified?.ToDateTime();
 
             Comment.Value = _order.Comment;
@@ -124,7 +124,7 @@ namespace TickTrader.BotTerminal
             Slippage.Value = _order.Slippage;
 
             OtoTriggerType.Value = _order.OtoTrigger?.Type.ToString();
-            OtoTime.Value = _order.OtoTrigger?.TriggerTime?.ToDateTime();
+            OtoTime.Value = _order.OtoTrigger?.TriggerTime.ToDateTime();
             OtoTriggeredById.Value = _order.OtoTrigger?.OrderIdTriggeredBy;
 
             RateUpdate(_symbol);

@@ -1,15 +1,41 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal"
-                    xmlns:lvc="clr-namespace:TickTrader.BotTerminal.Controls.Chart">
+                    xmlns:lvc="clr-namespace:TickTrader.BotTerminal.Controls.Chart"           
+                    xmlns:lv="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF">
 
     <!-- View Template -->
 
     <ControlTemplate x:Key="BacktesterChartPageTemplate.Classic">
-        <lvc:CartesianTradeChart BarsSource="{Binding BarVector}" 
-                                 Period="{l:UpdateBind Period.Value}"
-                                 PricePrecision="{l:UpdateBind PricePrecision.Value}"
-                                 TradeEventHandler="{Binding TradeEventHandler}"/>
+        <DockPanel>
+            <DockPanel.ContextMenu>
+                <ContextMenu Style="{DynamicResource ContextMenu_Style}">
+                    <MenuItem x:Name="showLegendControl" Header="Legend" IsCheckable="True"/>
+                </ContextMenu>
+            </DockPanel.ContextMenu>
+
+            <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding IndicatorObserver.SubWindows}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <lvc:CartesianTargetIndicatorChart Series="{Binding Series}"
+                                                           ChartSettings="{Binding Settings}"
+                                                           MinHeight="100"
+                                                           XAxes="{Binding ElementName=mainChart, Path=XAxes}"
+                                                           ZoomMode="{Binding ElementName=mainChart, Path=ZoomMode}"
+                                                           ShowLegend="{Binding ElementName=showLegendControl, Path=IsChecked, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <lvc:CartesianTradeChart x:Name="mainChart"
+                                     BarsSource="{Binding BarVector}"
+                                     Period="{l:UpdateBind Period.Value}"
+                                     PricePrecision="{l:UpdateBind PricePrecision.Value}"
+                                     TradeEventHandler="{Binding TradeEventHandler}"
+                                     IndicatorObserver="{Binding IndicatorObserver}"
+                                     ShowLegend="{Binding ElementName=showLegendControl, Path=IsChecked, UpdateSourceTrigger=PropertyChanged}"/>
+
+        </DockPanel>
     </ControlTemplate>
 
     <!-- View Style -->

@@ -93,11 +93,11 @@ namespace TickTrader.Algo.Core.Tests
         {
         }
 
-        public void EnqueueQuote(QuoteInfo update)
-        {
-        }
+        public void EnqueueQuote(QuoteInfo quote) { }
 
-        public void EnqueueEvent(Action<PluginBuilder> action)
+        public void EnqueueBar(BarUpdate update) { }
+
+        public void EnqueueEvent(IAccountApiEvent apiEvent)
         {
         }
 

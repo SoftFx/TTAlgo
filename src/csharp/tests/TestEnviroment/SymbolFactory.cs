@@ -1,5 +1,4 @@
-﻿using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Domain;
+﻿using TickTrader.Algo.Domain;
 
 namespace TestEnviroment
 {
@@ -51,7 +50,7 @@ namespace TestEnviroment
 
         public static ISymbolInfoWithRate BuildSymbol(string baseCurr, string counterCurr)
         {
-            var symbol = _prototype.DeepCopy();
+            var symbol = _prototype.Clone();
 
             symbol.Name = $"{baseCurr}{counterCurr}";
             symbol.BaseCurrency = baseCurr;

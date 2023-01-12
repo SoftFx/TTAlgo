@@ -3,18 +3,15 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async.Actors;
-using TickTrader.Algo.Rpc;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
 {
-    internal class AlgoServerPrivate : IRpcHost
+    internal class AlgoServerPrivate : IPluginHost
     {
         private readonly IActorRef _server, _eventBus;
 
-
-        public string Address { get; set; }
-
-        public int BoundPort { get; set; }
 
         public EnvService Env { get; }
 
@@ -23,8 +20,6 @@ namespace TickTrader.Algo.Server
         public AlertManagerModel Alerts { get; }
 
         public ConnectionOptions AccountOptions { get; set; }
-
-        public RuntimeSettings RuntimeSettings { get; set; }
 
         public MonitoringSettings MonitoringSettings { get; set; }
 
@@ -41,93 +36,43 @@ namespace TickTrader.Algo.Server
 
         internal void SendUpdate(IMessage update) => _eventBus.Tell(update);
 
-        internal void OnRuntimeStopped(string runtimeId) => _server.Tell(new RuntimeStoppedMsg(runtimeId));
 
-        internal void OnRuntimeInvalid(string pkgId, string runtimeId) => _server.Tell(new PkgRuntimeInvalidMsg(pkgId, runtimeId));
+        #region IPluginHost implementation
 
-        internal Task<IActorRef> GetRuntime(string id) => _server.Ask<IActorRef>(new RuntimeRequest(id));
+        Task IPluginHost.UpdateRunningState(string pluginId, bool isRunning) => SavedState.SetPluginRunning(pluginId, isRunning);
 
-        internal Task<string> GetPkgRuntimeId(string pkgId) => _server.Ask<string>(new PkgRuntimeIdRequest(pkgId));
+        Task IPluginHost.UpdateSavedState(PluginSavedState savedState) => SavedState.UpdatePlugin(savedState);
 
-        internal Task<AccountControlModel> GetAccountControl(string accId) => _server.Ask<AccountControlModel>(new AccountControlRequest(accId));
+        void IPluginHost.OnPluginUpdated(PluginModelUpdate update) => SendUpdate(update);
 
+        void IPluginHost.OnPluginStateUpdated(PluginStateUpdate update) => SendUpdate(update);
 
-        #region IRpcHost implementation
+        void IPluginHost.OnPluginAlert(string pluginId, PluginLogRecord record) => Alerts.SendPluginAlert(pluginId, record);
 
-        ProtocolSpec IRpcHost.Resolve(ProtocolSpec protocol, out string error)
+        void IPluginHost.OnGlobalAlert(string msg) => Alerts.SendServerAlert(msg);
+
+        Task<string> IPluginHost.GetPkgRuntimeId(string pkgId) => RuntimeServerModel.GetPkgRuntimeId(_server, pkgId);
+
+        Task<IActorRef> IPluginHost.GetRuntime(string runtimeId) => RuntimeServerModel.GetRuntime(_server, runtimeId);
+
+        ExecutorConfig IPluginHost.CreateExecutorConfig(string pluginId, string accId, PluginConfig pluginConfig)
         {
-            error = string.Empty;
-            return protocol;
+            var config = new ExecutorConfig { Id = pluginId, AccountId = accId, IsLoggingEnabled = true, SaveLogsOnDisk = true };
+            config.SetPluginConfig(pluginConfig);
+            config.WorkingDirectory = Env.GetPluginWorkingFolder(pluginId);
+            config.LogDirectory = Env.GetPluginLogsFolder(pluginId);
+            config.InitPriorityInvokeStrategy();
+            config.InitSlidingBuffering(512);
+            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+
+            return config;
         }
 
-        IRpcHandler IRpcHost.GetRpcHandler(ProtocolSpec protocol)
-        {
-            switch (protocol.Url)
-            {
-                case KnownProtocolUrls.RuntimeV1:
-                    return new ServerRuntimeV1Handler(this);
-            }
-            return null;
-        }
+        #endregion IPluginHost implementation
 
-        #endregion IRpcHost implementation
-
-
-        internal class RuntimeRequest
-        {
-            public string Id { get; }
-
-            public RuntimeRequest(string id)
-            {
-                Id = id;
-            }
-        }
-
-        internal class PkgRuntimeIdRequest
-        {
-            public string PkgId { get; }
-
-            public PkgRuntimeIdRequest(string pkgId)
-            {
-                PkgId = pkgId;
-            }
-        }
-
-        internal class RuntimeStoppedMsg
-        {
-            public string Id { get; }
-
-            public RuntimeStoppedMsg(string id)
-            {
-                Id = id;
-            }
-        }
-
-        internal class PkgRuntimeInvalidMsg
-        {
-            public string PkgId { get; }
-
-            public string RuntimeId { get; }
-
-            public PkgRuntimeInvalidMsg(string pkgId, string runtimeId)
-            {
-                PkgId = pkgId;
-                RuntimeId = runtimeId;
-            }
-        }
-
-        internal class AccountControlRequest
-        {
-            public string Id { get; }
-
-            public AccountControlRequest(string id)
-            {
-                Id = id;
-            }
-        }
 
         internal AccountModelSettings GetDefaultClientSettings(string loggerId) =>
-            new AccountModelSettings(loggerId)
+            new(loggerId)
             {
                 ConnectionSettings = new ConnectionSettings
                 {
@@ -135,15 +80,9 @@ namespace TickTrader.Algo.Server
                     Options = AccountOptions,
                 },
 
-                //HistoryProviderSettings = new HistoryProviderSettings
-                //{
-                //    FolderPath = Env.FeedHistoryCacheFolder,
-                //    Options = FeedHistoryFolderOptions.ServerClientHierarchy,
-                //},
-
                 Monitoring = new AccountMonitoringSettings
                 {
-                    NotificationMethod = Alerts.SendServerAlert,
+                    NotificationMethod = Alerts.SendMonitoringAlert,
 
                     EnableQuoteMonitoring = MonitoringSettings.QuoteMonitoring.EnableMonitoring,
                     AccetableQuoteDelay = MonitoringSettings.QuoteMonitoring.AccetableQuoteDelay,

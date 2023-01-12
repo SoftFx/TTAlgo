@@ -24,8 +24,8 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeHistoryProvider
     {
-        IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, HistoryRequestOptions options);
-        IAsyncPagedEnumerator<TriggerReportInfo> GetTriggerHistory(DateTime? from, DateTime? to, HistoryRequestOptions options);
+        IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(UtcTicks? from, UtcTicks? to, HistoryRequestOptions options);
+        IAsyncPagedEnumerator<TriggerReportInfo> GetTriggerHistory(UtcTicks? from, UtcTicks? to, HistoryRequestOptions options);
     }
 
     public interface IAsyncPagedEnumerator<T> : IDisposable

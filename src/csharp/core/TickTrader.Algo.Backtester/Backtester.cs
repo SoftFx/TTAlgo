@@ -23,12 +23,12 @@ namespace TickTrader.Algo.Backtester
         private readonly PluginExecutorCore _executorCore;
         private readonly EmulationControlFixture _control;
 
-        public Backtester(PluginKey pluginKey, DateTime? from, DateTime? to)
+        public Backtester(PluginKey pluginKey, DateTime from, DateTime to)
         {
             _pluginKey = pluginKey ?? throw new ArgumentNullException(nameof(pluginKey));
             var metadata = PackageMetadataCache.GetPlugin(pluginKey) ?? throw new ArgumentException("metadata not found", nameof(pluginKey));
             PluginInfo = metadata.Descriptor;
-            _executorCore = new PluginExecutorCore(pluginKey);
+            _executorCore = new PluginExecutorCore(pluginKey, "Baсktesting-" + Interlocked.Increment(ref IdSeed).ToString());
             _executorCore.Metadata = this;
 
             CommonSettings.EmulationPeriodStart = from;
@@ -104,15 +104,14 @@ namespace TickTrader.Algo.Backtester
             _executorCore.MainSymbolCode = CommonSettings.MainSymbol;
             _executorCore.TimeFrame = CommonSettings.MainTimeframe;
             _executorCore.ModelTimeFrame = CommonSettings.ModelTimeframe;
-            _executorCore.InstanceId = "Baсktesting-" + Interlocked.Increment(ref IdSeed).ToString();
             _executorCore.Permissions = new PluginPermissions() { TradeAllowed = true };
+
+            _executorCore.OnInternalError += err => _control.Collector.AddEvent(PluginLogRecord.Types.LogSeverity.Error, $"Internal executor error: {err.Exception.Message}");
 
             bool isRealtime = MarginDataMode.HasFlag(TestDataSeriesFlags.Realtime)
                 || EquityDataMode.HasFlag(TestDataSeriesFlags.Realtime)
                 || OutputDataMode.HasFlag(TestDataSeriesFlags.Realtime)
                 || SymbolDataConfig.Any(s => s.Value.HasFlag(TestDataSeriesFlags.Realtime));
-
-            _executorCore.StartUpdateMarshalling();
 
             try
             {
@@ -139,7 +138,6 @@ namespace TickTrader.Algo.Backtester
             finally
             {
                 _control.OnStop();
-                _executorCore.StopUpdateMarshalling();
             }
         }
 
@@ -192,7 +190,9 @@ namespace TickTrader.Algo.Backtester
             foreach (var output in descriptor.Outputs)
             {
                 var id = output.Id;
-                BacktesterResults.Internal.SaveOutputData(resultsDirPath, id, _control.Collector.LocalGetOutputData(id));
+                var precision = output.Precision == -1 ? CommonSettings.Symbols[CommonSettings.MainSymbol].Digits : output.Precision;
+
+                BacktesterResults.Internal.SaveOutputData(resultsDirPath, id, precision, _control.Collector.LocalGetOutputData(id));
             }
 
             if (descriptor.IsTradeBot)

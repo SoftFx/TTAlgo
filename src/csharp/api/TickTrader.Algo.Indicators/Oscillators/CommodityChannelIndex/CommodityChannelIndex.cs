@@ -4,7 +4,7 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Commodity Channel Index", Version = "1.0")]
+    [Indicator(Category = "Oscillators", DisplayName = "Commodity Channel Index", Version = "1.1")]
     public class CommodityChannelIndex : Indicator, ICommodityChannelIndex
     {
         private IMovingAverage _sma;

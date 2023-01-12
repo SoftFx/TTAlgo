@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -191,7 +192,7 @@ namespace TickTrader.BotTerminal
 
         public void AddNewAccount() => SelectedAgent.UpdatePluginAccountSettings(this);
 
-        public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog(SelectedPlugin.Key.PackageId);
+        public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog();
 
         public void Reset()
         {
@@ -207,18 +208,20 @@ namespace TickTrader.BotTerminal
             {
                 if (Type == Metadata.Types.PluginType.TradeBot && Mode == PluginSetupMode.New)
                 {
+                    var fileUploadList = SelectedAgent.Model.IsRemote ? config.FixFileParametersForRemote() : null;
                     if (!SelectedAgent.Model.Bots.Snapshot.ContainsKey(config.InstanceId))
                         await SelectedAgent.Model.AddBot(SelectedAccount.AccountId, config);
                     else await SelectedAgent.Model.ChangeBotConfig(config.InstanceId, config);
-                    await UploadBotFiles(config);
+                    await UploadBotFiles(config, fileUploadList);
                     SelectedAgent.OpenBotState(config.InstanceId);
                     if (Setup.RunBot)
                         await SelectedAgent.Model.StartBot(config.InstanceId);
                 }
                 else
                 {
+                    var fileUploadList = SelectedAgent.Model.IsRemote ? config.FixFileParametersForRemote() : null;
                     await SelectedAgent.Model.ChangeBotConfig(Bot.InstanceId, config);
-                    await UploadBotFiles(config);
+                    await UploadBotFiles(config, fileUploadList);
                 }
 
                 await TryCloseAsync();
@@ -403,15 +406,16 @@ namespace TickTrader.BotTerminal
                 Setup.Visible = false;
         }
 
-        private async Task UploadBotFiles(PluginConfig config)
+        private async Task UploadBotFiles(PluginConfig config, List<(string, string)> fileUploadList)
         {
+            if (fileUploadList == null || fileUploadList.Count == 0)
+                return;
+
             ShowFileProgress = true;
             try
             {
-                foreach (var prop in config.Properties.Where(p => p.Is(FileParameterConfig.Descriptor)))
+                foreach (var (fileName, path) in fileUploadList)
                 {
-                    var fileParam = prop.Unpack<FileParameterConfig>();
-                    var path = fileParam.FileName;
                     if (System.IO.File.Exists(path) && System.IO.Path.GetFullPath(path) == path)
                     {
                         var fileInfo = new System.IO.FileInfo(path);

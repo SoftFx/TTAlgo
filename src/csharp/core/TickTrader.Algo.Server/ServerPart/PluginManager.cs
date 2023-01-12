@@ -173,6 +173,14 @@ namespace TickTrader.Algo.Server
             }
         }
 
+        public async Task ExecCmd(string id, object cmd)
+        {
+            if (!_plugins.TryGetValue(id, out var plugin))
+                throw Errors.PluginNotFound(id);
+
+            await plugin.Ask(cmd);
+        }
+
 
         private IActorRef CreatePluginIntenal(string id, PluginSavedState savedState)
         {

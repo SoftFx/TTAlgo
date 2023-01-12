@@ -13,7 +13,9 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         void Remove(IQuoteSubInternal sub);
 
-        void Modify(IQuoteSubInternal sub, List<FeedSubscriptionUpdate> updates);
+        void Modify(IQuoteSubInternal sub, QuoteSubUpdate update);
+
+        void Modify(IQuoteSubInternal sub, List<QuoteSubUpdate> updates);
     }
 
     public interface IQuoteSubInternal
@@ -23,14 +25,14 @@ namespace TickTrader.Algo.Core.Subscriptions
 
     public interface IQuoteSubProvider
     {
-        void Modify(List<FeedSubscriptionUpdate> updates);
+        void Modify(List<QuoteSubUpdate> updates);
     }
 
 
     public class QuoteSubManager : IQuoteSubManager
     {
         private readonly ConcurrentDictionary<string, SubGroup> _groups = new ConcurrentDictionary<string, SubGroup>();
-        private readonly SubGroup _allSymbolsGroup = new SubGroup(FeedSubscriptionUpdate.AllSymbolsAlias);
+        private readonly SubGroup _allSymbolsGroup = new SubGroup(QuoteSubUpdate.AllSymbolsAlias);
         private readonly SubList<IQuoteSubInternal> _subList = new SubList<IQuoteSubInternal>();
         private readonly IQuoteSubProvider _provider;
 
@@ -57,28 +59,42 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         public void Remove(IQuoteSubInternal sub) => _subList.RemoveSub(sub);
 
-        public List<FeedSubscriptionUpdate> InitUnwrap(IEnumerable<string> allSymbols)
+        public List<QuoteSubUpdate> InitUnwrap(IEnumerable<string> allSymbols)
         {
             _unwrappedSymbolsDepth = allSymbols.ToDictionary(k => k, v => SubscriptionDepth.Ambient);
 
             lock (_unwrappedSymbolsDepth)
             {
-                var updates = new List<FeedSubscriptionUpdate>(_unwrappedSymbolsDepth.Count);
+                var updates = new List<QuoteSubUpdate>(_unwrappedSymbolsDepth.Count);
                 var minDepth = _allSymbolsGroup.Depth;
                 foreach (var symbol in allSymbols)
                 {
                     var depth = GetUnwrappedSymbolDepth(symbol, minDepth);
                     _unwrappedSymbolsDepth[symbol] = depth;
-                    updates.Add(FeedSubscriptionUpdate.Upsert(symbol, depth));
+                    updates.Add(QuoteSubUpdate.Upsert(symbol, depth));
                 }
                 return updates;
             }
         }
 
-        public void Modify(IQuoteSubInternal sub, List<FeedSubscriptionUpdate> updates)
+        public void Modify(IQuoteSubInternal sub, QuoteSubUpdate update)
+        {
+            if (_unwrappedSymbolsDepth != null)
+            {
+                Modify(sub, new List<QuoteSubUpdate> { update });
+            }
+            else
+            {
+                var groupUpdate = ModifyGroup(sub, update);
+                if (groupUpdate != null)
+                    _provider.Modify(new List<QuoteSubUpdate> { groupUpdate });
+            }
+        }
+
+        public void Modify(IQuoteSubInternal sub, List<QuoteSubUpdate> updates)
         {
             var allChanged = false;
-            var groupUpdates = new List<FeedSubscriptionUpdate>();
+            var groupUpdates = new List<QuoteSubUpdate>();
             foreach (var update in updates)
             {
                 var groupUpdate = ModifyGroup(sub, update);
@@ -108,7 +124,7 @@ namespace TickTrader.Algo.Core.Subscriptions
                             if (smbDepth.Value < depth)
                             {
                                 _unwrappedSymbolsDepth[symbol] = depth;
-                                groupUpdates.Add(FeedSubscriptionUpdate.Upsert(symbol, depth));
+                                groupUpdates.Add(QuoteSubUpdate.Upsert(symbol, depth));
                             }
                         }
                     }
@@ -124,11 +140,12 @@ namespace TickTrader.Algo.Core.Subscriptions
                 }
             }
 
-            _provider.Modify(groupUpdates);
+            if (groupUpdates.Count > 0)
+                _provider.Modify(groupUpdates);
         }
 
 
-        private FeedSubscriptionUpdate ModifyGroup(IQuoteSubInternal sub, FeedSubscriptionUpdate update)
+        private QuoteSubUpdate ModifyGroup(IQuoteSubInternal sub, QuoteSubUpdate update)
         {
             var symbol = update.Symbol;
             SubGroup group = null;
@@ -152,8 +169,8 @@ namespace TickTrader.Algo.Core.Subscriptions
                 {
                     group.Depth = newDepth;
                     return newDepth > SubscriptionDepth.Ambient
-                        ? FeedSubscriptionUpdate.Upsert(symbol, newDepth)
-                        : FeedSubscriptionUpdate.Remove(symbol);
+                        ? QuoteSubUpdate.Upsert(symbol, newDepth)
+                        : QuoteSubUpdate.Remove(symbol);
                 }
             }
 
@@ -162,7 +179,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         private SubGroup GetOrAddGroup(string symbol)
         {
-            if (symbol == FeedSubscriptionUpdate.AllSymbolsAlias)
+            if (symbol == QuoteSubUpdate.AllSymbolsAlias)
                 return _allSymbolsGroup;
 
             return _groups.GetOrAdd(symbol, s => new SubGroup(s));
@@ -170,7 +187,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         private SubGroup GetGroupOrDefault(string symbol)
         {
-            if (symbol == FeedSubscriptionUpdate.AllSymbolsAlias)
+            if (symbol == QuoteSubUpdate.AllSymbolsAlias)
                 return _allSymbolsGroup;
 
             _groups.TryGetValue(symbol, out var group);

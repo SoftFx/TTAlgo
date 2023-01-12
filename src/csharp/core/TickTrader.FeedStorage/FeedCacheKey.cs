@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 
@@ -47,32 +46,32 @@ namespace TickTrader.FeedStorage
             if (string.IsNullOrEmpty(strCode))
                 return false;
 
-            var parts = strCode.Trim(Separator).Split(Separator);
+            var parts = strCode.Split(Separator);
 
-            var symbol = new StringBuilder(1 << 4);
-            var origin = default(SymbolConfig.Types.SymbolOrigin);
-            var timeframe = default(Feed.Types.Timeframe);
-            var side = default(Feed.Types.MarketSide);
-
-            int i = 0;
-
-            while (i < parts.Length && !TryParseStrToEnum(parts[i], out origin)) //combline all parts before origin (ex. EURUSD_test1)
-                symbol.Append(parts[i++]).Append(Separator);
-
-            if (i == parts.Length || symbol.Length == 0)
+            if (parts.Length < 3) // min format is symbol_origin_ticks
                 return false;
 
-            var result = ++i < parts.Length && TryParseStrToEnum(parts[i], out timeframe);
+            int i = parts.Length - 1;
 
-            if (i + 1 < parts.Length) //getting side if it exist
-                result &= TryParseStrToEnum(parts[++i], out side);
+            var hasSide = TryParseStrToEnum(parts[i], out Feed.Types.MarketSide side); // tick doesn't have a side
 
-            result &= ++i == parts.Length; //check that string is over
+            if (hasSide) // jump to expected timeframe
+                i--;
 
-            if (result)
-                key = new FeedCacheKey(symbol.ToString().Remove(symbol.Length - 1), timeframe, origin, side);
+            if (!TryParseStrToEnum(parts[i], out Feed.Types.Timeframe timeframe) || (timeframe.IsTick() && hasSide))
+                return false;
 
-            return result;
+            if (!TryParseStrToEnum(parts[--i], out SymbolConfig.Types.SymbolOrigin origin))
+                return false;
+
+            var symbol = string.Join(Separator, parts[..i]);
+
+            if (symbol.Length == 0)
+                return false;
+
+            key = new FeedCacheKey(symbol, timeframe, origin, side);
+
+            return true;
         }
 
         private static bool TryParseStrToEnum<TEnum>(string str, out TEnum value) where TEnum : struct

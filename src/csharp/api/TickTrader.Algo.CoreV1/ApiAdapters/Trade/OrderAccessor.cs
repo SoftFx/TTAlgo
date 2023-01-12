@@ -1,7 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 
@@ -9,9 +8,9 @@ namespace TickTrader.Algo.CoreV1
 {
     public sealed class OrderAccessor : Order
     {
-        public OrderInfo Info { get; }
+        public OrderInfo Info { get; private set; }
 
-        internal WriteEntity Entity { get; }
+        internal WriteEntity Entity { get; private set; }
 
         internal SymbolInfo SymbolInfo { get; set; }
 
@@ -23,7 +22,7 @@ namespace TickTrader.Algo.CoreV1
         internal OrderAccessor(SymbolInfo symbol, OrderInfo info = null)
         {
             SymbolInfo = symbol;
-            
+
             if (info == null)
             {
                 info = new OrderInfo() { Symbol = symbol.Name };
@@ -76,7 +75,7 @@ namespace TickTrader.Algo.CoreV1
 
         DateTime Order.Created => Info.Created?.ToDateTime().ToLocalTime() ?? DateTime.MinValue;
 
-        DateTime Order.Expiration => Info.Expiration?.ToDateTime().ToLocalTime() ?? DateTime.MinValue;
+        DateTime Order.Expiration => Info.Expiration?.ToLocalDateTime() ?? DateTime.MinValue;
 
         double Order.ExecPrice => Info.ExecPrice ?? double.NaN;
 
@@ -94,7 +93,7 @@ namespace TickTrader.Algo.CoreV1
 
         string Order.OcoRelatedOrderId => Info.OcoRelatedOrderId;
 
-        Order Order.DeepCopy() => this.DeepCopy();
+        Order Order.DeepCopy() => new OrderAccessor { SymbolInfo = SymbolInfo, Info = Info, ContingentTrigger = ContingentTrigger, Entity = Entity.Clone() };
 
         internal bool IsSameOrderId(OrderAccessor other) => other != null && string.Equals(Info.Id, other.Info.Id);
 
@@ -106,8 +105,7 @@ namespace TickTrader.Algo.CoreV1
 
         public static bool IsHiddenOrder(double? maxVisibleVolume) => maxVisibleVolume != null && maxVisibleVolume.Value.E(0.0);
 
-        public IContingentOrderTrigger ContingentTrigger { get; }
-
+        public IContingentOrderTrigger ContingentTrigger { get; private set; }
 
         private static double ProcessResponse(ICalculateResponse<double> response)
         {
@@ -121,6 +119,18 @@ namespace TickTrader.Algo.CoreV1
             public double? OpenConversionRate { get; internal set; }
             public double? ClosePrice { get; set; }
             internal DateTime PositionCreated { get; set; }
+
+
+            public WriteEntity Clone()
+            {
+                return new WriteEntity()
+                {
+                    ActionNo = ActionNo,
+                    OpenConversionRate = OpenConversionRate,
+                    ClosePrice = ClosePrice,
+                    PositionCreated = PositionCreated,
+                };
+            }
         }
     }
 }

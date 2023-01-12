@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -16,29 +15,28 @@ namespace TickTrader.Algo.Backtester
 
         public event Action<IRateInfo> RateUpdated;
 
-        public IEnumerable<BarData> QueryBars(Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        public IEnumerable<BarData> QueryBars(Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
             if (from > to)
                 Ref.Swap(ref from, ref to);
 
             var vector = GetOrAddBuilder(marketSide, timeframe);
-            var index = vector.BinarySearchBy(b => b.OpenTime, new UtcTicks(from), BinarySearchTypes.NearestHigher);
+            var index = vector.BinarySearchBy(b => b.OpenTime, from, BinarySearchTypes.NearestHigher);
 
             if (index < 0)
                 yield break;
 
-            var toTime = new UtcTicks(to);
             for (var i = index; i < vector.Count; i++)
             {
                 var bar = vector[i];
-                if (bar.OpenTime > toTime)
+                if (bar.OpenTime > to)
                     yield break;
 
                 yield return bar;
             }
         }
 
-        public IEnumerable<BarData> QueryBars(Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        public IEnumerable<BarData> QueryBars(Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
             var vector = GetOrAddBuilder(marketSide, timeframe);
 
@@ -46,7 +44,7 @@ namespace TickTrader.Algo.Backtester
                 yield break;
             else if (count > 0)
             {
-                var index = vector.BinarySearchBy(b => b.OpenTime, new UtcTicks(from), BinarySearchTypes.NearestHigher);
+                var index = vector.BinarySearchBy(b => b.OpenTime, from, BinarySearchTypes.NearestHigher);
 
                 if (index < 0)
                     yield break;
@@ -58,7 +56,7 @@ namespace TickTrader.Algo.Backtester
             }
             else
             {
-                var index = vector.BinarySearchBy(b => b.OpenTime, new UtcTicks(from), BinarySearchTypes.NearestLower);
+                var index = vector.BinarySearchBy(b => b.OpenTime, from, BinarySearchTypes.NearestLower);
 
                 if (index < 0)
                     yield break;
@@ -70,12 +68,12 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-        public List<QuoteInfo> QueryTicks(Timestamp from, Timestamp to, bool level2)
+        public List<QuoteInfo> QueryTicks(UtcTicks from, UtcTicks to, bool level2)
         {
             return new List<QuoteInfo>();
         }
 
-        public List<QuoteInfo> QueryTicks(Timestamp from, int count, bool level2)
+        public List<QuoteInfo> QueryTicks(UtcTicks from, int count, bool level2)
         {
             return new List<QuoteInfo>();
         }

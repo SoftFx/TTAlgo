@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Runtime\TickTrader.Algo.Runtime.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,7 +1,5 @@
 ﻿using LiveChartsCore;
 using LiveChartsCore.Defaults;
-using LiveChartsCore.Measure;
-using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 
@@ -35,7 +33,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         }
 
 
-        internal SupportPriceLine(SKColor color, ChartTradeSettings settings, int labelAxisIndex = 0)
+        internal SupportPriceLine(SKColor color, TradeChartSettings settings, int labelAxisIndex = 0)
         {
             ZIndex = ZIndexConst;
 
@@ -50,7 +48,8 @@ namespace TickTrader.BotTerminal.Controls.Chart
             label.DataLabelsPaint = new SolidColorPaint(color);
             label.ScalesYAt = labelAxisIndex;
             label.ZIndex = ZIndexConst;
-            
+            label.IsVisibleAtLegend = false;
+
             Label = label;
         }
     }

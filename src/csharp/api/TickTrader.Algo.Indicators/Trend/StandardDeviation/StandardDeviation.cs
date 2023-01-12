@@ -6,11 +6,11 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 {
-    [Indicator(Category = "Trend", DisplayName = "Standard Deviation", Version = "1.0")]
+    [Indicator(Category = "Trend", DisplayName = "Standard Deviation", Version = "1.1")]
     public class StandardDeviation : Indicator, IStandardDeviation
     {
         private IMovingAverage _sma, _ma;
-        private IMA _p2Sma;
+        private IMovAvgAlgo _p2Sma;
         private IShift _p2Shifter;
         
         [Parameter(DefaultValue = 20, DisplayName = "Period")]
@@ -46,8 +46,7 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
         {
             _sma = Indicators.MovingAverage(Price, Period, Shift);
             _ma = Indicators.MovingAverage(Price, Period, Shift, TargetMethod);
-            _p2Sma = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
-            _p2Sma.Init();
+            _p2Sma = MovAvg.Create(Period, MovingAverageMethod.Simple);
             _p2Shifter = new SimpleShifter(Shift);
             _p2Shifter.Init();
         }

@@ -37,6 +37,9 @@ namespace TickTrader.BotTerminal
         {
             using (var stream = _binaryStorage.LoadData(fileName))
             {
+                if (stream.Length == 0)
+                    return default;
+
                 DataContractSerializer serializer = new DataContractSerializer(typeof(T));
                 return (T)serializer.ReadObject(stream);
             }
@@ -73,6 +76,9 @@ namespace TickTrader.BotTerminal
         public MemoryStream LoadData(string fileName)
         {
             string filePath = Path.Combine(_folder, fileName);
+            if (!File.Exists(filePath))
+                return new MemoryStream();
+
             var data = File.ReadAllBytes(filePath);
             return new MemoryStream(data);
         }
@@ -105,6 +111,9 @@ namespace TickTrader.BotTerminal
         {
             using (var encryptedStream = _binaryStorage.LoadData(fileName))
             {
+                if (encryptedStream.Length == 0)
+                    return encryptedStream;
+
                 var encryptedData = encryptedStream.ToArray();
                 var unencryptedData = ProtectedData.Unprotect(encryptedData, _entropy, _scope);
                 return new MemoryStream(unencryptedData);

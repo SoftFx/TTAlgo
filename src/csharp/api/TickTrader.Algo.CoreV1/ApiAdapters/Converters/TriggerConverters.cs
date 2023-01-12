@@ -1,5 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
@@ -10,7 +10,7 @@ namespace TickTrader.Algo.CoreV1
             return new Domain.ContingentOrderTrigger
             {
                 Type = trigger.Type.ToDomain(),
-                TriggerTime = trigger.TriggerTime?.ToUniversalTime().ToTimestamp(),
+                TriggerTime = trigger.TriggerTime.ToUtcTicks(),
                 OrderIdTriggeredBy = trigger.OrderIdTriggeredBy,
             };
         }

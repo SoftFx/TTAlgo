@@ -2,7 +2,6 @@
 //using SciChart.Charting.Model.ChartSeries;
 //using SciChart.Charting.Visuals.Axes;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -12,7 +11,7 @@ using static TickTrader.BotTerminal.BaseTransactionModel;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BacktesterChartPageViewModel : Page, IPluginDataChartModel
+    internal class BacktesterChartPageViewModel : Page
     {
         private const Feed.Types.Timeframe DefaultTimeframe = Feed.Types.Timeframe.M1;
 
@@ -29,14 +28,15 @@ namespace TickTrader.BotTerminal
         private Dictionary<string, ISymbolInfo> _symbolMap;
 
 
-        public ObservableBarVector BarVector { get; } = new(DefaultTimeframe, int.MaxValue);
-
         public TradeEventsWriter TradeEventHandler { get; } = new();
 
+        public StaticIndicatorObserver IndicatorObserver { get; } = new();
 
         public Property<Feed.Types.Timeframe> Period { get; }
 
         public Property<int> PricePrecision { get; }
+
+        public ObservableBarVector BarVector { get; } = new(size: int.MaxValue);
 
 
         public BacktesterChartPageViewModel()
@@ -110,15 +110,17 @@ namespace TickTrader.BotTerminal
             _postponedMarkers.Clear();
         }
 
-        public void LoadMainChart(IEnumerable<BarData> bars, Feed.Types.Timeframe timeframe, IEnumerable<BaseTransactionModel> tradeHistory)
+        public void LoadMainChart(IEnumerable<BarData> bars, IEnumerable<BaseTransactionModel> tradeHistory)
         {
             //_barVector = new ChartBarVectorWithMarkers(timeframe);
 
             //ChartControlModel.SetTimeframe(timeframe);
             ////ChartControlModel.SymbolInfo.Value = mainSymbol;
 
-            BarVector.InitNewVector(bars);
+            BarVector.InitNewVector(Period.Value, bars, _mainSymbol, int.MaxValue);
             TradeEventHandler.LoadTradeEvents(tradeHistory);
+
+
             //await Task.Run(() =>
             //{
 
@@ -147,15 +149,18 @@ namespace TickTrader.BotTerminal
             //_markerSeries.DataSeries = _barVector.MarkersData;
         }
 
-        public async Task LoadOutputs(BacktesterConfig config, BacktesterResults results)
+        public void LoadOutputs(BacktesterConfig config, BacktesterResults results)
         {
-            var adapter = new BacktesterOutputAdapter(config.PluginConfig, results.PluginInfo);
-            var mainSymbol = config.TradeServer.Symbols[config.Core.MainSymbol];
+            var output = new OutputModel(config.PluginConfig, results.PluginInfo, results.Outputs);
+
+            //var mainSymbol = config.TradeServer.Symbols[config.Core.MainSymbol];
+
+            IndicatorObserver.LoadIndicators(output, PricePrecision.Value);
             //var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this,
             //    mainSymbol, ChartControlModel.IsCrosshairEnabled.Var);
             //ChartControlModel.OutputGroups.Add(outputGroup);
 
-            await Task.Run(() => adapter.SendSnapshots(results));
+            //await Task.Run(() => adapter.SendSnapshots(results));
         }
 
         public void Clear()
@@ -330,22 +335,6 @@ namespace TickTrader.BotTerminal
         //            _barVector.MarkersData.Metadata[index] = new PositionMarkerMetadatda(info.Key, info.Description, info.IsBuy);
         //    }
         //}
-
-        #region IPluginDataChartModel
-
-        ITimeVectorRef IPluginDataChartModel.TimeSyncRef => null;
-        bool IExecStateObservable.IsStarted => true;
-
-        event System.Action IExecStateObservable.StartEvent { add { } remove { } }
-        event AsyncEventHandler IExecStateObservable.StopEvent { add { } remove { } }
-
-
-        //AxisBase IPluginDataChartModel.CreateXAxis()
-        //{
-        //    return _navigator.CreateAxis();
-        //}
-
-        #endregion
 
         //private struct MarkerInfo
         //{

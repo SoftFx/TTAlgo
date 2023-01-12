@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
@@ -12,9 +11,9 @@ namespace TickTrader.Algo.CoreV1
     public abstract class FeedStrategy : IFeedBuferStrategyContext, CustomFeedProvider
     {
         private MarketStateFixture _marketFixture;
-        private IQuoteSub _defaultSubscription;
+        private IBarSub _defaultBarSub;
+        private IDisposable _barSubHandler;
         private readonly List<SetupAction> _setupActions = new List<SetupAction>();
-        private CrossDomainProxy _proxy;
         private string _mainSymbol;
         private BufferUpdateResult _mainSymbolUpdateResult;
 
@@ -35,7 +34,6 @@ namespace TickTrader.Algo.CoreV1
         internal abstract void OnInit();
         public FeedBufferStrategy BufferingStrategy { get; private set; }
         protected abstract BufferUpdateResult UpdateBuffers(IRateInfo update);
-        protected abstract IRateInfo Aggregate(IRateInfo last, QuoteInfo quote);
         protected abstract BarSeries GetBarSeries(string symbol);
         protected abstract BarSeries GetBarSeries(string symbol, Feed.Types.MarketSide side);
         protected abstract FeedStrategy CreateClone();
@@ -59,17 +57,20 @@ namespace TickTrader.Algo.CoreV1
 
         internal virtual void Start()
         {
-            _proxy = new CrossDomainProxy(this);
-            FeedProvider.Sync.Invoke(_proxy.StartStrategy);
+            RateDispenser.Start();
+            InitDefaultSubscription();
+            FeedProvider.QuoteUpdated += Feed_QuoteUpdated;
+
             ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
             ExecContext.Builder.CustomFeedProvider = this;
         }
 
         internal virtual void Stop()
         {
-            FeedProvider.Sync.Invoke(_proxy.StopStrategy);
+            RateDispenser.Stop();
+            FeedProvider.QuoteUpdated -= Feed_QuoteUpdated;
+
             CancelDefaultSubscription();
-            _proxy = null;
         }
 
         internal FeedStrategy Clone()
@@ -102,60 +103,67 @@ namespace TickTrader.Algo.CoreV1
             builder.StopBatch();
         }
 
-        private void Feed_RatesUpdated(List<QuoteInfo> updates)
-        {
-            foreach (var update in updates)
-                ExecContext.EnqueueQuote(update);
-        }
+        private void Feed_BarUpdated(BarUpdate bar) => ExecContext.EnqueueBar(bar);
 
-        private void Feed_RateUpdated(QuoteInfo upd)
-        {
-            ExecContext.EnqueueQuote(upd);
-        }
+        private void Feed_QuoteUpdated(QuoteInfo quote) => ExecContext.EnqueueQuote(quote);
 
         private void InitDefaultSubscription()
         {
-            _defaultSubscription = FeedProvider.GetSubscription();
-            _defaultSubscription.Modify(BufferedSymbols, 1);
+            _defaultBarSub = FeedProvider.GetBarSub();
+            _defaultBarSub.Modify(BufferedSymbols.Select(s => BarSubUpdate.Upsert(new BarSubEntry(s, ExecContext.TimeFrame))).ToList());
+            _barSubHandler = _defaultBarSub.AddHandler(bar => ExecContext.EnqueueBar(bar));
         }
 
         protected void AddSubscription(string symbol)
         {
-            _defaultSubscription.Modify(symbol, 1);
+            _defaultBarSub.Modify(BarSubUpdate.Upsert(new BarSubEntry(symbol, ExecContext.TimeFrame)));
         }
 
         private void CancelDefaultSubscription()
         {
-            _defaultSubscription.Dispose();
-            _defaultSubscription = null;
+            _barSubHandler.Dispose();
+            _defaultBarSub.Dispose();
+            _defaultBarSub = null;
         }
 
-        internal BufferUpdateResult ApplyUpdate(IRateInfo update)
+        internal BufferUpdateResult ApplyUpdate(FeedUpdateSummary feedUpdate)
         {
-            var node = _marketFixture.Market.GetUpdateNode(update);
+            var market = _marketFixture.Market;
+            foreach (var quote in feedUpdate.NewQuotes)
+            {
+                var node = market.GetSymbolNodeOrNull(quote.Symbol);
+                node?.SymbolInfo.UpdateRate(quote);
+            }
 
-            var result = UpdateBuffers(update);
-
+            var result = new BufferUpdateResult();
             var modelUpdate = new BufferUpdateResult();
+            foreach (var update in feedUpdate.RateUpdates)
+            {
+                var tmpRes = UpdateBuffers(update);
+                result += tmpRes;
+
+                if (!ModelTimeline.IsRealTime && update.Symbol == _mainSymbol)
+                {
+                    _mainSymbolUpdateResult += tmpRes;
+                    modelUpdate += ModelTimeline.Update(update.LastQuote.Time);
+                }
+            }
+
             if (ModelTimeline.IsRealTime)
             {
                 CalculateIndicators(result);
             }
-            else
+            else if (modelUpdate.ExtendedBy > 0)
             {
-                if (update.Symbol == _mainSymbol)
-                {
-                    _mainSymbolUpdateResult += result;
-                    modelUpdate += ModelTimeline.Update(update.LastQuote.Time);
-                }
-                if (modelUpdate.ExtendedBy > 0)
-                {
-                    CalculateIndicators(_mainSymbolUpdateResult);
-                    _mainSymbolUpdateResult = new BufferUpdateResult();
-                }
+                CalculateIndicators(_mainSymbolUpdateResult);
+                _mainSymbolUpdateResult = new BufferUpdateResult();
             }
 
-            RateDispenser.OnUpdateEvent(node);
+            foreach (var quote in feedUpdate.NewQuotes)
+            {
+                var node = market.GetSymbolNodeOrNull(quote.Symbol);
+                RateDispenser.OnUpdateEvent(node);
+            }
 
             if (ModelTimeline.IsRealTime || modelUpdate.ExtendedBy > 0)
                 ExecContext.Builder.InvokeOnModelTick();
@@ -173,11 +181,6 @@ namespace TickTrader.Algo.CoreV1
                 ExecContext.Builder.IncreaseVirtualPosition();
                 ExecContext.Builder.InvokeCalculate(false);
             }
-        }
-
-        internal IRateInfo InvokeAggregate(IRateInfo last, QuoteInfo quote)
-        {
-            return Aggregate(last, quote);
         }
 
         #region IFeedBufferController
@@ -211,7 +214,7 @@ namespace TickTrader.Algo.CoreV1
             int i = 0;
             var fromTime = new UtcTicks(from);
             var toTime = new UtcTicks(to);
-            var timeRef = (backwardOrder ? to : from).ToTimestamp();
+            var timeRef = backwardOrder ? toTime : fromTime;
 
             if (backwardOrder)
             {
@@ -231,7 +234,7 @@ namespace TickTrader.Algo.CoreV1
                     if (page.Count != pageSize || i >= 0)
                         break;
 
-                    timeRef = page.First().CloseTime.ToTimestamp();
+                    timeRef = page.First().CloseTime;
                 }
             }
             else
@@ -249,7 +252,7 @@ namespace TickTrader.Algo.CoreV1
                     if (page.Count != pageSize || i != page.Count)
                         break;
 
-                    timeRef = page.Last().OpenTime.ToTimestamp();
+                    timeRef = page.Last().OpenTime;
                 }
             }
         }
@@ -268,7 +271,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 if (backwardOrder)
                 {
-                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime.ToTimestamp(), pageSize);
+                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime, pageSize);
                     pageIndex = page.Count - 1;
 
                     while (pageIndex > 0)
@@ -287,7 +290,7 @@ namespace TickTrader.Algo.CoreV1
                 }
                 else
                 {
-                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime.ToTimestamp(), -pageSize);
+                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime, -pageSize);
                     pageIndex = 0;
 
                     while (pageIndex < page.Count)
@@ -318,7 +321,7 @@ namespace TickTrader.Algo.CoreV1
 
             if (backwardOrder)
             {
-                page = FeedHistory.QueryQuotes(symbol, toTime.ToTimestamp(), -pageSize, level2);
+                page = FeedHistory.QueryQuotes(symbol, toTime, -pageSize, level2);
                 pageIndex = page.Count - 1;
 
                 while (true)
@@ -328,7 +331,7 @@ namespace TickTrader.Algo.CoreV1
                         if (page.Count < pageSize)
                             break; //last page
                         var timeRef = page.First().Time.AddMs(-1);
-                        page = FeedHistory.QueryQuotes(symbol, timeRef.ToTimestamp(), -pageSize, level2);
+                        page = FeedHistory.QueryQuotes(symbol, timeRef, -pageSize, level2);
                         if (page.Count == 0)
                             break;
                         pageIndex = page.Count - 1;
@@ -343,7 +346,7 @@ namespace TickTrader.Algo.CoreV1
             }
             else
             {
-                page = FeedHistory.QueryQuotes(symbol, fromTime.ToTimestamp(), pageSize, level2);
+                page = FeedHistory.QueryQuotes(symbol, fromTime, pageSize, level2);
                 pageIndex = 0;
 
                 while (true)
@@ -353,7 +356,7 @@ namespace TickTrader.Algo.CoreV1
                         if (page.Count < pageSize)
                             break; //last page
                         var timeRef = page.Last().Time.AddMs(1);
-                        page = FeedHistory.QueryQuotes(symbol, timeRef.ToTimestamp(), pageSize, level2);
+                        page = FeedHistory.QueryQuotes(symbol, timeRef, pageSize, level2);
                         if (page.Count == 0)
                             break;
                         pageIndex = 0;
@@ -382,7 +385,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 if (backwardOrder)
                 {
-                    page = FeedHistory.QueryQuotes(symbol, fromTime.ToTimestamp(), -pageSize, level2);
+                    page = FeedHistory.QueryQuotes(symbol, fromTime, -pageSize, level2);
                     pageIndex = page.Count - 1;
 
                     while (pageIndex > 0)
@@ -401,7 +404,7 @@ namespace TickTrader.Algo.CoreV1
                 }
                 else
                 {
-                    page = FeedHistory.QueryQuotes(symbol, fromTime.ToTimestamp(), pageSize, level2);
+                    page = FeedHistory.QueryQuotes(symbol, fromTime, pageSize, level2);
                     pageIndex = 0;
 
                     while (pageIndex < page.Count)
@@ -438,49 +441,6 @@ namespace TickTrader.Algo.CoreV1
 
         #endregion
 
-        private class CrossDomainProxy
-        {
-            private readonly FeedStrategy _strategy;
-
-            public CrossDomainProxy(FeedStrategy strategy)
-            {
-                _strategy = strategy;
-            }
-
-            public void StartStrategy()
-            {
-                _strategy.RateDispenser.IsSynchronized = true;
-                try
-                {
-                    _strategy.RateDispenser.Start();
-                    _strategy.InitDefaultSubscription();
-                    _strategy.FeedProvider.RateUpdated += Feed_RateUpdated;
-                    _strategy.FeedProvider.RatesUpdated += Feed_RatesUpdated;
-                }
-                finally
-                {
-                    _strategy.RateDispenser.IsSynchronized = false;
-                }
-            }
-
-            private void Feed_RatesUpdated(List<QuoteInfo> updates) => _strategy.Feed_RatesUpdated(updates);
-            private void Feed_RateUpdated(QuoteInfo upd) => _strategy.Feed_RateUpdated(upd);
-
-            public void StopStrategy()
-            {
-                _strategy.RateDispenser.IsSynchronized = true;
-                try
-                {
-                    _strategy.RateDispenser.Stop();
-                    _strategy.FeedProvider.RateUpdated -= Feed_RateUpdated;
-                    _strategy.FeedProvider.RatesUpdated -= Feed_RatesUpdated;
-                }
-                finally
-                {
-                    _strategy.RateDispenser.IsSynchronized = false;
-                }
-            }
-        }
 
         public abstract class SetupAction
         {

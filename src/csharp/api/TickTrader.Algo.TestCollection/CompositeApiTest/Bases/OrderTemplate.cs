@@ -16,7 +16,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool IsNull => Volume.E(0.0);
 
-        public bool IsOnTimeTrigger => TriggerType.HasValue && TriggerType.Value == TriggerTypes.OnTime;
+        public bool IsOnTimeTrigger => TriggerType == TriggerTypes.OnTime;
 
 
         public OrderType InitType { get; }
@@ -102,27 +102,29 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             Volume = volume;
         }
 
-        internal OrderStateTemplate WithOCO(OrderStateTemplate mainOrder)
-        {
-            Options |= OrderExecOptions.OneCancelsTheOther;
-            OcoRelatedOrderId = mainOrder.Id;
-            RelatedOcoTemplate = mainOrder;
+        internal OrderStateTemplate WithOCO(OrderTemplate ocoOrder)
+       {
+            void SetOCO(OrderTemplate main, OrderTemplate oco)
+            {
+                if (!main.Options.HasFlag(OrderExecOptions.OneCancelsTheOther))
+                {
+                    main.Options |= OrderExecOptions.OneCancelsTheOther;
+                    main.OcoRelatedOrderId = oco.Id;
+                    main.RelatedOcoTemplate = (OrderStateTemplate)oco;
+                }
+            }
+
+            SetOCO(ocoOrder, this);
+            SetOCO(this, ocoOrder);
 
             return (OrderStateTemplate)this;
         }
 
         internal OrderStateTemplate WithExpiration(int seconds)
         {
-            Expiration = DateTime.UtcNow + TimeSpan.FromSeconds(seconds);
+            Expiration = UtcNow + TimeSpan.FromSeconds(seconds);
 
             return (OrderStateTemplate)this;
-        }
-
-        internal OrderStateTemplate WithOCO(OrderStateTemplate mainOrder, bool equalVolume)
-        {
-            OcoEqualVolume = equalVolume;
-
-            return WithOCO(mainOrder);
         }
 
         internal OrderStateTemplate WithLinkedOCO(OrderStateTemplate linkedOrder)
@@ -134,7 +136,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return WithFullLinkedOCOProperies();
         }
 
-        internal OrderStateTemplate WithRemovedOCO()
+        internal OrderStateTemplate BreakOCO()
+        {
+            if (RelatedOcoTemplate == this)
+                RelatedOcoTemplate.RemoveOCO();
+
+            return RemoveOCO();
+        }
+
+        internal OrderStateTemplate RemoveOCO()
         {
             Options &= ~OrderExecOptions.OneCancelsTheOther;
             OcoRelatedOrderId = null;
@@ -163,7 +173,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal OrderStateTemplate WithOnTimeTrigger(int seconds)
         {
-            var utcNow = DateTime.UtcNow;
+            var utcNow = UtcNow;
 
             return WithOnTimeTrigger((utcNow + TimeSpan.FromSeconds(seconds)).AddMilliseconds(-utcNow.Millisecond));
         }
@@ -172,6 +182,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             TriggerType = TriggerTypes.OnTime;
             TriggerTime = triggerTime;
+
+            return (OrderStateTemplate)this;
+        }
+
+        internal OrderStateTemplate RemoveOnTimeTrigger()
+        {
+            TriggerType &= ~TriggerTypes.OnTime;
+            TriggerTime = null;
 
             return (OrderStateTemplate)this;
         }

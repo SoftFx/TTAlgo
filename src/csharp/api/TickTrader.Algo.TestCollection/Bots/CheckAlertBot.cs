@@ -23,7 +23,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             while (!ok)
             {
-                await Task.Delay(DelayMc);
+                await Delay(DelayMc);
                 Alert.Print($"{Message} {++_count}");
             }
         }

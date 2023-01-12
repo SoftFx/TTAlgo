@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
         }
 
         private static void OnDockManagerServicePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
+       {
             var dockManager = d as CustomDockManager;
             var oldService = e.OldValue as IDockManagerServiceProvider;
             var newService = e.NewValue as IDockManagerServiceProvider;
@@ -56,6 +56,8 @@ namespace TickTrader.BotTerminal
                     newService.RemoveViewEvent += dockManager.RemoveView;
                     newService.RemoveViewsEvent += dockManager.RemoveViews;
                     newService.RegisterViewToLayout += dockManager.RegisterView;
+
+                    newService.Initialized?.Invoke();
                 }
 
                 dockManager.UpdateViewsVisibility();
@@ -237,7 +239,7 @@ namespace TickTrader.BotTerminal
 
         private void RegisterView(IScreen screen, string key)
         {
-            key = key ?? screen.DisplayName;
+            key ??= screen.DisplayName;
 
             if (key == null)
                 return;

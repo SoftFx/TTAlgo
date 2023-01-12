@@ -353,7 +353,7 @@ namespace TickTrader.Algo.CoreV1
 
         private void OnOrderAdded(IOrderCalcInfo order)
         {
-            UpdateAccountInfo("Add order", () => OrderAdded?.Invoke(order));
+            UpdateAccountInfo("Add order", OrderAdded, order);
         }
 
         //private void OnOrderReplaced(IOrderModel2 order)
@@ -363,12 +363,12 @@ namespace TickTrader.Algo.CoreV1
 
         private void OnOrderRemoved(IOrderCalcInfo order)
         {
-            UpdateAccountInfo("Remove order", () => OrderRemoved?.Invoke(order));
+            UpdateAccountInfo("Remove order", OrderRemoved, order);
         }
 
         private void OnPositionUpdated(IPositionInfo position)
         {
-            UpdateAccountInfo("Update position", () => PositionChanged?.Invoke(position));
+            UpdateAccountInfo("Update position", PositionChanged, position);
         }
 
         //private void OnPositionRemoved(IPositionModel2 position)
@@ -378,14 +378,16 @@ namespace TickTrader.Algo.CoreV1
 
         private void OnAssetsChanged(AssetInfo asset, AssetChangeType type)
         {
-            UpdateAccountInfo($"Change asset({type})", () => AssetsChanged?.Invoke(asset, type));
+            UpdateAccountInfo($"Change asset({type})", AssetsChangedShim, (asset, type));
         }
 
-        private void UpdateAccountInfo(string actionName, Action action)
+        private void AssetsChangedShim((AssetInfo asset, AssetChangeType type) state) => AssetsChanged?.Invoke(state.asset, state.type);
+
+        private void UpdateAccountInfo<T>(string actionName, Action<T> action, T state)
         {
             try
             {
-                action();
+                action?.Invoke(state);
             }
             catch (Exception ex)
             {
@@ -399,6 +401,15 @@ namespace TickTrader.Algo.CoreV1
         {
             return Orders.GetOrNull(orderId)
                 ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OrderNotFound);
+        }
+
+        internal OrderAccessor GetOcoOrderOrThrow(string orderId)
+        {
+            if (string.IsNullOrEmpty(orderId))
+                throw new OrderValidationError(OrderCmdResultCodes.OCORelatedIdNotFound);
+
+            return Orders.GetOrNull(orderId)
+                ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OCORelatedIdNotFound);
         }
 
         //internal void IncreasePosition(string symbol, decimal amount, decimal price, Domain.OrderInfo.Types.Side side, Func<string> idGenerator)

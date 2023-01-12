@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
@@ -8,14 +9,17 @@ namespace TickTrader.Algo.CoreV1
     internal sealed class TradeReportAdapter : TradeReport
     {
         private readonly double _lotSize;
+        private readonly double _volumeStep;
 
 
         public TradeReportInfo Info { get; }
 
         public TradeReportAdapter(TradeReportInfo entity, ISymbolInfo symbol)
         {
-            Info = entity;
             _lotSize = symbol?.LotSize ?? 1;
+            _volumeStep = symbol?.VolumeStep ?? 1;
+
+            Info = entity;
         }
 
         public string ReportId => Info.Id;
@@ -66,11 +70,11 @@ namespace TickTrader.Algo.CoreV1
 
         public double NetProfitLoss => Info.NetProfitLoss;
 
-        public Domain.OrderInfo.Types.Side TradeRecordSide => Info.OrderSide;
+        public OrderInfo.Types.Side TradeRecordSide => Info.OrderSide;
 
         OrderSide TradeReport.TradeRecordSide => Info.OrderSide.ToApiEnum();
 
-        public Domain.OrderInfo.Types.Type TradeRecordType => Info.OrderType;
+        public OrderInfo.Types.Type TradeRecordType => Info.OrderType;
 
         OrderType TradeReport.TradeRecordType => Info.OrderType.ToApiEnum();
 
@@ -96,16 +100,20 @@ namespace TickTrader.Algo.CoreV1
 
         #region Emulation
 
-        public static TradeReportAdapter Create(Timestamp key, ISymbolInfo symbol, Domain.TradeReportInfo.Types.ReportType repType, Domain.TradeReportInfo.Types.Reason reason)
+        public static TradeReportAdapter Create(Timestamp key, ISymbolInfo symbol, TradeReportInfo.Types.ReportType repType, TradeReportInfo.Types.Reason reason)
         {
-            var entity = new Domain.TradeReportInfo();
-            entity.TransactionTime = key;
-            entity.Symbol = symbol.Name;
-            entity.ReportType = repType;
-            entity.TransactionReason = reason;
             var ms = Math.DivRem(key.Nanos, 1_000_000, out var rem);
-            entity.Id = $"{key.Seconds * 1_000 + ms}.{rem}";
-            entity.IsEmulated = true;
+
+            var entity = new TradeReportInfo
+            {
+                TransactionTime = key,
+                Symbol = symbol.Name,
+                ReportType = repType,
+                TransactionReason = reason,
+                Id = $"{key.Seconds * 1_000 + ms}.{rem}",
+                IsEmulated = true
+            };
+
             return new TradeReportAdapter(entity, symbol);
         }
 
@@ -124,6 +132,7 @@ namespace TickTrader.Algo.CoreV1
             Info.RequestedOrderType = orderInfo.InitialType;
             Info.OpenQuantity = orderInfo.RequestedAmount;
             Info.RemainingQuantity = orderInfo.RemainingAmount;
+            Info.MaxVisibleQuantity = orderInfo.MaxVisibleAmount;
             //Entity.OrderHiddenAmount = order.HiddenAmount;
             //Entity.OrderMaxVisibleAmount = order.MaxVisibleAmount;
             Info.Price = orderInfo.Price ?? double.NaN;
@@ -131,7 +140,7 @@ namespace TickTrader.Algo.CoreV1
             Info.OrderSide = orderInfo.Side;
             //Entity.SymbolRef = order.SymbolRef;
             //Entity.SymbolPrecision = order.SymbolPrecision;
-            Info.Expiration = orderInfo.Expiration;
+            Info.Expiration = orderInfo.Expiration?.ToTimestamp();
             //Entity.Magic = order.Magic;
             Info.StopLoss = orderInfo.StopLoss ?? double.NaN;
             Info.TakeProfit = orderInfo.TakeProfit ?? double.NaN;
@@ -145,6 +154,9 @@ namespace TickTrader.Algo.CoreV1
 
             //ReducedOpenCommissionFlag = order.IsReducedOpenCommission;
             //ReducedCloseCommissionFlag = order.IsReducedCloseCommission;
+
+            if (orderInfo.IsSupportedSlippage)
+                Info.Slippage = orderInfo.Slippage;
 
             // comments and tags
             Info.Comment = orderInfo.Comment;
@@ -161,6 +173,7 @@ namespace TickTrader.Algo.CoreV1
             //Entity.ReqOpenQuantity = order.ReqOpenAmount;
 
             Info.OrderOptions = orderInfo.Options;
+            Info.OcoRelatedOrderId = orderInfo.OcoRelatedOrderId;
             //ClientApp = order.ClientApp;
 
             FillSymbolConversionRates(acc, orderAccessor.SymbolInfo);
@@ -410,6 +423,22 @@ namespace TickTrader.Algo.CoreV1
             }
 
             return TradeRecordTypes.Unknown;
+        }
+
+        public TradeReportAdapter RoundVolumes()
+        {
+            Info.OpenQuantity = Info.OpenQuantity.Floor(_volumeStep);
+            Info.MaxVisibleQuantity = Info.MaxVisibleQuantity.Floor(_volumeStep);
+            Info.RemainingQuantity = Info.RemainingQuantity.Floor(_volumeStep);
+            Info.OrderLastFillAmount = Info.OrderLastFillAmount.Floor(_volumeStep);
+            Info.PositionQuantity = Info.PositionQuantity.Floor(_volumeStep);
+            Info.PositionCloseQuantity = Info.PositionCloseQuantity.Floor(_volumeStep);
+            Info.PositionLeavesQuantity = Info.PositionLeavesQuantity.Floor(_volumeStep);
+            Info.RequestedOpenQuantity = Info.RequestedOpenQuantity.Floor(_volumeStep);
+            Info.RequestedCloseQuantity = Info.RequestedCloseQuantity.Floor(_volumeStep);
+            Info.TransactionAmount = Info.TransactionAmount.Floor(_volumeStep);
+
+            return this;
         }
     }
 }

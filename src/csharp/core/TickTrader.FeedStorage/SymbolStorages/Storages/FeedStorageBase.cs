@@ -22,6 +22,7 @@ namespace TickTrader.FeedStorage.StorageBase
         };
 
         protected readonly VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>> _series = new VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>>();
+        protected readonly Dictionary<FeedCacheKey, (DateTime?, DateTime?)> _seriesRange = new Dictionary<FeedCacheKey, (DateTime?, DateTime?)>();
 
         protected ISeriesDatabase Database { get; private set; }
 
@@ -71,18 +72,37 @@ namespace TickTrader.FeedStorage.StorageBase
 
         protected (DateTime?, DateTime?) GetRange(FeedCacheKey key)
         {
-            DateTime? min = null;
-            DateTime? max = null;
-
-            foreach (var r in IterateCacheKeysInternal(key, DateTime.MinValue, DateTime.MaxValue))
+            if (!_seriesRange.TryGetValue(key, out var range))
             {
-                if (min == null)
-                    min = r.From;
+                DateTime? min = null;
+                DateTime? max = null;
 
-                max = r.To;
+                foreach (var r in IterateCacheKeysInternal(key, DateTime.MinValue, DateTime.MaxValue))
+                {
+                    if (min == null)
+                        min = r.From;
+
+                    max = r.To;
+                }
+
+                range = (min, max);
+                _seriesRange[key] = range;
             }
 
-            return (min, max);
+            return range;
+        }
+
+        private void UpdateRangeOnWrite(FeedCacheKey key, DateTime from, DateTime to)
+        {
+            var (min, max) = GetRange(key);
+
+            if (min == null || min > from)
+                min = from;
+
+            if (max == null || max < to)
+                max = to;
+
+            _seriesRange[key] = (min, max);
         }
 
         private async void ExportSeriesToStorage(ActorChannel<ISliceInfo> stream, FeedCacheKey key, IExportSeriesSettings settings)
@@ -135,6 +155,7 @@ namespace TickTrader.FeedStorage.StorageBase
             var collection = GetSeries<T>(key, true);
             collection.Write(from, to, values);
 
+            UpdateRangeOnWrite(key, from, to);
             _seriesListeners.FireAndForget(BuildSeriesUpdate(DLinqAction.Replace, key));
         }
 

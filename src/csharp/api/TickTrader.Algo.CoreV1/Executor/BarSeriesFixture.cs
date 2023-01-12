@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
@@ -95,18 +94,18 @@ namespace TickTrader.Algo.CoreV1
             if (_marketSide == Feed.Types.MarketSide.Bid)
             {
                 if (update.HasBid)
-                    return Update(update.BidBar);
+                    return Update(update.BidBar, update.IsPartialUpdate);
             }
             else
             {
                 if (update.HasAsk)
-                    return Update(update.AskBar);
+                    return Update(update.AskBar, update.IsPartialUpdate);
             }
 
             return new BufferUpdateResult();
         }
 
-        public BufferUpdateResult Update(BarData bar)
+        public BufferUpdateResult Update(BarData bar, bool isPartialUpdate)
         {
             if (!IsLoaded)
                 return new BufferUpdateResult();
@@ -117,7 +116,6 @@ namespace TickTrader.Algo.CoreV1
                 return new BufferUpdateResult();
 
             if (Count > 0)
-
             {
                 var lastBar = LastBar;
 
@@ -126,7 +124,11 @@ namespace TickTrader.Algo.CoreV1
                     return new BufferUpdateResult();
                 else if (barOpenTime == lastBar.OpenTime)
                 {
-                    lastBar.AppendPart(bar);
+                    if (isPartialUpdate)
+                        lastBar.AppendPart(bar);
+                    else
+                        lastBar.Replace(bar);
+
                     return new BufferUpdateResult() { IsLastUpdated = true };
                 }
             }
@@ -241,7 +243,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public void LoadFeed(Timestamp from, Timestamp to)
+        public void LoadFeed(UtcTicks from, UtcTicks to)
         {
             var data = Context.FeedHistory.QueryBars(SymbolCode, _marketSide, Context.TimeFrame, from, to);
             AppendSnapshot(data);
@@ -249,21 +251,21 @@ namespace TickTrader.Algo.CoreV1
 
         public void LoadFeed(int size)
         {
-            var to = (DateTime.UtcNow + TimeSpan.FromDays(1)).ToTimestamp();
+            var to = UtcTicks.Now + TimeSpan.FromDays(1);
             var data = Context.FeedHistory.QueryBars(SymbolCode, _marketSide, Context.TimeFrame, to, -size);
             AppendSnapshot(data);
         }
 
-        public void LoadFeed(Timestamp from, int size)
+        public void LoadFeed(UtcTicks from, int size)
         {
             var data = Context.FeedHistory.QueryBars(SymbolCode, _marketSide, Context.TimeFrame, from, size);
             AppendSnapshot(data);
         }
 
-        public void LoadFeedFrom(Timestamp from)
+        public void LoadFeedFrom(UtcTicks from)
         {
             var data = from == null ? null
-                : Context.FeedHistory.QueryBars(SymbolCode, _marketSide, Context.TimeFrame, from, (DateTime.UtcNow + TimeSpan.FromDays(2)).ToTimestamp());
+                : Context.FeedHistory.QueryBars(SymbolCode, _marketSide, Context.TimeFrame, from, UtcTicks.Now + TimeSpan.FromDays(2));
             AppendSnapshot(data);
         }
     }

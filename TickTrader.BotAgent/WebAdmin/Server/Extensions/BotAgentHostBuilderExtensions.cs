@@ -7,6 +7,7 @@ using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.HostedServices;
 using TickTrader.BotAgent.WebAdmin.Server.Protocol;
+using TickTrader.BotAgent.WebAdmin.Server.Services;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -21,6 +22,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 services.AddSingleton(_ => botAgent.Server);
                 services.AddSingleton<IAlgoServerApi>(_ => botAgent.Server);
                 services.AddHostedService<AlgoServerHostedService>();
+                services.AddHostedService<NotificationService>(); //should be initialized after AlgoServerHostedService
             });
             return builder;
         }
@@ -29,7 +31,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             builder.ConfigureServices(services =>
             {
-                services.AddSingleton<ServerSettings>(s => s.GetRequiredService<IConfiguration>().GetProtocolServerSettings());
+                services.AddSingleton(s => s.GetRequiredService<IConfiguration>().GetProtocolServerSettings());
                 services.AddSingleton<IJwtProvider, JwtProviderAdapter>();
                 services.AddSingleton<PublicApiServer>();
                 services.AddHostedService<PublicApiHostedService>();

@@ -65,6 +65,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter]
         public string OtoTriggeredById { get; set; }
 
+        [Parameter(DefaultValue = true)]
+        public bool ExitAfterOpen { get; set; }
+
 
         protected override void OnStart()
         {
@@ -92,7 +95,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 .WithSide(Side).WithType(Type).WithVolume(Volume).WithPrice(Price)
                 .WithMaxVisibleVolume(MaxVisibleVolume).WithTakeProfit(TakeProfit)
                 .WithComment(Comment).WithOptions(Options).WithTag(Tag)
-                .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
+                .WithExpiration(ExpirationTimeout.HasValue ? UtcNow + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
                 .WithSlippage(Slippage).WithOCOEqualVolume(OcoEqualVolume).WithOCORelatedOrderId(OcoRelatedOrderId)
                 .WithContingentOrderTrigger(otoTrigger).MakeRequest();
 
@@ -103,7 +106,8 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (res.ResultingOrder != null)
                 Status.WriteLine(ToObjectPropertiesString(res.ResultingOrder));
 
-            Exit();
+            if (ExitAfterOpen)
+                Exit();
         }
 
         public static ContingentOrderTrigger.TriggerType Convert(OtoTriggerOpenType type)

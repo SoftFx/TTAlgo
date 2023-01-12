@@ -13,13 +13,13 @@ namespace TickTrader.Algo.Indicators.Tests.OscillatorsTests.CommodityChannelInde
 
         public override void InvokeFullBuildTest()
         {
-            Epsilon = 56e-10;
+            Epsilon = 59e-10;
             base.InvokeFullBuildTest();
         }
 
         public override void InvokeUpdateTest()
         {
-            Epsilon = 92e-10;
+            Epsilon = 59e-10;
             base.InvokeUpdateTest();
         }
 

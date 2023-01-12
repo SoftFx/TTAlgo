@@ -1,16 +1,16 @@
 ﻿using System;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    public class ContingentOrderTriggerAccessor : IContingentOrderTrigger
+    public class ContingentOrderTriggerAccessor : Api.IContingentOrderTrigger
     {
         private readonly Domain.ContingentOrderTrigger _trigger;
 
 
-        public ContingentOrderTrigger.TriggerType Type => _trigger.Type.ToApi();
+        public Api.ContingentOrderTrigger.TriggerType Type => _trigger.Type.ToApi();
 
-        public DateTime? TriggerTime => _trigger.TriggerTime?.ToDateTime();
+        public DateTime? TriggerTime => _trigger.TriggerTime.ToDateTime();
 
         public string OrderIdTriggeredBy => _trigger.OrderIdTriggeredBy;
 

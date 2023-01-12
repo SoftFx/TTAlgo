@@ -48,15 +48,19 @@ namespace TickTrader.BotTerminal
                 _accounts.RemoveAt(index);
         }
 
-        public void Update(AccountStorageEntry account)
+        public bool Update(AccountStorageEntry account)
         {
             int index = _accounts.Values.IndexOf(a => a.Login == account.Login && a.ServerAddress == account.ServerAddress);
             if (index < 0)
+            {
                 _accounts.Values.Add(account);
+                return true;
+            }
             else
             {
                 var toUpdate = _accounts[index];
                 toUpdate.Password = account.Password;
+                return false;
             }
         }
     }

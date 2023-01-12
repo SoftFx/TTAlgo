@@ -10,7 +10,9 @@ namespace TickTrader.BotTerminal
 
         public IShell Shell { get; }
 
-        public LocalAlgoAgent LocalAgent { get; }
+        public TraderClientModel ClientModel { get; }
+
+        public LocalAlgoAgent2 LocalAgent { get; }
 
         public BotAgentManager BotAgentManager { get; }
 
@@ -22,9 +24,10 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoAgentViewModel> AgentsList { get; }
 
-        public AlgoEnvironment(IShell shell, LocalAlgoAgent localAgent, BotAgentManager botAgentManager)
+        public AlgoEnvironment(IShell shell, TraderClientModel clientModel, LocalAlgoAgent2 localAgent, BotAgentManager botAgentManager)
         {
             Shell = shell;
+            ClientModel = clientModel;
             LocalAgent = localAgent;
             BotAgentManager = botAgentManager;
 

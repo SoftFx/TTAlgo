@@ -9,7 +9,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private const int MaxAttemptsCount = 5;
 
         private readonly TimeSpan DelayBetweenServerRequests = TimeSpan.FromSeconds(5);
-        private readonly TimeSpan WaitToUpdateGrossPositions = TimeSpan.FromSeconds(1);
         private readonly TimeSpan WaitAllFailedTestEvents = TimeSpan.FromSeconds(5);
 
         private readonly GroupStatManager _statsManager;
@@ -18,6 +17,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private bool _asyncMode;
 
         internal static CompositeTradeApiTest Bot { get; set; }
+
+        internal static Symbol Symbol => Bot.Symbol;
 
 
         protected abstract string GroupName { get; }
@@ -59,7 +60,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 _statsManager.TestError(ex.Message);
 
                 if (ex is EventException)
-                    await Task.Delay(WaitAllFailedTestEvents);
+                    await Bot.Delay(WaitAllFailedTestEvents);
             }
         }
 
@@ -93,10 +94,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private OrderStateTemplate RegisterAdditionalTemplate(OrderStateTemplate template)
         {
+            _eventManager.RegistryNewTemplate(template);
+
             foreach (var linkOrder in template.LinkedOrders)
                 _eventManager.RegistryNewTemplate(linkOrder);
-
-            _eventManager.RegistryNewTemplate(template);
 
             return template;
         }
@@ -104,66 +105,58 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected async Task OpenExecutionOrder(OrderStateTemplate template)
         {
-            await OpenOrderAndWaitExecution(template.ForExecuting());
-            await ClearTestEnviroment(template);
+            await OpenAndWaitExecution(template.ForExecuting());
+            await RemoveOrder(template);
         }
 
-        protected async Task OpenOrderAndWaitExecution(OrderStateTemplate template, Type[] events = null)
+        protected async Task ExecutionByModifyOrder(OrderStateTemplate template)
         {
-            await TestOpenOrder(template, events ?? GetExecutionEvents(template));
-            await template.FinalExecution.Task;
+            await ModifyAndWaitExecution(template);
+            await RemoveOrder(template);
         }
 
-        protected async Task ModifyForExecutionOrder(OrderStateTemplate template)
+        protected async Task OpenTpSlExecutionOrder(OrderStateTemplate template)
         {
-            await TestModifyOrder(template.ForExecuting());
-
-            _eventManager.AddExpectedEvents(GetExecutionEvents(template));
-
-            await ClearTestEnviroment(template);
+            await OpenAndWaitExecution(template.ForExecuting(), Events.Order.FullActivationPath(template));
+            await template.Closed.Task;
         }
 
-        protected async Task ClearTestEnviroment(OrderStateTemplate template)
+        protected async Task OpenAndWaitExecution(OrderStateTemplate template, Type[] events = null)
         {
-            if (template.IsGrossAcc)
-            {
-                await Task.Delay(WaitToUpdateGrossPositions);
-                await RemoveOrder(template);
-            }
+            await TestOpenOrder(template, events ?? Events.Order.FullExecutionPath(template));
+            await template.IsExecuted.Task;
         }
 
-        private static Type[] GetExecutionEvents(OrderStateTemplate template)
+        protected async Task ModifyAndWaitExecution(OrderStateTemplate template)
         {
-            var isGross = template.IsGrossAcc;
-            var events = isGross ? OrderEvents.FillOnGrossOrderEvents : OrderEvents.FillOrderEvents;
-
-            if (template.IsStopLimit)
-                events = isGross ? OrderEvents.FillOnGrossStopLimitEvents : OrderEvents.FillStopLimitEvents;
-
-            return events;
+            await TestModifyOrder(template.ForExecuting(), Events.Order.FullExecutionPath(template));
+            await template.IsExecuted.Task;
         }
 
         protected async Task RemoveOrder(OrderStateTemplate template)
         {
-            await template.Opened.Task;
-
-            if (template?.RealOrder?.IsNull ?? true)
+            if (template.IsRemoved)
                 return;
 
-            if (template.CanCloseOrder)
+            if (template.IsSupportedClose)
             {
+                await template.OpenedGrossPosition.Task;
+
                 foreach (var filledPart in template.FilledParts)
-                    await TestCloseOrder(filledPart);
+                    if (!filledPart.IsRemoved)
+                        await TestCloseOrder(filledPart);
 
                 await TestCloseOrder(template);
             }
             else
             {
-                if (template?.RelatedOcoTemplate?.RealOrder?.IsNull ?? true)
+                await template.Opened.Task;
+
+                if (template.RelatedOcoTemplate?.IsRemoved ?? true)
                     await TestCancelOrder(template);
                 else
                 {
-                    await TestCancelOrder(template, OrderEvents.Cancel);
+                    await TestCancelOrder(template, Events.Cancel);
                     await template.RelatedOcoTemplate.Canceled.Task;
                 }
             }
@@ -185,18 +178,18 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             RegisterAdditionalTemplate(template);
 
-            await WaitSuccServerRequest(OpenCommand, OrderEvents.Open, eventsAfterOpen);
+            await WaitSuccServerRequest(OpenCommand, Events.Open, eventsAfterOpen);
             await template.Opened.Task;
         }
 
-        protected async Task TestOpenReject(OrderStateTemplate template, OrderCmdResultCodes errorCode = OrderCmdResultCodes.DealerReject)
+        protected Task TestOpenReject(OrderStateTemplate template, OrderCmdResultCodes errorCode = OrderCmdResultCodes.DealerReject)
         {
             var request = template.GetOpenRequest();
 
             async Task<OrderCmdResult> OpenCommand() =>
                 _asyncMode ? await Bot.OpenOrderAsync(request) : Bot.OpenOrder(request);
 
-            await WaitRejectSeverRequest(OpenCommand, errorCode);
+            return WaitRejectSeverRequest(OpenCommand, errorCode).ContinueWith(_ => template.ToRejectOpen());
         }
 
 
@@ -207,33 +200,33 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             async Task<OrderCmdResult> ModifyCommand() =>
                 _asyncMode ? await Bot.ModifyOrderAsync(request) : Bot.ModifyOrder(request);
 
-            await WaitSuccServerRequest(ModifyCommand, OrderEvents.Modify, eventsAfterModify);
+            await WaitSuccServerRequest(ModifyCommand, Events.Modify, eventsAfterModify);
             await template.Modified.Task;
         }
 
-        protected async Task TestModifyReject(OrderStateTemplate template, OrderCmdResultCodes errorCode)
+        protected Task TestModifyReject(OrderStateTemplate template, OrderCmdResultCodes errorCode)
         {
             var request = template.GetModifyRequest();
 
             async Task<OrderCmdResult> ModifyCommand() =>
                 _asyncMode ? await Bot.ModifyOrderAsync(request) : Bot.ModifyOrder(request);
 
-            await WaitRejectSeverRequest(ModifyCommand, errorCode);
+            return WaitRejectSeverRequest(ModifyCommand, errorCode);
         }
 
 
-        protected async Task TestCancelOrders(params OrderStateTemplate[] orders)
-        {
-            foreach (var order in orders)
-                await TestCancelOrder(order);
-        }
+        //protected async Task TestCancelOrders(params OrderStateTemplate[] orders)
+        //{
+        //    foreach (var order in orders)
+        //        await TestCancelOrder(order);
+        //}
 
         protected async Task TestCancelOrder(OrderStateTemplate template, params Type[] eventsAfterCancel)
         {
             async Task<OrderCmdResult> CancelCommand() =>
                 _asyncMode ? await Bot.CancelOrderAsync(template.Id) : Bot.CancelOrder(template.Id);
 
-            await WaitSuccServerRequest(CancelCommand, OrderEvents.Cancel, eventsAfterCancel);
+            await WaitSuccServerRequest(CancelCommand, Events.Cancel, eventsAfterCancel);
             await template.Canceled.Task;
         }
 
@@ -253,7 +246,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             async Task<OrderCmdResult> CloseCommand() =>
                 _asyncMode ? await Bot.CloseOrderAsync(request) : Bot.CloseOrder(request);
 
-            await WaitSuccServerRequest(CloseCommand, OrderEvents.Close);
+            await WaitSuccServerRequest(CloseCommand, Events.Close);
+            await template.Closed.Task;
         }
 
         protected async Task<OrderStateTemplate> TestCloseByOrders(OrderStateTemplate first, OrderStateTemplate second)
@@ -265,11 +259,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (!result.IsNull)
             {
-                _eventManager.AddExpectedEvent(OrderEvents.Open);
-                RegisterAdditionalTemplate(result);
+                _eventManager.AddExpectedEvent(Events.Open);
+                RegisterAdditionalTemplate(result.ToGrossPosition());
             }
 
-            await WaitSuccServerRequest(CloseByCommand, OrderEvents.Close, OrderEvents.Close);
+            await WaitSuccServerRequest(CloseByCommand, Events.Close, Events.Close);
+            await first.Closed.Task;
+            await second.Closed.Task;
 
             return result;
         }
@@ -296,7 +292,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 resultCode = result.ResultCode;
 
                 if (resultCode.IsServerError())
-                    await Task.Delay(DelayBetweenServerRequests);
+                    await Bot.Delay(DelayBetweenServerRequests);
                 else
                     throw new ServerRequestException(resultCode);
             }
@@ -308,21 +304,18 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private async Task WaitRejectSeverRequest(Func<Task<OrderCmdResult>> request, OrderCmdResultCodes expectedError)
         {
             int attemptsCount = 0;
-            OrderCmdResultCodes resultCode;
 
             do
             {
                 Bot.PrintDebug($"Start reject request Async = {_asyncMode}");
 
                 var result = await request();
-
-                resultCode = result.ResultCode;
+                var resultCode = result.ResultCode;
 
                 if (resultCode == expectedError)
                     return;
-                else
-                if (resultCode.IsServerError())
-                    await Task.Delay(DelayBetweenServerRequests);
+                else if (resultCode.IsServerError())
+                    await Bot.Delay(DelayBetweenServerRequests);
                 else
                     throw new ServerRequestException(resultCode);
             }

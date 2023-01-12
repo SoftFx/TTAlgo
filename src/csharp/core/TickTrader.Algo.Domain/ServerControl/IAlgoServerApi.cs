@@ -39,6 +39,8 @@ namespace TickTrader.Algo.Domain.ServerControl
         Task<string> GetPluginFileWritePath(UploadPluginFileRequest request);
 
         Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
+        Task SubscribeToAlerts(ChannelWriter<AlertRecordInfo> channel);
+
 
         Task SubscribeToUpdates(ChannelWriter<IMessage> channel);
     }

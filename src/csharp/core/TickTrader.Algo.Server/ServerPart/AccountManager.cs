@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -49,11 +48,6 @@ namespace TickTrader.Algo.Server
             }
 
             _logger.Debug("Restored saved state");
-        }
-
-        public AccountControlModel GetAccountControl(string accId)
-        {
-            return new AccountControlModel(GetAccountRefOrThrow(accId));
         }
 
         public async Task<string> AddAccount(AddAccountRequest request)
@@ -130,13 +124,13 @@ namespace TickTrader.Algo.Server
             {
                 var client = new ClientModel.ControlHandler2(_server.GetDefaultClientSettings($"test{Guid.NewGuid():N}"));
 
-                await client.OpenHandler();
+                await client.Init();
 
                 var lastError = await client.Connection.Connect(userId, creds.GetPassword(), server, CancellationToken.None);
 
                 await client.Connection.Disconnect();
 
-                await client.CloseHandler();
+                await client.Deinit();
 
                 return lastError;
             }
@@ -161,6 +155,12 @@ namespace TickTrader.Algo.Server
             if (!_accounts.TryGetValue(accId, out var account))
                 throw Errors.AccountNotFound(accId);
 
+            return account;
+        }
+
+        internal IActorRef GetAccountRefOrDefault(string accId)
+        {
+            _ = _accounts.TryGetValue(accId, out var account);
             return account;
         }
 

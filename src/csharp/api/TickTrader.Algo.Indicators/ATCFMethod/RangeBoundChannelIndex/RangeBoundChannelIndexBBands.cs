@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 {
-    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index BBands", Version = "1.0")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index BBands", Version = "1.1")]
     public class RangeBoundChannelIndexBBands : DigitalIndicatorBase, IRangeBoundChannelIndexBBands
     {
-        private IMA _stdMa, _std2Ma;
+        private IMovAvgAlgo _stdMa, _std2Ma;
         private double _coeff, _coeff2;
 
         [Parameter(DefaultValue = 100, DisplayName = "Deviation Period")]
@@ -59,10 +58,8 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 
         private void InitializeIndicator()
         {
-            _stdMa = MABase.CreateMaInstance(DeviationPeriod, MovingAverageMethod.Simple);
-            _stdMa.Init();
-            _std2Ma = MABase.CreateMaInstance(DeviationPeriod, MovingAverageMethod.Simple);
-            _std2Ma.Init();
+            _stdMa = MovAvg.Create(DeviationPeriod, MovingAverageMethod.Simple);
+            _std2Ma = MovAvg.Create(DeviationPeriod, MovingAverageMethod.Simple);
             _coeff = DeviationCoeff / 2;
             _coeff2 = DeviationCoeff;
         }

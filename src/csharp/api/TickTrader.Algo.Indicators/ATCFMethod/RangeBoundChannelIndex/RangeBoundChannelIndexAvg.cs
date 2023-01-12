@@ -6,25 +6,10 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 {
-    internal class AnotherSma : SMA
-    {
-        public double Sum => _sum;
-
-        public AnotherSma(int period) : base(period)
-        {
-        }
-
-        protected override void SetCurrentResult()
-        {
-            Average = _sum / Period;
-        }
-    }
-
-    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index Avg", Version = "1.3")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index Avg", Version = "1.5")]
     public class RangeBoundChannelIndex : DigitalIndicatorBase, IRangeBoundChannelIndexAvg
     {
-        private IMA _ma;
-        private AnotherSma _stdMa, _std2Ma;
+        private SMA2 _ma, _stdMa, _std2Ma;
         private List<double> _calcCache;
         private DateTime _lastUpdated;
 
@@ -76,15 +61,17 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 
         private void InitializeIndicator()
         {
-            _ma = new AnotherSma(CountBars);
-            _ma.Init();
-            _calcCache = new List<double>();
+            var method = (MovingAverageMethod)(-1);
+            _ma = new SMA2(new MovAvgArgs(method, CountBars, double.NaN), false);
+            _ma.Reset();
+            _calcCache = new List<double>(CountBars + 1);
             _lastUpdated = DateTime.MinValue;
 
-            _stdMa = new AnotherSma(Std);
-            _std2Ma = new AnotherSma(Std);
-            _stdMa.Init();
-            _std2Ma.Init();
+            var args = new MovAvgArgs(method, Std, double.NaN);
+            _stdMa = new SMA2(args, false);
+            _std2Ma = new SMA2(args, false);
+            _stdMa.Reset();
+            _std2Ma.Reset();
         }
 
         protected override void Init()
@@ -102,13 +89,15 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
                 _ma.UpdateLast(val);
                 _stdMa.UpdateLast(val);
                 _std2Ma.UpdateLast(val * val);
-                _calcCache[Price.Count - 1] = val;
+                _calcCache[_calcCache.Count - 1] = val;
             }
             else
             {
                 _ma.Add(val);
                 _stdMa.Add(val);
                 _std2Ma.Add(val * val);
+                if (_calcCache.Count == CountBars)
+                    _calcCache.RemoveAt(0);
                 _calcCache.Add(val);
             }
 
@@ -151,9 +140,9 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
                 LowerBound2[CountBars] = double.NaN;
             }
 
-            for (var i = Math.Min(Price.Count, CountBars) - 1; i >= 0; i--)
+            for (var i = _calcCache.Count - 1; i >= 0; i--)
             {
-                var rbci = _ma.Average - _calcCache[Price.Count - (pos + i) - 1];
+                var rbci = _ma.Average - _calcCache[_calcCache.Count - (pos + i) - 1];
                 Rbci[pos + i] = rbci;
             }
 

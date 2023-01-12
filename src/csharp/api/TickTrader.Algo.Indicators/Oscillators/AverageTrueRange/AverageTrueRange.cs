@@ -5,10 +5,10 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.AverageTrueRange
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Average True Range", Version = "1.0")]
+    [Indicator(Category = "Oscillators", DisplayName = "Average True Range", Version = "1.1")]
     public class AverageTrueRange : Indicator, IAverageTrueRange
     {
-        private IMA _ma;
+        private IMovAvgAlgo _ma;
 
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
@@ -33,8 +33,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.AverageTrueRange
 
         protected void InitializeIndicator()
         {
-            _ma = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
-            _ma.Init();
+            _ma = MovAvg.Create(Period, MovingAverageMethod.Simple);
         }
 
         protected override void Init()

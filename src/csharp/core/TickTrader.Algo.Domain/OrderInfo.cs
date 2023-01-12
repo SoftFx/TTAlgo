@@ -24,9 +24,23 @@ namespace TickTrader.Algo.Domain
             set { OptionsBitmask = (int)value; }
         }
 
+        public UtcTicks? Expiration
+        {
+            get => ExpirationTicks.ToUtcTicks();
+            set => ExpirationTicks = value.ToInt64();
+        }
+
         public bool IsImmediateOrCancel => Options.HasFlag(OrderOptions.ImmediateOrCancel);
 
         public bool IsContingentOrder => Options.HasFlag(OrderOptions.ContingentOrder);
+
+        public bool IsOcoOrder => IsSupportOco && Options.HasFlag(OrderOptions.OneCancelsTheOther);
+
+
+        public bool IsSupportOco => Type == Types.Type.Limit || Type == Types.Type.Stop;
+
+        public bool IsSupportedSlippage => Type == Types.Type.Stop || Type == Types.Type.Market || Type == Types.Type.Position;
+
 
         public bool MarketWithSlippdage => Options.HasFlag(OrderOptions.MarketWithSlippage);
 
@@ -187,6 +201,25 @@ namespace TickTrader.Algo.Domain
 
             EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, false));
         }
+
+        public double GetMaxSlippagePrice(double currentPrice)
+        {
+            if (SymbolInfo != null)
+            {
+                var koef = Side.IsBuy() ? 1 : -1;
+                var slippage = SymbolInfo.Slippage.DefaultValue ?? 0.0;
+
+                switch (SymbolInfo.Slippage.Type)
+                {
+                    case SlippageInfo.Types.Type.Pips:
+                        return currentPrice + koef * (slippage * SymbolInfo.Point);
+                    case SlippageInfo.Types.Type.Percent:
+                        return currentPrice * (1.0 + koef * slippage);
+                }
+            }
+
+            return currentPrice;
+        }
     }
 
     public static class OrderOptionsExtensions
@@ -225,7 +258,7 @@ namespace TickTrader.Algo.Domain
 
         Timestamp Created { get; }
 
-        Timestamp Expiration { get; }
+        UtcTicks? Expiration { get; }
 
         string Comment { get; set; }
 

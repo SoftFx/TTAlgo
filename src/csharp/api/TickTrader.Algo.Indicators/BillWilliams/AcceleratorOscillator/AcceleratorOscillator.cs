@@ -5,11 +5,11 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
 {
-    [Indicator(Category = "Bill Williams", DisplayName = "Accelerator Oscillator", Version = "1.0")]
+    [Indicator(Category = "Bill Williams", DisplayName = "Accelerator Oscillator", Version = "1.1")]
     public class AcceleratorOscillator : Indicator, IAcceleratorOscillator
     {
         private IAwesomeOscillator _ao;
-        private IMA _aoSma;
+        private IMovAvgAlgo _aoSma;
 
         [Parameter(DisplayName = "Fast SMA Period", DefaultValue = 5)]
         public int FastSmaPeriod { get; set; }
@@ -46,8 +46,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
         private void InitializeIndicator()
         {
             _ao = Indicators.AwesomeOscillator(Bars, FastSmaPeriod, SlowSmaPeriod, DataLimit);
-            _aoSma = MABase.CreateMaInstance(FastSmaPeriod, MovingAverageMethod.Simple);
-            _aoSma.Init();
+            _aoSma = MovAvg.Create(FastSmaPeriod, MovingAverageMethod.Simple);
         }
 
         protected override void Init()

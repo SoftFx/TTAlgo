@@ -35,15 +35,36 @@ namespace TickTrader.Algo.BacktesterApi
             }
         }
 
-        public class ForDoublePoint : ClassMap<OutputPoint>
+
+        public abstract class RoundClassMap<T> : ClassMap<T> where T : IOutputPoint
+        {
+            private readonly MemberMap<T, double> _valueMap;
+
+
+            protected abstract string TimeHeader { get; }
+
+
+            public RoundClassMap()
+            {
+                Map(p => p.Time).Index(0).Name(TimeHeader).TypeConverter<UtcTicksTypeConverter>();
+
+                _valueMap = Map(p => p.Value).Index(1).Name("Value");
+            }
+
+
+            public RoundClassMap<T> SetPricision(int precision)
+            {
+                _valueMap.TypeConverter(new RoundedDoubleConverter(precision));
+
+                return this;
+            }
+        }
+
+        public class ForDoublePoint : RoundClassMap<OutputPoint>
         {
             public const string Header = "TimeUtc_Double";
 
-            public ForDoublePoint()
-            {
-                Map(p => p.Time).Index(0).Name(Header).TypeConverter<UtcTicksTypeConverter>();
-                Map(p => p.Value).Index(1).Name("Value");
-            }
+            protected override string TimeHeader => Header;
 
 
             public static OutputPoint Read(IReaderRow reader)
@@ -56,7 +77,7 @@ namespace TickTrader.Algo.BacktesterApi
             }
         }
 
-        public readonly struct MarkerPointWrapper
+        public readonly struct MarkerPointWrapper : IOutputPoint
         {
             private readonly OutputPoint _point;
             private readonly MarkerInfo _marker;
@@ -80,14 +101,15 @@ namespace TickTrader.Algo.BacktesterApi
             }
         }
 
-        public class ForMarkerPoint : ClassMap<MarkerPointWrapper>
+        public class ForMarkerPoint : RoundClassMap<MarkerPointWrapper>
         {
             public const string Header = "TimeUtc_Marker";
 
-            public ForMarkerPoint()
+            protected override string TimeHeader => Header;
+
+
+            public ForMarkerPoint() : base()
             {
-                Map(p => p.Time).Index(0).Name(Header).TypeConverter<UtcTicksTypeConverter>();
-                Map(p => p.Value).Index(1).Name("Value");
                 Map(p => p.Icon).Index(2).Name("Icon");
                 Map(p => p.ColorArgb).Index(3).Name("ColorArgb");
                 Map(p => p.DisplayText).Index(4).Name("DisplayText");
@@ -167,6 +189,8 @@ namespace TickTrader.Algo.BacktesterApi
 
                 Map(t => t.Comment).Index(45).Name("Comment");
                 Map(t => t.Tag).Index(46).Name("Tag");
+
+                Map(t => t.OcoRelatedOrderId).Index(47).Name("OcoRelatedOrderId").Optional();
             }
         }
 
@@ -184,7 +208,7 @@ namespace TickTrader.Algo.BacktesterApi
             }
         }
 
-        private class ProtoTimestampTypeConverter : ITypeConverter
+        private sealed class ProtoTimestampTypeConverter : ITypeConverter
         {
             public object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
             {
@@ -208,7 +232,7 @@ namespace TickTrader.Algo.BacktesterApi
             }
         }
 
-        private class UtcTicksTypeConverter : ITypeConverter
+        private sealed class UtcTicksTypeConverter : ITypeConverter
         {
             public static bool TryReadTime(string text, out UtcTicks timeTicks)
             {
@@ -232,6 +256,42 @@ namespace TickTrader.Algo.BacktesterApi
             public string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
             {
                 return value is UtcTicks time ? InvariantFormat.CsvFormat(time.ToUtcDateTime()) : string.Empty;
+            }
+        }
+
+        private sealed class RoundedDoubleConverter : ITypeConverter
+        {
+            private readonly string _doubleFormat;
+            private readonly double _bigValue;
+
+            public RoundedDoubleConverter(int precision)
+            {
+                if (precision > 0 && precision <= 14)
+                {
+                    _doubleFormat = $"0.{new string('#', precision)}";
+                    // values can be too big for requested precision after decimal point
+                    // better switch to general format at this point
+                    _bigValue = Math.Pow(10, 14 - precision);
+                }
+                else
+                {
+                    _doubleFormat = "G";
+                    _bigValue = double.MaxValue;
+                }
+            }
+
+
+            public object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
+            {
+                return double.TryParse(text, out var result) ? result : 0.0;
+            }
+
+            public string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
+            {
+                if (value is not double dValue)
+                    return string.Empty;
+
+                return dValue < _bigValue ? dValue.ToString(_doubleFormat) : dValue.ToString("G");
             }
         }
     }

@@ -5,10 +5,10 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Relative Strength Index", Version = "1.0")]
+    [Indicator(Category = "Oscillators", DisplayName = "Relative Strength Index", Version = "1.1")]
     public class RelativeStrengthIndex : Indicator, IRelativeStrenghtIndex
     {
-        private IMA _uMa, _dMa;
+        private IMovAvgAlgo _uMa, _dMa;
 
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
@@ -38,10 +38,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
 
         protected void InitializeIndicator()
         {
-            _uMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential, 1.0/Period);
-            _uMa.Init();
-            _dMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential, 1.0/Period);
-            _dMa.Init();
+            _uMa = MovAvg.Create(Period, MovingAverageMethod.Exponential, 1.0/Period);
+            _dMa = MovAvg.Create(Period, MovingAverageMethod.Exponential, 1.0/Period);
         }
 
         protected override void Init()

@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -11,11 +10,11 @@ namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        internal const int BarsCount = 4000;
-
-        public ObservableBarVector BarVector { get; } = new(Feed.Types.Timeframe.M1);
+        public ObservableBarVector BarVector { get; }
 
         public override IEnumerable<ChartTypes> AvailableChartTypes { get; }
+
+        public int BarsCount { get; private set; }
 
 
         public BarChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv) : base(symbol, algoEnv)
@@ -27,59 +26,48 @@ namespace TickTrader.BotTerminal
                 ChartTypes.Mountain,
             };
 
+            BarVector = new ObservableBarVector(symbol.Name);
             SelectedChartType = ChartTypes.Candle;
         }
 
-        public void Activate(Feed.Types.Timeframe timeframe)
+
+        public void Activate(Feed.Types.Timeframe timeframe, int size)
         {
             TimeFrame = timeframe;
-            BarVector.Timeframe = timeframe;
+            BarsCount = size;
             base.Activate();
         }
-
-        //public override ITimeVectorRef TimeSyncRef => null; //_barVector.Ref;
 
 
         protected override void ClearData()
         {
             BarVector.Clear();
+            _barSub?.Dispose();
+            _barSub = null;
         }
 
         protected async override Task LoadData(CancellationToken cToken)
         {
-            var aproximateTimeRef = DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
-            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef.ToUniversalTime().ToTimestamp(), -BarsCount);
+            _barSub = ClientModel.BarDistributor.AddListener(OnBarUpdate, new BarSubEntry(SymbolCode, TimeFrame));
+
+            var aproximateTimeRef = UtcTicks.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
+            var barArray = await ClientModel.GetBars(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef, -BarsCount);
 
             cToken.ThrowIfCancellationRequested();
 
-            BarVector.InitNewVector(barArray);
+            BarVector.InitNewVector(TimeFrame, barArray, size: BarsCount);
 
             if (barArray.Length > 0)
                 InitBoundaries(barArray.Length, barArray.First().OpenTime.ToUtcDateTime(), barArray.Last().OpenTime.ToUtcDateTime());
         }
 
-        protected override IndicatorModel CreateIndicator(PluginConfig config)
+
+        protected override void ApplyBarUpdate(BarUpdate bar)
         {
-            return new IndicatorModel(config, Agent, this, this);
-        }
-
-        public override void InitializePlugin(ExecutorConfig config)
-        {
-            base.InitializePlugin(config);
-
-            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
-            //config.SetMainSeries(_barVector.Select(u));
-        }
-
-        protected override void ApplyUpdate(QuoteInfo quote)
-        {
-            BarVector.ApplyQuote(quote);
-
-            //if (quote.HasBid)
-            //{
-            //    //_barVector.TryAppendQuote(quote.Time, quote.Bid, 1);
-            //    //ExtendBoundaries(_barVector.Count, quote.TimeUtc);
-            //}
+            BarVector.ApplyTickUpdate(bar.BidData?.Close, bar.AskData?.Close);
+            if (bar.BidData != null)
+                BarVector.ApplyBarUpdate(bar.BidData);
+            //ExtendBoundaries(BarVector.Count, bar.Data.CloseTime.ToUtcDateTime());
         }
 
         protected override void UpdateSeries()

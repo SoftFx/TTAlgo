@@ -3,9 +3,7 @@ using Machinarium.Qnil;
 using Microsoft.Win32;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,6 +18,7 @@ namespace TickTrader.BotTerminal
         private ProfileRepository _profileRepo;
         private VarDictionary<string, string> _profiles;
         private ProfileManager _profileManager;
+        private LocalAlgoAgent2 _agent;
         private bool _canLoadProfile;
 
         public IObservableList<string> Profiles { get; }
@@ -41,6 +40,8 @@ namespace TickTrader.BotTerminal
             _profileLoader = shell.ProfileLoader;
             _wndManager = shell.ToolWndManager;
             _profileManager = storage.ProfileManager;
+            _agent = shell.Agent;
+
             _profiles = new VarDictionary<string, string>();
             Profiles = _profiles.OrderBy((k, v) => v).Chain().AsObservable();
 
@@ -86,6 +87,8 @@ namespace TickTrader.BotTerminal
                 return;
 
             await LoadUserProfile(name, currentSrc.Token);
+
+            await _agent.IndicatorHost.Start();
         }
 
         public async Task LoadConnectionProfile(string server, string login, CancellationToken token)
@@ -93,11 +96,6 @@ namespace TickTrader.BotTerminal
             try
             {
                 await _profileManager.StopCurrentProfile();
-
-                //if (!await _profileManager.StopCurrentProfile(server, login))
-                //{
-                //    return;
-                //}
 
                 token.ThrowIfCancellationRequested();
 

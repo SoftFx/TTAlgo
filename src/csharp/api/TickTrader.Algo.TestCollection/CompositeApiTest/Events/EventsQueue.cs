@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
+using static TickTrader.Algo.Api.BaseCloseRequest;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
@@ -79,39 +80,53 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             var orderId = args.Order.Id;
 
-            if (@event == OrderEvents.Open)
+            if (@event == Events.Open)
             {
                 var template = _expectedToOpenTemplates.First.Value;
                 _expectedToOpenTemplates.RemoveFirst();
 
-                RegisterExistingTemplate(template.ToOpen(orderId)); //for modify tests
+                if (template.IsGrossAcc && template.Opened.Task.IsCompleted)
+                    template.ToGrossPosition();
+                else
+                    template.ToOpen(orderId);
+
+                RegisterExistingTemplate(template); //for modify tests
                 //_currentTemplates.Add(orderId, template.ToOpen(orderId));
             }
 
-            if (@event == OrderEvents.Activate)
+            if (@event == Events.Activate)
             {
                 var template = _currentTemplates[orderId];
                 _currentTemplates.Remove(orderId);
 
-                if (template.IsOnTimeTrigger && template.TriggerTime <= DateTime.UtcNow)
+                if (template.IsOnTimeTrigger)
                     _expectedToOpenTemplates.AddFirst(template.ToOnTimeTriggerReceived());
                 else
                     _expectedToOpenTemplates.AddFirst(template.ToActivate());
             }
 
-            if (@event == OrderEvents.Cancel)
+            if (@event == Events.Cancel)
             {
-                //if (!_currentTemplates.TryGetValue(orderId, out var template))
-                //    return;
                 var template = _currentTemplates[orderId];
                 _currentTemplates.Remove(orderId);
 
                 template.ToCancel();
             }
 
-            if (@event == OrderEvents.Close)
+            if (@event == Events.Close)
             {
+                var template = _currentTemplates[orderId];
                 _currentTemplates.Remove(orderId);
+
+                template.ToClose();
+            }
+
+            if (@event == Events.Expire)
+            {
+                var template = _currentTemplates[orderId];
+                _currentTemplates.Remove(orderId);
+
+                template.ToExpire();
             }
         }
 
@@ -119,7 +134,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             var oldOrderId = args.OldOrder.Id;
 
-            if (@event == OrderEvents.Fill)
+            if (@event == Events.Fill)
             {
                 var filledVolume = args.NewOrder.LastFillVolume;
 
@@ -130,10 +145,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                     _currentTemplates.Remove(oldOrderId);
 
                 if (baseTemplate.IsGrossAcc)
-                    _expectedToOpenTemplates.AddFirst(filledPart.ToGrossPosition());
+                    _expectedToOpenTemplates.AddFirst(filledPart);
             }
 
-            if (@event == OrderEvents.Modify)
+            if (@event == Events.Modify)
             {
                 var baseTemplate = _currentTemplates[oldOrderId];
                 baseTemplate.ToModified();

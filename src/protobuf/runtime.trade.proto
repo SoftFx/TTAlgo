@@ -66,7 +66,7 @@ message OrderInfo {
     google.protobuf.DoubleValue stop_price = 10;
     google.protobuf.DoubleValue stop_loss = 11;
     google.protobuf.DoubleValue take_profit = 12;
-    google.protobuf.Timestamp expiration = 13;
+    google.protobuf.Int64Value expiration_ticks = 13;
     google.protobuf.Timestamp created = 14;
     google.protobuf.Timestamp modified = 15;
     google.protobuf.StringValue comment = 16;
@@ -190,6 +190,7 @@ message OrderExecReport {
         INCORRECT_CONDITIONS_FOR_TRIGGER = 136;
         OCO_RELATED_ORDER_INCORRECT_OPTIONS = 137;
         OCO_INCORRECT_RELATED_ID = 138;
+        INCORRECT_SIDE = 139;
     }
 
     google.protobuf.StringValue operation_id = 1;
@@ -224,7 +225,7 @@ message ContingentOrderTrigger {
     }
 
     TriggerType type = 1;
-    google.protobuf.Timestamp trigger_time = 2;
+    google.protobuf.Int64Value trigger_time_ticks = 2;
     google.protobuf.StringValue order_id_triggered_by = 3;
 }
 
@@ -240,7 +241,7 @@ message OpenOrderRequest {
     google.protobuf.DoubleValue stop_loss = 9;
     google.protobuf.DoubleValue take_profit = 10;
     google.protobuf.DoubleValue slippage = 11;
-    google.protobuf.Timestamp expiration = 12;
+    google.protobuf.Int64Value expiration_ticks = 12;
     google.protobuf.StringValue comment = 13;
     google.protobuf.StringValue tag = 14;
     int32 exec_options_bitmask = 15;
@@ -266,7 +267,7 @@ message ModifyOrderRequest {
     google.protobuf.DoubleValue stop_loss = 12;
     google.protobuf.DoubleValue take_profit = 13;
     google.protobuf.DoubleValue slippage = 14;
-    google.protobuf.Timestamp expiration = 15;
+    google.protobuf.Int64Value expiration_ticks = 15;
     google.protobuf.StringValue comment = 16;
     google.protobuf.StringValue tag = 17;
     google.protobuf.Int32Value exec_options_bitmask = 18;
@@ -403,8 +404,8 @@ message TradeHistoryRequest {
         BACKWARD = 2;
     }
 
-    google.protobuf.Timestamp from = 1;
-    google.protobuf.Timestamp to = 2;
+    google.protobuf.Int64Value from_ticks = 1;
+    google.protobuf.Int64Value to_ticks = 2;
     int32 options_bitmask = 3;
 }
 
@@ -447,8 +448,8 @@ message TriggerHistoryRequest {
         BACKWARD = 2;
     }
 
-    google.protobuf.Timestamp from = 1;
-    google.protobuf.Timestamp to = 2;
+    google.protobuf.Int64Value from_ticks = 1;
+    google.protobuf.Int64Value to_ticks = 2;
     int32 options_bitmask = 3;
 }
 

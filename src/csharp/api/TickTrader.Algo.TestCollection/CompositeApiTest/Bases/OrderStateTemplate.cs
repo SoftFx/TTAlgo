@@ -8,14 +8,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal class OrderStateTemplate : OrderTemplate
     {
-        public Order RealOrder { get; private set; }
-
-        public bool CanCloseOrder => RealOrder.Type == OrderType.Position || RealOrder.Type == OrderType.Market;
-
-
         public TaskCompletionSource<bool> Opened { get; private set; }
 
         public TaskCompletionSource<bool> OpenedGrossPosition { get; private set; }
+
+        public TaskCompletionSource<bool> RejectOpened { get; private set; }
 
         public TaskCompletionSource<bool> OnTimeTriggerReceived { get; private set; }
 
@@ -25,8 +22,26 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public TaskCompletionSource<bool> Modified { get; private set; }
 
-        public TaskCompletionSource<bool> FinalExecution => IsGrossAcc ? OpenedGrossPosition : Filled;
+        public TaskCompletionSource<bool> Expired { get; private set; }
 
+        public TaskCompletionSource<bool> Closed { get; private set; }
+
+
+        public TaskCompletionSource<bool> IsExecuted => IsGrossAcc ? OpenedGrossPosition : Filled;
+
+        public bool IsRemoved
+        {
+            get
+            {
+                if (!Opened.Task.IsCompleted || RejectOpened.Task.IsCompleted)
+                    return true;
+
+                if (IsGrossAcc)
+                    return OpenedGrossPosition.Task.IsCompleted && Closed.Task.IsCompleted;
+                else
+                    return Filled.Task.IsCompleted || Canceled.Task.IsCompleted || Expired.Task.IsCompleted;
+            }
+        }
 
         public List<OrderStateTemplate> FilledParts { get; private set; }
 
@@ -41,13 +56,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private void ResetTemplateStates()
         {
-            OpenedGrossPosition = new TaskCompletionSource<bool>();
-
             Opened = new TaskCompletionSource<bool>();
+            OpenedGrossPosition = new TaskCompletionSource<bool>();
+            RejectOpened = new TaskCompletionSource<bool>();
+
             Filled = new TaskCompletionSource<bool>();
             FilledParts = new List<OrderStateTemplate>();
             Canceled = new TaskCompletionSource<bool>();
             Modified = new TaskCompletionSource<bool>();
+            Expired = new TaskCompletionSource<bool>();
+            Closed = new TaskCompletionSource<bool>();
+
             OnTimeTriggerReceived = new TaskCompletionSource<bool>();
         }
 
@@ -57,8 +76,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 Canceled = new TaskCompletionSource<bool>(); //for triggers
 
             Id = orderId;
-            RealOrder = Orders[Id];
             Opened.SetResult(true);
+
+            return this;
+        }
+
+        internal OrderStateTemplate ToRejectOpen()
+        {
+            RejectOpened.SetResult(true);
 
             return this;
         }
@@ -88,7 +113,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
 
             Filled.SetResult(true);
-            RealOrder = null;
 
             return this;
         }
@@ -102,7 +126,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal OrderStateTemplate ToGrossPosition()
         {
-            Opened = new TaskCompletionSource<bool>();
             Type = OrderType.Position;
 
             OpenedGrossPosition.SetResult(true);
@@ -113,7 +136,20 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal OrderStateTemplate ToCancel()
         {
             Canceled.SetResult(true);
-            RealOrder = null;
+
+            return this;
+        }
+
+        internal OrderStateTemplate ToClose()
+        {
+            Closed.SetResult(true);
+
+            return this;
+        }
+
+        internal OrderStateTemplate ToExpire()
+        {
+            Expired.SetResult(true);
 
             return this;
         }
@@ -121,7 +157,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal OrderStateTemplate ToOnTimeTriggerReceived()
         {
             Opened = new TaskCompletionSource<bool>();
-            RealOrder = null;
             TriggerType = null;
 
             OnTimeTriggerReceived.SetResult(true);

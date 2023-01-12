@@ -11,20 +11,22 @@ namespace TickTrader.BotTerminal
 {
     public sealed class ObservableBarVector : ObservableRangeCollection<FinancialPoint>
     {
-        private const int DefaultBarVectorSize = 4000;
-
-        private readonly int _maxVectorSize;
+        private const int DefaultBarVectorSize = 512;
 
         private Feed.Types.Timeframe _timeFrame;
         private BarSampler _sampler;
+        private int _maxVectorSize;
+
+
+        internal string Symbol { get; private set; }
 
         internal Feed.Types.Timeframe Timeframe
         {
             get => _timeFrame;
 
-            set
+            private set
             {
-                if (_timeFrame == value)
+                if (_timeFrame == value && _sampler != null)
                     return;
 
                 _timeFrame = value;
@@ -38,16 +40,19 @@ namespace TickTrader.BotTerminal
         internal event Action<double?, double?> ApplyNewTickEvent;
 
 
-        internal ObservableBarVector(Feed.Types.Timeframe timeFrame, int? size = null)
+        internal ObservableBarVector(string symbol = null, int? size = null)
         {
+            Symbol = symbol;
             _maxVectorSize = size ?? DefaultBarVectorSize;
-
-            Timeframe = timeFrame;
         }
 
 
-        public void InitNewVector(IEnumerable<BarData> vector)
+        public void InitNewVector(Feed.Types.Timeframe timeFrame, IEnumerable<BarData> vector, string symbol = null, int? size = null)
         {
+            Timeframe = timeFrame;
+            _maxVectorSize = size ?? DefaultBarVectorSize;
+            Symbol = symbol ?? Symbol;
+
             Clear();
             AddRange(vector.Select(b => b.ToPoint()));
 
@@ -81,40 +86,40 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void ApplyQuote(QuoteInfo quote)
+        public void ApplyTickUpdate(double? bid, double? ask) => ApplyNewTickEvent?.Invoke(bid, ask);
+
+        public void ApplyBarUpdate(BarData bar)
         {
-            if (TryAppendBidQuote(quote))
-                ApplyNewTickEvent?.Invoke(quote.DoubleNullableBid(), quote.DoubleNullableAsk());
+            AppendBarUpdateInternal(bar, true);
         }
 
-        public bool TryAppendBidQuote(QuoteInfo quote)
+        private bool AppendBarUpdateInternal(BarData bar, bool noThrow)
         {
-            return quote.HasBid && AppendQuoteInternal(quote.Time, quote.Bid, true);
-        }
-
-        public bool TryAppendAskQuote(QuoteInfo quote)
-        {
-            return quote.HasAsk && AppendQuoteInternal(quote.Time, quote.Ask, true);
-        }
-
-        private bool AppendQuoteInternal(UtcTicks time, double price, bool noThrow)
-        {
-            var boundaries = _sampler.GetBar(time);
             var currentBar = Items?.LastOrDefault();
 
             if (currentBar != null)
             {
-                if (time.Value < currentBar.Date.Ticks)
+                if (bar.OpenTime.Value < currentBar.Date.Ticks)
                     return noThrow ? false : throw new ArgumentException("Invalid time sequnce!");
 
-                if (currentBar.Date.Ticks == boundaries.Open.Value)
+                if (bar.OpenTime.Value == currentBar.Date.Ticks)
                 {
-                    currentBar.ApplyTick(price);
+                    currentBar.ApplyBarUpdate(bar);
                     return true;
                 }
             }
 
-            return AppendBarIntenral(new BarData(boundaries.Open, boundaries.Close, price, 1), noThrow);
+            return AppendBarIntenral(bar, noThrow);
+        }
+
+
+        internal void ResetVisuals()
+        {
+            // LiveCharts has some issues with cleaning up visuals
+
+            var pointsCopy = Items.Select(p => new FinancialPoint(p.Date, p.High, p.Open, p.Close, p.Low)).ToArray();
+            Clear();
+            AddRange(pointsCopy);
         }
     }
 }

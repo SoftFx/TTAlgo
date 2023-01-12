@@ -6,7 +6,7 @@ namespace TickTrader.Algo.CoreV1
 {
     public interface IOutputFixture
     {
-        void BindTo(IReaonlyDataBuffer buffer, ITimeRef timeRef);
+        void BindTo(IReadOnlyDataBuffer buffer, ITimeRef timeRef);
         void Unbind();
     }
 
@@ -78,7 +78,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public void BindTo(IReaonlyDataBuffer buffer, ITimeRef timeRef)
+        public void BindTo(IReadOnlyDataBuffer buffer, ITimeRef timeRef)
         {
             BindTo((OutputBuffer<T>)buffer, timeRef);
         }
@@ -93,6 +93,4 @@ namespace TickTrader.Algo.CoreV1
         public event Action<int> Truncating;
         public event Action<int> Truncated;
     }
-
-    
 }

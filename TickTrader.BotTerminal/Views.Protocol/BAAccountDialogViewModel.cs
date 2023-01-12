@@ -66,7 +66,7 @@ namespace TickTrader.BotTerminal
             IsNewAccountMode = account == null;
             DisplayName = $"{(IsNewAccountMode ? "Add" : "Edit")} account";
 
-            AlgoServersList = algoEnv.BotAgents.Select(u => u.Agent).AsObservable();
+            AlgoServersList = algoEnv.Agents.AsObservable();
 
             var login = LocalAccounts.FirstOrDefault()?.Login;
             var server = serverName ?? TTServersList.FirstOrDefault()?.Address;

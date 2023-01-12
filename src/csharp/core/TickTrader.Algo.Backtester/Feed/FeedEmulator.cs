@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,13 +23,11 @@ namespace TickTrader.Algo.Backtester
     }
 
 
-    public class FeedEmulator : IFeedProvider, IFeedHistoryProvider, ISyncContext
+    public class FeedEmulator : IFeedProvider, IFeedHistoryProvider
     {
         private List<ICrossDomainStorage> _storages = new List<ICrossDomainStorage>();
         private Dictionary<string, SeriesReader> _feedReaders = new Dictionary<string, SeriesReader>();
         private Dictionary<string, FeedSeriesEmulator> _feedSeries = new Dictionary<string, FeedSeriesEmulator>();
-
-        ISyncContext IFeedProvider.Sync => this;
 
         public FeedEmulator()
         {
@@ -154,8 +151,7 @@ namespace TickTrader.Algo.Backtester
 
         private FeedSeriesEmulator GetFeedSrcOrThrow(string symbol)
         {
-            FeedSeriesEmulator src;
-            if (!_feedSeries.TryGetValue(symbol, out src))
+            if (!_feedSeries.TryGetValue(symbol, out FeedSeriesEmulator src))
                 throw new MisconfigException("No feed source for symbol " + symbol);
             return src;
         }
@@ -173,102 +169,90 @@ namespace TickTrader.Algo.Backtester
 
         #region IPluginFeedProvider
 
-        List<QuoteInfo> IFeedProvider.GetSnapshot()
+        List<QuoteInfo> IFeedProvider.GetQuoteSnapshot()
         {
             return _feedSeries.Values.Where(s => s.Current != null).Select(s => s.Current.LastQuote).ToList();
         }
 
-        Task<List<QuoteInfo>> IFeedProvider.GetSnapshotAsync()
+        Task<List<QuoteInfo>> IFeedProvider.GetQuoteSnapshotAsync()
         {
             return Task.FromResult(_feedSeries.Values.Where(s => s.Current != null).Select(s => s.Current.LastQuote).ToList());
         }
 
-        IQuoteSub IFeedProvider.GetSubscription()
+        IQuoteSub IFeedProvider.GetQuoteSub() => new QuoteSubStub();
+
+        IBarSub IFeedProvider.GetBarSub() => new BarSubStub();
+
+        private class HandlerStub : IDisposable
         {
-            return new QuoteSubStub();
+            public void Dispose() { }
         }
 
         private class QuoteSubStub : IQuoteSub
         {
-            public IDisposable AddHandler(Action<QuoteInfo> handler) => null;
+            public IDisposable AddHandler(Action<QuoteInfo> handler) => new HandlerStub();
 
             public void Dispose() { }
 
-            public void Modify(List<FeedSubscriptionUpdate> updates) { }
+            public void Modify(QuoteSubUpdate update) { }
+
+            public void Modify(List<QuoteSubUpdate> updates) { }
         }
 
-        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        private class BarSubStub : IBarSub
+        {
+            public IDisposable AddHandler(Action<BarUpdate> handler) => new HandlerStub();
+
+            public void Dispose() { }
+
+            public void Modify(BarSubUpdate update) { }
+
+            public void Modify(List<BarSubUpdate> updates) { }
+        }
+
+        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
             return GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, to).ToList() ?? new List<BarData>();
         }
 
-        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
             return GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, count).ToList() ?? new List<BarData>();
         }
 
-        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, UtcTicks from, UtcTicks to, bool level2)
         {
             return GetFeedSrcOrThrow(symbol).QueryTicks(from, to, level2) ?? new List<QuoteInfo>();
         }
 
-        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, int count, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, UtcTicks from, int count, bool level2)
         {
             return GetFeedSrcOrThrow(symbol).QueryTicks(from, count, level2) ?? new List<QuoteInfo>();
         }
 
-        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
             return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, to).ToList() ?? new List<BarData>());
         }
 
-        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
             return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, count).ToList() ?? new List<BarData>());
         }
 
-        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2)
+        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, UtcTicks from, UtcTicks to, bool level2)
         {
             return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryTicks(from, to, level2) ?? new List<QuoteInfo>());
         }
 
-        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2)
+        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, UtcTicks from, int count, bool level2)
         {
             return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryTicks(from, count, level2) ?? new List<QuoteInfo>());
         }
 
-        public event Action<QuoteInfo> RateUpdated { add { } remove { } }
-        public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
+        public event Action<QuoteInfo> QuoteUpdated { add { } remove { } }
+        public event Action<BarUpdate> BarUpdated { add { } remove { } }
 
         #endregion
-
-        #region ISyncContext
-
-        public void Invoke(Action action)
-        {
-            action();
-        }
-
-        public void Send(Action action)
-        {
-            action();
-        }
-
-        public void Invoke<T>(Action<T> action, T arg)
-        {
-            action(arg);
-        }
-
-        public T Invoke<T>(Func<T> syncFunc)
-        {
-            return syncFunc();
-        }
-
-        public TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args)
-        {
-            return syncFunc(args);
-        }
-
-        #endregion ISyncContext
     }
 }

@@ -3,7 +3,31 @@ using System;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotAgentViewModel : PropertyChangedBase, IDropHandler, IDisposable
+    internal interface IAgentCmdProvider : IDropHandler
+    {
+        bool CanChangeBotAgent { get; }
+        bool CanRemoveBotAgent { get; }
+        bool CanConnectBotAgent { get; }
+        bool CanDisconnectBotAgent { get; }
+        bool CanAddBot { get; }
+        bool CanAddAccount { get; }
+        bool CanUploadPackage { get; }
+        bool CanDownloadPackage { get; }
+        bool CanManageFiles { get; }
+
+        void ChangeBotAgent();
+        void RemoveBotAgent();
+        void ConnectBotAgent();
+        void DisconnectBotAgent();
+        void AddAccount();
+        void AddBot();
+        void UploadPackage();
+        void DownloadPackage();
+        void ManageFiles();
+    }
+
+
+    internal class BotAgentViewModel : PropertyChangedBase, IAgentCmdProvider, IDisposable
     {
         private AlgoEnvironment _algoEnv;
 
@@ -19,6 +43,10 @@ namespace TickTrader.BotTerminal
 
         public string ToolTipInformation => $"{Connection.Creds.ServerAddress}:{Connection.Creds.Port}, status = {Status}";
 
+        public bool CanChangeBotAgent => true;
+
+        public bool CanRemoveBotAgent => true;
+
         public bool CanConnectBotAgent => Connection.State == BotAgentConnectionManager.States.Offline || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
 
         public bool CanDisconnectBotAgent => Connection.State == BotAgentConnectionManager.States.Connecting || Connection.State == BotAgentConnectionManager.States.Online || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
@@ -30,6 +58,9 @@ namespace TickTrader.BotTerminal
         public bool CanUploadPackage => Agent.Model.AccessManager.CanUploadPackage();
 
         public bool CanDownloadPackage => Agent.Model.AccessManager.CanDownloadPackage();
+
+        public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(Algo.Server.PublicAPI.PluginFolderInfo.Types.PluginFolderId.AlgoData)
+                || Agent.Model.AccessManager.CanGetBotFolderInfo(Algo.Server.PublicAPI.PluginFolderInfo.Types.PluginFolderId.BotLogs);
 
 
         public BotAgentViewModel(BotAgentConnectionManager connection, AlgoEnvironment algoEnv)

@@ -2,6 +2,7 @@
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace TickTrader.Algo.Domain
@@ -53,12 +54,33 @@ namespace TickTrader.Algo.Domain
         public List<IPropertyConfig> UnpackProperties()
         {
             var res = new List<IPropertyConfig>();
-            foreach(var p in Properties)
+            foreach (var p in Properties)
             {
                 if (PropertyConfig.TryUnpack(p, out var prop))
                     res.Add(prop);
             }
             return res;
+        }
+
+        public List<(string, string)> FixFileParametersForRemote()
+        {
+            if (!Properties.Any(p => p.Is(FileParameterConfig.Descriptor)))
+                return null;
+
+            var fileUploadList = new List<(string, string)>();
+            var props = UnpackProperties();
+            foreach (FileParameterConfig fileProp in props.Where(p => p is FileParameterConfig))
+            {
+                var path = fileProp.FileName;
+                if (File.Exists(path) && Path.GetFullPath(path) == path)
+                {
+                    var fileName = Path.GetFileName(path);
+                    fileProp.FileName = fileName;
+                    fileUploadList.Add((fileName, path));
+                }
+            }
+            PackProperties(props);
+            return fileUploadList;
         }
 
 

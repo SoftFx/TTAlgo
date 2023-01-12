@@ -18,8 +18,8 @@ namespace TickTrader.Algo.Backtester
         public Dictionary<string, CurrencyInfo> Currencies { get; } = new Dictionary<string, CurrencyInfo>();
         public Feed.Types.Timeframe MainTimeframe { get; set; }
         public Feed.Types.Timeframe ModelTimeframe { get; set; }
-        public DateTime? EmulationPeriodStart { get; set; }
-        public DateTime? EmulationPeriodEnd { get; set; }
+        public DateTime EmulationPeriodStart { get; set; }
+        public DateTime EmulationPeriodEnd { get; set; }
         public int WarmupSize { get; set; } = 10;
         public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
 

@@ -102,30 +102,20 @@ namespace TickTrader.BotTerminal
 
         public static BaseTransactionModel Create<T>(AccountInfo.Types.Type accountType, T tTransaction, int balanceDigits, ISymbolInfo symbol = null)
         {
-            switch (tTransaction)
+            return tTransaction switch
             {
-                case TriggerReportInfo triggerReport:
-                    return new TriggerTransactionModel(triggerReport, symbol, accountType);
+                TriggerReportInfo triggerReport => new TriggerTransactionModel(triggerReport, symbol, accountType),
 
-                case TradeReportInfo tradeReport:
-                    switch (accountType)
-                    {
-                        case AccountInfo.Types.Type.Gross:
-                            return new GrossTransactionModel(tradeReport, symbol, balanceDigits);
+                TradeReportInfo tradeReport => accountType switch
+                {
+                    AccountInfo.Types.Type.Gross => new GrossTransactionModel(tradeReport, symbol, balanceDigits),
+                    AccountInfo.Types.Type.Net => new NetTransactionModel(tradeReport, symbol, balanceDigits),
+                    AccountInfo.Types.Type.Cash => new CashTransactionModel(tradeReport, symbol, balanceDigits),
+                    _ => throw new NotSupportedException(accountType.ToString()),
+                },
 
-                        case AccountInfo.Types.Type.Net:
-                            return new NetTransactionModel(tradeReport, symbol, balanceDigits);
-
-                        case AccountInfo.Types.Type.Cash:
-                            return new CashTransactionModel(tradeReport, symbol, balanceDigits);
-
-                        default:
-                            throw new NotSupportedException(accountType.ToString());
-                    }
-
-                default:
-                    throw new NotSupportedException(nameof(T));
-            }
+                _ => throw new NotSupportedException(nameof(T)),
+            };
         }
 
         private double? GetMaxVisibleVolume(TradeReportInfo transaction)
@@ -235,20 +225,14 @@ namespace TickTrader.BotTerminal
 
         protected static AggregatedTransactionType GetOrderType(OrderInfo.Types.Type type, OrderInfo.Types.Side side)
         {
-            switch (type)
+            return type switch
             {
-                case OrderInfo.Types.Type.Market:
-                case OrderInfo.Types.Type.Position:
-                    return side.IsBuy() ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
-                case OrderInfo.Types.Type.Limit:
-                    return side.IsBuy() ? AggregatedTransactionType.BuyLimit : AggregatedTransactionType.SellLimit;
-                case OrderInfo.Types.Type.StopLimit:
-                    return side.IsBuy() ? AggregatedTransactionType.BuyStopLimit : AggregatedTransactionType.SellStopLimit;
-                case OrderInfo.Types.Type.Stop:
-                    return side.IsBuy() ? AggregatedTransactionType.BuyStop : AggregatedTransactionType.SellStop;
-                default:
-                    return AggregatedTransactionType.Unknown;
-            }
+                OrderInfo.Types.Type.Market or OrderInfo.Types.Type.Position => side.IsBuy() ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell,
+                OrderInfo.Types.Type.Limit => side.IsBuy() ? AggregatedTransactionType.BuyLimit : AggregatedTransactionType.SellLimit,
+                OrderInfo.Types.Type.StopLimit => side.IsBuy() ? AggregatedTransactionType.BuyStopLimit : AggregatedTransactionType.SellStopLimit,
+                OrderInfo.Types.Type.Stop => side.IsBuy() ? AggregatedTransactionType.BuyStop : AggregatedTransactionType.SellStop,
+                _ => AggregatedTransactionType.Unknown,
+            };
         }
 
         protected virtual string GetSymbolOrCurrency(TradeReportInfo transaction)
@@ -458,7 +442,7 @@ namespace TickTrader.BotTerminal
                 return Reasons.StopOut;
 
             if (transaction.ReportType == TradeReportInfo.Types.ReportType.OrderActivated && transaction.TransactionReason == TradeReportInfo.Types.Reason.DealerDecision &&
-                transaction.RequestedOrderType == Algo.Domain.OrderInfo.Types.Type.StopLimit)
+                transaction.RequestedOrderType == OrderInfo.Types.Type.StopLimit)
             {
                 Type = Type == AggregatedTransactionType.Sell ? AggregatedTransactionType.SellStopLimit : AggregatedTransactionType.BuyStopLimit;
                 return Reasons.Activated;
@@ -496,7 +480,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual void UpdateFieldsAfterSplit(TradeReportInfo transaction) { }
 
-        protected AggregatedTransactionType GetBuyOrSellType(TradeReportInfo transaction)
+        protected static AggregatedTransactionType GetBuyOrSellType(TradeReportInfo transaction)
         {
             return transaction.OrderSide == OrderInfo.Types.Side.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
         }
@@ -525,9 +509,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected string GetTag(TradeReportInfo transaction) => transaction.Tag;
+        protected static string GetTag(TradeReportInfo transaction) => transaction.Tag;
 
-        protected string GetInstanceId(TradeReportInfo transaction) => transaction.InstanceId;
+        protected static string GetInstanceId(TradeReportInfo transaction) => transaction.InstanceId;
 
         protected virtual double? GetSplitRatio(TradeReportInfo transaction) => transaction.SplitRatio;
 

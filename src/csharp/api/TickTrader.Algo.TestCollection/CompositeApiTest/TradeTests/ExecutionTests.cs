@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
@@ -52,12 +51,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private async Task FillByModifyExecutionTest(OrderStateTemplate template)
         {
             await TestOpenOrder(template);
-            await ModifyForExecutionOrder(template);
+            await ExecutionByModifyOrder(template);
         }
 
         private Task ExpirationExecutionTest(OrderStateTemplate template)
         {
-            return TestOpenOrder(template.WithExpiration(4), OrderEvents.Expire);
+            return TestOpenOrder(template.WithExpiration(4), Events.Expire);
         }
 
         private async Task CancelExecutionTest(OrderStateTemplate template)
@@ -68,16 +67,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private Task TakeProfitExecutionTest(OrderStateTemplate template)
         {
-            template.TP = template.CalculatePrice(-2);
+            template.TP = template.CalculatePrice(5);
 
-            return OpenExecutionOrder(template);
+            return OpenTpSlExecutionOrder(template);
         }
 
         private Task StopLossExecutionTest(OrderStateTemplate template)
         {
-            template.SL = template.CalculatePrice(2);
+            template.SL = template.CalculatePrice(-5);
 
-            return OpenExecutionOrder(template);
+            return OpenTpSlExecutionOrder(template);
         }
     }
 }

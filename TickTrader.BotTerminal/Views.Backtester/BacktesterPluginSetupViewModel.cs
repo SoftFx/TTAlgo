@@ -24,6 +24,8 @@ namespace TickTrader.BotTerminal
 
         public SetupContextInfo SetupContext { get; }
 
+        public AccountMetadataInfo AccMetadataTemplate { get; }
+
         public PluginSetupMode Mode { get; }
 
         public PluginConfig Config { get; }
@@ -36,27 +38,28 @@ namespace TickTrader.BotTerminal
 
         public event Action<BacktesterPluginSetupViewModel, bool> Closed = delegate { };
 
-        private BacktesterPluginSetupViewModel(LocalAlgoAgent agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext, PluginSetupMode mode)
+        private BacktesterPluginSetupViewModel(LocalAlgoAgent2 agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext, AccountMetadataInfo accMetadata, PluginSetupMode mode)
         {
             Agent = agent;
             Info = info;
             SetupMetadata = setupMetadata;
             SetupContext = setupContext;
+            AccMetadataTemplate = accMetadata;
             Mode = mode;
 
             Agent.Catalog.PluginList.Updated += AllPlugins_Updated;
         }
 
-        public BacktesterPluginSetupViewModel(LocalAlgoAgent agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext)
-            : this(agent, info, setupMetadata, setupContext, PluginSetupMode.New)
+        public BacktesterPluginSetupViewModel(LocalAlgoAgent2 agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext, AccountMetadataInfo accMetadata)
+            : this(agent, info, setupMetadata, setupContext, accMetadata, PluginSetupMode.New)
         {
             DisplayName = $"Setting - {info.Descriptor_.DisplayName}";
 
             UpdateSetup();
         }
 
-        public BacktesterPluginSetupViewModel(LocalAlgoAgent agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext, PluginConfig config)
-            : this(agent, info, setupMetadata, setupContext, PluginSetupMode.Edit)
+        public BacktesterPluginSetupViewModel(LocalAlgoAgent2 agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext, AccountMetadataInfo accMetadata, PluginConfig config)
+            : this(agent, info, setupMetadata, setupContext, accMetadata, PluginSetupMode.Edit)
         {
             Config = config;
 
@@ -179,8 +182,8 @@ namespace TickTrader.BotTerminal
         {
             var agentMetadata = Agent.GetSetupMetadata(null, null).Result;
 
-            var accMetadata = new AccountMetadataInfo { AccountId = AccountId.Pack("backtester", "backtester") };
-            accMetadata.Symbols.AddRange(SetupMetadata.Symbols.Select(s => s.ToConfig()));
+            var accMetadata = new AccountMetadataInfo(AccMetadataTemplate);
+            accMetadata.AccountId = AccountId.Pack("backtester", "backtester");
 
             return new SetupMetadata(agentMetadata, accMetadata, SetupContext);
         }

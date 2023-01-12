@@ -14,6 +14,11 @@ namespace TickTrader.Algo.Core
         private Timestamp _timestamp;
         private long _lastTicks;
 
+        public TimeKeyGenerator()
+        {
+            Reset();
+        }
+
         public void Reset()
         {
             _timestamp = new Timestamp(); // 1970-01-01

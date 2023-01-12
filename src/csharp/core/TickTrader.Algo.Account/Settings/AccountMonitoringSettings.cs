@@ -4,29 +4,28 @@ namespace TickTrader.Algo.Account.Settings
 {
     internal interface IMonitoringSetting
     {
-        Action<string> NotificationMethod { get; set; }
+        Action<string, string> NotificationMethod { get; }
     }
 
 
     internal interface IQuoteMonitoring : IMonitoringSetting
     {
-        bool EnableQuoteMonitoring { get; set; }
+        bool EnableQuoteMonitoring { get; }
 
-        int AccetableQuoteDelay { get; set; }
+        int AccetableQuoteDelay { get; }
 
-        int AlertsDelay { get; set; }
+        int AlertsDelay { get; }
     }
 
 
-    public sealed class AccountMonitoringSettings : IQuoteMonitoring
+    public sealed record AccountMonitoringSettings : IQuoteMonitoring
     {
-        public bool EnableQuoteMonitoring { get; set; }
+        public bool EnableQuoteMonitoring { get; init; }
 
-        public int AccetableQuoteDelay { get; set; }
+        public int AccetableQuoteDelay { get; init; }
 
-        public int AlertsDelay { get; set; }
+        public int AlertsDelay { get; init; }
 
-
-        public Action<string> NotificationMethod { get; set; }
+        public Action<string, string> NotificationMethod { get; init; }
     }
 }

@@ -5,10 +5,10 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
 {
-    [Indicator(Category = "Volumes", DisplayName = "Money Flow Index", Version = "1.0")]
+    [Indicator(Category = "Volumes", DisplayName = "Money Flow Index", Version = "1.1")]
     public class MoneyFlowIndex : Indicator, IMoneyFlowIndex
     {
-        private IMA _positiveMa, _negativeMa;
+        private IMovAvgAlgo _positiveMa, _negativeMa;
 
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
@@ -33,10 +33,8 @@ namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
 
         protected void InitializeIndicator()
         {
-            _positiveMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
-            _positiveMa.Init();
-            _negativeMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
-            _negativeMa.Init();
+            _positiveMa = MovAvg.Create(Period, MovingAverageMethod.Simple);
+            _negativeMa = MovAvg.Create(Period, MovingAverageMethod.Simple);
         }
 
         protected override void Init()

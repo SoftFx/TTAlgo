@@ -5,6 +5,7 @@ using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
@@ -32,12 +33,12 @@ namespace TickTrader.Algo.CoreV1
 
         public IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(from, to, options.ToDomainEnum())));
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(from.ToUtcTicks(), to.ToUtcTicks(), options.ToDomainEnum())));
         }
 
         public IEnumerable<TradeReport> GetRange(DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(null, to, options.ToDomainEnum())));
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(null, to.ToUtcTicks(), options.ToDomainEnum())));
         }
 
         public Api.IAsyncEnumerator<TradeReport> GetAsync(ThQueryOptions options = ThQueryOptions.None)
@@ -47,12 +48,12 @@ namespace TickTrader.Algo.CoreV1
 
         public Api.IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return AdaptAsync(Provider?.GetTradeHistory(from, to, options.ToDomainEnum()));
+            return AdaptAsync(Provider?.GetTradeHistory(from.ToUtcTicks(), to.ToUtcTicks(), options.ToDomainEnum()));
         }
 
         public Api.IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return AdaptAsync(Provider?.GetTradeHistory(null, to, options.ToDomainEnum()));
+            return AdaptAsync(Provider?.GetTradeHistory(null, to.ToUtcTicks(), options.ToDomainEnum()));
         }
 
         private IEnumerable<TradeReport> Adapt(IEnumerable<Domain.TradeReportInfo> src)
@@ -78,12 +79,12 @@ namespace TickTrader.Algo.CoreV1
 
         IEnumerable<TriggerReport> TriggerHistory.GetRange(DateTime from, DateTime to, ThQueryOptions options)
         {
-            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTriggerHistory(from, to, options.ToDomainEnum())));
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTriggerHistory(from.ToUtcTicks(), to.ToUtcTicks(), options.ToDomainEnum())));
         }
 
         IEnumerable<TriggerReport> TriggerHistory.GetRange(DateTime to, ThQueryOptions options)
         {
-            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTriggerHistory(null, to, options.ToDomainEnum())));
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTriggerHistory(null, to.ToUtcTicks(), options.ToDomainEnum())));
         }
 
         Api.IAsyncEnumerator<TriggerReport> TriggerHistory.GetAsync(ThQueryOptions options)
@@ -93,12 +94,12 @@ namespace TickTrader.Algo.CoreV1
 
         Api.IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options)
         {
-            return AdaptAsync(Provider?.GetTriggerHistory(from, to, options.ToDomainEnum()));
+            return AdaptAsync(Provider?.GetTriggerHistory(from.ToUtcTicks(), to.ToUtcTicks(), options.ToDomainEnum()));
         }
 
         Api.IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime to, ThQueryOptions options)
         {
-            return AdaptAsync(Provider?.GetTriggerHistory(null, to, options.ToDomainEnum()));
+            return AdaptAsync(Provider?.GetTriggerHistory(null, to.ToUtcTicks(), options.ToDomainEnum()));
         }
 
         IEnumerator<TriggerReport> IEnumerable<TriggerReport>.GetEnumerator()

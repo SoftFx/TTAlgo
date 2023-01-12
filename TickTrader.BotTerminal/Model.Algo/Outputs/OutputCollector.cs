@@ -23,6 +23,7 @@ namespace TickTrader.BotTerminal
         void SendSnapshot(IEnumerable<OutputPoint> points);
     }
 
+
     internal class OutputCollector<T> : IOutputCollector, IDisposable
     {
         private readonly string _outputId;

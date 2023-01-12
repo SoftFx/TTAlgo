@@ -1,11 +1,10 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Machinarium.Qnil;
+﻿using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 
@@ -13,67 +12,74 @@ namespace TickTrader.Algo.Account
 {
     public class PluginFeedProvider : IFeedProvider, IFeedHistoryProvider, IPluginMetadata
     {
-        private readonly IQuoteSub _subscription;
-        private readonly IQuoteSubManager _subManager;
-        private readonly IDisposable _subHandler;
+        private readonly IQuoteSub _quoteSub;
+        private readonly IQuoteSubManager _quoteSubManager;
+        private readonly IBarSub _barSub;
+        private readonly IBarSubManager _barSubManager;
+        private readonly IDisposable _quoteSubHandler, _barSubHandler;
         private readonly IVarSet<string, SymbolInfo> _symbols;
         private readonly FeedHistoryProviderModel.Handler _history;
         private readonly IReadOnlyDictionary<string, CurrencyInfo> _currencies;
+        private readonly IActorRef _syncFeedProvider;
 
-        public event Action<QuoteInfo> RateUpdated;
-        public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
+        public event Action<QuoteInfo> QuoteUpdated;
+        public event Action<BarUpdate> BarUpdated;
 
-        public ISyncContext Sync { get; }
 
-        public PluginFeedProvider(EntityCache cache, IQuoteSubManager subManager, FeedHistoryProviderModel.Handler history, ISyncContext sync)
+        public PluginFeedProvider(EntityCache cache, IQuoteSubManager quoteSubManager, IBarSubManager barSubManager, FeedHistoryProviderModel.Handler history, IActorRef syncFeedProvider)
         {
-            Sync = sync;
             _symbols = cache.Symbols;
             _history = history;
             _currencies = cache.Currencies.Snapshot;
-            _subManager = subManager;
-            _subscription = new QuoteSubscription(subManager);
-            _subHandler = _subscription.AddHandler(r => RateUpdated?.Invoke(r));
+            _quoteSubManager = quoteSubManager;
+            _barSubManager = barSubManager;
+            _syncFeedProvider = syncFeedProvider;
+
+            _quoteSub = new QuoteSubscription(quoteSubManager);
+            _quoteSubHandler = _quoteSub.AddHandler(r => QuoteUpdated?.Invoke(r));
+
+            _barSub = new BarSubscription(barSubManager, false);
+            _barSubHandler = _barSub.AddHandler(r => BarUpdated?.Invoke(r));
         }
 
         #region IFeedHistoryProvider implementation
 
-        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
-            return _history.GetBarList(symbol, marketSide, timeframe, from, to).GetAwaiter().GetResult();
+            return QueryBarsAsync(symbol, marketSide, timeframe, from, to).GetAwaiter().GetResult();
         }
 
-        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
-            return _history.GetBarPage(symbol, marketSide, timeframe, from, count).GetAwaiter().GetResult().ToList();
+            return QueryBarsAsync(symbol, marketSide, timeframe, from, count).GetAwaiter().GetResult().ToList();
         }
 
-        public List<QuoteInfo> QueryQuotes(string symbolCode, Timestamp from, Timestamp to, bool level2)
+        public List<QuoteInfo> QueryQuotes(string symbolCode, UtcTicks from, UtcTicks to, bool level2)
         {
-            return _history.GetQuoteList(symbolCode, from, to, level2).GetAwaiter().GetResult();
+            return QueryQuotesAsync(symbolCode, from, to, level2).GetAwaiter().GetResult();
         }
 
-        public List<QuoteInfo> QueryQuotes(string symbolCode, Timestamp from, int count, bool level2)
+        public List<QuoteInfo> QueryQuotes(string symbolCode, UtcTicks from, int count, bool level2)
         {
-            return _history.GetQuotePage(symbolCode, from, count, level2).GetAwaiter().GetResult().ToList();
+            return QueryQuotesAsync(symbolCode, from, count, level2).GetAwaiter().GetResult().ToList();
         }
 
-        public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        public async Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, UtcTicks to)
         {
-            return _history.GetBarList(symbol, marketSide, timeframe, from, to);
+            return (await SyncFeedProviderModel.GetBarList(_syncFeedProvider, symbol, timeframe, marketSide, from, to, null)).ToList();
         }
 
-        public async Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        public async Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, UtcTicks from, int count)
         {
-            return (await _history.GetBarPage(symbol, marketSide, timeframe, from, count)).ToList();
+            return (await SyncFeedProviderModel.GetBarList(_syncFeedProvider, symbol, timeframe, marketSide, from, UtcTicks.Default, count)).ToList();
         }
 
-        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, Timestamp from, Timestamp to, bool level2)
+        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, UtcTicks from, UtcTicks to, bool level2)
         {
             return _history.GetQuoteList(symbolCode, from, to, level2);
         }
 
-        public async Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, Timestamp from, int count, bool level2)
+        public async Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, UtcTicks from, int count, bool level2)
         {
             return (await _history.GetQuotePage(symbolCode, from, count, level2)).ToList();
         }
@@ -82,22 +88,21 @@ namespace TickTrader.Algo.Account
 
         #region IFeedProvider
 
-        public List<QuoteInfo> GetSnapshot()
+        public List<QuoteInfo> GetQuoteSnapshot()
         {
             return _symbols.Snapshot
                 .Where(s => s.Value.LastQuote != null)
                 .Select(s => s.Value.LastQuote).Cast<QuoteInfo>().ToList();
         }
 
-        public Task<List<QuoteInfo>> GetSnapshotAsync()
+        public Task<List<QuoteInfo>> GetQuoteSnapshotAsync()
         {
-            return Task.FromResult(GetSnapshot());
+            return Task.FromResult(GetQuoteSnapshot());
         }
 
-        public IQuoteSub GetSubscription()
-        {
-            return new QuoteSubscription(_subManager);
-        }
+        public IQuoteSub GetQuoteSub() => new QuoteSubscription(_quoteSubManager);
+
+        public IBarSub GetBarSub() => new BarSubscription(_barSubManager, false);
 
         #endregion
 

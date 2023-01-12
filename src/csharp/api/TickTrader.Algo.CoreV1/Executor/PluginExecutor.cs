@@ -15,7 +15,9 @@ namespace TickTrader.Algo.CoreV1
     {
         public enum States { Idle, Running, Stopping }
 
-        private object _sync = new object();
+        private readonly object _sync = new object();
+        private readonly IAlgoLogger _logger;
+
         private LogFixture _pluginLoggerFixture;
         private IPluginLogger _pluginLogger = Null.Logger;
         private IPluginMetadata metadata;
@@ -44,17 +46,18 @@ namespace TickTrader.Algo.CoreV1
         private Task stopTask;
         private string workingFolder;
         private string botWorkingFolder;
-        private string _instanceId;
         private PluginPermissions _permissions;
         private States state;
         private Func<IFixtureContext, IExecutorFixture> _tradeFixtureFactory = c => new TradingFixture(c);
-        private bool _enableUpdateMarshaling = true;
 
         private bool InRunningState => state == States.Running;
 
-        public PluginExecutorCore(PluginKey pluginKey)
+        public PluginExecutorCore(PluginKey pluginKey, string instanceId)
         {
             _metadata = PackageMetadataCache.GetPlugin(pluginKey);
+            InstanceId = instanceId;
+            _logger = AlgoLoggerFactory.GetLogger($"{nameof(PluginExecutorCore)} ({instanceId})");
+
             _statusFixture = new StatusFixture(this);
             _calcFixture = new CalculatorFixture(this);
             _marketFixture = new MarketStateFixture(this);
@@ -67,6 +70,8 @@ namespace TickTrader.Algo.CoreV1
         }
 
         #region Properties
+
+        public string InstanceId { get; }
 
         public bool IsRunning { get; private set; }
 
@@ -242,20 +247,6 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public string InstanceId
-        {
-            get { return _instanceId; }
-            set
-            {
-                lock (_sync)
-                {
-                    ThrowIfRunning();
-
-                    _instanceId = value;
-                }
-            }
-        }
-
         public PluginPermissions Permissions
         {
             get { return _permissions; }
@@ -281,12 +272,9 @@ namespace TickTrader.Algo.CoreV1
             {
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("EXECUTOR START!");
+                    _logger.Debug("EXECUTOR START!");
 
                     Validate();
-
-                    if (_enableUpdateMarshaling)
-                        StartUpdateMarshalling();
 
                     accFixture = _tradeFixtureFactory(this);
 
@@ -300,7 +288,7 @@ namespace TickTrader.Algo.CoreV1
                     //builder.TradeApi = accFixture;
                     _builder.Calculator = _calcFixture;
                     _builder.TradeHistoryProvider = new TradeHistoryAdapter(tradeHistoryProvider, _builder.Symbols);
-                    _builder.InstanceId = _instanceId;
+                    _builder.InstanceId = InstanceId;
                     //_builder.Isolated = _permissions.Isolated;
                     _builder.Permissions = _permissions;
                     _builder.Diagnostics = this;
@@ -317,7 +305,7 @@ namespace TickTrader.Algo.CoreV1
 
                     _marketFixture.Init();
 
-                    iStrategy.Init(this, OnRuntimeException, _fStrategy);
+                    iStrategy.Init(this, OnRuntimeException, _fStrategy, _logger);
                     _fStrategy.Init(this, _bStrategy, _marketFixture);
                     setupActions.ForEach(a => a());
                     BindAllOutputs();
@@ -375,14 +363,14 @@ namespace TickTrader.Algo.CoreV1
 
         public Task Stop()
         {
-            System.Diagnostics.Debug.WriteLine("EXECUTOR STOP!");
+            _logger.Debug("EXECUTOR STOP!");
 
             return StopInternal(false);
         }
 
         public Task Exit()
         {
-            System.Diagnostics.Debug.WriteLine("EXECUTOR EXIT!");
+            _logger.Debug("EXECUTOR EXIT!");
 
             return StopInternal(false);
         }
@@ -407,7 +395,7 @@ namespace TickTrader.Algo.CoreV1
         {
             lock (_sync)
             {
-                System.Diagnostics.Debug.WriteLine("EXECUTOR ABORT!");
+                _logger.Debug("EXECUTOR ABORT!");
 
                 if (state == States.Stopping)
                 {
@@ -485,7 +473,7 @@ namespace TickTrader.Algo.CoreV1
                 if (_pluginLoggerFixture != null)
                     await _pluginLoggerFixture.Stop();
 
-                System.Diagnostics.Debug.WriteLine("EXECUTOR STOPPED STRATEGY!");
+                _logger.Debug("EXECUTOR STOPPED STRATEGY!");
 
                 _fStrategy.Stop();
                 accFixture.Stop();
@@ -502,13 +490,6 @@ namespace TickTrader.Algo.CoreV1
             {
                 OnInternalException(ex, false);
             }
-
-            try
-            {
-                if (_enableUpdateMarshaling)
-                    StopUpdateMarshalling();
-            }
-            catch { }
 
 
             lock (_sync) ChangeState(States.Idle);
@@ -596,13 +577,13 @@ namespace TickTrader.Algo.CoreV1
             return (OutputFixture<T>)fixture;
         }
 
-        public LogFixture InitLogging(string logDir)
+        public LogFixture InitLogging(string logDir, bool saveOnDisk)
         {
             lock (_sync)
             {
                 ThrowIfRunning();
                 if (_pluginLoggerFixture == null)
-                    _pluginLoggerFixture = new LogFixture(this, GetDescriptor().IsTradeBot, logDir);
+                    _pluginLoggerFixture = new LogFixture(this, _metadata.Descriptor.IsTradeBot, logDir, saveOnDisk);
                 _pluginLogger = _pluginLoggerFixture;
                 return _pluginLoggerFixture;
             }
@@ -614,9 +595,8 @@ namespace TickTrader.Algo.CoreV1
             BotWorkingFolder = config.WorkingDirectory;
 
             if (config.IsLoggingEnabled)
-                InitLogging(config.LogDirectory);
+                InitLogging(config.LogDirectory, config.SaveLogsOnDisk);
 
-            InstanceId = pluginConfig.InstanceId;
             MainSymbolCode = pluginConfig.MainSymbol.Name;
             TimeFrame = pluginConfig.Timeframe;
             ModelTimeFrame = pluginConfig.ModelTimeframe;
@@ -663,12 +643,9 @@ namespace TickTrader.Algo.CoreV1
             _timerFixture = timerFixture;
             _builderFactory = builderFactory;
             _pluginLogger = pluginLogger;
-            _enableUpdateMarshaling = false;
         }
 
         internal PluginBuilder GetBuilder() => _builder;
-        internal PluginDescriptor GetDescriptor() => _metadata.Descriptor;
-        internal IExecutorFixture GetTradeFixute() => accFixture;
         internal CalculatorFixture GetCalcFixture() => _calcFixture;
 
         internal void EmulateStop()
@@ -742,6 +719,7 @@ namespace TickTrader.Algo.CoreV1
 
         private void OnInternalException(Exception ex, bool isFatal)
         {
+            _logger.Error(ex, "Internal executor error");
             OnInternalError?.Invoke(new ExecutorInternalError(ex, isFatal));
         }
 
@@ -809,35 +787,9 @@ namespace TickTrader.Algo.CoreV1
 
         #region Update Marshaling
 
-        private BunchingBlock<object> _channel;
-
-        public bool IsGlobalMarshalingEnabled { get; set; }
-        public bool IsBunchingRequired { get; set; }
-        internal Action<IReadOnlyList<object>> MarshalUpdates { get; set; }
-        internal Action<object> MarshalUpdate { get; set; }
         internal Action<object> OnUpdate { get; set; }
         public Action<IMessage> OnNotification { get; set; }
         public Action<PluginExecutorCore> OnExitRequest { get; set; }
-
-        internal void StartUpdateMarshalling()
-        {
-            if (IsBunchingRequired)
-            {
-                _channel = new BunchingBlock<object>(MarshalUpdates, 30, 60);
-                OnUpdate = _channel.EnqueueNoTrhow;
-            }
-            else
-                OnUpdate = MarshalUpdate;
-        }
-
-        internal void StopUpdateMarshalling()
-        {
-            if (_channel != null)
-            {
-                _channel.Complete();
-                _channel.Completion.Wait();
-            }
-        }
 
         #endregion
 
@@ -853,7 +805,6 @@ namespace TickTrader.Algo.CoreV1
         PluginBuilder IFixtureContext.Builder => _builder;
         FeedStrategy IFixtureContext.FeedStrategy => _fStrategy;
         PluginLoggerAdapter IFixtureContext.Logger => _builder.LogAdapter;
-        bool IFixtureContext.IsGlobalUpdateMarshalingEnabled => IsGlobalMarshalingEnabled;
 
         void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {
@@ -865,14 +816,13 @@ namespace TickTrader.Algo.CoreV1
             iStrategy.EnqueueCustomInvoke(action);
         }
 
-        void IFixtureContext.EnqueueQuote(QuoteInfo update)
-        {
-            iStrategy.EnqueueQuote(update);
-        }
+        void IFixtureContext.EnqueueQuote(QuoteInfo quote) => iStrategy.EnqueueQuote(quote);
 
-        public void EnqueueEvent(Action<PluginBuilder> action)
+        void IFixtureContext.EnqueueBar(BarUpdate update) => iStrategy.EnqueueBar(update);
+
+        public void EnqueueEvent(IAccountApiEvent accEvent)
         {
-            iStrategy.EnqueueEvent(action);
+            iStrategy.EnqueueEvent(accEvent);
         }
 
         public void EnqueueCustomInvoke(Action<PluginBuilder> action)
@@ -898,7 +848,7 @@ namespace TickTrader.Algo.CoreV1
 
         #region DiagnosticInfo
 
-        int DiagnosticInfo.FeedQueueSize { get { return iStrategy.FeedQueueSize; } }
+        int DiagnosticInfo.FeedQueueSize => iStrategy.FeedQueueSize;
 
         #endregion
     }

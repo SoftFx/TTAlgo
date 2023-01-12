@@ -5,11 +5,11 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Relative Vigor Index", Version = "1.0")]
+    [Indicator(Category = "Oscillators", DisplayName = "Relative Vigor Index", Version = "1.1")]
     public class RelativeVigorIndex : Indicator, IRelativeVigorIndex
     {
         private IMovingAverage _moveTriMa, _rangeTriMa;
-        private IMA _rviMa, _moveMa, _rangeMa;
+        private IMovAvgAlgo _rviMa, _moveMa, _rangeMa;
 
         [Parameter(DefaultValue = 10, DisplayName = "Period")]
         public int Period { get; set; }
@@ -44,12 +44,9 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
         {
             _moveTriMa = Indicators.MovingAverage(Bars.Move, 4, 0, MovingAverageMethod.Triangular);
             _rangeTriMa = Indicators.MovingAverage(Bars.Range, 4, 0, MovingAverageMethod.Triangular);
-            _moveMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
-            _moveMa.Init();
-            _rangeMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
-            _rangeMa.Init();
-            _rviMa = MABase.CreateMaInstance(4, MovingAverageMethod.Triangular);
-            _rviMa.Init();
+            _moveMa = MovAvg.Create(Period, MovingAverageMethod.Simple);
+            _rangeMa = MovAvg.Create(Period, MovingAverageMethod.Simple);
+            _rviMa = MovAvg.Create(4, MovingAverageMethod.Triangular);
         }
 
         protected override void Init()
@@ -75,7 +72,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
             }
             if (!double.IsNaN(_rangeMa.Average) && Math.Abs(_rangeMa.Average) < 1e-12)
             {
-                RviAverage[i] = _moveMa.Average*_moveMa.Period;
+                RviAverage[i] = _moveMa.Average*Period;
             }
             else
             {

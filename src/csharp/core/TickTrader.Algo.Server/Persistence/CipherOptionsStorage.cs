@@ -5,9 +5,9 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Server.Persistence
 {
-    internal static class CipherOptionsStorage
+    public static class CipherOptionsStorage
     {
-        internal static CipherV1Helper.ICipherOptions V1 { get; } = new CipherV1Options();
+        public static CipherV1Helper.ICipherOptions V1 { get; } = new CipherV1Options();
 
 
         private sealed class CipherV1Options : CipherV1Helper.ICipherOptions
