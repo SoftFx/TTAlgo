@@ -272,6 +272,9 @@ namespace TickTrader.Algo.Rpc
 
             _logger.Debug($"Disconnect reason: {_disconnectReason}");
 
+            if (_transport.ReadChannel.CanCount)
+                _logger.Debug($"In msg cnt = {_transport.ReadChannel.Count}");
+
             if (_heartbeatTask != null)
             {
                 _heartbeatCancelTokenSrc?.Cancel();
@@ -400,6 +403,8 @@ namespace TickTrader.Algo.Rpc
                     {
                         _disconnectReason = $"Connection is out of sync (last receive: {_lastReceiveCnt} / {_heartbeatCnt}).";
                         PushEvent(RpcSessionEvent.ConnectionOutOfSync);
+                        if (_transport.ReadChannel.CanCount)
+                            _logger.Debug($"In msg cnt = {_transport.ReadChannel.Count}");
                         return;
                     }
                     await Task.Delay(RpcConstants.HeartbeatTimeout, cancelToken).ConfigureAwait(false);
