@@ -7,11 +7,92 @@
     <SolidColorBrush x:Key="UpdateAvailableColor" Color="DodgerBlue"/>
     <SolidColorBrush x:Key="SelectedUpdateAvailableColor" Color="RoyalBlue"/>
 
+    <Style TargetType="CheckBox">
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="HyperlinkStyledButton" TargetType="Button" >
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <TextBlock Foreground="DodgerBlue" Text="{TemplateBinding Content}" 
+                               TextDecorations="Underline" 
+                               Cursor="Hand"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ListViewUnselectedItem" TargetType="ListViewItem">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                    <ContentPresenter />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
+        <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
+        <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_ButtonHighlightBackground}"/>
+        <Setter Property="Padding" Value="4 0"/>
+    </Style>
+
+    <Style x:Key="ContentSplitter" TargetType="Rectangle">
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="Fill" Value="Black"/>
+        <Setter Property="Width" Value="0.3"/>
+        <Setter Property="Margin" Value="5 0"/>
+    </Style>
+
+    <Style x:Key="SearchBlock" TargetType="TextBox">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Height" Value="26"/>
+        <Setter Property="Width" Value="250"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBoxBase}">
+                    <Border SnapsToDevicePixels="True"
+                            BorderThickness="1.5"
+                            BorderBrush="{DynamicResource Dialog_ButtonBorderColor}"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="3"
+                            Padding="5 0">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" Background="{x:Null}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            <TextBlock x:Name="PART_Message"
+                                Margin="2 0"
+                                IsHitTestVisible="False"
+                                Opacity="0.6"
+                                Padding="0"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Foreground="{TemplateBinding Foreground}"
+                                Text="Search bot by name"
+                                Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=Text}" Value="">
+                            <Setter TargetName="PART_Message" Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="ToolButton" TargetType="Button">
         <Setter Property="FontFamily" Value="/FontAwesome.Sharp;component/fonts/#Font Awesome 6 Free Solid"/>
         <Setter Property="Height" Value="20"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Margin" Value="5 0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
@@ -23,9 +104,27 @@
         </Setter>
     </Style>
 
+    <Style x:Key="BaseToolButton" BasedOn="{StaticResource ToolButton}" TargetType="Button">
+        <Setter Property="Foreground" Value="Gray"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="Black"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="WebToolButton" BasedOn="{StaticResource ToolButton}" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource UpdateAvailableColor}"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{StaticResource SelectedUpdateAvailableColor}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="ToolToggleButton" TargetType="ToggleButton">
-        <Setter Property="FontFamily" Value="/FontAwesome.Sharp;component/fonts/#Font Awesome 6 Free Solid"/>
         <Setter Property="Height" Value="20"/>
+        <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
@@ -40,21 +139,11 @@
     </Style>
 
     <ControlTemplate x:Key="SelectedMetadataControl" TargetType="Control">
-        <Grid Grid.Column="1">
+        <Grid Margin="5 0">
             <Grid.Resources>
                 <Style x:Key="TitleName" TargetType="TextBlock">
                     <Setter Property="Margin" Value="0 5 0 0"/>
                     <Setter Property="FontWeight" Value="Bold"/>
-                </Style>
-
-                <Style TargetType="{x:Type ListViewItem}">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type ListViewItem}">
-                                <ContentPresenter />
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
                 </Style>
             </Grid.Resources>
 
@@ -72,12 +161,12 @@
 
             <Grid Grid.Row="1">
                 <Grid.Resources>
-                    <Style x:Key="PropertyNameStyle" TargetType="TextBlock">
+                    <Style x:Key="PropertyName" TargetType="TextBlock">
                         <Setter Property="Margin" Value="0 5"/>
                         <Setter Property="FontWeight" Value="Bold"/>
                     </Style>
 
-                    <Style x:Key="PropertyValueStyle" TargetType="TextBlock">
+                    <Style TargetType="TextBlock">
                         <Setter Property="Margin" Value="10 5"/>
                     </Style>
                 </Grid.Resources>
@@ -88,43 +177,65 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Style="{StaticResource PropertyNameStyle}" Text="Author:"/>
-                <TextBlock Grid.Row="1" Style="{StaticResource PropertyNameStyle}" Text="Source:"/>
+                <TextBlock Grid.Row="0" Style="{StaticResource PropertyName}" Text="Author:"/>
+                <TextBlock Grid.Row="1" Style="{StaticResource PropertyName}" Text="Source:"/>
 
-                <TextBlock Grid.Row="2" Style="{StaticResource PropertyNameStyle}" Text="Copyright:"/>
+                <TextBlock Grid.Row="2" Style="{StaticResource PropertyName}" Text="Category:"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Category.Value}"/>
 
-                <TextBlock Grid.Row="3" Style="{StaticResource PropertyNameStyle}" Text="Category:"/>
-                <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource PropertyValueStyle}" Text="{Binding Category.Value}"/>
+                <TextBlock Grid.Row="3" Style="{StaticResource PropertyName}" Text="Copyright:"/>
 
-                <TextBlock Grid.Row="4" Style="{StaticResource PropertyNameStyle}" Text="Last update:"/>
+                <TextBlock Grid.Row="4" Style="{StaticResource PropertyName}" Text="Version:" Visibility="{Binding IsRemote}"/>
+                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Version.Value}" Visibility="{Binding IsRemote}"/>
+
+                <TextBlock Grid.Row="5" Style="{StaticResource PropertyName}" Text="Api version:" Visibility="{Binding IsRemote}"/>
+                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding ApiVersion.Value}" Visibility="{Binding IsRemote}"/>
+
+                <TextBlock Grid.Row="6" Style="{StaticResource PropertyName}" Text="Last update:" Visibility="{Binding IsRemote}"/>
+
+                <TextBlock Grid.Row="7" Style="{StaticResource PropertyName}" Text="Package size:" Visibility="{Binding IsRemote}"/>
+                <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding PackageSize.Value}" Visibility="{Binding IsRemote}"/>
             </Grid>
 
             <TextBlock Grid.Row="2" Text="Description" Style="{StaticResource TitleName}"/>
             <TextBlock Grid.Row="3" Text="{l:UpdateBind Description.Value}" 
                        HorizontalAlignment="Stretch" TextWrapping="WrapWithOverflow"/>
 
-            <Grid Grid.Row="4" Margin="0 10 0 0" Visibility="{l:UpdateBind HasBetterVersion.Value, Converter={StaticResource BoolToVis}}">
+            <Grid Grid.Row="4" Margin="0 10 0 0" Visibility="{l:UpdateBind CanUpload.Value, Converter={StaticResource BoolToVis}}">
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource UpdateAvailableColor}"/>
+                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                </Grid.Resources>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Text="{l:UpdateBind RemoteVersion.Value, StringFormat=New version {0} is available!}" 
-                           Foreground="{StaticResource UpdateAvailableColor}" FontSize="14" VerticalAlignment="Center"/>
-                <l:FlatButton Grid.Column="1" Width="60" Content="Update">
+                <TextBlock Grid.Column="0" Text="{l:UpdateBind RemoteVersion.Value, StringFormat=New version {0} is available!}" Visibility="{Binding IsLocal}"/>
+
+                <TextBlock Grid.Column="0" Text="{l:UpdateBind Version.Value, StringFormat=Version {0} is ready for download!}" Visibility="{Binding IsRemote}"/>
+
+                <l:FlatButton Grid.Column="1">
                     <l:FlatButton.Style>
                         <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
-                            <Setter Property="Width" Value="60"/>
+                            <Setter Property="Width" Value="80"/>
                             <Setter Property="FontSize" Value="14"/>
-                            <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
+                            <Setter Property="Content" Value="Download"/>
                             <Setter Property="Foreground" Value="{StaticResource UpdateAvailableColor}"/>
+                            <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
                             <Setter Property="BorderBrush" Value="{StaticResource UpdateAvailableColor}"/>
 
                             <Style.Triggers>
@@ -138,159 +249,159 @@
                 </l:FlatButton>
             </Grid>
 
-            <TextBlock Grid.Row="5" Text="Installed" Style="{StaticResource TitleName}"/>
-            <ListView Grid.Row="6" HorizontalContentAlignment="Stretch" ItemsSource="{Binding Versions}" Margin="0 2">
-                <ListView.Template>
-                    <ControlTemplate>
-                        <Grid>
-                            <Grid.Resources>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="DemiBold"/>
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="0 3"/>
-                                </Style>
-                            </Grid.Resources>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <Grid Grid.Row="0" Background="WhiteSmoke">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="30"/>
-                                    <ColumnDefinition Width="50"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="100"/>
-                                </Grid.ColumnDefinitions>
+            <Grid Grid.Row="5" Visibility="{Binding IsLocal}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Column="1" Text="Version"/>
-                                <TextBlock Grid.Column="2" Text="Api" />
-                            </Grid>
-                            <ItemsPresenter Grid.Row="1"/>
-                        </Grid>
-                    </ControlTemplate>
-                </ListView.Template>
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderThickness="0 0 0 1" BorderBrush="LightGray" Margin="0 2">
+                <TextBlock Grid.Row="0" Text="Installed" Style="{StaticResource TitleName}"/>
+                <ListView Grid.Row="1" HorizontalContentAlignment="Stretch" ItemsSource="{Binding Versions}" Margin="0 2" ItemContainerStyle="{StaticResource ListViewUnselectedItem}">
+                    <ListView.Template>
+                        <ControlTemplate>
                             <Grid>
                                 <Grid.Resources>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="FontWeight" Value="DemiBold"/>
                                         <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        <Setter Property="Padding" Value="0 3"/>
                                     </Style>
                                 </Grid.Resources>
-
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="30"/>
-                                    <ColumnDefinition Width="50"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="100"/>
-                                </Grid.ColumnDefinitions>
-
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="auto"/>
-                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
+                                <Grid Grid.Row="0" Background="WhiteSmoke">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="50"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <ToggleButton x:Name="infoBtn" Grid.Column="0" ToolTip="Show more info">
-                                    <ToggleButton.Style>
-                                        <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource ToolToggleButton}">
-                                            <Setter Property="Foreground" Value="SlateGray"/>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Foreground" Value="Black"/>
-                                                </Trigger>
-                                                <Trigger Property="IsChecked" Value="True">
-                                                    <Setter Property="Content" Value="{fa:Icon ChevronUp}"/>
-                                                </Trigger>
-                                                <Trigger Property="IsChecked" Value="False">
-                                                    <Setter Property="Content" Value="{fa:Icon ChevronDown}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ToggleButton.Style>
-                                </ToggleButton>
-
-                                <TextBlock Grid.Column="1" Text="{Binding Version}" />
-                                <TextBlock Grid.Column="2" Text="{Binding ApiVersion}" />
-
-                                <Button Grid.Column="3" Content="{fa:Icon Xmark}" 
-                                        cal:Message.Attach="RemovePackageWithVersion" ToolTip="Remove the bot package">
-                                    <Button.Style>
-                                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ToolButton}">
-                                            <Setter Property="HorizontalAlignment" Value="Right"/>
-                                            <Setter Property="Margin" Value="5 0"/>
-                                            <Setter Property="Foreground" Value="Red"/>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Foreground" Value="DarkRed"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-
-                                <Grid Grid.ColumnSpan="4" Grid.Row="1" Margin="10 0 0 0"
-                                      Visibility="{Binding IsChecked, ElementName=infoBtn, Converter={StaticResource BoolToVis}}">
-
+                                    <TextBlock Grid.Column="1" Text="Version"/>
+                                    <TextBlock Grid.Column="2" Text="Api" />
+                                </Grid>
+                                <ItemsPresenter Grid.Row="1"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </ListView.Template>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderThickness="0 0 0 1" BorderBrush="LightGray" Margin="0 2">
+                                <Grid>
                                     <Grid.Resources>
                                         <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Left"/>
-                                            <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
                                         </Style>
                                     </Grid.Resources>
 
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="50"/>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="100"/>
                                     </Grid.ColumnDefinitions>
 
                                     <Grid.RowDefinitions>
-                                        <RowDefinition/>
-                                        <RowDefinition/>
-                                        <RowDefinition/>
-                                        <RowDefinition/>
-                                        <RowDefinition/>
+                                        <RowDefinition Height="auto"/>
+                                        <RowDefinition Height="auto"/>
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Created:" FontWeight="DemiBold"/>
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CreatedDate, Converter={StaticResource UtcShortDateTimeFormat}}"/>
-
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Last modify:" FontWeight="DemiBold"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding LastModify, Converter={StaticResource UtcShortDateTimeFormat}}"/>
-
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Package Id:" FontWeight="DemiBold"/>
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PackageId}" />
-
-                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Package size:" FontWeight="DemiBold"/>
-                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Size}"/>
-
-                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Package path:" FontWeight="DemiBold"/>
-                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding PackagePath}"/>
-
-                                    <Button Grid.Row="4" Grid.Column="2" Content="{fa:Icon FolderOpen}" 
-                                            cal:Message.Attach="OpenPackageInExplorer" ToolTip="Open folder with package">
-                                        <Button.Style>
-                                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ToolButton}">
-                                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                                                <Setter Property="VerticalAlignment" Value="Top"/>
-                                                <Setter Property="Margin" Value="5 0"/>
-                                                <Setter Property="Foreground" Value="Gray"/>
+                                    <ToggleButton x:Name="infoBtn" Grid.Column="0" ToolTip="Show more info">
+                                        <ToggleButton.Style>
+                                            <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource ToolToggleButton}">
+                                                <Setter Property="FontFamily" Value="/FontAwesome.Sharp;component/fonts/#Font Awesome 6 Free Solid"/>
+                                                <Setter Property="Foreground" Value="SlateGray"/>
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
                                                         <Setter Property="Foreground" Value="Black"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsChecked" Value="True">
+                                                        <Setter Property="Content" Value="{fa:Icon ChevronUp}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsChecked" Value="False">
+                                                        <Setter Property="Content" Value="{fa:Icon ChevronDown}"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ToggleButton.Style>
+                                    </ToggleButton>
+
+                                    <TextBlock Grid.Column="1" Text="{Binding Version}" />
+                                    <TextBlock Grid.Column="2" Text="{Binding ApiVersion}" />
+
+                                    <Button Grid.Column="3" Content="{fa:Icon Xmark}" 
+                                        cal:Message.Attach="RemovePackageWithVersion" ToolTip="Remove the bot package">
+                                        <Button.Style>
+                                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ToolButton}">
+                                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                                                <Setter Property="Foreground" Value="Red"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Foreground" Value="DarkRed"/>
                                                     </Trigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </Button.Style>
                                     </Button>
+
+                                    <Grid Grid.ColumnSpan="4" Grid.Row="1" Margin="10 0 0 0"
+                                          Visibility="{Binding IsChecked, ElementName=infoBtn, Converter={StaticResource BoolToVis}}">
+
+                                        <Grid.Resources>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                                                <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+                                            </Style>
+                                        </Grid.Resources>
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="90"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Created:" FontWeight="DemiBold"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CreatedDate, Converter={StaticResource UtcShortDateTimeFormat}}"/>
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Last modify:" FontWeight="DemiBold"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding LastModify, Converter={StaticResource UtcShortDateTimeFormat}}"/>
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Package Id:" FontWeight="DemiBold"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PackageId}" />
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Package size:" FontWeight="DemiBold"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Size}"/>
+
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Package path:" FontWeight="DemiBold"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding PackagePath}"/>
+
+                                        <Button Grid.Row="4" Grid.Column="2" Content="{fa:Icon FolderOpen}" 
+                                            cal:Message.Attach="OpenPackageInExplorer" ToolTip="Open folder with package">
+                                            <Button.Style>
+                                                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseToolButton}">
+                                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                                    <Setter Property="VerticalAlignment" Value="Top"/>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
                                 </Grid>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
         </Grid>
     </ControlTemplate>
 
@@ -310,7 +421,7 @@
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
 
-                <CheckBox Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Center" IsChecked="{l:UpdateBind IsSelected.Value}"/>
+                <CheckBox Grid.Column="0" Grid.RowSpan="2" IsChecked="{l:UpdateBind IsSelected.Value}" Visibility="{Binding IsLocal}"/>
                 <Image Grid.Column="1">
                     <Image.Source>
                         <BitmapImage DecodePixelWidth="100" UriSource="/Resx/Logo/icon_logo_inversion.png" />
@@ -345,28 +456,67 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="1" Grid.Row="0" Text="{l:UpdateBind Version.Value}"/>
-                    <TextBlock Grid.Column="1" Grid.Row="1" Text="{l:UpdateBind RemoteVersion.Value}" 
-                               Visibility="{l:UpdateBind HasBetterVersion.Value, Converter={StaticResource BoolToVis}}"/>
+                    <Button Grid.Column="0" Grid.Row="1" Margin="0 1 2 0" Style="{StaticResource WebToolButton}"
+                            Content="{fa:Icon CircleArrowUp}" ToolTip="Download new version"
+                            Visibility="{l:UpdateBind CanUpload.Value, Converter={StaticResource BoolToVis}}"/>
 
-                    <Button Grid.Column="0" Grid.Row="1" Margin="0 1 2 0" Content="{fa:Icon CircleArrowUp}" ToolTip="Update the bot"
-                            Visibility="{l:UpdateBind HasBetterVersion.Value, Converter={StaticResource BoolToVis}}">
-                        <Button.Style>
-                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ToolButton}">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="HorizontalAlignment" Value="Center"/>
-                                <Setter Property="Foreground" Value="{StaticResource UpdateAvailableColor}"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Foreground" Value="{StaticResource SelectedUpdateAvailableColor}"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                    <TextBlock Grid.Column="1" Grid.Row="0" Text="{l:UpdateBind Version.Value}" Visibility="{Binding IsLocal}"/>
+                    <TextBlock Grid.Column="1" Grid.Row="1" Text="{l:UpdateBind RemoteVersion.Value}" 
+                               Visibility="{l:UpdateBind CanUpload.Value, Converter={StaticResource BoolToVis}}"/>
+
                 </Grid>
             </Grid>
         </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="SourceTemplate">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <ToggleButton x:Name="hiddenBtn" Style="{StaticResource ToolToggleButton}" FontSize="17" IsChecked="True">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                        <fa:IconBlock Grid.Column="0">
+                            <fa:IconBlock.Style>
+                                <Style TargetType="fa:IconBlock">
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="Icon" Value="ChevronDown"/>
+                                    <Setter Property="FontFamily" Value="/FontAwesome.Sharp;component/fonts/#Font Awesome 6 Free Solid"/>
+                                    <Setter Property="Foreground" Value="Black"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsChecked, ElementName=hiddenBtn}" Value="False">
+                                            <Setter Property="Icon" Value="ChevronRight"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </fa:IconBlock.Style>
+                        </fa:IconBlock>
+                        <TextBlock Grid.Column="1" FontWeight="DemiBold" Text="{Binding Name}" VerticalAlignment="Bottom" Margin="5 0"/>
+                    </Grid>
+                </ToggleButton>
+
+                <Button Grid.Column="1" Style="{StaticResource BaseToolButton}" FontSize="17" Content="{fa:Icon Github}" ToolTip="{Binding Link}" 
+                        cal:Message.Attach="OpenSourceInBrowser" Margin="0"/>
+            </Grid>
+
+            <ListView Grid.Row="1" ItemsSource="{Binding BotsInfo}" ItemTemplate="{StaticResource BotMetadataItemTemplate}" 
+                      SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}, Path=DataContext.SelectedBot.Value}"
+                      Visibility="{Binding IsChecked, ElementName=hiddenBtn, Converter={StaticResource BoolToVis}}"/>
+        </Grid>
     </DataTemplate>
 
     <ControlTemplate x:Key="BotsRepositoryView.Template.Classic">
@@ -387,9 +537,7 @@
                 </Style>
             </Grid.Resources>
 
-
-
-            <TabControl Grid.Column="0">
+            <TabControl Grid.Column="0" SelectedIndex="{l:UpdateBind SelectedTabIndex.Value}">
                 <TabItem Header="Installed">
                     <Grid Margin="5 0">
                         <Grid.ColumnDefinitions>
@@ -398,86 +546,83 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto"/>
-                            <RowDefinition Height="auto"/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
 
-                        <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Bold"/>
 
-                        <Grid Margin="12 5 0 5" Grid.Row="1">
-                            <Grid.Resources>
-                                <Style TargetType="CheckBox">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </Grid.Resources>
+                            <Grid Margin="12 5 0 5" Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="auto"/>
+                                </Grid.ColumnDefinitions>
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="300"/>
-                                <ColumnDefinition/>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="auto"/>
-                            </Grid.ColumnDefinitions>
+                                <CheckBox Grid.Column="0" IsChecked="{l:UpdateBind SelectAllBots.Value}"/>
+                                <TextBox Grid.Column="1" Margin="10 0" Style="{StaticResource SearchBlock}" />
 
-                            <CheckBox Grid.Column="0" IsChecked="{l:UpdateBind SelectAllBots.Value}"/>
-                            <TextBox Grid.Column="1" Margin="10 0" FontSize="14" Height="26" />
-
-                            <CheckBox Grid.Column="3" Content="Updates only" IsChecked="{l:UpdateBind OnlyWithUpdates.Value}"/>
-                            <l:FlatButton Grid.Column="4" Margin="10 0 0 0" Content="Update All"
+                                <CheckBox Grid.Column="3" Content="Has updates" IsChecked="{l:UpdateBind OnlyWithUpdates.Value}"/>
+                                <l:FlatButton Grid.Column="4" Margin="10 0 0 0" Content="Update All"
                                           cal:Message.Attach="UpdateAllSelectedBots"
-                                          IsEnabled="{l:UpdateBind CanUpdateBots.Value}"
-                                          Background="{DynamicResource Dialog_ButtonBackground}"
-                                          HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
+                                          IsEnabled="{l:UpdateBind CanUpdateBots.Value}"/>
+                            </Grid>
+                            <ListView x:Name="localBots" Grid.Row="2" ItemsSource="{Binding CurrentBots}" SelectedItem="{Binding SelectedBot.Value}" 
+                                      ItemTemplate="{StaticResource BotMetadataItemTemplate}"/>
                         </Grid>
-                        <ListView x:Name="metainfoList" Grid.Row="2" ItemsSource="{Binding CurrentBots}" SelectedItem="{Binding SelectedBot.Value}" 
-                                  ItemTemplate="{StaticResource BotMetadataItemTemplate}"/>
 
-                        <Rectangle Grid.Column="1" Grid.RowSpan="3" VerticalAlignment="Stretch" Fill="Black" Width="0.3" Margin="5 0"/>
+                        <Rectangle Grid.Column="1" Style="{StaticResource ContentSplitter}"/>
 
-                        <Control Grid.Column="2" Grid.RowSpan="3" Margin="5 0" 
-                                 DataContext="{l:UpdateBind SelectedBot.Value}" 
-                                 Template="{StaticResource SelectedMetadataControl}" 
-                                 Visibility="{l:UpdateBind SelectedItem, ElementName=metainfoList, Converter={StaticResource NullOrEmptyToVis}}"/>
+                        <Control Grid.Column="2" DataContext="{Binding SelectedBot.Value}" Template="{StaticResource SelectedMetadataControl}" 
+                                 Visibility="{Binding SelectedItem, ElementName=localBots, Converter={StaticResource NullOrEmptyToVis}}"/>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Browse">
-                    <!--<TabItem.Content>
-                        <ListView ItemsSource="{Binding Releases}">
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Margin="10 5">
-                                        <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Bold"/>
-                                        <ListView ItemsSource="{Binding Plugins}">
-                                            <ListView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid Margin="10 0">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition/>
-                                                            <ColumnDefinition/>
-                                                            <ColumnDefinition Width="auto"/>
-                                                        </Grid.ColumnDefinitions>
+                    <Grid x:Name="gridname"  Margin="5 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="14"/>
-                                                        <TextBlock Grid.Column="1" Text="{Binding Version}" FontSize="14"/>
-                                                        <Button Grid.Column="2" Style="{StaticResource ToolButton}">
-                                                            <Button.Content>
-                                                                <fa:IconBlock Icon="Download"/>
-                                                            </Button.Content>
-                                                            <Button.ToolTip>
-                                                                <TextBlock Text="Load package"/>
-                                                            </Button.ToolTip>
-                                                        </Button>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ListView.ItemTemplate>
-                                        </ListView>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Margin="0 10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox Style="{StaticResource SearchBlock}"/>
+
+                                <Button Grid.Column="2" ToolTip="Refresh all sources" Style="{StaticResource WebToolButton}" FontSize="14">
+                                    <StackPanel Orientation="Horizontal">
+                                        <fa:IconBlock Icon="Refresh"/>
+                                        <TextBlock Text="Refresh" Margin="2 0" FontFamily="Segoe UI"/>
                                     </StackPanel>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </TabItem.Content>-->
+                                </Button>
+                            </Grid>
+
+                            <ListView Grid.Row="1" ItemsSource="{Binding Sources}" ItemTemplate="{StaticResource SourceTemplate}" 
+                                      ItemContainerStyle="{StaticResource ListViewUnselectedItem}"/>
+                        </Grid>
+
+                        <Rectangle Grid.Column="1" Style="{StaticResource ContentSplitter}"/>
+
+                        <Control Grid.Column="2" DataContext="{Binding SelectedBot.Value}" Template="{StaticResource SelectedMetadataControl}"
+                                 Visibility="{l:UpdateBind RelativeSource={RelativeSource AncestorType={x:Type Grid}}, Path=DataContext.SelectedBot.Value, 
+                                 Converter={StaticResource NullOrEmptyToVis}}"/>
+                    </Grid>
                 </TabItem>
             </TabControl>
         </Grid>

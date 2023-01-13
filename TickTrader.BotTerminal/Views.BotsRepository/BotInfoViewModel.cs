@@ -1,16 +1,17 @@
 ﻿using Machinarium.Var;
 using System.Collections.ObjectModel;
+using System.Windows;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal.Views.BotsRepository
 {
-    internal sealed class BotMetainfoViewModel
+    internal sealed class BotInfoViewModel
     {
         private readonly VarContext _context = new();
+        private readonly bool _isLocal;
 
 
         public ObservableCollection<BotVersionViewModel> Versions { get; } = new();
-
 
         public string Name { get; }
 
@@ -18,28 +19,41 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         public StrProperty Category { get; }
 
-
         public StrProperty Version { get; }
+
+        public StrProperty ApiVersion { get; }
 
         public StrProperty RemoteVersion { get; }
 
+        public StrProperty PackageSize { get; }
 
-        public BoolProperty HasBetterVersion { get; }
+
+        public BoolProperty CanUpload { get; }
 
         public BoolProperty IsSelected { get; }
 
 
-        public BotMetainfoViewModel(string name)
+        public Visibility IsLocal => _isLocal ? Visibility.Visible : Visibility.Collapsed;
+
+        public Visibility IsRemote => _isLocal ? Visibility.Collapsed : Visibility.Visible;
+
+
+        public BotInfoViewModel(string name, bool isLocal = false)
         {
+            _isLocal = isLocal;
+
             Name = name;
 
             Description = _context.AddStrProperty();
             Category = _context.AddStrProperty();
 
             Version = _context.AddStrProperty();
+            ApiVersion = _context.AddStrProperty();
             RemoteVersion = _context.AddStrProperty();
 
-            HasBetterVersion = _context.AddBoolProperty();
+            PackageSize = _context.AddStrProperty();
+
+            CanUpload = _context.AddBoolProperty();
             IsSelected = _context.AddBoolProperty();
         }
 
@@ -50,18 +64,29 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
             Versions.Add(new BotVersionViewModel(plugin.Key.PackageId, descriptor, identity));
 
+            if (!_isLocal)
+            {
+                CanUpload.Value = true;
+                RemoteVersion.Value = descriptor.Version;
+            }
+
             if (!Version.HasValue || IsBetterVersion(descriptor.Version))
             {
                 Version.Value = descriptor.Version;
+                ApiVersion.Value = descriptor.ApiVersionStr;
                 Description.Value = descriptor.Description;
                 Category.Value = descriptor.Category;
+
+                //PackageSize.Value = $"{identity?.Size / 1024} KB";
             }
         }
 
-        public void SetRemoteVersion(string remoteVersion)
+        public void SetRemoteBot(BotInfoViewModel remoteBot)
         {
+            var remoteVersion = remoteBot.Version.Value;
+
             RemoteVersion.Value = remoteVersion;
-            HasBetterVersion.Value = IsBetterVersion(RemoteVersion.Value);
+            CanUpload.Value = IsBetterVersion(RemoteVersion.Value);
         }
 
         private bool IsBetterVersion(string newVersion)

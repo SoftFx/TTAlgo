@@ -10,8 +10,8 @@
         ProjectFilePath="$(MSBuildProjectFullPath)"
         TargetFramework="$(TargetFramework)"
         PackageName="$(AlgoPackage_Name)"
-        OutputPath="$(AlgoPackage_OutputPath)" />
-
+        OutputPath="$(AlgoPackage_OutputPath)"
+        BuildMetadata="$(AlgoPackage_BuildMetadata)" />
   </Target>
 
 </Project>

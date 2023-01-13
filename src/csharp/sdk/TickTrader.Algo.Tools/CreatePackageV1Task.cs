@@ -27,25 +27,31 @@ namespace TickTrader.Algo.Tools
 
         public string OutputPath { get; set; }
 
+        public bool BuildMetadata { get; set; }
+
 
         public override bool Execute()
         {
             try
             {
                 var mainFilePath = Path.Combine(BinPath, MainAssemblyName);
+
                 if (!File.Exists(mainFilePath))
                 {
                     Log.LogError("Main assembly file not found. Check if project type is library and file exists '{0}'", mainFilePath);
                     return false;
                 }
 
-                var writer = new PackageWriter(msg => Log.LogMessage(MessageImportance.High, msg));
-                writer.SrcFolder = BinPath;
-                writer.MainFileName = MainAssemblyName;
-                writer.ProjectFile = ProjectFilePath;
-                writer.Runtime = TargetFramework;
+                var writer = new PackageWriter(msg => Log.LogMessage(MessageImportance.High, msg))
+                {
+                    SrcFolder = BinPath,
+                    MainFileName = MainAssemblyName,
+                    ProjectFile = ProjectFilePath,
+                    Runtime = TargetFramework
+                };
 
                 var dstPath = OutputPath;
+
                 if (string.IsNullOrEmpty(dstPath))
                     dstPath = AlgoCommonRepositoryPath;
 

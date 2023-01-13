@@ -105,7 +105,7 @@ namespace TickTrader.Algo.Package.V1
             }
         }
 
-        private bool TryOpenWrite(string path, out FileStream stream)
+        private static bool TryOpenWrite(string path, out FileStream stream)
         {
             try
             {
