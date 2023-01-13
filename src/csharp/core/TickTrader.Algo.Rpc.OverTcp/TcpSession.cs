@@ -29,6 +29,8 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
         public ChannelWriter<RpcMessage> WriteChannel { get; }
 
+        public Action<Exception, string> DebugErrorCallback { get; set; }
+
 
         public TcpSession(Socket socket, Ref<TcpContext> context)
         {
@@ -76,7 +78,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     _socket.Disconnect(false);
                     _socket.Dispose();
                 }
-                catch (Exception) { }
+                catch (Exception ex)
+                {
+                    DebugErrorCallback?.Invoke(ex, "TCP disconnect/dispose error");
+                }
             });
 
 
@@ -137,7 +142,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     pipeReader.AdvanceTo(buffer.Start, buffer.End);
                 }
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                DebugErrorCallback?.Invoke(ex, "TCP read loop error");
+            }
 
             pipeReader.Complete();
             writer.TryComplete();
@@ -171,7 +179,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     await pipeWriter.FlushAsync().ConfigureAwait(false);
                 }
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                DebugErrorCallback?.Invoke(ex, "TCP write loop error");
+            }
 
             pipeWriter.Complete();
             _writeChannel.Writer.TryComplete();
@@ -198,7 +209,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     await pipeWriter.FlushAsync().ConfigureAwait(false);
                 }
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                DebugErrorCallback?.Invoke(ex, "TCP listen loop error");
+            }
 
             pipeWriter.Complete();
         }
@@ -235,7 +249,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     pipeReader.AdvanceTo(res.Buffer.End);
                 }
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                DebugErrorCallback?.Invoke(ex, "TCP send loop failed");
+            }
 
             pipeReader.Complete();
         }

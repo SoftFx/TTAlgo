@@ -82,6 +82,8 @@ namespace TickTrader.Algo.Rpc
             _rpcHost = rpcHost;
 
             var _ = HandleEvents();
+
+            _transport.DebugErrorCallback = (ex, msg) => _logger.Debug($"{msg}: {ex}");
         }
 
 
