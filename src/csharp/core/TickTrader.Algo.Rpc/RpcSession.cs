@@ -403,7 +403,7 @@ namespace TickTrader.Algo.Rpc
                 {
                     _heartbeatCnt++;
                     SendMessage(HeartbeatMessage);
-                    if (!_enableTraceLog && _lastReceiveCnt + RpcConstants.HeartbeatCntThreshold < _heartbeatCnt - 2)
+                    if (!_enableTraceLog && _lastReceiveCnt + RpcConstants.HeartbeatCntThreshold - 2 < _heartbeatCnt)
                     {
                         _logger.Debug($"Connection has troubles (last receive: {_lastReceiveCnt} / {_heartbeatCnt}). Enabling trace log...");
                         _enableTraceLog = true;
