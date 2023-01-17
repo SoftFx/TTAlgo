@@ -31,6 +31,8 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
         public Action<Exception, string> DebugErrorCallback { get; set; }
 
+        public bool EnableTraceLog { get; set; }
+
 
         public TcpSession(Socket socket, Ref<TcpContext> context)
         {
@@ -117,9 +119,13 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
                         var msgSize = buffer.ReadInt32();
                         if (msgSize > 1024 * 1024)
-                            DebugErrorCallback?.Invoke(new Exception($"Large message size detected: {msgSize}"), $"Message size trace");
+                            DebugErrorCallback?.Invoke(null, $"Large message size detected: {msgSize}");
                         if (buffer.Length < msgSize + MsgLengthPrefixSize)
+                        {
+                            if (EnableTraceLog)
+                                DebugErrorCallback?.Invoke(null, $"Can't read msg yet: {buffer.Length} < {msgSize + MsgLengthPrefixSize}");
                             break;
+                        }
 
                         var msg = RpcMessage.Parser.ParseFrom(buffer.Slice(MsgLengthPrefixSize, msgSize));
                         if (!writer.TryWrite(msg))
@@ -136,6 +142,8 @@ namespace TickTrader.Algo.Rpc.OverTcp
                         }
 
                         buffer = buffer.Slice(msgSize + MsgLengthPrefixSize);
+                        if (EnableTraceLog)
+                            DebugErrorCallback?.Invoke(null, $"Msg read success: {msgSize} bytes");
                     }
 
                     if (msgChannelCompleted)
@@ -170,7 +178,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     {
                         var msgSize = msg.CalculateSize();
                         if (msgSize > 1024 * 1024)
-                            DebugErrorCallback?.Invoke(new Exception($"Large message size detected: {msgSize}"), $"Message size trace");
+                            DebugErrorCallback?.Invoke(null, $"Large message size detected: {msgSize}");
 
                         var len = msgSize + MsgLengthPrefixSize;
                         var mem = pipeWriter.GetMemory(len);
@@ -179,6 +187,8 @@ namespace TickTrader.Algo.Rpc.OverTcp
                         msg.WriteTo(mem.Span.Slice(MsgLengthPrefixSize, msgSize));
 
                         pipeWriter.Advance(len);
+                        if (EnableTraceLog)
+                            DebugErrorCallback?.Invoke(null, $"Msg write success: {msgSize} bytes");
                     }
 
                     await pipeWriter.FlushAsync().ConfigureAwait(false);

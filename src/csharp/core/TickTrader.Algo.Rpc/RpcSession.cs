@@ -67,6 +67,7 @@ namespace TickTrader.Algo.Rpc
         private ProtocolSpec _protocol;
         private string _disconnectReason;
         private string _sessionId;
+        private bool _enableTraceLog;
 
 
         public string Id => _sessionId;
@@ -136,7 +137,8 @@ namespace TickTrader.Algo.Rpc
 
         internal void SendMessage(RpcMessage msg)
         {
-            //_logger.Debug("Send msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
+            if (_enableTraceLog)
+                _logger.Debug("Send msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
             if (!_transport.WriteChannel.TryWrite(msg))
                 _logger.Error($"Failed to send msg: {msg.Flags}, {msg.CallId}, {msg.ProxyId}");
         }
@@ -401,6 +403,13 @@ namespace TickTrader.Algo.Rpc
                 {
                     _heartbeatCnt++;
                     SendMessage(HeartbeatMessage);
+                    if (!_enableTraceLog && _lastReceiveCnt + RpcConstants.HeartbeatCntThreshold < _heartbeatCnt - 2)
+                    {
+                        _logger.Debug($"Connection has troubles (last receive: {_lastReceiveCnt} / {_heartbeatCnt}). Enabling trace log...");
+                        _enableTraceLog = true;
+                        _transport.EnableTraceLog = true;
+                        SendMessage(RpcMessage.Notification(new EnableTraceCmd()));
+                    }
                     if (_lastReceiveCnt + RpcConstants.HeartbeatCntThreshold < _heartbeatCnt)
                     {
                         _disconnectReason = $"Connection is out of sync (last receive: {_lastReceiveCnt} / {_heartbeatCnt}).";
@@ -417,12 +426,19 @@ namespace TickTrader.Algo.Rpc
 
         private void HandleMessage(RpcMessage msg)
         {
-            //_logger.Debug("Handle msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
+            if (_enableTraceLog)
+                _logger.Debug("Handle msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
 
             _lastReceiveCnt = _heartbeatCnt;
             if (msg.Payload.Is(Heartbeat.Descriptor))
             {
                 // msg already handled
+            }
+            else if (msg.Payload.Is(EnableTraceCmd.Descriptor))
+            {
+                _logger.Debug("Enable trace command received");
+                _enableTraceLog = true;
+                _transport.EnableTraceLog = true;
             }
             else if (msg.Payload.Is(ConnectRequest.Descriptor))
             {

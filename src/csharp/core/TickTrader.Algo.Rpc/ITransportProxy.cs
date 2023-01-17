@@ -13,6 +13,8 @@ namespace TickTrader.Algo.Rpc
 
         Action<Exception, string> DebugErrorCallback { set; }
 
+        bool EnableTraceLog { get; set; }
+
 
         Task Close();
     }
