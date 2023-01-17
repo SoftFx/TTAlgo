@@ -116,6 +116,8 @@ namespace TickTrader.Algo.Rpc.OverTcp
                             break;
 
                         var msgSize = buffer.ReadInt32();
+                        if (msgSize > 1024 * 1024)
+                            DebugErrorCallback?.Invoke(new Exception($"Large message size detected: {msgSize}"), $"Message size trace");
                         if (buffer.Length < msgSize + MsgLengthPrefixSize)
                             break;
 
@@ -167,6 +169,9 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     for (var cnt = 0; cnt < WriteBatchSize && reader.TryRead(out var msg); cnt++)
                     {
                         var msgSize = msg.CalculateSize();
+                        if (msgSize > 1024 * 1024)
+                            DebugErrorCallback?.Invoke(new Exception($"Large message size detected: {msgSize}"), $"Message size trace");
+
                         var len = msgSize + MsgLengthPrefixSize;
                         var mem = pipeWriter.GetMemory(len);
 
