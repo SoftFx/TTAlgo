@@ -41,6 +41,7 @@ namespace TickTrader.BotAgent
             NonBlockingFileCompressor.Setup();
 
             AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
+            HealthChecker.Start();
 
             PkgLoader.InitDefaults();
 
