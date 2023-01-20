@@ -40,21 +40,19 @@ namespace TickTrader.Algo.Api.Drawables
         Colors Color { get; set; }
         int Thickness { get; set; }
         LineStyles Style { get; set; }
+        bool Ray { get; set; }
+        bool RayLeft { get; set; }
+        bool RayRight { get; set; }
     }
 
     public interface IDrawableShapeProps
     {
         bool IsSupported { get; }
+        Colors BorderColor { get; set; }
+        int BorderThickness { get; set; }
+        LineStyles BorderStyle { get; set; }
         bool Fill { get; set; }
         Colors FillColor { get; set; }
-    }
-
-    public interface IDrawableRayProps
-    {
-        bool IsSupported { get; }
-        bool Ray { get; set; }
-        bool RayLeft { get; set; }
-        bool RayRight { get; set; }
     }
 
     public enum DrawableSymbolAnchor { Top, Bottom }
@@ -138,7 +136,6 @@ namespace TickTrader.Algo.Api.Drawables
         int Width { get; set; }
         int Height { get; set; }
         DrawableControlAnchor Anchor { get; set; }
-        Colors BorderColor { get; set; }
     }
 
     public interface IDrawableBitmapProps
