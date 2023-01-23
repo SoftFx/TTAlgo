@@ -28,6 +28,7 @@ namespace TickTrader.Algo.CoreV1
         private PluginPermissions _permissions;
         private ICalculatorApi _calc;
         private IndicatorsCollection _indicators;
+        private DrawableApiAdapter _drawableApi;
 
         internal PluginBuilder(PluginMetadata descriptor)
         {
@@ -49,6 +50,7 @@ namespace TickTrader.Algo.CoreV1
             _permissions = new PluginPermissions { Isolated = true, TradeAllowed = false };
 
             _indicators = new IndicatorsCollection();
+            _drawableApi = new DrawableApiAdapter();
 
             GetDefaultOptMetric = GetFinalEquity;
 
@@ -314,6 +316,7 @@ namespace TickTrader.Algo.CoreV1
         ITimerApi IPluginContext.TimerApi => TimerApi;
         TimeFrames IPluginContext.TimeFrame => TimeFrame.ToApiEnum();
         IndicatorProvider IPluginContext.Indicators => _indicators;
+        IDrawableApi IPluginContext.DrawableApi => _drawableApi;
 
         void IPluginContext.OnExit()
         {

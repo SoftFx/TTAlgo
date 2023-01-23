@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TickTrader.Algo.Api.Drawables
+namespace TickTrader.Algo.Api
 {
     public interface IDrawableObject
     {

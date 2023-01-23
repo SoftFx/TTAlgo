@@ -23,6 +23,7 @@ namespace TickTrader.Algo.Api
         bool IsStopped { get; }
         TimeFrames TimeFrame { get; }
         IndicatorProvider Indicators { get; }
+        IDrawableApi DrawableApi { get; }
         void OnExit();
         void OnPluginThread(Action action);
         void BeginOnPluginThread(Action action);
@@ -66,5 +67,10 @@ namespace TickTrader.Algo.Api
     public interface IAlertAPI
     {
         void Print(string message);
+    }
+
+    internal interface IDrawableApi
+    {
+        IDrawableCollection LocalCollection { get; }
     }
 }

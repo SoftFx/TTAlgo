@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+import "google/protobuf/wrappers.proto";
+
+message Drawable {
+    enum ObjectType {
+        UNKNOWN_OBJECT_TYPE = 0;
+        VERTICAL_LINE = 1;
+        HORIZONTAL_LINE = 2;
+        TREND_LINE = 3;
+        RECTANGLE = 4;
+        TRIANGLE = 5;
+        ELLIPSE = 6;
+        SYMBOL = 7;
+        TEXT = 8;
+        BITMAP = 9;
+
+        LABEL_CONTROL = 100;
+        RECTANGLE_CONTROL = 101;
+        EDIT_CONTROL = 102;
+        BUTTON_CONTROL = 103;
+        BITMAP_CONTROL = 104;
+    }
+}
+
+message DrawableObjectInfo {
+    google.protobuf.StringValue name = 1;
+    int64 created_time_raw = 2;
+    google.protobuf.StringValue output_id = 3;
+    bool is_background = 4;
+    bool is_hidden = 5;
+    bool is_selectable = 6;
+    int64 z_index = 7;
+    google.protobuf.StringValue tooltip = 8;
+}
+
+message DrawableSymbolPropsInfo {
+    uint32 code = 1;
+    int32 size = 2;
+    //color color_argb = 3;
+    google.protobuf.StringValue FontFamily = 4;
+}
+
+message DrawableAnchorsInfo {
+    repeated int64 time_raw = 1;
+    repeated double price = 2;
+}

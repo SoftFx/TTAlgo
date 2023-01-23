@@ -37,6 +37,7 @@ namespace TickTrader.Algo.Api
         public TimeFrames TimeFrame { get { return context.TimeFrame; } }
         public IndicatorProvider Indicators { get { return context.Indicators; } }
         public IAlertAPI Alert => context.Logger.Alert;
+        public IDrawableCollection DrawableObjects => context.DrawableApi.LocalCollection;
 
         #region Timer
 
