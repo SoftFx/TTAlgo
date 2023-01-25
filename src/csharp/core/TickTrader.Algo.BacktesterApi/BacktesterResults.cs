@@ -456,11 +456,19 @@ namespace TickTrader.Algo.BacktesterApi
             public static void SaveOutputData(string resultsDirPath, string outputName, int precision, IReadOnlyList<OutputPoint> points)
             {
                 var filePath = Path.Combine(resultsDirPath, $"{OutputFilePrefix}{outputName}.csv");
-                var first = points[0];
-                if (first.Metadata is MarkerInfo)
-                    AsFile.SaveRoundedCsv<MarkerPointWrapper, ForMarkerPoint>(filePath, points.Select(p => new MarkerPointWrapper(p)), precision);
-                else
-                    AsFile.SaveRoundedCsv<OutputPoint, ForDoublePoint>(filePath, points, precision);
+                object firstPointMetadata = default;
+                if (points.Count > 0)
+                    firstPointMetadata = points[0].Metadata;
+
+                switch (firstPointMetadata)
+                {
+                    case MarkerInfo:
+                        AsFile.SaveRoundedCsv<MarkerPointWrapper, ForMarkerPoint>(filePath, points.Select(p => new MarkerPointWrapper(p)), precision);
+                        break;
+                    default:
+                        AsFile.SaveRoundedCsv<OutputPoint, ForDoublePoint>(filePath, points, precision);
+                        break;
+                }
             }
 
             public static void SaveEquity(string resultsDirPath, IEnumerable<BarData> bars) => SaveBarData(Path.Combine(resultsDirPath, EquityFileName), bars);

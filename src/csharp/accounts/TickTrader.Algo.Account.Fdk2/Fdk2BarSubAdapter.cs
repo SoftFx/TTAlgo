@@ -120,6 +120,9 @@ namespace TickTrader.Algo.Account.Fdk2
             {
                 foreach (var bar in res)
                 {
+                    if (bar.AskData == null && bar.BidData == null)
+                        continue; // empty symbols with no data available produce null data on subscribe
+
                     if (bar.Version == currentVersion) // this should remove duplicate updates when procession close only bars
                         _barUpdateCallback(bar.Clone()); // protective copy
                 }

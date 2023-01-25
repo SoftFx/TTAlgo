@@ -161,8 +161,9 @@ namespace TickTrader.BotTerminal
 
             NLog.LogManager.Configuration = config;
 
-            AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
             NonBlockingFileCompressor.Setup();
+            AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
+            HealthChecker.Start();
         }
 
         protected override void OnExit(object sender, EventArgs e)

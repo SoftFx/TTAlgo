@@ -69,6 +69,8 @@ namespace TickTrader.BotTerminal
 
         public IndicatorHostProxy IndicatorHost { get; private set; }
 
+        internal Func<AccountMetadataInfo> AccountMetadataProvider { get; set; }
+
 
         public event Action<PackageInfo> PackageStateChanged = delegate { };
 
@@ -189,8 +191,11 @@ namespace TickTrader.BotTerminal
         {
             AccountMetadataInfo accountMetadata = default;
             // backtester setup sends null accountId, we use that request to get other parts of metadata
+            // indicator setup sends null accountId, we need cached metadata there
             if (!string.IsNullOrEmpty(accountId))
                 accountMetadata = await _server.GetAccountMetadata(new AccountMetadataRequest { AccountId = accountId });
+            else
+                accountMetadata = AccountMetadataProvider?.Invoke();
             return new SetupMetadata(_apiMetadata, _mappings, accountMetadata, setupContext ?? _setupContext);
         }
 

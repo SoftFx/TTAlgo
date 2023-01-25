@@ -1,4 +1,6 @@
-﻿using ActorSharp;
+﻿//#define RPC_DEBUG_LOGS
+
+using ActorSharp;
 using Google.Protobuf;
 using System;
 using System.Buffers;
@@ -28,6 +30,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
         public ChannelReader<RpcMessage> ReadChannel { get; }
 
         public ChannelWriter<RpcMessage> WriteChannel { get; }
+
+        public Action<Exception, string> DebugErrorCallback { get; set; }
+
+        public bool EnableTraceLog { get; set; }
 
 
         public TcpSession(Socket socket, Ref<TcpContext> context)
@@ -76,7 +82,14 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     _socket.Disconnect(false);
                     _socket.Dispose();
                 }
+#if !RPC_DEBUG_LOGS
                 catch (Exception) { }
+#else
+                catch (Exception ex)
+                {
+                    DebugErrorCallback?.Invoke(ex, "TCP disconnect/dispose error");
+                }
+#endif
             });
 
 
@@ -111,8 +124,18 @@ namespace TickTrader.Algo.Rpc.OverTcp
                             break;
 
                         var msgSize = buffer.ReadInt32();
+#if RPC_DEBUG_LOGS
+                        if (msgSize > 1024 * 1024)
+                            DebugErrorCallback?.Invoke(null, $"Large message size detected: {msgSize}");
+#endif
                         if (buffer.Length < msgSize + MsgLengthPrefixSize)
+                        {
+#if RPC_DEBUG_LOGS
+                            if (EnableTraceLog)
+                                DebugErrorCallback?.Invoke(null, $"Can't read msg yet: {buffer.Length} < {msgSize + MsgLengthPrefixSize}");
+#endif
                             break;
+                        }
 
                         var msg = RpcMessage.Parser.ParseFrom(buffer.Slice(MsgLengthPrefixSize, msgSize));
                         if (!writer.TryWrite(msg))
@@ -129,6 +152,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
                         }
 
                         buffer = buffer.Slice(msgSize + MsgLengthPrefixSize);
+#if RPC_DEBUG_LOGS
+                        if (EnableTraceLog)
+                            DebugErrorCallback?.Invoke(null, $"Msg read success: {msgSize} bytes");
+#endif
                     }
 
                     if (msgChannelCompleted)
@@ -137,7 +164,14 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     pipeReader.AdvanceTo(buffer.Start, buffer.End);
                 }
             }
+#if !RPC_DEBUG_LOGS
             catch (Exception) { }
+#else
+            catch (Exception ex)
+            {
+                DebugErrorCallback?.Invoke(ex, "TCP read loop error");
+            }
+#endif
 
             pipeReader.Complete();
             writer.TryComplete();
@@ -159,6 +193,11 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     for (var cnt = 0; cnt < WriteBatchSize && reader.TryRead(out var msg); cnt++)
                     {
                         var msgSize = msg.CalculateSize();
+#if RPC_DEBUG_LOGS
+                        if (msgSize > 1024 * 1024)
+                            DebugErrorCallback?.Invoke(null, $"Large message size detected: {msgSize}");
+#endif
+
                         var len = msgSize + MsgLengthPrefixSize;
                         var mem = pipeWriter.GetMemory(len);
 
@@ -166,12 +205,23 @@ namespace TickTrader.Algo.Rpc.OverTcp
                         msg.WriteTo(mem.Span.Slice(MsgLengthPrefixSize, msgSize));
 
                         pipeWriter.Advance(len);
+#if RPC_DEBUG_LOGS
+                        if (EnableTraceLog)
+                            DebugErrorCallback?.Invoke(null, $"Msg write success: {msgSize} bytes");
+#endif
                     }
 
                     await pipeWriter.FlushAsync().ConfigureAwait(false);
                 }
             }
+#if !RPC_DEBUG_LOGS
             catch (Exception) { }
+#else
+            catch (Exception ex)
+            {
+                DebugErrorCallback?.Invoke(ex, "TCP write loop error");
+            }
+#endif
 
             pipeWriter.Complete();
             _writeChannel.Writer.TryComplete();
@@ -198,7 +248,14 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     await pipeWriter.FlushAsync().ConfigureAwait(false);
                 }
             }
+#if !RPC_DEBUG_LOGS
             catch (Exception) { }
+#else
+            catch (Exception ex)
+            {
+                DebugErrorCallback?.Invoke(ex, "TCP listen loop error");
+            }
+#endif
 
             pipeWriter.Complete();
         }
@@ -235,7 +292,14 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     pipeReader.AdvanceTo(res.Buffer.End);
                 }
             }
+#if !RPC_DEBUG_LOGS
             catch (Exception) { }
+#else
+            catch (Exception ex)
+            {
+                DebugErrorCallback?.Invoke(ex, "TCP send loop failed");
+            }
+#endif
 
             pipeReader.Complete();
         }

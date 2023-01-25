@@ -51,3 +51,5 @@ message ShutdownRequest {
 }
 
 message ShutdownResponse { }
+
+message EnableTraceCmd { }

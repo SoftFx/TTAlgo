@@ -1,4 +1,5 @@
-﻿using System.Threading.Channels;
+﻿using System;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 
@@ -9,6 +10,10 @@ namespace TickTrader.Algo.Rpc
         ChannelReader<RpcMessage> ReadChannel { get; }
 
         ChannelWriter<RpcMessage> WriteChannel { get; }
+
+        Action<Exception, string> DebugErrorCallback { set; }
+
+        bool EnableTraceLog { get; set; }
 
 
         Task Close();

@@ -289,6 +289,9 @@ namespace TickTrader.Algo.Account
 
             private void ApplyUpdate(CircularList<BarData> buffer, BarData update)
             {
+                if (update == null)
+                    return; // symbols can have one sided bar updates
+
                 var lastIndex = buffer.Count - 1;
                 if (lastIndex == -1)
                 {

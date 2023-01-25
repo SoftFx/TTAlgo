@@ -201,7 +201,7 @@ namespace TickTrader.Algo.Server
             {
                 _core = new ClientModel.ControlHandler2(_server.GetDefaultClientSettings(_id));
 
-                await _core.OpenHandler();
+                await _core.Init();
 
                 _core.Connection.Disconnected += () => Self.Tell(ConnectionLostMsg.Instance);
 
@@ -248,7 +248,7 @@ namespace TickTrader.Algo.Server
                 else
                     ManageConnectionInternal();
 
-                await _core.CloseHandler();
+                await _core.Deinit();
 
                 _logger.Debug("Stopped");
             }

@@ -111,5 +111,15 @@ namespace TickTrader.BotTerminal
 
             return AppendBarIntenral(bar, noThrow);
         }
+
+
+        internal void ResetVisuals()
+        {
+            // LiveCharts has some issues with cleaning up visuals
+
+            var pointsCopy = Items.Select(p => new FinancialPoint(p.Date, p.High, p.Open, p.Close, p.Low)).ToArray();
+            Clear();
+            AddRange(pointsCopy);
+        }
     }
 }

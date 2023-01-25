@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.SymbolManager;
 using TickTrader.BotTerminal.Views.BotsRepository;
@@ -162,7 +163,10 @@ namespace TickTrader.BotTerminal
             await _symbolsCatalog.ConnectClient(settings);
             await ProfileManager.LoadConnectionProfile(server, login, token);
 
+            Agent.AccountMetadataProvider = () => new AccountMetadataInfo(AccountId.Pack(_clientModel.Connection.CurrentServer, _clientModel.Connection.CurrentLogin),
+                _clientModel.SortedSymbols.Select(s => s.ToInfo()).ToList(), _clientModel.Cache.GetDefaultSymbol().ToInfo());
             await Agent.IndicatorHost.SetAccountProxy(_clientModel.GetAccountProxy());
+
             await Agent.IndicatorHost.Start();
         }
 

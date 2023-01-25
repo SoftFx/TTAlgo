@@ -1,4 +1,6 @@
-﻿using Google.Protobuf;
+﻿//#define RPC_DEBUG_LOGS
+
+using Google.Protobuf;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
@@ -67,6 +69,9 @@ namespace TickTrader.Algo.Rpc
         private ProtocolSpec _protocol;
         private string _disconnectReason;
         private string _sessionId;
+#if RPC_DEBUG_LOGS
+        private bool _enableTraceLog;
+#endif
 
 
         public string Id => _sessionId;
@@ -82,6 +87,8 @@ namespace TickTrader.Algo.Rpc
             _rpcHost = rpcHost;
 
             var _ = HandleEvents();
+
+            _transport.DebugErrorCallback = (ex, msg) => _logger.Debug($"{msg}: {ex}");
         }
 
 
@@ -134,7 +141,10 @@ namespace TickTrader.Algo.Rpc
 
         internal void SendMessage(RpcMessage msg)
         {
-            //_logger.Debug("Send msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
+#if RPC_DEBUG_LOGS
+            if (_enableTraceLog)
+                _logger.Debug("Send msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
+#endif
             if (!_transport.WriteChannel.TryWrite(msg))
                 _logger.Error($"Failed to send msg: {msg.Flags}, {msg.CallId}, {msg.ProxyId}");
         }
@@ -272,6 +282,9 @@ namespace TickTrader.Algo.Rpc
 
             _logger.Debug($"Disconnect reason: {_disconnectReason}");
 
+            if (_transport.ReadChannel.CanCount)
+                _logger.Debug($"In msg cnt = {_transport.ReadChannel.Count}");
+
             if (_heartbeatTask != null)
             {
                 _heartbeatCancelTokenSrc?.Cancel();
@@ -396,10 +409,21 @@ namespace TickTrader.Algo.Rpc
                 {
                     _heartbeatCnt++;
                     SendMessage(HeartbeatMessage);
+#if RPC_DEBUG_LOGS
+                    if (!_enableTraceLog && _lastReceiveCnt + RpcConstants.HeartbeatCntThreshold - 2 < _heartbeatCnt)
+                    {
+                        _logger.Debug($"Connection has troubles (last receive: {_lastReceiveCnt} / {_heartbeatCnt}). Enabling trace log...");
+                        _enableTraceLog = true;
+                        _transport.EnableTraceLog = true;
+                        SendMessage(RpcMessage.Notification(new EnableTraceCmd()));
+                    }
+#endif
                     if (_lastReceiveCnt + RpcConstants.HeartbeatCntThreshold < _heartbeatCnt)
                     {
                         _disconnectReason = $"Connection is out of sync (last receive: {_lastReceiveCnt} / {_heartbeatCnt}).";
                         PushEvent(RpcSessionEvent.ConnectionOutOfSync);
+                        if (_transport.ReadChannel.CanCount)
+                            _logger.Debug($"In msg cnt = {_transport.ReadChannel.Count}");
                         return;
                     }
                     await Task.Delay(RpcConstants.HeartbeatTimeout, cancelToken).ConfigureAwait(false);
@@ -410,13 +434,24 @@ namespace TickTrader.Algo.Rpc
 
         private void HandleMessage(RpcMessage msg)
         {
-            //_logger.Debug("Handle msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
+#if RPC_DEBUG_LOGS
+            if (_enableTraceLog)
+                _logger.Debug("Handle msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
+#endif
 
             _lastReceiveCnt = _heartbeatCnt;
             if (msg.Payload.Is(Heartbeat.Descriptor))
             {
                 // msg already handled
             }
+#if RPC_DEBUG_LOGS
+            else if (msg.Payload.Is(EnableTraceCmd.Descriptor))
+            {
+                _logger.Debug("Enable trace command received");
+                _enableTraceLog = true;
+                _transport.EnableTraceLog = true;
+            }
+#endif
             else if (msg.Payload.Is(ConnectRequest.Descriptor))
             {
                 ConnectRequestHandler(msg);

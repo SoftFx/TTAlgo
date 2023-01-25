@@ -25,6 +25,7 @@ namespace TickTrader.Algo.RuntimeV1Host
             }
 
             ConfigureLogging(rpcParams.ProxyId);
+            HealthChecker.Start();
 
             LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
             try
@@ -39,8 +40,6 @@ namespace TickTrader.Algo.RuntimeV1Host
 
         private static async Task RunRuntime(RpcProxyParams rpcParams)
         {
-            AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
-
             var logger = LogManager.GetLogger("MainLoop");
 
             SetupGlobalExceptionLogging(logger);
