@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
         private readonly string _apiDllPath;
 
 
-        private string DefaultMetadataName => $"{Path.GetFileNameWithoutExtension(_mainFileName)}_manifest";
+        private string DefaultMetadataName => $"{Path.GetFileNameWithoutExtension(_mainFileName)}_metainfo";
 
 
         public string OutputFolder { get; set; }
@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
             };
         }
 
-        public MetadataInfo FillReflectionInfo(MetadataInfo info)
+        public MetadataInfo FillReflectionInfo(MetadataInfo packageInfo)
         {
             _print("\tStarting reflection...");
 
@@ -70,7 +70,7 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
 
             var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_apiDllPath);
 
-            info.ApiVersion = GetApiVersion(assembly);
+            packageInfo.ApiVersion = GetApiVersion(assembly);
 
             assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_mainDllPath);
 
@@ -82,45 +82,51 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
 
                     if (castType.FullName == TradeBotAttributeFullName)
                     {
+                        var info = new PluginsInfo();
+
                         foreach (var prop in castType.GetProperties())
                         {
                             string ReadValue()
                             {
                                 var value = $"{prop.GetValue(rawType)}";
 
-                                _print($"\t{prop.Name}={value}");
+                                _print($"\t\t{prop.Name}={value}");
 
                                 return value;
                             }
 
                             switch (prop.Name)
                             {
-                                case nameof(MetadataInfo.DisplayName):
+                                case nameof(PluginsInfo.DisplayName):
                                     info.DisplayName = ReadValue();
                                     break;
 
-                                case nameof(MetadataInfo.Copyright):
+                                case nameof(PluginsInfo.Copyright):
                                     info.Copyright = ReadValue();
                                     break;
 
-                                case nameof(MetadataInfo.Description):
+                                case nameof(PluginsInfo.Description):
                                     info.Description = ReadValue();
                                     break;
 
-                                case nameof(MetadataInfo.Category):
+                                case nameof(PluginsInfo.Category):
                                     info.Category = ReadValue();
                                     break;
 
-                                case nameof(MetadataInfo.Version):
+                                case nameof(PluginsInfo.Version):
                                     info.Version = ReadValue();
                                     break;
                             }
                         }
+
+                        _print(Environment.NewLine);
+
+                        packageInfo.Plugins.Add(info);
                     }
                 }
             }
 
-            return info;
+            return packageInfo;
         }
 
         public void SaveMetadata(MetadataInfo info)
