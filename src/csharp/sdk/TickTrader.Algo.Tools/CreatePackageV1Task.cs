@@ -27,7 +27,18 @@ namespace TickTrader.Algo.Tools
 
         public string OutputPath { get; set; }
 
+
         public bool BuildMetadata { get; set; }
+
+        public string MetadataFileName { get; set; }
+
+        public string Repository { get; set; }
+
+        public string ArtifactName { get; set; }
+
+        public string Author { get; set; }
+
+        public string RuntimeType { get; set; }
 
 
         public override bool Execute()
@@ -38,11 +49,11 @@ namespace TickTrader.Algo.Tools
 
                 if (!File.Exists(mainFilePath))
                 {
-                    Log.LogError("Main assembly file not found. Check if project type is library and file exists '{0}'", mainFilePath);
+                    Log.LogError($"Main assembly file not found. Check if project type is library and file exists '{mainFilePath}'");
                     return false;
                 }
 
-                var writer = new PackageWriter(msg => Log.LogMessage(MessageImportance.High, msg))
+                var writer = new PackageWriter(Print)
                 {
                     SrcFolder = BinPath,
                     MainFileName = MainAssemblyName,
@@ -55,15 +66,40 @@ namespace TickTrader.Algo.Tools
                 if (string.IsNullOrEmpty(dstPath))
                     dstPath = AlgoCommonRepositoryPath;
 
-                writer.Save(dstPath, PackageName);
+                var packagePath = writer.Save(dstPath, PackageName);
+
+                if (BuildMetadata)
+                {
+                    var builder = new MetadataBuilder.MetadataBuilder(BinPath, MainAssemblyName, Print)
+                    {
+                        MetadataFileName = MetadataFileName,
+                        ArtifactName = ArtifactName,
+                        Repository = Repository,
+                        Author = Author,
+
+                        OutputFolder = dstPath,
+                    };
+
+                    var info = builder.BuildBaseInformation(packagePath, BinPath);
+
+                    Print($"{nameof(RuntimeType)}={RuntimeType}");
+
+                    if (RuntimeType == "Core")
+                        info = builder.FillReflectionInfo(info);
+
+                    builder.SaveMetadata(info);
+                }
             }
             catch (Exception ex)
             {
-                Log.LogError("TTAlgo.Build Create PackageV1 failed: {0}", ex.Message);
+                Log.LogError($"TTAlgo.Build Create PackageV1 failed: {ex.Message}");
                 return false;
             }
 
             return true;
         }
+
+
+        private void Print(string msg) => Log.LogMessage(MessageImportance.High, msg);
     }
 }

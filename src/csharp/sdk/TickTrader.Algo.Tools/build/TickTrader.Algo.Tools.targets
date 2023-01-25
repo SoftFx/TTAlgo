@@ -3,7 +3,7 @@
   <UsingTask TaskName="TickTrader.Algo.Tools.CreatePackageV1" AssemblyFile="$(TickTraderAlgoToolsAssemblyFile)" />
 
   <Target Name="CreateAlgoPackage" AfterTargets="AfterBuild" Condition="'$(AlgoPackage_Create)' == 'true'">
-  
+
     <TickTrader.Algo.Tools.CreatePackageV1
         BinPath="$(OutDir)"
         MainAssemblyName="$(AssemblyName).dll"
@@ -11,7 +11,12 @@
         TargetFramework="$(TargetFramework)"
         PackageName="$(AlgoPackage_Name)"
         OutputPath="$(AlgoPackage_OutputPath)"
-        BuildMetadata="$(AlgoPackage_BuildMetadata)" />
+        BuildMetadata="$(AlgoPackage_BuildMetadata)"
+        MetadataFileName="$(AlgoPackage_MetadataFileName)"
+        Repository="$(AlgoPackage_Repository)"
+        ArtifactName="$(AlgoPackage_ArtifactName)"
+        Author="$(AlgoPackage_Author)"
+        RuntimeType="$(AlgoPackage_RuntimeType)"/>
   </Target>
 
 </Project>

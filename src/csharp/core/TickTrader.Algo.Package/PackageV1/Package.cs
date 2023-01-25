@@ -122,18 +122,25 @@ namespace TickTrader.Algo.Package.V1
 
         private static MemoryStream ToXml<T>(T obj)
         {
-            MemoryStream stream = new MemoryStream();
-            DataContractSerializer serializer = new DataContractSerializer(typeof(T));
-            var xmlSettings = new System.Xml.XmlWriterSettings { Indent = true };
+            var stream = new MemoryStream();
+            var serializer = new DataContractSerializer(typeof(T));
+
+            var xmlSettings = new System.Xml.XmlWriterSettings
+            {
+                Indent = true
+            };
+
             using (var xmlWriter = System.Xml.XmlWriter.Create(stream, xmlSettings))
                 serializer.WriteObject(xmlWriter, obj);
+
             stream.Seek(0, SeekOrigin.Begin);
             return stream;
         }
 
         private static T FromXml<T>(MemoryStream stream)
         {
-            DataContractSerializer serializer = new DataContractSerializer(typeof(T));
+            var serializer = new DataContractSerializer(typeof(T));
+
             return (T)serializer.ReadObject(stream);
         }
     }

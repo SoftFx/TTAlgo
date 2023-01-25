@@ -1,13 +1,18 @@
 <Project>
   <PropertyGroup>
-    <!-- <TickTraderAlgoToolsAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\build\net472\TickTrader.Algo.Tools.dll</TickTraderAlgoToolsAssemblyFile>
-    <TickTraderAlgoToolsAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\build\netstandard2.0\TickTrader.Algo.Tools.dll</TickTraderAlgoToolsAssemblyFile> -->
+    <!--<TickTraderAlgoToolsAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\build\netstandard2.0\TickTrader.Algo.Tools.dll</TickTraderAlgoToolsAssemblyFile>
+    <TickTraderAlgoToolsAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\build\net6.0\TickTrader.Algo.Tools.dll</TickTraderAlgoToolsAssemblyFile>-->
     <TickTraderAlgoToolsAssemblyFile>$(MSBuildThisFileDirectory)..\build\netstandard2.0\TickTrader.Algo.Tools.dll</TickTraderAlgoToolsAssemblyFile>
 
     <AlgoPackage_Create Condition="'$(AlgoPackage_Create)' == ''">true</AlgoPackage_Create>
     <AlgoPackage_Name Condition="'$(AlgoPackage_Name)' == ''">$(MSBuildProjectName)</AlgoPackage_Name>
     <AlgoPackage_OutputPath Condition="'$(AlgoPackage_OutputPath)' == ''"></AlgoPackage_OutputPath>
     <AlgoPackage_BuildMetadata Condition="'$(AlgoPackage_BuildMetadata)' == ''">false</AlgoPackage_BuildMetadata>
+    <AlgoPackage_MetadataFileName Condition="'$(AlgoPackage_MetadataFileName)' == ''"></AlgoPackage_MetadataFileName>
+    <AlgoPackage_Repository Condition="'$(AlgoPackage_Repository)' == ''"></AlgoPackage_Repository>
+    <AlgoPackage_ArtifactName Condition="'$(AlgoPackage_ArtifactName)' == ''"></AlgoPackage_ArtifactName>
+    <AlgoPackage_Author Condition="'$(AlgoPackage_Author)' == ''"></AlgoPackage_Author>
+    <AlgoPackage_RuntimeType>$(MSBuildRuntimeType)</AlgoPackage_RuntimeType>
 
     <!-- Enable NuGet dependencies copy to build output -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

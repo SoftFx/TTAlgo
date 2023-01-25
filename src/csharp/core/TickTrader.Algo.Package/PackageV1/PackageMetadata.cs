@@ -7,12 +7,16 @@ namespace TickTrader.Algo.Package.V1
     {
         [DataMember]
         public string MainBinaryFile { get; set; }
+
         [DataMember]
         public string Runtime { get; set; }
+
         [DataMember]
         public string IDE { get; set; }
+
         [DataMember]
         public string ProjectFilePath { get; set; }
+
         [DataMember]
         public string Workspace { get; set; }
     }
