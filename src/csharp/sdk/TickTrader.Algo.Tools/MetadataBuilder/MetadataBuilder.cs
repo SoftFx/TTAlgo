@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
         private readonly string _mainFileName;
         private readonly string _mainDllPath;
         private readonly string _apiDllPath;
+        private readonly string _sourceFolder;
 
 
         private string DefaultMetadataName => $"{Path.GetFileNameWithoutExtension(_mainFileName)}_metainfo";
@@ -34,10 +35,11 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
 
         internal MetadataBuilder(string sourceFolder, string mainFile, Action<string> print)
         {
+            _sourceFolder = sourceFolder;
             _mainFileName = mainFile;
 
-            _mainDllPath = TryGetFilePath(sourceFolder, mainFile);
-            _apiDllPath = TryGetFilePath(sourceFolder, ApiFileName);
+            _mainDllPath = TryGetFilePath(_sourceFolder, mainFile);
+            _apiDllPath = TryGetFilePath(_sourceFolder, ApiFileName);
 
             _print = print;
 
@@ -67,6 +69,8 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
 
             _print($"\tMain file: {_mainDllPath}");
             _print($"\tApi file: {_apiDllPath}");
+
+            LoadExtraAssemblies();
 
             var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_apiDllPath);
 
@@ -212,6 +216,21 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
             _print($"\t{nameof(MetadataInfo.LastUpdate)}={value}");
 
             return value;
+        }
+
+        private void LoadExtraAssemblies()
+        {
+            foreach (string dll in Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, _sourceFolder), "*.dll"))
+            {
+                if (dll != _mainDllPath && dll != _apiDllPath)
+                {
+                    _print($"Loading new assembly: {dll}");
+
+                    AssemblyLoadContext.Default.LoadFromAssemblyPath(dll);
+
+                    _print($"New assembly has been loaded: {dll}");
+                }
+            }
         }
 
         private static string TryGetFilePath(string folder, string fileName)
