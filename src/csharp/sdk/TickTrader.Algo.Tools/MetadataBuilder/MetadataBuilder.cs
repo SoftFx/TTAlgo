@@ -64,63 +64,64 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
 
             _print($"\tMain file: {_mainDllPath}");
 
-            var context = new DynamicAssemblyLoadContext(_sourceFolder, _print);
-            var assembly = context.LoadFromAssemblyPath(_mainDllPath);
-
-            foreach (var assemblyType in assembly.GetTypes())
+            using (var context = new DynamicAssemblyLoadContext(_sourceFolder, _print))
             {
-                foreach (var rawType in assemblyType.GetCustomAttributes())
+                var assembly = context.LoadFromAssemblyPath(_mainDllPath);
+
+                foreach (var assemblyType in assembly.GetTypes())
                 {
-                    var castType = rawType.TypeId as Type;
-
-                    if (castType.FullName == TradeBotAttributeFullName)
+                    foreach (var rawType in assemblyType.GetCustomAttributes())
                     {
-                        var info = new PluginsInfo();
+                        var castType = rawType.TypeId as Type;
 
-                        foreach (var prop in castType.GetProperties())
+                        if (castType.FullName == TradeBotAttributeFullName)
                         {
-                            string ReadValue()
+                            var info = new PluginsInfo();
+
+                            foreach (var prop in castType.GetProperties())
                             {
-                                var value = $"{prop.GetValue(rawType)}";
+                                string ReadValue()
+                                {
+                                    var value = $"{prop.GetValue(rawType)}";
 
-                                _print($"\t\t{prop.Name}={value}");
+                                    _print($"\t\t{prop.Name}={value}");
 
-                                return value;
+                                    return value;
+                                }
+
+                                switch (prop.Name)
+                                {
+                                    case nameof(PluginsInfo.DisplayName):
+                                        info.DisplayName = ReadValue();
+                                        break;
+
+                                    case nameof(PluginsInfo.Copyright):
+                                        info.Copyright = ReadValue();
+                                        break;
+
+                                    case nameof(PluginsInfo.Description):
+                                        info.Description = ReadValue();
+                                        break;
+
+                                    case nameof(PluginsInfo.Category):
+                                        info.Category = ReadValue();
+                                        break;
+
+                                    case nameof(PluginsInfo.Version):
+                                        info.Version = ReadValue();
+                                        break;
+                                }
                             }
 
-                            switch (prop.Name)
-                            {
-                                case nameof(PluginsInfo.DisplayName):
-                                    info.DisplayName = ReadValue();
-                                    break;
+                            _print(Environment.NewLine);
 
-                                case nameof(PluginsInfo.Copyright):
-                                    info.Copyright = ReadValue();
-                                    break;
-
-                                case nameof(PluginsInfo.Description):
-                                    info.Description = ReadValue();
-                                    break;
-
-                                case nameof(PluginsInfo.Category):
-                                    info.Category = ReadValue();
-                                    break;
-
-                                case nameof(PluginsInfo.Version):
-                                    info.Version = ReadValue();
-                                    break;
-                            }
+                            packageInfo.Plugins.Add(info);
                         }
-
-                        _print(Environment.NewLine);
-
-                        packageInfo.Plugins.Add(info);
                     }
                 }
-            }
 
-            packageInfo.ApiVersion = GetApiVersion(context);
-            context?.Dispose();
+                packageInfo.ApiVersion = GetApiVersion(context);
+            }
 
             return packageInfo;
         }
