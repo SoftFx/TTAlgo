@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
 
 
         protected override Assembly Load(AssemblyName assemblyName) => null; //must return null
-        
+
 
         private Assembly DynamicResolving(AssemblyLoadContext context, AssemblyName assemblyName)
         {
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
             if (_cache.TryGetValue(assemblyName.FullName, out var assembly))
                 return assembly;
 
-            foreach (string dll in Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, _source), "*.dll"))
+            foreach (string dll in Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, _source), $"{assemblyName.Name}.dll"))
             {
                 var dllAssemblyName = GetAssemblyName(dll);
                 var dllFullName = dllAssemblyName.FullName;
