@@ -39,19 +39,21 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
             if (_cache.TryGetValue(assemblyName.FullName, out var assembly))
                 return assembly;
 
-            foreach (string dll in Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, _source), $"{assemblyName.Name}.dll"))
+            var expectedDllName = Path.Combine(Environment.CurrentDirectory, _source, $"{assemblyName.Name}.dll");
+
+            if (File.Exists(expectedDllName))
             {
-                var dllAssemblyName = GetAssemblyName(dll);
+                var dllAssemblyName = GetAssemblyName(expectedDllName);
                 var dllFullName = dllAssemblyName.FullName;
 
                 if (assemblyName.FullName == dllFullName)
                 {
                     _print($"\tLoading {dllFullName}");
 
-                    if (Path.GetFileName(dll) == ApiFileName)
+                    if (Path.GetFileName(expectedDllName) == ApiFileName)
                         ApiVersion = dllAssemblyName.Version.ToString();
 
-                    return RegisterNewAssembly(context.LoadFromAssemblyPath(dll));
+                    return RegisterNewAssembly(context.LoadFromAssemblyPath(expectedDllName));
                 }
             }
 
