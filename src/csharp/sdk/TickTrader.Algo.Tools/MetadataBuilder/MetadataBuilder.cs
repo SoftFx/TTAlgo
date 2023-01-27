@@ -1,21 +1,18 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Runtime.Serialization.Json;
 
 namespace TickTrader.Algo.Tools.MetadataBuilder
 {
     internal sealed class MetadataBuilder
     {
-        private const string ApiFileName = "TickTrader.Algo.Api.dll";
         private const string TradeBotAttributeFullName = "TickTrader.Algo.Api.TradeBotAttribute";
 
         private readonly Action<string> _print;
 
         private readonly string _mainFileName;
         private readonly string _mainDllPath;
-        private readonly string _apiDllPath;
         private readonly string _sourceFolder;
 
 
@@ -39,7 +36,6 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
             _mainFileName = mainFile;
 
             _mainDllPath = TryGetFilePath(_sourceFolder, mainFile);
-            _apiDllPath = TryGetFilePath(_sourceFolder, ApiFileName);
 
             _print = print;
 
@@ -47,7 +43,7 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
         }
 
 
-        public MetadataInfo BuildBaseInformation(string packagePath, string srcFolder)
+        public MetadataInfo BuildBaseInformation(string packagePath)
         {
             _print("\tBuilding base info...");
 
@@ -58,7 +54,6 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
                 ArtifactName = ArtifactName,
 
                 PackageSize = GetPackageSize(packagePath),
-                LastUpdate = GetLastUpdate(srcFolder),
                 BuildDate = GetBuildDate(),
             };
         }
@@ -68,15 +63,9 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
             _print("\tStarting reflection...");
 
             _print($"\tMain file: {_mainDllPath}");
-            _print($"\tApi file: {_apiDllPath}");
 
-            LoadExtraAssemblies();
-
-            var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_apiDllPath);
-
-            packageInfo.ApiVersion = GetApiVersion(assembly);
-
-            assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_mainDllPath);
+            var context = new DynamicAssemblyLoadContext(_sourceFolder, _print);
+            var assembly = context.LoadFromAssemblyPath(_mainDllPath);
 
             foreach (var assemblyType in assembly.GetTypes())
             {
@@ -130,6 +119,9 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
                 }
             }
 
+            packageInfo.ApiVersion = GetApiVersion(context);
+            context?.Dispose();
+
             return packageInfo;
         }
 
@@ -162,11 +154,11 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
         }
 
 
-        private string GetApiVersion(Assembly assembly)
+        private string GetApiVersion(DynamicAssemblyLoadContext context)
         {
             _print("\tGetting api version...");
 
-            var value = assembly.GetName()?.Version.ToString();
+            var value = context.ApiVersion;
 
             _print($"\t{nameof(MetadataInfo.ApiVersion)}={value}");
 
@@ -194,43 +186,6 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
             _print($"\t{nameof(MetadataInfo.PackageSize)}={value}");
 
             return value;
-        }
-
-        private string GetLastUpdate(string srcFolder)
-        {
-            _print($"\tReading last update in folder {srcFolder}...");
-
-            var files = Directory.GetFiles(srcFolder);
-            var lastUpdate = DateTime.MinValue;
-
-            foreach (var filePath in files)
-            {
-                var fi = new FileInfo(filePath);
-
-                if (fi.LastWriteTimeUtc > lastUpdate)
-                    lastUpdate = fi.LastWriteTimeUtc;
-            }
-
-            var value = (lastUpdate == DateTime.MinValue ? DateTime.UtcNow : lastUpdate).ToString(MetadataInfo.DateTimeFormat);
-
-            _print($"\t{nameof(MetadataInfo.LastUpdate)}={value}");
-
-            return value;
-        }
-
-        private void LoadExtraAssemblies()
-        {
-            foreach (string dll in Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, _sourceFolder), "*.dll"))
-            {
-                if (dll != _mainDllPath && dll != _apiDllPath)
-                {
-                    _print($"Loading new assembly: {dll}");
-
-                    AssemblyLoadContext.Default.LoadFromAssemblyPath(dll);
-
-                    _print($"New assembly has been loaded: {dll}");
-                }
-            }
         }
 
         private static string TryGetFilePath(string folder, string fileName)

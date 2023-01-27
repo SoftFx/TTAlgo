@@ -16,7 +16,7 @@
         Repository="$(AlgoPackage_Repository)"
         ArtifactName="$(AlgoPackage_ArtifactName)"
         Author="$(AlgoPackage_Author)"
-        RuntimeType="$(AlgoPackage_RuntimeType)"/>
+        RuntimeType="$(MSBuildRuntimeType)"/>
   </Target>
 
 </Project>

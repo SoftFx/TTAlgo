@@ -25,9 +25,6 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
         public string BuildDate { get; set; }
 
         [DataMember]
-        public string LastUpdate { get; set; }
-
-        [DataMember]
         public long PackageSize { get; set; }
 
         [DataMember]

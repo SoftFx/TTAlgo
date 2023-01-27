@@ -12,7 +12,6 @@
     <AlgoPackage_Repository Condition="'$(AlgoPackage_Repository)' == ''"></AlgoPackage_Repository>
     <AlgoPackage_ArtifactName Condition="'$(AlgoPackage_ArtifactName)' == ''"></AlgoPackage_ArtifactName>
     <AlgoPackage_Author Condition="'$(AlgoPackage_Author)' == ''"></AlgoPackage_Author>
-    <AlgoPackage_RuntimeType>$(MSBuildRuntimeType)</AlgoPackage_RuntimeType>
 
     <!-- Enable NuGet dependencies copy to build output -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

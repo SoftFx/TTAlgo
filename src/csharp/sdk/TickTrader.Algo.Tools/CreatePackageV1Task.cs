@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Tools
                         OutputFolder = dstPath,
                     };
 
-                    var info = builder.BuildBaseInformation(packagePath, BinPath);
+                    var info = builder.BuildBaseInformation(packagePath);
 
                     Print($"{nameof(RuntimeType)}={RuntimeType}");
 
