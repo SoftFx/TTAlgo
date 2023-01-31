@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
         public string Source { get; set; }
 
         [DataMember]
-        public string ArtifactName { get; set; }
+        public string PackageName { get; set; }
 
         [DataMember]
         public string Author { get; set; }

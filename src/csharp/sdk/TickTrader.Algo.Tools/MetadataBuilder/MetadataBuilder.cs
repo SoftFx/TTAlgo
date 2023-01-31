@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
 
         public string Repository { get; set; }
 
-        public string ArtifactName { get; set; }
+        public string PackageName { get; set; }
 
 
         internal MetadataBuilder(string sourceFolder, string mainFile, Action<string> print)
@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
             {
                 Author = Author,
                 Source = Repository,
-                ArtifactName = ArtifactName,
+                PackageName = PackageName,
 
                 PackageSize = GetPackageSize(packagePath),
                 BuildDate = GetBuildDate(),

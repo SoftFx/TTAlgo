@@ -34,8 +34,6 @@ namespace TickTrader.Algo.Tools
 
         public string Repository { get; set; }
 
-        public string ArtifactName { get; set; }
-
         public string Author { get; set; }
 
         public string RuntimeType { get; set; }
@@ -73,7 +71,7 @@ namespace TickTrader.Algo.Tools
                     var builder = new MetadataBuilder.MetadataBuilder(BinPath, MainAssemblyName, Print)
                     {
                         MetadataFileName = MetadataFileName,
-                        ArtifactName = ArtifactName,
+                        PackageName = PackageName,
                         Repository = Repository,
                         Author = Author,
 
