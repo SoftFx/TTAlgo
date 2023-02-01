@@ -6,6 +6,8 @@ namespace TickTrader.Algo.Api
     {
         string Name { get; }
 
+        DrawableObjectType Type { get; }
+
         DateTime CreatedTime { get; }
 
         string OutputId { get; }
@@ -40,9 +42,9 @@ namespace TickTrader.Algo.Api
         Colors Color { get; set; }
         int Thickness { get; set; }
         LineStyles Style { get; set; }
-        bool Ray { get; set; }
         bool RayLeft { get; set; }
         bool RayRight { get; set; }
+        bool RayVertical { get; set; }
     }
 
     public interface IDrawableShapeProps
@@ -92,7 +94,7 @@ namespace TickTrader.Algo.Api
 
 
         DateTime GetTime(int index);
-        void SetTime(int index, DateTime value);
+        void SetTime(int index, DateTime time);
         double GetPrice(int index);
         void SetPrice(int index, double price);
     }

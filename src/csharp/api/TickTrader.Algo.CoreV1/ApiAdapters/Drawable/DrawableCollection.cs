@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
@@ -17,7 +18,16 @@ namespace TickTrader.Algo.CoreV1
 
         public IDrawableObject Create(string name, DrawableObjectType type, string outputId = null)
         {
-            throw new System.NotImplementedException();
+            var objInfo = new DrawableObjectInfo(name, type.ToDomain()) { OutputId = outputId };
+            var obj = new DrawableObjectAdapter(objInfo, type, this);
+
+            lock (_syncObj)
+            {
+                _objects.Add(obj);
+                _byNameCache[name] = obj;
+            }
+
+            return obj;
         }
 
         public IDrawableObject GetObjectByIndex(int index) => _objects[index];

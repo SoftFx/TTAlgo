@@ -29,23 +29,47 @@ message Drawable {
 
 message DrawableObjectInfo {
     google.protobuf.StringValue name = 1;
-    int64 created_time_raw = 2;
-    google.protobuf.StringValue output_id = 3;
-    bool is_background = 4;
-    bool is_hidden = 5;
-    bool is_selectable = 6;
-    int64 z_index = 7;
-    google.protobuf.StringValue tooltip = 8;
+    Drawable.ObjectType type = 2;
+    int64 created_time_raw = 3;
+    google.protobuf.StringValue output_id = 4;
+
+    bool is_background = 10;
+    bool is_hidden = 11;
+    bool is_selectable = 12;
+    int64 z_index = 13;
+    google.protobuf.StringValue tooltip = 14;
+
+    DrawableLinePropsInfo line_props = 100;
+    DrawableShapePropsInfo shape_props = 101;
+    DrawableSymbolPropsInfo symbol_props = 102;
+    DrawableObjectAnchorsInfo anchors = 103;
+}
+
+message DrawableLinePropsInfo {
+    //color color_argb = 1;
+    int32 thickness = 2;
+    //linestyle style = 3;
+    bool ray_left = 4;
+    bool ray_right = 5;
+    bool ray_vertical = 6;
+}
+
+message DrawableShapePropsInfo {
+    //color border_color_argb = 1;
+    int32 border_thickness = 2;
+    //linestyle border_style = 3;
+    bool fill = 4;
+    //color fill_color_argb = 5;
 }
 
 message DrawableSymbolPropsInfo {
     uint32 code = 1;
     int32 size = 2;
     //color color_argb = 3;
-    google.protobuf.StringValue FontFamily = 4;
+    google.protobuf.StringValue font_family = 4;
 }
 
-message DrawableAnchorsInfo {
+message DrawableObjectAnchorsInfo {
     repeated int64 time_raw = 1;
     repeated double price = 2;
 }
