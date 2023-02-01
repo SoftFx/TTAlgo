@@ -9,7 +9,6 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Server.Persistence;
-using TickTrader.BotAgent.Infrastructure;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
 namespace TickTrader.BotAgent.BA.Models
@@ -25,7 +24,6 @@ namespace TickTrader.BotAgent.BA.Models
         [DataMember(Name = "accounts")]
         private List<ClientModel> _accounts = new();
 
-        private ThreadPoolManager _threadPoolManager;
         private LocalAlgoServer _algoServer = new();
 
         public static EnvService Environment => envService;
@@ -66,10 +64,6 @@ namespace TickTrader.BotAgent.BA.Models
             }
 
             await _algoServer.Start();
-
-            _threadPoolManager = new ThreadPoolManager();
-
-            _threadPoolManager.Start(0);
         }
 
         public async Task ShutdownAsync()
@@ -77,7 +71,6 @@ namespace TickTrader.BotAgent.BA.Models
             _logger.Debug("ServerModel is shutting down...");
 
             await _algoServer.Stop();
-            await _threadPoolManager.Stop();
         }
 
 

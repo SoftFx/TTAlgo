@@ -55,6 +55,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             try
             {
                 ConfigureLogging(logsDir, args.Length != 0);
+                HealthChecker.Start();
 
                 PkgLoader.PkgLoader.InitDefaults();
                 PluginLogWriter.Init(NLogPluginLogWriter.Create);
