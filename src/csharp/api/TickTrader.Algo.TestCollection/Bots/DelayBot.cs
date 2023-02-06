@@ -36,6 +36,11 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (DelayOn == DelayVariants.OnStart)
                 ApplyDelay("Starting");
 
+            var obj = DrawableObjects.Create("test 1", DrawableObjectType.VerticalLine);
+            obj.PushChanges();
+
+            DrawableObjects.Remove("test 1");
+
             Status.WriteLine("Started");
             Status.Flush();
         }

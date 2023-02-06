@@ -7,7 +7,9 @@ namespace TickTrader.Algo.CoreV1
     internal class DrawableObjectAdapter : IDrawableObject
     {
         private readonly DrawableObjectInfo _info;
-        private readonly DrawableCollection _parent;
+        private readonly IDrawableUpdateSink _updateSink;
+
+        private bool _isChanged;
 
 
         public string Name => _info.Name;
@@ -65,11 +67,15 @@ namespace TickTrader.Algo.CoreV1
         public IDrawableBitmapProps Bitmap => throw new NotImplementedException();
 
 
-        public DrawableObjectAdapter(DrawableObjectInfo info, DrawableObjectType type, DrawableCollection parent)
+        internal bool IsNew { get; private set; }
+
+
+        public DrawableObjectAdapter(DrawableObjectInfo info, DrawableObjectType type, IDrawableUpdateSink updateSink)
         {
             _info = info;
             Type = type;
-            _parent = parent;
+            _updateSink = updateSink;
+            IsNew = true;
 
             Line = new DrawableLinePropsAdapter(info.LineProps);
             Shape = new DrawableShapePropsAdapter(info.ShapeProps);
@@ -78,9 +84,31 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        public void PushChanges()
+        public void PushChanges() => PushChangesInternal();
+
+
+        internal void PushChangesInternal()
         {
-            throw new NotImplementedException();
+            if (!IsNew && !_isChanged)
+                return;
+
+            var infoCopy = _info.Clone();
+
+            DrawableObjectUpdate upd = default;
+            if (IsNew)
+            {
+                IsNew = false;
+                upd = DrawableObjectUpdate.Added(infoCopy);
+            }
+            else
+            {
+                upd = DrawableObjectUpdate.Removed(Name);
+            }
+
+            IsNew = false;
+            _isChanged = false;
+
+            _updateSink.Send(upd);
         }
     }
 }

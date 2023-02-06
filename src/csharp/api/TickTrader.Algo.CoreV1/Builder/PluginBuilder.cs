@@ -127,6 +127,8 @@ namespace TickTrader.Algo.CoreV1
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
+        public Action<DrawableObjectUpdate> DrawablesUpdated { get => _drawableApi.Updated; set => _drawableApi.Updated = value; }
+
         public IReadOnlyDictionary<object, IDataBuffer> DataBuffers { get { return inputBuffers; } }
 
         public InputBuffer<T> GetBuffer<T>(string bufferId)
@@ -360,6 +362,7 @@ namespace TickTrader.Algo.CoreV1
         protected void OnAfterInvoke()
         {
             statusApi.Apply();
+            _drawableApi.FlushAll();
         }
 
         internal void InvokePluginMethod(Action<PluginBuilder, object> invokeAction, bool initMethod = false)

@@ -6,6 +6,9 @@ option csharp_namespace = "TickTrader.Algo.Domain";
 
 import "google/protobuf/wrappers.proto";
 
+import "common.proto";
+
+
 message Drawable {
     enum ObjectType {
         UNKNOWN_OBJECT_TYPE = 0;
@@ -72,4 +75,10 @@ message DrawableSymbolPropsInfo {
 message DrawableObjectAnchorsInfo {
     repeated int64 time_raw = 1;
     repeated double price = 2;
+}
+
+message DrawableObjectUpdate {
+    Update.Action action = 1;
+    google.protobuf.StringValue name = 2;
+    DrawableObjectInfo info = 3;
 }

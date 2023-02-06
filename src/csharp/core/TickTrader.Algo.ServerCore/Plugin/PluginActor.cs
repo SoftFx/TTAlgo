@@ -54,6 +54,7 @@ namespace TickTrader.Algo.Server
             Receive<PluginLogRecord>(OnLogUpdated);
             Receive<PluginStatusUpdate>(OnStatusUpdated);
             Receive<OutputSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
+            Receive<DrawableObjectUpdate>(upd => _logger.Info($"{upd.Action} obj '{upd.Name}': {upd.Info}"));
             Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
             Receive<PluginExitedMsg>(OnExited);
             Receive<RuntimeControlModel.RuntimeCrashedMsg>(OnRuntimeCrashed);
