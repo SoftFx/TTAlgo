@@ -21,6 +21,8 @@ namespace TickTrader.Algo.IndicatorHost
 
         public IVarList<OutputSeriesProxy> Outputs { get; }
 
+        public IVarList<DrawableCollectionProxy> Drawables { get; }
+
 
         public ChartHostProxy(IActorRef actor, IActorRef parent, IChartInfo info)
         {
@@ -30,6 +32,7 @@ namespace TickTrader.Algo.IndicatorHost
             _downlink = DefaultChannelFactory.CreateForOneToOne<object>();
 
             Outputs = _indicators.TransformToList().Chain().SelectMany(m => m.Outputs);
+            Drawables = _indicators.TransformToList().Chain().Select(m => m.Drawables);
         }
 
 
@@ -37,6 +40,7 @@ namespace TickTrader.Algo.IndicatorHost
         {
             _downlink.Writer.TryComplete();
             Outputs.Dispose();
+            Drawables.Dispose();
             _indicators.Clear();
             await _parent.Ask(new IndicatorHostModel.RemoveChartCmd(Info.Id));
         }
@@ -65,7 +69,8 @@ namespace TickTrader.Algo.IndicatorHost
             {
                 case PluginModelUpdate pluginUpdate: OnPluginUpdate(pluginUpdate); break;
                 case PluginStateUpdate stateUpdate: OnPluginStateUpdate(stateUpdate); break;
-                case OutputDataUpdatedMsg updatedEvent: OnOutputDataUpdate(updatedEvent); break;
+                case OutputDataUpdatedMsg outputUpdate: OnOutputDataUpdate(outputUpdate); break;
+                case DrawableObjectUpdatedMsg drawableUpdate: OnDrawableObjectUpdate(drawableUpdate); break;
             }
         }
 
@@ -74,7 +79,7 @@ namespace TickTrader.Algo.IndicatorHost
             switch (update.Action)
             {
                 case Update.Types.Action.Added:
-                    var newModel = new PluginOutputModel();
+                    var newModel = new PluginOutputModel(update.Id);
                     newModel.Update(update.Plugin);
                     _indicators.Add(update.Id, newModel);
                     break;
@@ -105,6 +110,14 @@ namespace TickTrader.Algo.IndicatorHost
             model.OnOutputUpdate(msg.Update);
         }
 
+        private void OnDrawableObjectUpdate(DrawableObjectUpdatedMsg msg)
+        {
+            if (!_indicators.TryGetValue(msg.PluginId, out var model))
+                return;
+
+            model.OnDrawableUpdate(msg.Update);
+        }
+
 
         public record AddIndicatorRequest(PluginConfig Config);
 
@@ -119,5 +132,7 @@ namespace TickTrader.Algo.IndicatorHost
         internal record AttachDownlinkCmd(ChannelWriter<object> Sink);
 
         internal record OutputDataUpdatedMsg(string PluginId, OutputSeriesUpdate Update);
+
+        internal record DrawableObjectUpdatedMsg(string PluginId, DrawableObjectUpdate Update);
     }
 }

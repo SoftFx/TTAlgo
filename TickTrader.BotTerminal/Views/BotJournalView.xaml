@@ -62,19 +62,6 @@
                 CanUserDeleteRows="False" 
                 SelectionMode="Single">
 
-                <DataGrid.CellStyle>
-                    <Style TargetType="DataGridCell">
-                        <Style.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="LightBlue" />
-                                <Setter Property="Foreground" Value="Black" />
-                                <Setter Property="BorderBrush" Value="LightGray" />
-                                <Setter Property="BorderThickness" Value="1"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.CellStyle>
-
                 <DataGrid.Columns>
                     <DataGridTextColumn SortMemberPath="TimeKey" 
                                     Binding="{Binding TimeKey.Timestamp, Converter={StaticResource ExtDateTimeFormat}}"

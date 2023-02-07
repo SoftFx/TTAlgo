@@ -276,6 +276,12 @@ namespace TickTrader.BotTerminal
             OpenAlgoSetup((AlgoPluginViewModel)descriptorObj);
         }
 
+        public void OpenObjectList()
+        {
+            var wndKey = $"{ChartWindowId} Object List";
+            _shell.ToolWndManager.OpenOrActivateWindow(wndKey, () => new ObjectListViewModel(_chartHost));
+        }
+
         private void OpenAlgoSetup(AlgoPluginViewModel item)
         {
             try

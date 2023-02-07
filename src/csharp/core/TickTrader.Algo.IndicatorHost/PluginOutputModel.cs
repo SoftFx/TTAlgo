@@ -13,17 +13,26 @@ namespace TickTrader.Algo.IndicatorHost
 
         public PluginModelInfo Info { get; private set; }
 
-        public string Id => Info.InstanceId;
+        public string Id { get; }
 
         public PluginModelInfo.Types.PluginState State => Info.State;
 
         public IVarList<OutputSeriesProxy> Outputs => _outputs;
 
+        public DrawableCollectionProxy Drawables { get; }
+
+
+        public PluginOutputModel(string pluginId)
+        {
+            Id = pluginId;
+            Drawables = new DrawableCollectionProxy(pluginId);
+        }
+
 
         internal void Update(PluginModelInfo info)
         {
-            //if (Id != info.InstanceId)
-            //    return;
+            if (Id != info.InstanceId)
+                return;
 
             var oldInfo = Info;
             Info = info;
@@ -62,6 +71,11 @@ namespace TickTrader.Algo.IndicatorHost
                 return;
 
             _outputs[index].AddUpdate(update);
+        }
+
+        internal void OnDrawableUpdate(DrawableObjectUpdate update)
+        {
+            Drawables.AddUpdate(update);
         }
     }
 }
