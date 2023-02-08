@@ -1,7 +1,9 @@
 ﻿using Machinarium.Var;
 using System.Collections.ObjectModel;
+using System.Security.Principal;
 using System.Windows;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Tools.MetadataBuilder;
 
 namespace TickTrader.BotTerminal.Views.BotsRepository
 {
@@ -18,6 +20,14 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         public StrProperty Description { get; }
 
         public StrProperty Category { get; }
+
+        public StrProperty Copyright { get; }
+
+        public StrProperty Source { get; }
+
+        public StrProperty Author { get; }
+
+        public StrProperty BuildData { get; }
 
         public StrProperty Version { get; }
 
@@ -38,14 +48,13 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         public Visibility IsRemote => _isLocal ? Visibility.Collapsed : Visibility.Visible;
 
 
-        public BotInfoViewModel(string name, bool isLocal = false)
+        private BotInfoViewModel()
         {
-            _isLocal = isLocal;
-
-            Name = name;
-
             Description = _context.AddStrProperty();
             Category = _context.AddStrProperty();
+            Copyright = _context.AddStrProperty();
+            Source = _context.AddStrProperty();
+            Author = _context.AddStrProperty();
 
             Version = _context.AddStrProperty();
             ApiVersion = _context.AddStrProperty();
@@ -57,8 +66,27 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             IsSelected = _context.AddBoolProperty();
         }
 
+        public BotInfoViewModel(string name) : this()
+        {
+            _isLocal = true;
 
-        public void ApplyPackage(PluginInfo plugin, PackageIdentity identity = null)
+            Name = name;
+        }
+
+        public BotInfoViewModel(PluginsInfo remotePlugin) : this()
+        {
+            _isLocal = false;
+
+            Name = remotePlugin.DisplayName;
+
+            Version.Value = remotePlugin.Version;
+            Copyright.Value = remotePlugin.Copyright;
+            Description.Value = remotePlugin.Description;
+            Category.Value = remotePlugin.Category;
+        }
+
+
+        public BotInfoViewModel ApplyPackage(PluginInfo plugin, PackageIdentity identity = null)
         {
             var descriptor = plugin.Descriptor_;
 
@@ -76,9 +104,21 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                 ApiVersion.Value = descriptor.ApiVersionStr;
                 Description.Value = descriptor.Description;
                 Category.Value = descriptor.Category;
-
-                //PackageSize.Value = $"{identity?.Size / 1024} KB";
             }
+            
+            return this;
+        }
+
+        public BotInfoViewModel ApplyPackage(MetadataInfo info)
+        {
+            Source.Value = info.Source;
+            Author.Value = info.Author;
+
+            ApiVersion.Value = info.ApiVersion;
+            BuildData.Value = info.BuildDate;
+            PackageSize.Value = $"{info.PackageSize / 1024} KB";
+
+            return this;
         }
 
         public void SetRemoteBot(BotInfoViewModel remoteBot)

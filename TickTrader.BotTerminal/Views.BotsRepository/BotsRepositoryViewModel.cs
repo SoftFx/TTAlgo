@@ -102,7 +102,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                 {
                     var botName = plugin.Descriptor_.DisplayName;
 
-                    botInfo = new(botName, isLocal: true);
+                    botInfo = new(botName);
 
                     _hasSelectedBots |= botInfo.IsSelected.Var;
                     _botsInfo.Add(botName, botInfo);
