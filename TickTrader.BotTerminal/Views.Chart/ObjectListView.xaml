@@ -41,8 +41,8 @@
                       AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False">
 
                 <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding PluginId}" Header="Instance Id" Width="Auto" />
-                    <DataGridTextColumn Binding="{Binding Name}" Header="Object Name" Width="*" />
+                    <DataGridTextColumn Binding="{Binding PluginId, Mode=OneWay}" Header="Instance Id" Width="Auto" />
+                    <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}" Header="Object Name" Width="*" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

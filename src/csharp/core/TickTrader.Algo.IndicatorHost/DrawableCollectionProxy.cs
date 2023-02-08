@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.IndicatorHost
@@ -25,6 +26,9 @@ namespace TickTrader.Algo.IndicatorHost
         {
             lock (_syncObj)
             {
+                if (_pendingUpdates.Count == 0)
+                    return Enumerable.Empty<DrawableObjectUpdate>();
+
                 var res = _pendingUpdates;
                 _pendingUpdates = new List<DrawableObjectUpdate>(DefaultUpdateCount);
                 return res;

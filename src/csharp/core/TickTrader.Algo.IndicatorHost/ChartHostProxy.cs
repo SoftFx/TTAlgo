@@ -32,7 +32,7 @@ namespace TickTrader.Algo.IndicatorHost
             _downlink = DefaultChannelFactory.CreateForOneToOne<object>();
 
             Outputs = _indicators.TransformToList().Chain().SelectMany(m => m.Outputs);
-            Drawables = _indicators.TransformToList().Chain().Select(m => m.Drawables);
+            Drawables = _indicators.TransformToList((k, v) => v.Drawables);
         }
 
 
