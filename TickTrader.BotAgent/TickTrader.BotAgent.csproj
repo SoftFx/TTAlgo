@@ -74,11 +74,11 @@
   </ItemGroup>
 
   <Target Name="NpmInstall" BeforeTargets="PreComputeCompileTypeScriptWithTSConfig">
-    <Exec Command="npm install" />
+    <Exec Command="npm install --legacy-peer-deps" />
   </Target>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
-    <Exec Command="npm install" />
+    <Exec Command="npm install --legacy-peer-deps" />
     <Exec Command="npm run build_prod" />
   </Target>
 
