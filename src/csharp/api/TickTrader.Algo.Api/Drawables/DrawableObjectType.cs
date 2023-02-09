@@ -2,7 +2,7 @@
 {
     public enum DrawableObjectType
     {
-        Unknown = 0,
+        //Unknown = 0,
         VerticalLine = 1,
         HorizontalLine = 2,
         TrendLine = 3,

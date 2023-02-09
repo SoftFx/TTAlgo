@@ -10,7 +10,7 @@ namespace TickTrader.Algo.CoreV1
         {
             switch (type)
             {
-                case DrawableObjectType.Unknown: return Drawable.Types.ObjectType.UnknownObjectType;
+                //case DrawableObjectType.Unknown: return Drawable.Types.ObjectType.UnknownObjectType;
                 case DrawableObjectType.VerticalLine:return Drawable.Types.ObjectType.VerticalLine;
                 case DrawableObjectType.HorizontalLine: return Drawable.Types.ObjectType.VerticalLine;
                 case DrawableObjectType.TrendLine: return Drawable.Types.ObjectType.VerticalLine;
