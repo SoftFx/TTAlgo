@@ -10,16 +10,13 @@ namespace TickTrader.BotTerminal
 {
     public class WindowManager
     {
-        private static Caliburn.Micro.WindowManager staticManager = new Caliburn.Micro.WindowManager();
-
-        private CaliburnAdapter _adapter;
-        IViewAware _containerModel;
-        private Dictionary<object, IScreen> _wndModels = new Dictionary<object, IScreen>();
+        private readonly Dictionary<object, IScreen> _wndModels = new();
+        private readonly CaliburnAdapter _adapter = new();
+        private readonly IViewAware _containerModel;
 
         public WindowManager(IViewAware root)
         {
             _containerModel = root;
-            _adapter = new CaliburnAdapter();
         }
 
         public async void OpenWindow(IScreen wndModel)
@@ -34,11 +31,6 @@ namespace TickTrader.BotTerminal
             var window = await _adapter.GetOrCreateMdiWindow(wndModel, MdiSetup);
             window.Show();
         }
-
-        //public static void OpenWindow(IScreen wndModel, IViewAware parent)
-        //{
-        //    staticManager.ShowWindow(wndModel);
-        //}
 
         public static void ShowError(string message, IViewAware contextModel = null, string caption = null)
         {
@@ -126,8 +118,7 @@ namespace TickTrader.BotTerminal
 
         private class CaliburnAdapter : Caliburn.Micro.WindowManager
         {
-            //private IViewAware _containerModel;
-            private Dictionary<object, Window> _windows = new Dictionary<object, Window>();
+            private readonly Dictionary<object, Window> _windows = new();
 
             public CaliburnAdapter()
             {
@@ -170,11 +161,6 @@ namespace TickTrader.BotTerminal
                 var window = await base.CreateWindowAsync(rootModel, false, null, null);
                 return window;
             }
-
-            //protected override Window CreateWindow(object rootModel, bool isDialog, object context, IDictionary<string, object> settings)
-            //{
-            //    return base.CreateWindow(rootModel, isDialog, context, settings);
-            //}
         }
     }
 }
