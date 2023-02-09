@@ -3,7 +3,7 @@ using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ObjectListViewModel : Screen
+    internal class ObjectListViewModel : Screen, IWindowModel
     {
         private readonly DrawableObjectObserver _objectObserver;
 

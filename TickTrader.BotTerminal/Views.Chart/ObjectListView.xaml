@@ -14,46 +14,53 @@
     </Style>
 
     <ControlTemplate x:Key="ObjectListView.Template">
-        <Grid Margin="10" Background="{TemplateBinding Background}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="3*" />
-            </Grid.ColumnDefinitions>
+        <Grid Background="{TemplateBinding Background}">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="3*" />
+                </Grid.ColumnDefinitions>
 
-            <ScrollViewer Grid.Row="1" Grid.Column="2"
-                          HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <Border BorderThickness="1" BorderBrush="{DynamicResource Shell_SecondaryForeground}">
-                    <TextBox Text="{Binding SelectedObject.JsonText, Mode=OneWay}"
-                             Style="{StaticResource JsonTextBoxStyle}" />
-                </Border>
-            </ScrollViewer>
+                <ScrollViewer Grid.Row="1" Grid.Column="2"
+                              HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <Border BorderThickness="1" BorderBrush="{DynamicResource Shell_SecondaryForeground}">
+                        <TextBox Text="{Binding SelectedObject.JsonText, Mode=OneWay}"
+                                 Style="{StaticResource JsonTextBoxStyle}" />
+                    </Border>
+                </ScrollViewer>
 
-            <DataGrid Name="DrawableObjects" Grid.Row="1" Grid.Column="0"
-                      Style="{DynamicResource DataGrid_Style}"
-                      ItemsSource="{Binding DrawableObjects}"
-                      SelectedItem="{Binding SelectedObject, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      SelectionMode="Single" EnableRowVirtualization="True"
-                      AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False">
+                <DataGrid Name="DrawableObjects" Grid.Row="1" Grid.Column="0"
+                          Style="{DynamicResource DataGrid_Style}"
+                          ItemsSource="{Binding DrawableObjects}"
+                          SelectedItem="{Binding SelectedObject, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          SelectionMode="Single" EnableRowVirtualization="True"
+                          AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False">
 
-                <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding PluginId, Mode=OneWay}" Header="Instance Id" Width="Auto" />
-                    <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}" Header="Object Name" Width="*" />
-                </DataGrid.Columns>
-            </DataGrid>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding PluginId, Mode=OneWay}" Header="Instance Id" Width="Auto" />
+                        <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}" Header="Object Name" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
         </Grid>
     </ControlTemplate>
 
-    <Style x:Key="ObjectListViewStyle" TargetType="UserControl">
+    <Style x:Key="ObjectListViewStyle" TargetType="Window">
         <Setter Property="Template" Value="{StaticResource ObjectListView.Template}" />
+        <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
+        <Setter Property="WindowStyle" Value="ToolWindow" />
+        <Setter Property="ResizeMode" Value="CanResize" />
         <Setter Property="Width" Value="700"/>
         <Setter Property="Height" Value="500"/>
+        <Setter Property="MinWidth" Value="400"/>
+        <Setter Property="MinHeight" Value="250"/>
     </Style>
 
-    <Style x:Key="ObjectListViewStyle.Classic" TargetType="UserControl" BasedOn="{StaticResource ObjectListViewStyle}" />
+    <Style x:Key="ObjectListViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource ObjectListViewStyle}" />
 
 </ResourceDictionary>
