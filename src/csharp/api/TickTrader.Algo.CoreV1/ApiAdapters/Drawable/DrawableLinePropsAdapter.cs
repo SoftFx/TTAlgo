@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableLinePropsAdapter : IDrawableLineProps
+    internal class DrawableLinePropsAdapter : DrawablePropsChangedBase, IDrawableLineProps
     {
         private readonly DrawableLinePropsInfo _info;
 
@@ -15,7 +15,11 @@ namespace TickTrader.Algo.CoreV1
         public int Thickness
         {
             get => _info.Thickness;
-            set => _info.Thickness = value;
+            set
+            {
+                _info.Thickness = value;
+                OnChanged();
+            }
         }
 
         public LineStyles Style { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
@@ -23,23 +27,35 @@ namespace TickTrader.Algo.CoreV1
         public bool RayLeft
         {
             get => _info.RayLeft;
-            set => _info.RayLeft = value;
+            set
+            {
+                _info.RayLeft = value;
+                OnChanged();
+            }
         }
 
         public bool RayRight
         {
             get => _info.RayRight;
-            set => _info.RayRight = value;
+            set
+            {
+                _info.RayRight = value;
+                OnChanged();
+            }
         }
 
         public bool RayVertical
         {
             get => _info.RayVertical;
-            set => _info.RayVertical = value;
+            set
+            {
+                _info.RayVertical = value;
+                OnChanged();
+            }
         }
 
 
-        public DrawableLinePropsAdapter(DrawableLinePropsInfo info)
+        public DrawableLinePropsAdapter(DrawableLinePropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
             _info = info;
         }

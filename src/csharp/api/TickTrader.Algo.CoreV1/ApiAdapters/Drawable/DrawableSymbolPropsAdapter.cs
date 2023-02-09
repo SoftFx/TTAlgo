@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableSymbolPropsAdapter : IDrawableSymbolProps
+    internal class DrawableSymbolPropsAdapter : DrawablePropsChangedBase, IDrawableSymbolProps
     {
         private readonly DrawableSymbolPropsInfo _info;
 
@@ -13,13 +13,21 @@ namespace TickTrader.Algo.CoreV1
         public ushort Code
         {
             get => (ushort)_info.Code;
-            set => _info.Code = value;
+            set
+            {
+                _info.Code = value;
+                OnChanged();
+            }
         }
 
         public int Size
         {
             get => _info.Size;
-            set => _info.Size = value;
+            set
+            {
+                _info.Size = value;
+                OnChanged();
+            }
         }
 
         public Colors Color { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
@@ -27,13 +35,17 @@ namespace TickTrader.Algo.CoreV1
         public string FontFamily
         {
             get => _info.FontFamily;
-            set => _info.FontFamily = value;
+            set
+            {
+                _info.FontFamily = value;
+                OnChanged();
+            }
         }
 
         public DrawableSymbolAnchor Anchor { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
 
 
-        public DrawableSymbolPropsAdapter(DrawableSymbolPropsInfo info)
+        public DrawableSymbolPropsAdapter(DrawableSymbolPropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
             _info = info;
         }

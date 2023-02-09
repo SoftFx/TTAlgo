@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableShapePropsAdapter : IDrawableShapeProps
+    internal class DrawableShapePropsAdapter : DrawablePropsChangedBase, IDrawableShapeProps
     {
         private readonly DrawableShapePropsInfo _info;
 
@@ -15,7 +15,11 @@ namespace TickTrader.Algo.CoreV1
         public int BorderThickness
         {
             get => _info.BorderThickness;
-            set => _info.BorderThickness = value;
+            set
+            {
+                _info.BorderThickness = value;
+                OnChanged();
+            }
         }
 
         public LineStyles BorderStyle { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
@@ -23,13 +27,17 @@ namespace TickTrader.Algo.CoreV1
         public bool Fill
         {
             get => _info.Fill;
-            set => _info.Fill = value;
+            set
+            {
+                _info.Fill = value;
+                OnChanged();
+            }
         }
 
         public Colors FillColor { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
 
 
-        public DrawableShapePropsAdapter(DrawableShapePropsInfo info)
+        public DrawableShapePropsAdapter(DrawableShapePropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
             _info = info;
         }

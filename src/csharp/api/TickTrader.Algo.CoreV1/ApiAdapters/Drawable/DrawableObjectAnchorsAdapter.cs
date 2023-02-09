@@ -4,7 +4,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableObjectAnchorsAdapter : IDrawableObjectAnchors
+    internal class DrawableObjectAnchorsAdapter : DrawablePropsChangedBase, IDrawableObjectAnchors
     {
         private readonly DrawableObjectAnchorsInfo _info;
 
@@ -14,7 +14,7 @@ namespace TickTrader.Algo.CoreV1
         public int Count => _info.Price.Count;
 
 
-        public DrawableObjectAnchorsAdapter(DrawableObjectAnchorsInfo info)
+        public DrawableObjectAnchorsAdapter(DrawableObjectAnchorsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
             _info = info;
         }
@@ -24,8 +24,16 @@ namespace TickTrader.Algo.CoreV1
 
         public DateTime GetTime(int index) => _info.GetTime(index).ToUtcDateTime();
 
-        public void SetPrice(int index, double price) => _info.Price[index] = price;
+        public void SetPrice(int index, double price)
+        {
+            _info.Price[index] = price;
+            OnChanged();
+        }
 
-        public void SetTime(int index, DateTime time) => _info.SetTime(index, new UtcTicks(time));
+        public void SetTime(int index, DateTime time)
+        {
+            _info.SetTime(index, new UtcTicks(time));
+            OnChanged();
+        }
     }
 }

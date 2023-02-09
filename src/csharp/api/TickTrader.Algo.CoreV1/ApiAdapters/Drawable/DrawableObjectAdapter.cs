@@ -4,12 +4,16 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableObjectAdapter : IDrawableObject
+    internal interface IDrawableChangedWatcher
+    {
+        void OnChanged();
+    }
+
+
+    internal class DrawableObjectAdapter : IDrawableObject, IDrawableChangedWatcher
     {
         private readonly DrawableObjectInfo _info;
         private readonly IDrawableUpdateSink _updateSink;
-
-        private bool _isChanged;
 
 
         public string Name => _info.Name;
@@ -23,31 +27,51 @@ namespace TickTrader.Algo.CoreV1
         public bool IsBackground
         {
             get => _info.IsBackground;
-            set => _info.IsBackground = value;
+            set
+            {
+                _info.IsBackground = value;
+                OnChanged();
+            }
         }
 
         public bool IsHidden
         {
             get => _info.IsHidden;
-            set => _info.IsHidden = value;
+            set
+            {
+                _info.IsHidden = value;
+                OnChanged();
+            }
         }
 
         public bool IsSelectable
         {
             get => _info.IsSelectable;
-            set => _info.IsSelectable = value;
+            set
+            {
+                _info.IsSelectable = value;
+                OnChanged();
+            }
         }
 
         public long ZIndex
         {
             get => _info.ZIndex;
-            set => _info.ZIndex = value;
+            set
+            {
+                _info.ZIndex = value;
+                OnChanged();
+            }
         }
 
         public string Tooltip
         {
             get => _info.Tooltip;
-            set => _info.Tooltip = value;
+            set
+            {
+                _info.Tooltip = value;
+                OnChanged();
+            }
         }
 
         public IDrawableLineProps Line { get; }
@@ -69,6 +93,8 @@ namespace TickTrader.Algo.CoreV1
 
         internal bool IsNew { get; private set; }
 
+        internal bool IsChanged { get; private set; }
+
 
         public DrawableObjectAdapter(DrawableObjectInfo info, DrawableObjectType type, IDrawableUpdateSink updateSink)
         {
@@ -77,10 +103,10 @@ namespace TickTrader.Algo.CoreV1
             _updateSink = updateSink;
             IsNew = true;
 
-            Line = new DrawableLinePropsAdapter(info.LineProps);
-            Shape = new DrawableShapePropsAdapter(info.ShapeProps);
-            Symbol = new DrawableSymbolPropsAdapter(info.SymbolProps);
-            Anchors = new DrawableObjectAnchorsAdapter(info.Anchors);
+            Line = new DrawableLinePropsAdapter(info.LineProps, this);
+            Shape = new DrawableShapePropsAdapter(info.ShapeProps, this);
+            Symbol = new DrawableSymbolPropsAdapter(info.SymbolProps, this);
+            Anchors = new DrawableObjectAnchorsAdapter(info.Anchors, this);
         }
 
 
@@ -89,7 +115,7 @@ namespace TickTrader.Algo.CoreV1
 
         internal void PushChangesInternal()
         {
-            if (!IsNew && !_isChanged)
+            if (!IsNew && !IsChanged)
                 return;
 
             var infoCopy = _info.Clone();
@@ -102,13 +128,18 @@ namespace TickTrader.Algo.CoreV1
             }
             else
             {
-                upd = DrawableObjectUpdate.Removed(Name);
+                upd = DrawableObjectUpdate.Updated(infoCopy);
             }
 
             IsNew = false;
-            _isChanged = false;
+            IsChanged = false;
 
             _updateSink.Send(upd);
         }
+
+
+        private void OnChanged() => IsChanged = true;
+
+        void IDrawableChangedWatcher.OnChanged() => OnChanged();
     }
 }
