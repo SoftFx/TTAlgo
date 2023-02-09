@@ -117,7 +117,7 @@
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="100" Binding="{Binding Symbol}"/>
                     <DataGridTextColumn Header="Time" Width="100" Binding="{Binding Created.Value, Converter={StaticResource FullDateTimeFormat}}" Visibility="{Binding Visibility, Source={StaticResource TimeShow}}"/>
-                    <DataGridTextColumn Header="Modified Time" Width="100" Binding="{Binding Modified.Value, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
+                    <DataGridTextColumn Header="Modified Time" Width="100" Binding="{Binding Modified.Value, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="SortedNumber"/>
                     <DataGridTextColumn Header="Type" Width="100" Binding="{Binding AggregatedType.Value, Converter={StaticResource PascalSplitString}}"/>
 
                     <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="100">

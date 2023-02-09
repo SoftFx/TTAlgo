@@ -29,7 +29,7 @@
 
                 <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="100" Binding="{Binding Symbol}"/>
 
-                <DataGridTextColumn Header="{l:Resx Position_ModifiedTime}" Width="100" Binding="{Binding Modified.Value, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
+                <DataGridTextColumn Header="{l:Resx Position_ModifiedTime}" Width="100" Binding="{Binding Modified.Value, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="SortedNumber"/>
 
                 <DataGridTextColumn Header="{l:Resx Position_Side}" Width="100" Binding="{Binding Side.Value}"/>
 
