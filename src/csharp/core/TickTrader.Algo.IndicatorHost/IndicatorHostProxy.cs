@@ -113,6 +113,8 @@ namespace TickTrader.Algo.IndicatorHost
             public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath) => AlgoHostModel.UploadPackage(_parent._algoHost, request, pkgFilePath);
 
             public Task RemovePackage(RemovePackageRequest request) => AlgoHostModel.RemovePackage(_parent._algoHost, request);
+
+            public Task<MappingCollectionInfo> GetMappings() => AlgoHostModel.GetMappings(_parent._algoHost);
         }
 
     }

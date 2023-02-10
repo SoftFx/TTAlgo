@@ -25,6 +25,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.GC.NoAffinitize" Value="true" />
+    <RuntimeHostConfigurationOption Include="System.GC.HeapCount" Value="4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="algoStudioLogo64.ico" />
     <None Remove="bot-agent.pfx" />
     <None Remove="Properties\PublishProfiles\local.pubxml" />
@@ -69,11 +74,11 @@
   </ItemGroup>
 
   <Target Name="NpmInstall" BeforeTargets="PreComputeCompileTypeScriptWithTSConfig">
-    <Exec Command="npm install" />
+    <Exec Command="npm install --legacy-peer-deps" />
   </Target>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
-    <Exec Command="npm install" />
+    <Exec Command="npm install --legacy-peer-deps" />
     <Exec Command="npm run build_prod" />
   </Target>
 

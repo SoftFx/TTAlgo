@@ -4,15 +4,27 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.IndicatorHost
 {
+    public interface IChartHostObserver
+    {
+        void OnUpdate(PluginModelUpdate update);
+
+        void OnStateUpdate(PluginStateUpdate update);
+
+        void OnOutputUpdate(string pluginId, OutputSeriesUpdate update);
+    }
+
+
     public class ChartHostProxy : IAsyncDisposable
     {
         private readonly IActorRef _actor, _parent;
         private readonly Channel<object> _downlink;
         private readonly VarDictionary<string, PluginOutputModel> _indicators = new();
+        private readonly SubList<IChartHostObserver> _eventObservers = new();
 
 
         public IChartInfo Info { get; }
@@ -39,11 +51,14 @@ namespace TickTrader.Algo.IndicatorHost
         public async ValueTask DisposeAsync()
         {
             _downlink.Writer.TryComplete();
+            _eventObservers.Clear();
             Outputs.Dispose();
             Drawables.Dispose();
             _indicators.Clear();
             await _parent.Ask(new IndicatorHostModel.RemoveChartCmd(Info.Id));
         }
+
+        public void AddObserver(IChartHostObserver observer) => _eventObservers.AddSub(observer);
 
         public Task AddIndicator(PluginConfig config) => _actor.Ask(new AddIndicatorRequest(config));
 
@@ -76,6 +91,8 @@ namespace TickTrader.Algo.IndicatorHost
 
         private void OnPluginUpdate(PluginModelUpdate update)
         {
+            _eventObservers.Dispatch(static (o, p) => o.OnUpdate(p), update);
+
             switch (update.Action)
             {
                 case Update.Types.Action.Added:
@@ -96,6 +113,8 @@ namespace TickTrader.Algo.IndicatorHost
 
         private void OnPluginStateUpdate(PluginStateUpdate update)
         {
+            _eventObservers.Dispatch(static (o, p) => o.OnStateUpdate(p), update);
+
             if (!_indicators.TryGetValue(update.Id, out var model))
                 return;
 
@@ -104,6 +123,8 @@ namespace TickTrader.Algo.IndicatorHost
 
         private void OnOutputDataUpdate(OutputDataUpdatedMsg msg)
         {
+            _eventObservers.Dispatch(static (o, p) => o.OnOutputUpdate(p.Item1, p.Item2), (msg.PluginId, msg.Update));
+
             if (!_indicators.TryGetValue(msg.PluginId, out var model))
                 return;
 
