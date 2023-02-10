@@ -16,6 +16,8 @@ namespace TickTrader.Algo.IndicatorHost
         void OnStateUpdate(PluginStateUpdate update);
 
         void OnOutputUpdate(string pluginId, OutputSeriesUpdate update);
+
+        void OnDrawableUpdate(string pluginId, DrawableObjectUpdate update);
     }
 
 
@@ -133,6 +135,8 @@ namespace TickTrader.Algo.IndicatorHost
 
         private void OnDrawableObjectUpdate(DrawableObjectUpdatedMsg msg)
         {
+            _eventObservers.Dispatch(static (o, p) => o.OnDrawableUpdate(p.Item1, p.Item2), (msg.PluginId, msg.Update));
+
             if (!_indicators.TryGetValue(msg.PluginId, out var model))
                 return;
 
