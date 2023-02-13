@@ -17,7 +17,7 @@ namespace TickTrader.Algo.IndicatorHost
 
         void OnOutputUpdate(string pluginId, OutputSeriesUpdate update);
 
-        void OnDrawableUpdate(string pluginId, DrawableObjectUpdate update);
+        void OnDrawableUpdate(string pluginId, DrawableCollectionUpdate update);
     }
 
 
@@ -158,6 +158,6 @@ namespace TickTrader.Algo.IndicatorHost
 
         internal record OutputDataUpdatedMsg(string PluginId, OutputSeriesUpdate Update);
 
-        internal record DrawableObjectUpdatedMsg(string PluginId, DrawableObjectUpdate Update);
+        internal record DrawableObjectUpdatedMsg(string PluginId, DrawableCollectionUpdate Update);
     }
 }

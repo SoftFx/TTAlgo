@@ -24,7 +24,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        private void OnObjectUpdate(DrawableObjectUpdate update)
+        private void OnObjectUpdate(DrawableCollectionUpdate update)
         {
             _context.SendNotification(update);
         }

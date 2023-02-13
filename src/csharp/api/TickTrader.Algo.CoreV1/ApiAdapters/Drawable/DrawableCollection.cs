@@ -58,7 +58,7 @@ namespace TickTrader.Algo.CoreV1
             }
 
             if (obj != null && !obj.IsNew)
-                _updateSink.Send(DrawableObjectUpdate.Removed(obj.Name));
+                _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
         }
 
         public void RemoveAt(int index)
@@ -72,7 +72,7 @@ namespace TickTrader.Algo.CoreV1
             }
 
             if (obj != null && !obj.IsNew)
-                _updateSink.Send(DrawableObjectUpdate.Removed(obj.Name));
+                _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
         }
 
         public void Clear()
@@ -87,7 +87,7 @@ namespace TickTrader.Algo.CoreV1
             foreach (var obj in oldObjects)
             {
                 if (!obj.IsNew)
-                    _updateSink.Send(DrawableObjectUpdate.Removed(obj.Name));
+                    _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
             }
             oldObjects.Clear();
         }
@@ -95,9 +95,12 @@ namespace TickTrader.Algo.CoreV1
 
         internal void FlushAll()
         {
-            foreach (var obj in _objects)
+            lock (_syncObj)
             {
-                obj.PushChangesInternal();
+                foreach (var obj in _objects)
+                {
+                    obj.PushChangesInternal();
+                }
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿using Machinarium.Qnil;
+﻿using Caliburn.Micro;
+using Machinarium.Qnil;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
@@ -8,9 +10,7 @@ namespace TickTrader.BotTerminal
 {
     internal class DrawableObjectObserver
     {
-        private readonly VarDictionary<(string, string), DrawableObjectViewModel> _drawables = new();
-
-        private readonly IVarList<DrawableCollectionProxy> _drawableCollections;
+        private readonly VarDictionary<string, DrawableCollectionViewModel> _collections = new();
 
         private bool _disposed;
 
@@ -24,11 +24,8 @@ namespace TickTrader.BotTerminal
         {
             ChartHost = chartHost;
 
-            DrawableObjects = _drawables.TransformToList().AsObservable();
-
-            // Sync collection updates on GUI thread
-            _drawableCollections = chartHost.Drawables.UseSyncContext().ToList();
-            _drawableCollections.Updated += DrawableCollectionsUpdated;
+            ChartHost.Drawables.Updated += DrawableCollectionsUpdated;
+            DrawableObjects = _collections.TransformToList().Chain().SelectMany(c => c.Objects).Chain().AsObservable();
 
             _ = UpdateLoop();
         }
@@ -38,9 +35,8 @@ namespace TickTrader.BotTerminal
         {
             _disposed = true;
 
+            ChartHost.Drawables.Updated -= DrawableCollectionsUpdated;
             DrawableObjects.Dispose();
-            _drawableCollections.Updated -= DrawableCollectionsUpdated;
-            _drawableCollections.Dispose();
         }
 
         private async Task UpdateLoop()
@@ -54,39 +50,90 @@ namespace TickTrader.BotTerminal
 
         private void UpdateDrawables()
         {
-            foreach (var collection in _drawableCollections.Snapshot)
+            foreach (var collection in _collections.Snapshot.Values)
             {
-                var pluginId = collection.PluginId;
-                var updates = collection.TakePendingUpdates();
-                foreach (var update in updates)
-                {
-                    var key = (pluginId, update.Name);
-                    switch (update.Action)
-                    {
-                        case Update.Types.Action.Added:
-                        case Update.Types.Action.Updated:
-                            if (_drawables.TryGetValue(key, out var objectVM))
-                                objectVM.Update(update.Info);
-                            else
-                                _drawables[key] = new DrawableObjectViewModel(pluginId, update.Info);
-                            break;
-                        case Update.Types.Action.Removed:
-                            _drawables.Remove(key);
-                            break;
-                    }
-                }
+                collection.ApplyUpdates();
             }
         }
 
         private void DrawableCollectionsUpdated(ListUpdateArgs<DrawableCollectionProxy> args)
         {
-            if (args.Action == DLinqAction.Remove)
+            if (args.Action == DLinqAction.Insert || args.Action == DLinqAction.Remove)
+                Execute.OnUIThread(() => UpdateCollections(args));
+        }
+
+        private void UpdateCollections(ListUpdateArgs<DrawableCollectionProxy> args)
+        {
+            if (args.Action == DLinqAction.Insert)
+            {
+                var proxy = args.NewItem;
+
+                var collectionVM = new DrawableCollectionViewModel(proxy);
+                _collections.Add(proxy.PluginId, collectionVM);
+            }
+            else if (args.Action == DLinqAction.Remove)
             {
                 var pluginId = args.OldItem.PluginId;
 
-                var toDeleteKeys = _drawables.Snapshot.Where(p => p.Key.Item1 == pluginId).Select(p => p.Key).ToArray();
-                foreach (var key in toDeleteKeys)
-                    _drawables.Remove(key);
+                if (_collections.TryGetValue(pluginId, out var collectionVM))
+                {
+                    _collections.Remove(pluginId);
+                    collectionVM.Dispose();
+                }
+            }
+        }
+
+
+        private class DrawableCollectionViewModel : IDisposable
+        {
+            private readonly VarDictionary<string, DrawableObjectViewModel> _objects = new();
+
+
+            public DrawableCollectionProxy Proxy { get; }
+
+            public IVarList<DrawableObjectViewModel> Objects { get; }
+
+
+            public DrawableCollectionViewModel(DrawableCollectionProxy proxy)
+            {
+                Proxy = proxy;
+
+                Objects = _objects.TransformToList();
+            }
+
+
+            public void Dispose()
+            {
+                Objects.Dispose();
+            }
+
+
+            public void ApplyUpdates()
+            {
+                var pluginId = Proxy.PluginId;
+                var updates = Proxy.TakePendingUpdates();
+
+                foreach (var update in updates)
+                {
+                    var key = update.ObjName;
+
+                    switch (update.Action)
+                    {
+                        case CollectionUpdate.Types.Action.Added:
+                        case CollectionUpdate.Types.Action.Updated:
+                            if (_objects.TryGetValue(key, out var objectVM))
+                                objectVM.Update(update.ObjInfo);
+                            else
+                                _objects[key] = new DrawableObjectViewModel(pluginId, update.ObjInfo);
+                            break;
+                        case CollectionUpdate.Types.Action.Removed:
+                            _objects.Remove(key);
+                            break;
+                        case CollectionUpdate.Types.Action.Cleared:
+                            _objects.Clear();
+                            break;
+                    }
+                }
             }
         }
     }

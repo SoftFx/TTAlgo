@@ -127,7 +127,7 @@ namespace TickTrader.Algo.CoreV1
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
-        public Action<DrawableObjectUpdate> DrawablesUpdated { get => _drawableApi.Updated; set => _drawableApi.Updated = value; }
+        public Action<DrawableCollectionUpdate> DrawablesUpdated { get => _drawableApi.Updated; set => _drawableApi.Updated = value; }
 
         public IReadOnlyDictionary<object, IDataBuffer> DataBuffers { get { return inputBuffers; } }
 

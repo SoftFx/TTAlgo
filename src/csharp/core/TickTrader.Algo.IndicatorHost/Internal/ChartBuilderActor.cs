@@ -326,7 +326,7 @@ namespace TickTrader.Algo.IndicatorHost
 
             public Channel<PluginLogRecord> LogChannel { get; }
 
-            public Channel<DrawableObjectUpdate> DrawableChannel { get; }
+            public Channel<DrawableCollectionUpdate> DrawableChannel { get; }
 
 
             public IndicatorModel(IActorRef plugin)
@@ -335,7 +335,7 @@ namespace TickTrader.Algo.IndicatorHost
 
                 OutputChannel = DefaultChannelFactory.CreateForOneToOne<OutputSeriesUpdate>();
                 LogChannel = DefaultChannelFactory.CreateForOneToOne<PluginLogRecord>();
-                DrawableChannel = DefaultChannelFactory.CreateForOneToOne<DrawableObjectUpdate>();
+                DrawableChannel = DefaultChannelFactory.CreateForOneToOne<DrawableCollectionUpdate>();
             }
 
 

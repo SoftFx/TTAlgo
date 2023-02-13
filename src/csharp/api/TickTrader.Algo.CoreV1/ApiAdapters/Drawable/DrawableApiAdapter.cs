@@ -6,7 +6,7 @@ namespace TickTrader.Algo.CoreV1
 {
     internal interface IDrawableUpdateSink
     {
-        void Send(DrawableObjectUpdate upd);
+        void Send(DrawableCollectionUpdate upd);
     }
 
 
@@ -17,7 +17,7 @@ namespace TickTrader.Algo.CoreV1
 
         public IDrawableCollection LocalCollection => _collection;
 
-        public Action<DrawableObjectUpdate> Updated { get; set; }
+        public Action<DrawableCollectionUpdate> Updated { get; set; }
 
 
         public DrawableApiAdapter()
@@ -26,7 +26,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        void IDrawableUpdateSink.Send(DrawableObjectUpdate upd) => Updated?.Invoke(upd);
+        void IDrawableUpdateSink.Send(DrawableCollectionUpdate upd) => Updated?.Invoke(upd);
 
 
         internal void FlushAll()

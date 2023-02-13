@@ -120,15 +120,15 @@ namespace TickTrader.Algo.CoreV1
 
             var infoCopy = _info.Clone();
 
-            DrawableObjectUpdate upd = default;
+            DrawableCollectionUpdate upd = default;
             if (IsNew)
             {
                 IsNew = false;
-                upd = DrawableObjectUpdate.Added(infoCopy);
+                upd = DrawableCollectionUpdate.Added(infoCopy);
             }
             else
             {
-                upd = DrawableObjectUpdate.Updated(infoCopy);
+                upd = DrawableCollectionUpdate.Updated(infoCopy);
             }
 
             IsNew = false;

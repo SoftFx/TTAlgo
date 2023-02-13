@@ -73,7 +73,7 @@ namespace TickTrader.Algo.IndicatorHost
             _outputs[index].AddUpdate(update);
         }
 
-        internal void OnDrawableUpdate(DrawableObjectUpdate update)
+        internal void OnDrawableUpdate(DrawableCollectionUpdate update)
         {
             Drawables.AddUpdate(update);
         }

@@ -77,8 +77,8 @@ message DrawableObjectAnchorsInfo {
     repeated double price = 2;
 }
 
-message DrawableObjectUpdate {
-    Update.Action action = 1;
-    google.protobuf.StringValue name = 2;
-    DrawableObjectInfo info = 3;
+message DrawableCollectionUpdate {
+    CollectionUpdate.Action action = 1;
+    google.protobuf.StringValue obj_name = 2;
+    DrawableObjectInfo obj_info = 3;
 }

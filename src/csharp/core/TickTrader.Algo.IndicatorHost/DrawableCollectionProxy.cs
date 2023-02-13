@@ -10,7 +10,7 @@ namespace TickTrader.Algo.IndicatorHost
 
         private readonly object _syncObj = new();
 
-        private List<DrawableObjectUpdate> _pendingUpdates = new(DefaultUpdateCount);
+        private List<DrawableCollectionUpdate> _pendingUpdates = new(DefaultUpdateCount);
 
 
         public string PluginId { get; }
@@ -22,20 +22,20 @@ namespace TickTrader.Algo.IndicatorHost
         }
 
 
-        public IEnumerable<DrawableObjectUpdate> TakePendingUpdates()
+        public IEnumerable<DrawableCollectionUpdate> TakePendingUpdates()
         {
             lock (_syncObj)
             {
                 if (_pendingUpdates.Count == 0)
-                    return Enumerable.Empty<DrawableObjectUpdate>();
+                    return Enumerable.Empty<DrawableCollectionUpdate>();
 
                 var res = _pendingUpdates;
-                _pendingUpdates = new List<DrawableObjectUpdate>(DefaultUpdateCount);
+                _pendingUpdates = new List<DrawableCollectionUpdate>(DefaultUpdateCount);
                 return res;
             }
         }
 
-        internal void AddUpdate(DrawableObjectUpdate update)
+        internal void AddUpdate(DrawableCollectionUpdate update)
         {
             lock (_syncObj)
             {
