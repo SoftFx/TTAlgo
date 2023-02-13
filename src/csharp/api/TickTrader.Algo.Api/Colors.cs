@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TickTrader.Algo.Api
+﻿namespace TickTrader.Algo.Api
 {
     public enum Colors
     {
-        Auto = -1,
+        // Initially there was only RGB added to API, alpha channel support was added later
+        // Alpha=0 is treated as 255 by API converter for backwards compatibility
+        // Therefore all values with alpha=255 are reserved for special cases
+
+        Auto = -1, // 0xffffffff
+        Transparent = -16777216, //0xff000000
+
         AliceBlue = 15792383,
         AntiqueWhite = 16444375,
         Aqua = 65535,
@@ -142,7 +142,6 @@ namespace TickTrader.Algo.Api
         Teal = 32896,
         Thistle = 14204888,
         Tomato = 16737095,
-        Transparent = 16777215,
         Turquoise = 4251856,
         Violet = 15631086,
         Wheat = 16113331,
