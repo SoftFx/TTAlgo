@@ -7,6 +7,7 @@ option csharp_namespace = "TickTrader.Algo.Domain";
 import "google/protobuf/wrappers.proto";
 
 import "common.proto";
+import "runtime.package.proto";
 
 
 message Drawable {
@@ -51,7 +52,7 @@ message DrawableObjectInfo {
 message DrawableLinePropsInfo {
     google.protobuf.UInt32Value color_argb = 1;
     int32 thickness = 2;
-    //linestyle style = 3;
+    Metadata.LineStyle style = 3;
     bool ray_left = 4;
     bool ray_right = 5;
     bool ray_vertical = 6;
@@ -60,7 +61,7 @@ message DrawableLinePropsInfo {
 message DrawableShapePropsInfo {
     google.protobuf.UInt32Value border_color_argb = 1;
     int32 border_thickness = 2;
-    //linestyle border_style = 3;
+    Metadata.LineStyle border_style = 3;
     bool fill = 4;
     google.protobuf.UInt32Value fill_color_argb = 5;
 }

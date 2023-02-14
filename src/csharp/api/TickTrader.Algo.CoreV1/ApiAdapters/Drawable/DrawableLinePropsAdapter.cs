@@ -30,7 +30,15 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public LineStyles Style { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+        public LineStyles Style
+        {
+            get => _info.Style.ToApiEnum();
+            set
+            {
+                _info.Style = value.ToDomainEnum();
+                OnChanged();
+            }
+        }
 
         public bool RayLeft
         {

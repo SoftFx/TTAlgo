@@ -30,7 +30,15 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public LineStyles BorderStyle { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+        public LineStyles BorderStyle
+        {
+            get => _info.BorderStyle.ToApiEnum();
+            set
+            {
+                _info.BorderStyle = value.ToDomainEnum();
+                OnChanged();
+            }
+        }
 
         public bool Fill
         {
