@@ -10,7 +10,15 @@ namespace TickTrader.Algo.CoreV1
 
         public bool IsSupported => _info != null;
 
-        public Colors BorderColor { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+        public Colors BorderColor
+        {
+            get => _info.BorderColorArgb.FromArgb();
+            set
+            {
+                _info.BorderColorArgb = value.ToArgb();
+                OnChanged();
+            }
+        }
 
         public int BorderThickness
         {
@@ -34,7 +42,15 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public Colors FillColor { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+        public Colors FillColor
+        {
+            get => _info.FillColorArgb.FromArgb();
+            set
+            {
+                _info.FillColorArgb = value.ToArgb();
+                OnChanged();
+            }
+        }
 
 
         public DrawableShapePropsAdapter(DrawableShapePropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)

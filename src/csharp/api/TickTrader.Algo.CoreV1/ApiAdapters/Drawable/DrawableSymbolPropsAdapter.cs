@@ -30,7 +30,15 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public Colors Color { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+        public Colors Color
+        {
+            get => _info.ColorArgb.FromArgb();
+            set
+            {
+                _info.ColorArgb = value.ToArgb();
+                OnChanged();
+            }
+        }
 
         public string FontFamily
         {
