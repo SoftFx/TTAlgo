@@ -6,6 +6,7 @@
         {
             Code = 241;
             Size = 14;
+            ColorArgb = 0xff008000;
             FontFamily = "Wingdings";
         }
     }
