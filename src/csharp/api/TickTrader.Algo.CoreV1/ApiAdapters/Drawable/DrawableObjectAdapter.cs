@@ -80,15 +80,15 @@ namespace TickTrader.Algo.CoreV1
 
         public IDrawableSymbolProps Symbol { get; }
 
-        public IDrawableTextProps Text => throw new NotImplementedException();
+        public IDrawableTextProps Text { get; }
 
         public IDrawableObjectAnchors Anchors { get; }
 
-        public IDrawableObjectLevels Levels => throw new NotImplementedException();
+        public IDrawableObjectLevels Levels { get; }
 
-        public IDrawableControlProps Control => throw new NotImplementedException();
+        public IDrawableControlProps Control { get; }
 
-        public IDrawableBitmapProps Bitmap => throw new NotImplementedException();
+        public IDrawableBitmapProps Bitmap { get; }
 
 
         internal bool IsNew { get; private set; }
@@ -106,7 +106,11 @@ namespace TickTrader.Algo.CoreV1
             Line = new DrawableLinePropsAdapter(info.LineProps, this);
             Shape = new DrawableShapePropsAdapter(info.ShapeProps, this);
             Symbol = new DrawableSymbolPropsAdapter(info.SymbolProps, this);
+            Text = new DrawableTextPropsAdapter(info.TextProps, this);
             Anchors = new DrawableObjectAnchorsAdapter(info.Anchors, this);
+            Levels = new DrawableObjectLevelsAdapter(info.Levels, this);
+            Control = new DrawableControlPropsAdapter(info.ControlProps, this);
+            Bitmap = new DrawableBitmapPropsAdapter(info.BitmapProps, this);
         }
 
 

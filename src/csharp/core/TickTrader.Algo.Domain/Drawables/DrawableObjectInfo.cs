@@ -46,18 +46,32 @@
                     SymbolProps = new DrawableSymbolPropsInfo();
                     break;
                 case Drawable.Types.ObjectType.Text:
+                    Anchors = new DrawableObjectAnchorsInfo(1);
+                    TextProps = new DrawableTextPropsInfo();
                     break;
                 case Drawable.Types.ObjectType.Bitmap:
+                    Anchors = new DrawableObjectAnchorsInfo(1);
+                    BitmapProps = new DrawableBitmapPropsInfo();
                     break;
                 case Drawable.Types.ObjectType.LabelControl:
+                    TextProps = new DrawableTextPropsInfo();
+                    ControlProps = new DrawableControlPropsInfo();
                     break;
                 case Drawable.Types.ObjectType.RectangleControl:
+                    ShapeProps = new DrawableShapePropsInfo();
+                    ControlProps = new DrawableControlPropsInfo();
                     break;
                 case Drawable.Types.ObjectType.EditControl:
+                    TextProps = new DrawableTextPropsInfo();
+                    ControlProps = new DrawableControlPropsInfo();
                     break;
                 case Drawable.Types.ObjectType.ButtonControl:
+                    TextProps = new DrawableTextPropsInfo();
+                    ControlProps = new DrawableControlPropsInfo();
                     break;
                 case Drawable.Types.ObjectType.BitmapControl:
+                    BitmapProps = new DrawableBitmapPropsInfo();
+                    ControlProps = new DrawableControlPropsInfo();
                     break;
                 default: throw new AlgoException("Unsupported object type");
             }
