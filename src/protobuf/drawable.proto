@@ -29,6 +29,20 @@ message Drawable {
         BUTTON_CONTROL = 103;
         BITMAP_CONTROL = 104;
     }
+
+    enum SymbolAnchor {
+        UNKNOWN_ANCHOR_TYPE = 0;
+        TOP = 1;
+        BOTTOM = 2;
+    }
+
+    enum ControlAnchor {
+        UNKNOWN_CONTROL_ANCHOR = 0;
+        UPPER_LEFT = 1;
+        UPPER_RIGHT = 2;
+        LOWER_LEFT = 3;
+        LOWER_RIGHT = 4;
+    }
 }
 
 message DrawableObjectInfo {
@@ -46,7 +60,11 @@ message DrawableObjectInfo {
     DrawableLinePropsInfo line_props = 100;
     DrawableShapePropsInfo shape_props = 101;
     DrawableSymbolPropsInfo symbol_props = 102;
-    DrawableObjectAnchorsInfo anchors = 103;
+    DrawableTextPropsInfo text_props = 103;
+    DrawableObjectAnchorsInfo anchors = 104;
+    DrawableObjectLevelsInfo levels = 105;
+    DrawableControlPropsInfo control_props = 106;
+    DrawableBitmapPropsInfo bitmap_props = 107;
 }
 
 message DrawableLinePropsInfo {
@@ -71,12 +89,44 @@ message DrawableSymbolPropsInfo {
     int32 size = 2;
     google.protobuf.UInt32Value color_argb = 3;
     google.protobuf.StringValue font_family = 4;
-    // SymbolAnchor anchor = 5;
+    Drawable.SymbolAnchor anchor = 5;
+}
+
+message DrawableTextPropsInfo {
+    google.protobuf.StringValue content = 1;
+    google.protobuf.UInt32Value color_argb = 2;
+    google.protobuf.StringValue font_family = 3;
+    int32 font_size = 4;
+    double angle = 5;
 }
 
 message DrawableObjectAnchorsInfo {
     repeated int64 time_raw = 1;
     repeated double price = 2;
+}
+
+message DrawableObjectLevelsInfo {
+    repeated double value = 1;
+    repeated int32 width = 2;
+    repeated google.protobuf.UInt32Value color_argb = 3;
+    repeated Metadata.LineStyle line_style = 4;
+    repeated google.protobuf.StringValue description = 5;
+}
+
+message DrawableControlPropsInfo {
+    int32 x = 1;
+    int32 y = 2;
+    int32 width = 3;
+    int32 height = 4;
+    Drawable.ControlAnchor anchor = 5;
+}
+
+message DrawableBitmapPropsInfo {
+    int32 offset_x = 1;
+    int32 offset_y = 2;
+    int32 width = 3;
+    int32 height = 4;
+    google.protobuf.StringValue file_path = 5;
 }
 
 message DrawableCollectionUpdate {

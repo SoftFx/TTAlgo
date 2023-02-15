@@ -35,7 +35,7 @@ namespace TickTrader.Algo.CoreV1
                 if (_byNameCache.ContainsKey(name))
                     throw new ArgumentException("Object name already exists", nameof(name));
 
-                var objInfo = new DrawableObjectInfo(name, type.ToDomain()) { OutputId = outputId };
+                var objInfo = new DrawableObjectInfo(name, type.ToDomainEnum()) { OutputId = outputId };
                 var obj = new DrawableObjectAdapter(objInfo, type, _updateSink);
 
                 _objects.Add(obj);

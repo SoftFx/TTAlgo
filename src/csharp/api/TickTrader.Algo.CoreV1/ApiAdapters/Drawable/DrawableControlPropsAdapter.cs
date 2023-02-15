@@ -3,54 +3,54 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableSymbolPropsAdapter : DrawablePropsChangedBase, IDrawableSymbolProps
+    internal class DrawableControlPropsAdapter : DrawablePropsChangedBase, IDrawableControlProps
     {
-        private readonly DrawableSymbolPropsInfo _info;
+        private readonly DrawableControlPropsInfo _info;
 
 
         public bool IsSupported => _info != null;
 
-        public ushort Code
+        public int X
         {
-            get => (ushort)_info.Code;
+            get => _info.X;
             set
             {
-                _info.Code = value;
+                _info.X = value;
                 OnChanged();
             }
         }
 
-        public int Size
+        public int Y
         {
-            get => _info.Size;
+            get => _info.Y;
             set
             {
-                _info.Size = value;
+                _info.Y = value;
                 OnChanged();
             }
         }
 
-        public Colors Color
+        public int Width
         {
-            get => _info.ColorArgb.FromArgb();
+            get => _info.Width;
             set
             {
-                _info.ColorArgb = value.ToArgb();
+                _info.Width = value;
                 OnChanged();
             }
         }
 
-        public string FontFamily
+        public int Height
         {
-            get => _info.FontFamily;
+            get => _info.Height;
             set
             {
-                _info.FontFamily = value;
+                _info.Height = value;
                 OnChanged();
             }
         }
 
-        public DrawableSymbolAnchor Anchor
+        public DrawableControlAnchor Anchor
         {
             get => _info.Anchor.ToApiEnum();
             set
@@ -61,7 +61,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        public DrawableSymbolPropsAdapter(DrawableSymbolPropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
+        public DrawableControlPropsAdapter(DrawableControlPropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
             _info = info;
         }

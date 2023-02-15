@@ -336,5 +336,71 @@ namespace TickTrader.Algo.CoreV1
                 default: throw new ArgumentException($"Unsupported output target {target}");
             }
         }
+
+        public static Domain.Drawable.Types.ObjectType ToDomainEnum(this DrawableObjectType type)
+        {
+            switch (type)
+            {
+                case DrawableObjectType.VerticalLine: return Domain.Drawable.Types.ObjectType.VerticalLine;
+                case DrawableObjectType.HorizontalLine: return Domain.Drawable.Types.ObjectType.HorizontalLine;
+                case DrawableObjectType.TrendLine: return Domain.Drawable.Types.ObjectType.TrendLine;
+                case DrawableObjectType.Rectangle: return Domain.Drawable.Types.ObjectType.Rectangle;
+                case DrawableObjectType.Triangle: return Domain.Drawable.Types.ObjectType.Triangle;
+                case DrawableObjectType.Ellipse: return Domain.Drawable.Types.ObjectType.Ellipse;
+                case DrawableObjectType.Symbol: return Domain.Drawable.Types.ObjectType.Symbol;
+                case DrawableObjectType.Text: return Domain.Drawable.Types.ObjectType.Text;
+                case DrawableObjectType.Bitmap: return Domain.Drawable.Types.ObjectType.Bitmap;
+                case DrawableObjectType.LabelControl: return Domain.Drawable.Types.ObjectType.LabelControl;
+                case DrawableObjectType.RectangleControl: return Domain.Drawable.Types.ObjectType.RectangleControl;
+                case DrawableObjectType.EditControl: return Domain.Drawable.Types.ObjectType.EditControl;
+                case DrawableObjectType.ButtonControl: return Domain.Drawable.Types.ObjectType.ButtonControl;
+                case DrawableObjectType.BitmapControl: return Domain.Drawable.Types.ObjectType.BitmapControl;
+                default: throw new ArgumentException("Unknown object type");
+            }
+        }
+
+        public static Domain.Drawable.Types.SymbolAnchor ToDomainEnum(this DrawableSymbolAnchor anchor)
+        {
+            switch (anchor)
+            {
+                case DrawableSymbolAnchor.Top: return Domain.Drawable.Types.SymbolAnchor.Top;
+                case DrawableSymbolAnchor.Bottom: return Domain.Drawable.Types.SymbolAnchor.Bottom;
+                default: throw new ArgumentException("Unknown symbol anchor");
+            }
+        }
+
+        public static DrawableSymbolAnchor ToApiEnum(this Domain.Drawable.Types.SymbolAnchor anchor)
+        {
+            switch (anchor)
+            {
+                case Domain.Drawable.Types.SymbolAnchor.Top: return DrawableSymbolAnchor.Top;
+                case Domain.Drawable.Types.SymbolAnchor.Bottom: return DrawableSymbolAnchor.Bottom;
+                default: throw new ArgumentException("Unknown symbol anchor");
+            }
+        }
+
+        public static Domain.Drawable.Types.ControlAnchor ToDomainEnum(this DrawableControlAnchor anchor)
+        {
+            switch (anchor)
+            {
+                case DrawableControlAnchor.UpperLeft: return Domain.Drawable.Types.ControlAnchor.UpperLeft;
+                case DrawableControlAnchor.UpperRight: return Domain.Drawable.Types.ControlAnchor.UpperRight;
+                case DrawableControlAnchor.LowerLeft: return Domain.Drawable.Types.ControlAnchor.LowerLeft;
+                case DrawableControlAnchor.LowerRight: return Domain.Drawable.Types.ControlAnchor.LowerRight;
+                default: throw new ArgumentException("Unknown control anchor");
+            }
+        }
+
+        public static DrawableControlAnchor ToApiEnum(this Domain.Drawable.Types.ControlAnchor anchor)
+        {
+            switch (anchor)
+            {
+                case Domain.Drawable.Types.ControlAnchor.UpperLeft: return DrawableControlAnchor.UpperLeft;
+                case Domain.Drawable.Types.ControlAnchor.UpperRight: return DrawableControlAnchor.UpperRight;
+                case Domain.Drawable.Types.ControlAnchor.LowerLeft: return DrawableControlAnchor.LowerLeft;
+                case Domain.Drawable.Types.ControlAnchor.LowerRight: return DrawableControlAnchor.LowerRight;
+                default: throw new ArgumentException("Unknown control anchor");
+            }
+        }
     }
 }

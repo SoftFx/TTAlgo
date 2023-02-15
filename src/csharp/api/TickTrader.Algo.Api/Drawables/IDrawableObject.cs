@@ -106,11 +106,11 @@ namespace TickTrader.Algo.Api
 
 
         double GetValue(int index);
-        double SetValue(int index, double value);
+        void SetValue(int index, double value);
         int GetWidth(int index);
         void SetWidth(int index, int width);
         Colors GetColor(int index);
-        void SetColor(Colors color);
+        void SetColor(int index, Colors color);
         LineStyles GetLineStyle(int index);
         void SetLineStyle(int index, LineStyles style);
         string GetDescription(int index);
@@ -120,14 +120,9 @@ namespace TickTrader.Algo.Api
     public enum DrawableControlAnchor
     {
         UpperLeft = 0,
-        CenterLeft = 1,
+        UpperRight = 1,
         LowerLeft = 2,
-        UpperCenter = 3,
-        Center = 4,
-        LowerCenter = 5,
-        UpperRight = 6,
-        CenterRight = 7,
-        LowerRight = 8,
+        LowerRight = 3,
     }
 
     public interface IDrawableControlProps
@@ -143,8 +138,10 @@ namespace TickTrader.Algo.Api
     public interface IDrawableBitmapProps
     {
         bool IsSupported { get; }
-        int OffsetX { get; }
-        int OffsetY { get; }
-        string FilePath { get; }
+        int OffsetX { get; set; }
+        int OffsetY { get; set; }
+        int Width { get; set; }
+        int Height { get; set; }
+        string FilePath { get; set; }
     }
 }
