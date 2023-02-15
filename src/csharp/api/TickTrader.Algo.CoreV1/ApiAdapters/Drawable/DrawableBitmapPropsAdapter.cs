@@ -3,11 +3,8 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableBitmapPropsAdapter : DrawablePropsChangedBase, IDrawableBitmapProps
+    internal class DrawableBitmapPropsAdapter : DrawablePropsChangedBase<DrawableBitmapPropsInfo>, IDrawableBitmapProps
     {
-        private readonly DrawableBitmapPropsInfo _info;
-
-
         public int OffsetX
         {
             get => _info.OffsetX;
@@ -59,10 +56,9 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        public DrawableBitmapPropsAdapter(DrawableBitmapPropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
+        public DrawableBitmapPropsAdapter(DrawableBitmapPropsInfo info, IDrawableChangedWatcher watcher)
+            : base(info, watcher)
         {
-            IsSupported = info != null;
-            _info = info ?? new DrawableBitmapPropsInfo();
         }
     }
 }

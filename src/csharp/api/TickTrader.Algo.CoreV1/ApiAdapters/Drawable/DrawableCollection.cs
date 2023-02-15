@@ -18,6 +18,8 @@ namespace TickTrader.Algo.CoreV1
 
         public IDrawableObject this[string name] => _byNameCache[name];
 
+        public IDrawableObject this[int index] => _objects[index];
+
 
         public DrawableCollection(IDrawableUpdateSink updateSink)
         {
@@ -28,12 +30,12 @@ namespace TickTrader.Algo.CoreV1
         public IDrawableObject Create(string name, DrawableObjectType type, string outputId = null)
         {
             if (string.IsNullOrEmpty(name))
-                throw new ArgumentException("Invalid object name", nameof(name));
+                throw new ArgumentException("Invalid object name");
 
             lock (_syncObj)
             {
                 if (_byNameCache.ContainsKey(name))
-                    throw new ArgumentException("Object name already exists", nameof(name));
+                    throw new ArgumentException("Object name already exists");
 
                 var objInfo = new DrawableObjectInfo(name, type.ToDomainEnum()) { OutputId = outputId };
                 var obj = new DrawableObjectAdapter(objInfo, type, _updateSink);
@@ -44,8 +46,6 @@ namespace TickTrader.Algo.CoreV1
                 return obj;
             }
         }
-
-        public IDrawableObject GetObjectByIndex(int index) => _objects[index];
 
         public void Remove(string name)
         {
@@ -77,19 +77,13 @@ namespace TickTrader.Algo.CoreV1
 
         public void Clear()
         {
-            var oldObjects = _objects;
             lock (_syncObj)
             {
-                _objects = new List<DrawableObjectAdapter>(16);
+                _objects.Clear();
                 _byNameCache.Clear();
             }
 
-            foreach (var obj in oldObjects)
-            {
-                if (!obj.IsNew)
-                    _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
-            }
-            oldObjects.Clear();
+            _updateSink.Send(DrawableCollectionUpdate.Cleared());
         }
 
 

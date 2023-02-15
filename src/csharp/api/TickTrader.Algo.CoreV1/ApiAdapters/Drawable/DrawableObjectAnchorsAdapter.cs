@@ -4,18 +4,13 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableObjectAnchorsAdapter : DrawablePropsChangedBase, IDrawableObjectAnchors
+    internal class DrawableObjectAnchorsAdapter : DrawablePropsChangedBase<DrawableObjectAnchorsInfo>, IDrawableObjectAnchors
     {
-        private readonly DrawableObjectAnchorsInfo _info;
-
-
         public int Count => _info.Price.Count;
 
 
-        public DrawableObjectAnchorsAdapter(DrawableObjectAnchorsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
+        public DrawableObjectAnchorsAdapter(DrawableObjectAnchorsInfo info, IDrawableChangedWatcher watcher) : base(info, watcher)
         {
-            IsSupported = info != null;
-            _info = info ?? new DrawableObjectAnchorsInfo(0);
         }
 
 

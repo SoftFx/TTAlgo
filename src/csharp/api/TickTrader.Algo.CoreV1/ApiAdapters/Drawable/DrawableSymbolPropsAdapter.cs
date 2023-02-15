@@ -3,11 +3,8 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableSymbolPropsAdapter : DrawablePropsChangedBase, IDrawableSymbolProps
+    internal class DrawableSymbolPropsAdapter : DrawablePropsChangedBase<DrawableSymbolPropsInfo>, IDrawableSymbolProps
     {
-        private readonly DrawableSymbolPropsInfo _info;
-
-
         public ushort Code
         {
             get => (ushort)_info.Code;
@@ -59,10 +56,9 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        public DrawableSymbolPropsAdapter(DrawableSymbolPropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
+        public DrawableSymbolPropsAdapter(DrawableSymbolPropsInfo info, IDrawableChangedWatcher watcher)
+            : base(info, watcher)
         {
-            IsSupported = info != null;
-            _info = info ?? new DrawableSymbolPropsInfo();
         }
     }
 }

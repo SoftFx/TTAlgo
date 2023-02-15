@@ -3,11 +3,8 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableControlPropsAdapter : DrawablePropsChangedBase, IDrawableControlProps
+    internal class DrawableControlPropsAdapter : DrawablePropsChangedBase<DrawableControlPropsInfo>, IDrawableControlProps
     {
-        private readonly DrawableControlPropsInfo _info;
-
-
         public int X
         {
             get => _info.X;
@@ -59,10 +56,9 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        public DrawableControlPropsAdapter(DrawableControlPropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
+        public DrawableControlPropsAdapter(DrawableControlPropsInfo info, IDrawableChangedWatcher watcher)
+            : base(info, watcher)
         {
-            IsSupported = info != null;
-            _info = info ?? new DrawableControlPropsInfo();
         }
     }
 }

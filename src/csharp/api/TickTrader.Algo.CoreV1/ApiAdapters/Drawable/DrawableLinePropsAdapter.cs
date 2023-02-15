@@ -3,11 +3,8 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableLinePropsAdapter : DrawablePropsChangedBase, IDrawableLineProps
+    internal class DrawableLinePropsAdapter : DrawablePropsChangedBase<DrawableLinePropsInfo>, IDrawableLineProps
     {
-        private readonly DrawableLinePropsInfo _info;
-
-
         public Colors Color
         {
             get => _info.ColorArgb.FromArgb();
@@ -69,10 +66,9 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        public DrawableLinePropsAdapter(DrawableLinePropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
+        public DrawableLinePropsAdapter(DrawableLinePropsInfo info, IDrawableChangedWatcher watcher)
+            : base(info, watcher)
         {
-            IsSupported = info != null;
-            _info = info ?? new DrawableLinePropsInfo();
         }
     }
 }

@@ -3,18 +3,14 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableObjectLevelsAdapter : DrawablePropsChangedBase, IDrawableObjectLevels
+    internal class DrawableObjectLevelsAdapter : DrawablePropsChangedBase<DrawableObjectLevelsInfo>, IDrawableObjectLevels
     {
-        private readonly DrawableObjectLevelsInfo _info;
-
-
         public int Count => _info.Count;
 
 
-        public DrawableObjectLevelsAdapter(DrawableObjectLevelsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
+        public DrawableObjectLevelsAdapter(DrawableObjectLevelsInfo info, IDrawableChangedWatcher watcher)
+            : base(info, watcher)
         {
-            IsSupported = info != null;
-            _info = info ?? new DrawableObjectLevelsInfo();
         }
 
 

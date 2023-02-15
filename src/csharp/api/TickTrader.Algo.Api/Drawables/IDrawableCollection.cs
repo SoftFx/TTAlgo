@@ -6,8 +6,8 @@
 
         IDrawableObject this[string name] { get; }
 
+        IDrawableObject this[int index] { get; }
 
-        IDrawableObject GetObjectByIndex(int index);
 
         IDrawableObject Create(string name, DrawableObjectType type, string outputId = null);
 

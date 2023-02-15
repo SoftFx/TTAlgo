@@ -9,6 +9,7 @@ namespace TickTrader.BotTerminal
     internal class DrawableObjectViewModel : PropertyChangedBase
     {
         private static readonly JsonFormatter _jsonFormatter = new(new JsonFormatter.Settings(true));
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new() { WriteIndented = true };
 
         private DrawableObjectInfo _info;
         private string _jsonText;
@@ -26,7 +27,7 @@ namespace TickTrader.BotTerminal
                 {
                     _jsonText = _jsonFormatter.Format(_info);
                     var node = JsonNode.Parse(_jsonText);
-                    _jsonText = node.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+                    _jsonText = node.ToJsonString(_jsonSerializerOptions);
                 }
 
                 return _jsonText;

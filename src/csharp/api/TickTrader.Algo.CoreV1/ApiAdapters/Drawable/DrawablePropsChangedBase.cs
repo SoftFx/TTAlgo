@@ -1,15 +1,19 @@
 ﻿namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawablePropsChangedBase
+    internal class DrawablePropsChangedBase<T> where T : class, new()
     {
         private readonly IDrawableChangedWatcher _watcher;
 
+        protected readonly T _info;
 
-        public bool IsSupported { get; protected set; }
+
+        public bool IsSupported { get; }
 
 
-        public DrawablePropsChangedBase(IDrawableChangedWatcher watcher)
+        public DrawablePropsChangedBase(T info, IDrawableChangedWatcher watcher)
         {
+            IsSupported = info != null;
+            _info = info ?? new T();
             _watcher = watcher;
         }
 
