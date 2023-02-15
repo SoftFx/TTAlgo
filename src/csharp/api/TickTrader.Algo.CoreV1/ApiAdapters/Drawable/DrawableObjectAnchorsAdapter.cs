@@ -9,14 +9,13 @@ namespace TickTrader.Algo.CoreV1
         private readonly DrawableObjectAnchorsInfo _info;
 
 
-        public bool IsSupported => _info != null;
-
         public int Count => _info.Price.Count;
 
 
         public DrawableObjectAnchorsAdapter(DrawableObjectAnchorsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
-            _info = info;
+            IsSupported = info != null;
+            _info = info ?? new DrawableObjectAnchorsInfo(0);
         }
 
 

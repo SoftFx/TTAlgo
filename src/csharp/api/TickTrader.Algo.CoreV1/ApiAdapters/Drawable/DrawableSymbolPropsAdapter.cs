@@ -8,8 +8,6 @@ namespace TickTrader.Algo.CoreV1
         private readonly DrawableSymbolPropsInfo _info;
 
 
-        public bool IsSupported => _info != null;
-
         public ushort Code
         {
             get => (ushort)_info.Code;
@@ -63,7 +61,8 @@ namespace TickTrader.Algo.CoreV1
 
         public DrawableSymbolPropsAdapter(DrawableSymbolPropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
-            _info = info;
+            IsSupported = info != null;
+            _info = info ?? new DrawableSymbolPropsInfo();
         }
     }
 }

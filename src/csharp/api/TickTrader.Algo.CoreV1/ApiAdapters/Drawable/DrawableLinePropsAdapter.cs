@@ -8,8 +8,6 @@ namespace TickTrader.Algo.CoreV1
         private readonly DrawableLinePropsInfo _info;
 
 
-        public bool IsSupported => _info != null;
-
         public Colors Color
         {
             get => _info.ColorArgb.FromArgb();
@@ -73,7 +71,8 @@ namespace TickTrader.Algo.CoreV1
 
         public DrawableLinePropsAdapter(DrawableLinePropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
-            _info = info;
+            IsSupported = info != null;
+            _info = info ?? new DrawableLinePropsInfo();
         }
     }
 }

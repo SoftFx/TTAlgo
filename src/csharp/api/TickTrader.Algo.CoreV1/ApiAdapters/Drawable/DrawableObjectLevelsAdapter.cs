@@ -8,14 +8,13 @@ namespace TickTrader.Algo.CoreV1
         private readonly DrawableObjectLevelsInfo _info;
 
 
-        public bool IsSupported => _info != null;
-
         public int Count => _info.Count;
 
 
         public DrawableObjectLevelsAdapter(DrawableObjectLevelsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
-            _info = info;
+            IsSupported = info != null;
+            _info = info ?? new DrawableObjectLevelsInfo();
         }
 
 

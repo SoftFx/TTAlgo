@@ -8,8 +8,6 @@ namespace TickTrader.Algo.CoreV1
         private readonly DrawableShapePropsInfo _info;
 
 
-        public bool IsSupported => _info != null;
-
         public Colors BorderColor
         {
             get => _info.BorderColorArgb.FromArgb();
@@ -63,7 +61,8 @@ namespace TickTrader.Algo.CoreV1
 
         public DrawableShapePropsAdapter(DrawableShapePropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
-            _info = info;
+            IsSupported = info != null;
+            _info = info ?? new DrawableShapePropsInfo();
         }
     }
 }

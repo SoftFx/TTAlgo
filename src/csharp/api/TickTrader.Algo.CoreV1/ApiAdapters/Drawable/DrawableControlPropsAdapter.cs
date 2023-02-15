@@ -8,8 +8,6 @@ namespace TickTrader.Algo.CoreV1
         private readonly DrawableControlPropsInfo _info;
 
 
-        public bool IsSupported => _info != null;
-
         public int X
         {
             get => _info.X;
@@ -63,7 +61,8 @@ namespace TickTrader.Algo.CoreV1
 
         public DrawableControlPropsAdapter(DrawableControlPropsInfo info, IDrawableChangedWatcher watcher) : base(watcher)
         {
-            _info = info;
+            IsSupported = info != null;
+            _info = info ?? new DrawableControlPropsInfo();
         }
     }
 }
