@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core.Lib
 
         public static void Start()
         {
-            lock(_syncObj)
+            lock (_syncObj)
             {
                 if (_instance != null)
                     return;
@@ -71,16 +71,20 @@ namespace TickTrader.Algo.Core.Lib
                 long lastStarvationCheckTicks = DateTime.UtcNow.Ticks;
                 GlobalQueueItem globalQueueItem = null;
 
+                Thread.CurrentThread.Name = $"{nameof(HealthChecker)}.{nameof(ThreadMonitoring)}";
+
                 while (_started)
                 {
                     Thread.Sleep(HealthCheckPeriod);
 
+                    double? threadingDelay = null;
+                    double? globalQueueDelay = null;
                     var currentTicks = DateTime.UtcNow.Ticks;
 
                     var healthCheckTimeTicks = currentTicks - lastHealthCheckTicks;
                     lastHealthCheckTicks = currentTicks;
                     if (healthCheckTimeTicks > BadHealthThreshold.Ticks)
-                        _logger.Info($"Last healthcheck too longer than expected: {TicksToMs(healthCheckTimeTicks)} ms");
+                        threadingDelay = TicksToMs(healthCheckTimeTicks - HealthCheckPeriod.Ticks);
 
                     if (globalQueueItem != null)
                     {
@@ -90,7 +94,7 @@ namespace TickTrader.Algo.Core.Lib
                         var taskStatus = globalQueueItem.Task.Status;
                         if (taskStatus == TaskStatus.Canceled || taskStatus == TaskStatus.RanToCompletion)
                         {
-                            _logger.Info($"Global queue ping back took {globalQueueItem.GetTime()} ms. Status={taskStatus}");
+                            globalQueueDelay = globalQueueItem.GetTime();
                             globalQueueItem = null;
                             lastStarvationCheckTicks = currentTicks;
                         }
@@ -99,6 +103,38 @@ namespace TickTrader.Algo.Core.Lib
                     {
                         globalQueueItem = new GlobalQueueItem();
                         Task.Factory.StartNew(() => globalQueueItem.Complete(), TaskCreationOptions.PreferFairness);
+                    }
+
+                    if (threadingDelay.HasValue)
+                    {
+                        // Thread was sleeping too long. Most likely due to GC pause
+                        var msg = $"Bad health: threading delay {threadingDelay.Value:F4} ms";
+#if DEBUG
+                        _logger.Info(msg);
+#else
+                        _logger.Error(msg);
+#endif
+                    }
+
+                    if (globalQueueDelay.HasValue)
+                    {
+                        var globalQueueTime = globalQueueDelay.Value;
+                        if (globalQueueTime < 1.5)
+                        {
+                            _logger.Info("Global queue - OK");
+                        }
+                        else
+                        {
+                            var msg = $"Global queue ping back took {globalQueueTime:F4} ms.";
+#if DEBUG
+                            _logger.Info(msg);
+#else
+                            if (globalQueueTime > 200)
+                                _logger.Error(msg);
+                            else
+                                _logger.Info(msg);
+#endif
+                        }
                     }
                 }
             }

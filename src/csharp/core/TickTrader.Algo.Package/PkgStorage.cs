@@ -15,5 +15,7 @@ namespace TickTrader.Algo.Package
         Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath);
 
         Task RemovePackage(RemovePackageRequest request);
+
+        Task<MappingCollectionInfo> GetMappings();
     }
 }
