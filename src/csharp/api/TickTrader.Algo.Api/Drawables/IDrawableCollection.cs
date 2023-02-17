@@ -9,7 +9,7 @@
         IDrawableObject this[int index] { get; }
 
 
-        IDrawableObject Create(string name, DrawableObjectType type, string outputId = null);
+        IDrawableObject Create(string name, DrawableObjectType type, OutputTargets targetWindow = OutputTargets.Overlay);
 
         void Remove(string name);
 

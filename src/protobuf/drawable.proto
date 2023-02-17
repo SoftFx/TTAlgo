@@ -49,11 +49,10 @@ message DrawableObjectInfo {
     google.protobuf.StringValue name = 1;
     Drawable.ObjectType type = 2;
     sfixed64 created_time_raw = 3;
-    google.protobuf.StringValue output_id = 4;
+    Metadata.OutputTarget target_window = 4;
 
     bool is_background = 10;
     bool is_hidden = 11;
-    bool is_selectable = 12;
     int64 z_index = 13;
     google.protobuf.StringValue tooltip = 14;
 

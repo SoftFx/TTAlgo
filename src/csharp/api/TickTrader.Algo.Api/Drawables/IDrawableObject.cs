@@ -5,21 +5,14 @@ namespace TickTrader.Algo.Api
     public interface IDrawableObject
     {
         string Name { get; }
-
         DrawableObjectType Type { get; }
-
         DateTime CreatedTime { get; }
+        OutputTargets TargetWindow { get; }
 
-        string OutputId { get; }
 
         bool IsBackground { get; set; }
-
         bool IsHidden { get; set; }
-
-        bool IsSelectable { get; set; }
-
         long ZIndex { get; set; }
-
         string Tooltip { get; set; }
 
 

@@ -22,7 +22,7 @@ namespace TickTrader.Algo.CoreV1
 
         public DateTime CreatedTime => _info.CreatedTime.ToUtcDateTime();
 
-        public string OutputId => _info.OutputId;
+        public OutputTargets TargetWindow => _info.TargetWindow.ToApiEnum();
 
         public bool IsBackground
         {
@@ -40,16 +40,6 @@ namespace TickTrader.Algo.CoreV1
             set
             {
                 _info.IsHidden = value;
-                OnChanged();
-            }
-        }
-
-        public bool IsSelectable
-        {
-            get => _info.IsSelectable;
-            set
-            {
-                _info.IsSelectable = value;
                 OnChanged();
             }
         }

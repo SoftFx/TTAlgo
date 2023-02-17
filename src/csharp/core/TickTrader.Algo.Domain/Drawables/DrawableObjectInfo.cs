@@ -14,6 +14,7 @@
             Name = name;
             Type = type;
             CreatedTime = UtcTicks.Now;
+            TargetWindow = Metadata.Types.OutputTarget.Overlay;
 
             InitFields();
         }

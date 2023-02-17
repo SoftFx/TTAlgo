@@ -337,6 +337,20 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
+        public static OutputTargets ToApiEnum(this Domain.Metadata.Types.OutputTarget target)
+        {
+            switch (target)
+            {
+                case Domain.Metadata.Types.OutputTarget.Overlay: return OutputTargets.Overlay;
+                case Domain.Metadata.Types.OutputTarget.Window1: return OutputTargets.Window1;
+                case Domain.Metadata.Types.OutputTarget.Window2: return OutputTargets.Window2;
+                case Domain.Metadata.Types.OutputTarget.Window3: return OutputTargets.Window3;
+                case Domain.Metadata.Types.OutputTarget.Window4: return OutputTargets.Window4;
+
+                default: throw new ArgumentException($"Unsupported output target {target}");
+            }
+        }
+
         public static Domain.Drawable.Types.ObjectType ToDomainEnum(this DrawableObjectType type)
         {
             switch (type)

@@ -8,10 +8,9 @@ namespace TickTrader.Algo.CoreV1
     internal class DrawableCollection : IDrawableCollection
     {
         private readonly object _syncObj = new object();
+        private readonly List<DrawableObjectAdapter> _objects = new List<DrawableObjectAdapter>(16);
         private readonly Dictionary<string, DrawableObjectAdapter> _byNameCache = new Dictionary<string, DrawableObjectAdapter>(16);
         private readonly IDrawableUpdateSink _updateSink;
-
-        private List<DrawableObjectAdapter> _objects = new List<DrawableObjectAdapter>(16);
 
 
         public int Count => _objects.Count;
@@ -27,7 +26,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        public IDrawableObject Create(string name, DrawableObjectType type, string outputId = null)
+        public IDrawableObject Create(string name, DrawableObjectType type, OutputTargets targetWindow = OutputTargets.Overlay)
         {
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException("Invalid object name");
@@ -37,7 +36,7 @@ namespace TickTrader.Algo.CoreV1
                 if (_byNameCache.ContainsKey(name))
                     throw new ArgumentException("Object name already exists");
 
-                var objInfo = new DrawableObjectInfo(name, type.ToDomainEnum()) { OutputId = outputId };
+                var objInfo = new DrawableObjectInfo(name, type.ToDomainEnum()) { TargetWindow = targetWindow.ToDomainEnum() };
                 var obj = new DrawableObjectAdapter(objInfo, type, _updateSink);
 
                 _objects.Add(obj);
