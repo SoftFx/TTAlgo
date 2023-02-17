@@ -1,57 +1,203 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using System.Collections.Generic;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableObjectLevelsAdapter : DrawablePropsChangedBase<DrawableObjectLevelsInfo>, IDrawableObjectLevels
+    internal class DrawableObjectLevelsAdapter : DrawablePropsChangedBase<DrawableObjectLevelsList>, IDrawableObjectLevels
     {
-        public int Count => _info.Count;
+        private readonly List<LevelAdapter> _levels = new List<LevelAdapter>(4);
 
 
-        public DrawableObjectLevelsAdapter(DrawableObjectLevelsInfo info, IDrawableChangedWatcher watcher)
+        public int Count
+        {
+            get => _levels.Count;
+            set => Resize(value);
+        }
+
+        public IDrawableLevelProps this[int index] => _levels[index];
+
+        public Colors DefaultColor
+        {
+            get => _info.DefaultColorArgb.FromArgb();
+            set
+            {
+                _info.DefaultColorArgb = value.ToArgb();
+                OnChanged();
+            }
+        }
+
+        public int DefaultLineThickness
+        {
+            get => _info.DefaultLineThickness;
+            set
+            {
+                _info.DefaultLineThickness = value;
+                OnChanged();
+            }
+        }
+
+        public LineStyles DefaultLineStyle
+        {
+            get => _info.DefaultLineStyle.ToApiEnum();
+            set
+            {
+                _info.DefaultLineStyle = value.ToDomainEnum();
+                OnChanged();
+            }
+        }
+
+        public string DefaultFontFamily
+        {
+            get => _info.DefaultFontFamily;
+            set
+            {
+                _info.DefaultFontFamily = value;
+                OnChanged();
+            }
+        }
+
+        public int DefaultFontSize
+        {
+            get => _info.DefaultFontSize;
+            set
+            {
+                _info.DefaultFontSize = value;
+                OnChanged();
+            }
+        }
+
+
+        public DrawableObjectLevelsAdapter(DrawableObjectLevelsList info, IDrawableChangedWatcher watcher)
             : base(info, watcher)
         {
+            for (var i = 0; i < info.Count; i++)
+            {
+                _levels.Add(new LevelAdapter(info[i], OnChanged));
+            }
         }
 
 
-        public double GetValue(int index) => _info.Value[index];
-
-        public void SetValue(int index, double value)
+        private void Resize(int newCnt)
         {
-            _info.Value[index] = value;
+            var cnt = _levels.Count;
+            if (cnt == newCnt)
+                return;
+
+            if (cnt > newCnt)
+            {
+                for (var i = newCnt; i < cnt; i++)
+                {
+                    var index = _levels.Count - 1;
+                    _info.Levels.RemoveAt(index);
+                    _levels[index].IgnoreChanges();
+                    _levels.RemoveAt(index);
+                }
+            }
+            else
+            {
+                for (var i = cnt; i < newCnt; i++)
+                {
+                    var propsInfo = new DrawableLevelPropsInfo();
+                    _info.Levels.Add(propsInfo);
+                    _levels.Add(new LevelAdapter(propsInfo, OnChanged));
+                }
+            }
+
             OnChanged();
         }
 
-        public int GetWidth(int index) => _info.Width[index];
 
-        public void SetWidth(int index, int width)
+        private class LevelAdapter : IDrawableLevelProps
         {
-            _info.Width[index] = width;
-            OnChanged();
-        }
+            private readonly DrawableLevelPropsInfo _info;
 
-        public Colors GetColor(int index) => _info.ColorArgb[index].FromArgb();
+            private Action _changedCallback;
 
-        public void SetColor(int index, Colors color)
-        {
-            _info.ColorArgb[index] = color.ToArgb();
-            OnChanged();
-        }
 
-        public LineStyles GetLineStyle(int index) => _info.LineStyle[index].ToApiEnum();
+            public double Value
+            {
+                get => _info.Value;
+                set
+                {
+                    _info.Value = value;
+                    OnChanged();
+                }
+            }
 
-        public void SetLineStyle(int index, LineStyles style)
-        {
-            _info.LineStyle[index] = style.ToDomainEnum();
-            OnChanged();
-        }
+            public string Text
+            {
+                get => _info.Text;
+                set
+                {
+                    _info.Text = value;
+                    OnChanged();
+                }
+            }
 
-        public string GetDescription(int index) => _info.Description[index];
+            public Colors Color
+            {
+                get => _info.ColorArgb.FromArgb();
+                set
+                {
+                    _info.ColorArgb = value.ToArgb();
+                    OnChanged();
+                }
+            }
 
-        public void SetDescription(int index, string description)
-        {
-            _info.Description[index] = description;
-            OnChanged();
+            public int? LineThickness
+            {
+                get => _info.LineThickness;
+                set
+                {
+                    _info.LineThickness = value;
+                    OnChanged();
+                }
+            }
+
+            public LineStyles? LineStyle
+            {
+                get => _info.LineStyle != Domain.Metadata.Types.LineStyle.UnknownLineStyle ? _info.LineStyle.ToApiEnum() : default(LineStyles?);
+                set
+                {
+                    _info.LineStyle = value?.ToDomainEnum() ?? Domain.Metadata.Types.LineStyle.UnknownLineStyle;
+                    OnChanged();
+                }
+            }
+
+            public string FontFamily
+            {
+                get => _info.FontFamily;
+                set
+                {
+                    _info.FontFamily = value;
+                    OnChanged();
+                }
+            }
+
+            public int? FontSize
+            {
+                get => _info.FontSize;
+                set
+                {
+                    _info.FontSize = value;
+                    OnChanged();
+                }
+            }
+
+
+            public LevelAdapter(DrawableLevelPropsInfo info, Action changedCallback)
+            {
+                _info = info;
+                _changedCallback = changedCallback;
+            }
+
+
+            public void IgnoreChanges() => _changedCallback = null;
+
+
+            private void OnChanged() => _changedCallback?.Invoke();
         }
     }
 }

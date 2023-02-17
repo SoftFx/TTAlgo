@@ -1,33 +1,68 @@
 ﻿using System;
+using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableObjectAnchorsAdapter : DrawablePropsChangedBase<DrawableObjectAnchorsInfo>, IDrawableObjectAnchors
+    internal class DrawableObjectAnchorsAdapter : DrawablePropsChangedBase<DrawableObjectAnchorsList>, IDrawableObjectAnchors
     {
-        public int Count => _info.Price.Count;
+        private readonly List<AnchorAdapter> _anchors;
 
 
-        public DrawableObjectAnchorsAdapter(DrawableObjectAnchorsInfo info, IDrawableChangedWatcher watcher) : base(info, watcher)
+        public int Count => _anchors.Count;
+
+        public IDrawableAnchorProps this[int index] => _anchors[index];
+
+
+        public DrawableObjectAnchorsAdapter(DrawableObjectAnchorsList info, IDrawableChangedWatcher watcher) : base(info, watcher)
         {
+            var n = info.Count;
+            _anchors = new List<AnchorAdapter>(n);
+            for (var i = 0; i < n; i++)
+                _anchors[i] = new AnchorAdapter(info[i], OnChanged);
         }
 
 
-        public double GetPrice(int index) => _info.Price[index];
-
-        public DateTime GetTime(int index) => _info.GetTime(index).ToUtcDateTime();
-
-        public void SetPrice(int index, double price)
+        private class AnchorAdapter : IDrawableAnchorProps
         {
-            _info.Price[index] = price;
-            OnChanged();
-        }
+            private readonly DrawableAnchorPropsInfo _info;
 
-        public void SetTime(int index, DateTime time)
-        {
-            _info.SetTime(index, new UtcTicks(time));
-            OnChanged();
+            private Action _changedCallback;
+
+
+            public DateTime Time
+            {
+                get => _info.Time.ToUtcDateTime();
+                set
+                {
+                    _info.Time = new UtcTicks(value);
+                    OnChanged();
+                }
+            }
+
+            public double Price
+            {
+                get => _info.Price;
+                set
+                {
+                    _info.Price = value;
+                    OnChanged();
+                }
+            }
+
+
+            public AnchorAdapter(DrawableAnchorPropsInfo info, Action changedCallback)
+            {
+                _info = info;
+                _changedCallback = changedCallback;
+            }
+
+
+            public void IgnoreChanges() => _changedCallback = null;
+
+
+            private void OnChanged() => _changedCallback?.Invoke();
         }
     }
 }

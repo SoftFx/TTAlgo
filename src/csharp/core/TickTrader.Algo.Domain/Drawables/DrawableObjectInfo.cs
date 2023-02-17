@@ -25,32 +25,32 @@
             {
                 case Drawable.Types.ObjectType.VerticalLine:
                 case Drawable.Types.ObjectType.HorizontalLine:
-                    Anchors = new DrawableObjectAnchorsInfo(1);
+                    Anchors = new DrawableObjectAnchorsList(1);
                     LineProps = new DrawableLinePropsInfo();
                     break;
                 case Drawable.Types.ObjectType.TrendLine:
-                    Anchors = new DrawableObjectAnchorsInfo(2);
+                    Anchors = new DrawableObjectAnchorsList(2);
                     LineProps = new DrawableLinePropsInfo();
                     break;
                 case Drawable.Types.ObjectType.Rectangle:
-                    Anchors = new DrawableObjectAnchorsInfo(2);
+                    Anchors = new DrawableObjectAnchorsList(2);
                     ShapeProps = new DrawableShapePropsInfo();
                     break;
                 case Drawable.Types.ObjectType.Triangle:
                 case Drawable.Types.ObjectType.Ellipse:
-                    Anchors = new DrawableObjectAnchorsInfo(3);
+                    Anchors = new DrawableObjectAnchorsList(3);
                     ShapeProps = new DrawableShapePropsInfo();
                     break;
                 case Drawable.Types.ObjectType.Symbol:
-                    Anchors = new DrawableObjectAnchorsInfo(1);
+                    Anchors = new DrawableObjectAnchorsList(1);
                     SymbolProps = new DrawableSymbolPropsInfo();
                     break;
                 case Drawable.Types.ObjectType.Text:
-                    Anchors = new DrawableObjectAnchorsInfo(1);
+                    Anchors = new DrawableObjectAnchorsList(1);
                     TextProps = new DrawableTextPropsInfo();
                     break;
                 case Drawable.Types.ObjectType.Bitmap:
-                    Anchors = new DrawableObjectAnchorsInfo(1);
+                    Anchors = new DrawableObjectAnchorsList(1);
                     BitmapProps = new DrawableBitmapPropsInfo();
                     break;
                 case Drawable.Types.ObjectType.LabelControl:

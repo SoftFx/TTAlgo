@@ -48,7 +48,7 @@ message Drawable {
 message DrawableObjectInfo {
     google.protobuf.StringValue name = 1;
     Drawable.ObjectType type = 2;
-    int64 created_time_raw = 3;
+    sfixed64 created_time_raw = 3;
     google.protobuf.StringValue output_id = 4;
 
     bool is_background = 10;
@@ -61,10 +61,11 @@ message DrawableObjectInfo {
     DrawableShapePropsInfo shape_props = 101;
     DrawableSymbolPropsInfo symbol_props = 102;
     DrawableTextPropsInfo text_props = 103;
-    DrawableObjectAnchorsInfo anchors = 104;
-    DrawableObjectLevelsInfo levels = 105;
-    DrawableControlPropsInfo control_props = 106;
-    DrawableBitmapPropsInfo bitmap_props = 107;
+    DrawableControlPropsInfo control_props = 104;
+    DrawableBitmapPropsInfo bitmap_props = 105;
+
+    DrawableObjectAnchorsList anchors = 200;
+    DrawableObjectLevelsList levels = 201;
 }
 
 message DrawableLinePropsInfo {
@@ -100,17 +101,33 @@ message DrawableTextPropsInfo {
     double angle = 5;
 }
 
-message DrawableObjectAnchorsInfo {
-    repeated int64 time_raw = 1;
-    repeated double price = 2;
+message DrawableAnchorPropsInfo {
+    sfixed64 time_raw = 1;
+    double price = 2;
 }
 
-message DrawableObjectLevelsInfo {
-    repeated double value = 1;
-    repeated int32 width = 2;
-    repeated google.protobuf.UInt32Value color_argb = 3;
-    repeated Metadata.LineStyle line_style = 4;
-    repeated google.protobuf.StringValue description = 5;
+message DrawableObjectAnchorsList {
+    repeated DrawableAnchorPropsInfo anchors = 1;
+}
+
+message DrawableLevelPropsInfo {
+    double value = 1;
+    google.protobuf.StringValue text = 2;
+    google.protobuf.UInt32Value color_argb = 3;
+    google.protobuf.Int32Value line_thickness = 4;
+    Metadata.LineStyle line_style = 5;
+    google.protobuf.StringValue font_family = 6;
+    google.protobuf.Int32Value font_size = 7;
+}
+
+message DrawableObjectLevelsList {
+    repeated DrawableLevelPropsInfo levels = 1;
+
+    google.protobuf.UInt32Value default_color_argb = 2;
+    int32 default_line_thickness = 3;
+    Metadata.LineStyle default_line_style = 4;
+    google.protobuf.StringValue default_font_family = 5;
+    int32 default_font_size = 6;
 }
 
 message DrawableControlPropsInfo {

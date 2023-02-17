@@ -87,34 +87,41 @@ namespace TickTrader.Algo.Api
         double Angle { get; set; }
     }
 
+    public interface IDrawableAnchorProps
+    {
+        DateTime Time { get; set; }
+        double Price { get; set; }
+    }
+
     public interface IDrawableObjectAnchors
     {
         bool IsSupported { get; }
         int Count { get; }
+        IDrawableAnchorProps this[int index] { get; }
+    }
 
-
-        DateTime GetTime(int index);
-        void SetTime(int index, DateTime time);
-        double GetPrice(int index);
-        void SetPrice(int index, double price);
+    public interface IDrawableLevelProps
+    {
+        double Value { get; set; }
+        string Text { get; set; }
+        Colors Color { get; set; }
+        int? LineThickness { get; set; }
+        LineStyles? LineStyle { get; set; }
+        string FontFamily { get; set; }
+        int? FontSize { get; set; }
     }
 
     public interface IDrawableObjectLevels
     {
         bool IsSupported { get; }
-        int Count { get; }
+        int Count { get; set; }
+        IDrawableLevelProps this[int index] { get; }
 
-
-        double GetValue(int index);
-        void SetValue(int index, double value);
-        int GetWidth(int index);
-        void SetWidth(int index, int width);
-        Colors GetColor(int index);
-        void SetColor(int index, Colors color);
-        LineStyles GetLineStyle(int index);
-        void SetLineStyle(int index, LineStyles style);
-        string GetDescription(int index);
-        void SetDescription(int index, string description);
+        Colors DefaultColor { get; set; }
+        int DefaultLineThickness { get; set; }
+        LineStyles DefaultLineStyle { get; set; }
+        string DefaultFontFamily { get; set; }
+        int DefaultFontSize { get; set; }
     }
 
     public enum DrawableControlAnchor
