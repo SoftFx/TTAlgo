@@ -1,11 +1,13 @@
 ﻿using Octokit;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Tools.MetadataBuilder;
 using TickTrader.WpfWindowsSupportLibrary;
@@ -14,10 +16,19 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 {
     internal sealed class SourceViewModel
     {
+        private const string DefaultOwnerName = "AndrewKhloptsau";
+        private const string DefaultClientName = "AlgoTerminal";
+        private const string DefaultRepositoryName = "AlgoBots";
+        private const string DefaultMetainfoFileName = "RepositoryInfo.json";
+
+        private readonly ConcurrentDictionary<string, Task<string>> _downloadAssetsTasks = new();
+        private readonly Dictionary<string, string> _requestParams = new();
         private readonly List<BotInfoViewModel> _botsInfo = new();
 
-        private readonly GitHubClient _client = new(new ProductHeaderValue("AndrewKhloptsau"));
-        private readonly string _cacheFolder = Path.Combine(Environment.CurrentDirectory, "ReleaseCache");
+        private readonly GitHubClient _client = new(new ProductHeaderValue(DefaultClientName));
+        private readonly Task<string> _emptyTask = Task.FromResult<string>(default);
+
+        private Release _lastRelease;
 
 
         public string Name { get; init; }
@@ -29,12 +40,8 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         public void OpenSourceInBrowser() => OpenLinkInBrowser(Link);
 
-        private Task DownloadPackage(BotInfoViewModel model)
-        {
-            return Task.Delay(2000);
-        }
 
-        internal async Task RefreshBotsInfo()
+        internal async Task RefreshBotsInfo(CancellationToken token)
         {
             try
             {
@@ -42,22 +49,18 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                     return;
 
                 _botsInfo.Clear();
-                BotsInfo.Clear();
 
-                var release = await _client.Repository.Release.GetLatest("AndrewKhloptsau", "AlgoBots");
+                _lastRelease = await _client.Repository.Release.GetLatest(DefaultOwnerName, DefaultRepositoryName);
 
-                Directory.CreateDirectory(_cacheFolder);
-
-                var reposMetainfoAsset = release.Assets.FirstOrDefault(a => a.Name == "RepositoryInfo.json");
-
+                var reposMetainfoAsset = _lastRelease.Assets.FirstOrDefault(a => a.Name == DefaultMetainfoFileName);
 
                 if (reposMetainfoAsset != null)
                 {
-                    var response = await _client.Connection.Get<byte[]>(new Uri(reposMetainfoAsset.BrowserDownloadUrl), new Dictionary<string, string>(), "application/octet-stream");
+                    var response = await LoadFileBytes(reposMetainfoAsset, token);
 
                     using var stream = new MemoryStream(response.Body);
 
-                    var reposInfo = await JsonSerializer.DeserializeAsync<MetadataInfo[]>(stream);
+                    var reposInfo = await JsonSerializer.DeserializeAsync<MetadataInfo[]>(stream, cancellationToken: token);
 
                     foreach (var botInfo in reposInfo)
                     {
@@ -65,13 +68,12 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                         {
                             var asset = new BotInfoViewModel(plugin, DownloadPackage);
 
-                            asset = asset.ApplyPackage(botInfo);
-
-                            _botsInfo.Add(asset);
-                            BotsInfo.Add(asset);
+                            _botsInfo.Add(asset.ApplyPackage(botInfo));
                         }
                     }
                 }
+
+                UpdateVisibleBotsCollection(string.Empty);
             }
             catch (Exception ex)
             {
@@ -89,7 +91,6 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
             return BotsInfo.Count > 0 || string.IsNullOrEmpty(filter);
         }
-
 
         internal static void OpenLinkInBrowser(string link)
         {
@@ -109,6 +110,50 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             {
                 MessageBoxManager.OkError(ex.Message);
             }
+        }
+
+
+        private Task<string> DownloadPackage(BotInfoViewModel model)
+        {
+            var packageName = model.PackageName;
+
+            if (_downloadAssetsTasks.TryGetValue(packageName, out var task))
+                return task;
+
+            task = DownloadAsset(packageName);
+
+            return _downloadAssetsTasks.TryAdd(packageName, task) ? task : _emptyTask;
+        }
+
+        private async Task<string> DownloadAsset(string package)
+        {
+            try
+            {
+                var asset = _lastRelease.Assets.FirstOrDefault(u => u.Name.StartsWith(package));
+
+                if (asset != null)
+                {
+                    var response = await LoadFileBytes(asset);
+                    var fileName = Path.Combine(EnvService.Instance.AlgoRepositoryFolder, asset.Name);
+
+                    using var fileStream = new FileStream(fileName, System.IO.FileMode.Create, FileAccess.Write);
+
+                    await fileStream.WriteAsync(response.Body.AsMemory(0, response.Body.Length));
+
+                    return fileName;
+                }
+
+                return string.Empty;
+            }
+            finally
+            {
+                _downloadAssetsTasks.TryRemove(package, out _);
+            }
+        }
+
+        private Task<IApiResponse<byte[]>> LoadFileBytes(ReleaseAsset asset, CancellationToken? token = null)
+        {
+            return _client.Connection.Get<byte[]>(new Uri(asset.BrowserDownloadUrl), _requestParams, "application/octet-stream", token ?? CancellationToken.None);
         }
     }
 }

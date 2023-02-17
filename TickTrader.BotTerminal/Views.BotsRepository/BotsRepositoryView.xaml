@@ -241,40 +241,55 @@
 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30"/>
+                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="90"/>
-                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Text="{l:UpdateBind RemoteVersion.Value, StringFormat=New version {0} is available!}" Visibility="{Binding IsLocal}"/>
-                <TextBlock Grid.Column="0" Text="{l:UpdateBind Version.Value, StringFormat=Version {0} is ready for download!}" Visibility="{Binding IsRemote}"/>
+                    <TextBlock Text="{l:UpdateBind RemoteVersion.Value, StringFormat=New version {0} is available!}" Visibility="{Binding IsLocal}"/>
+                    <TextBlock Text="{l:UpdateBind Version.Value, StringFormat=Version {0} is ready for download!}" Visibility="{Binding IsRemote}"/>
 
-                <l:FlatButton Grid.Column="1" cal:Message.Attach="DownloadPackage" 
-                              cal:Action.TargetWithoutContext="{l:UpdateBind RelativeSource={RelativeSource Mode=Self}, Path=DataContext}"
-                              Visibility="{l:InvBoolToVisBind IsUploading.Value}">
-                    <l:FlatButton.Style>
-                        <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
-                            <Setter Property="FontSize" Value="14"/>
-                            <Setter Property="Width" Value="80"/>
-                            <Setter Property="Content" Value="Download"/>
-                            <Setter Property="Foreground" Value="{StaticResource UpdateAvailableColor}"/>
-                            <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource UpdateAvailableColor}"/>
+                    <l:FlatButton Grid.Column="1" cal:Message.Attach="DownloadPackage" Visibility="{l:InvBoolToVisBind IsUploading.Value}"
+                                  cal:Action.TargetWithoutContext="{l:UpdateBind RelativeSource={RelativeSource Mode=Self}, Path=DataContext}">
+                        <l:FlatButton.Style>
+                            <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
+                                <Setter Property="FontSize" Value="14"/>
+                                <Setter Property="Width" Value="80"/>
+                                <Setter Property="Content" Value="Download"/>
+                                <Setter Property="Foreground" Value="{StaticResource UpdateAvailableColor}"/>
+                                <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource UpdateAvailableColor}"/>
 
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource SelectedUpdateAvailableColor}"/>
-                                    <Setter Property="BorderBrush" Value="{StaticResource SelectedUpdateAvailableColor}"/>
-                                </Trigger>
-                            </Style.Triggers>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource SelectedUpdateAvailableColor}"/>
+                                        <Setter Property="BorderBrush" Value="{StaticResource SelectedUpdateAvailableColor}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </l:FlatButton.Style>
+                    </l:FlatButton>
+
+                    <fa:IconBlock Grid.Column="1" Style="{StaticResource PackageSpinnerStyle}" HorizontalAlignment="Center"
+                                  Visibility="{l:BoolToVisBind IsUploading.Value}"/>
+                </Grid>
+
+                <Grid Grid.Row="1">
+                    <Grid.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextWrapping" Value="Wrap"/>
+                            <Setter Property="FontSize" Value="11"/>
+                            <Setter Property="Margin" Value="0 10"/>
                         </Style>
-                    </l:FlatButton.Style>
-                </l:FlatButton>
+                    </Grid.Resources>
 
-                <fa:IconBlock Grid.Column="1" Style="{StaticResource PackageSpinnerStyle}" HorizontalAlignment="Center"
-                              Visibility="{l:BoolToVisBind IsUploading.Value}"/>
+                    <TextBlock Text="{l:UpdateBind ResultMessage.Value}" Foreground="Green" Visibility="{l:EmptyToVisBind ResultMessage.Value}"/>
+                    <TextBlock Text="{l:UpdateBind ErrorMessage.Value}" Foreground="Red" Visibility="{l:EmptyToVisBind ErrorMessage.Value}"/>
+                </Grid>
             </Grid>
 
             <Grid Grid.Row="5" Visibility="{Binding IsLocal}">
@@ -482,7 +497,7 @@
                         <RowDefinition/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="{l:UpdateBind Version.Value}" Visibility="{Binding IsLocal}"/>
+                    <TextBlock Grid.Row="0" Margin="0 2" Text="{l:UpdateBind Version.Value}" Visibility="{Binding IsLocal}"/>
 
                     <Grid Grid.Row="1" Visibility="{l:BoolToVisBind CanUpload.Value}" VerticalAlignment="Bottom">
                         <Grid.ColumnDefinitions>
@@ -605,7 +620,7 @@
                                 <CheckBox Grid.Column="3" Content="Has updates" IsChecked="{l:UpdateBind OnlyWithUpdates.Value}"/>
                                 <l:FlatButton Grid.Column="4" Margin="10 0 0 0" Content="Update All"
                                           cal:Message.Attach="UpdateAllSelectedBots"
-                                          IsEnabled="{l:UpdateBind CanUpdateBots.Value}"/>
+                                          IsEnabled="{l:UpdateBind CanUpdateAllBots.Value}"/>
                             </Grid>
                             <ListView x:Name="localBots" Grid.Row="2" ItemsSource="{Binding CurrentBots}" SelectedItem="{l:UpdateBind SelectedBot.Value}" 
                                       ItemTemplate="{StaticResource BotMetadataItemTemplate}" Visibility="{l:BoolToVisBind CollectionsRefreshed.Value}"/>

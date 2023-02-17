@@ -87,6 +87,8 @@ namespace Machinarium.Var
             }
         }
 
+        internal T DefaultValue { get; set; }
+
         protected PropertyBase<TVar, T> AddPreTrigger(Action<T> trigger)
         {
             if (_preChangeTriggers == null)
@@ -112,6 +114,8 @@ namespace Machinarium.Var
         public string DisplayValue => ConvertValueTo(Value);
 
         public bool HasValue => !EqualityComparer<T>.Default.Equals(Value, default);
+
+        public void Reset() => Value = DefaultValue;
 
         Var<T> IProperty<T>.Var => Var;
 

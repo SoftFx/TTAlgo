@@ -52,4 +52,21 @@ namespace TickTrader.BotTerminal
             Converter = _converter;
         }
     }
+
+
+    public class EmptyToVisBind : UpdateBind
+    {
+        private readonly NullToVisibilityConverter _converter = new();
+
+
+        public EmptyToVisBind() : base()
+        {
+            Converter = _converter;
+        }
+
+        public EmptyToVisBind(string path) : base(path)
+        {
+            Converter = _converter;
+        }
+    }
 }

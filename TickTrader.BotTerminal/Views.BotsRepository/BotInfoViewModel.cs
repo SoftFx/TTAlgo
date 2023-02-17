@@ -13,7 +13,8 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         private readonly VarContext _context = new();
         private readonly bool _isLocal;
 
-        private Func<BotInfoViewModel, Task> _downloadPackageHandler;
+        private Func<BotInfoViewModel, Task<string>> _downloadPackageHandler;
+        private BotInfoViewModel _remoteVersion;
 
 
         public ObservableCollection<BotVersionViewModel> Versions { get; } = new();
@@ -40,6 +41,10 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         public StrProperty PackageSize { get; }
 
+        public StrProperty ErrorMessage { get; }
+
+        public StrProperty ResultMessage { get; }
+
 
         public BoolProperty CanUpload { get; }
 
@@ -51,6 +56,9 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         public Visibility IsLocal => _isLocal ? Visibility.Visible : Visibility.Collapsed;
 
         public Visibility IsRemote => _isLocal ? Visibility.Collapsed : Visibility.Visible;
+
+
+        internal string PackageName { get; private set; }
 
 
         private BotInfoViewModel()
@@ -65,6 +73,8 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             ApiVersion = _context.AddStrProperty();
             RemoteVersion = _context.AddStrProperty();
             BuildData = _context.AddStrProperty();
+            ErrorMessage = _context.AddStrProperty();
+            ResultMessage = _context.AddStrProperty();
 
             PackageSize = _context.AddStrProperty();
 
@@ -80,10 +90,10 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             Name = name;
         }
 
-        public BotInfoViewModel(PluginsInfo remotePlugin, Func<BotInfoViewModel, Task> download) : this()
+        public BotInfoViewModel(PluginsInfo remotePlugin, Func<BotInfoViewModel, Task<string>> download) : this()
         {
-            _isLocal = false;
             _downloadPackageHandler = download;
+            _isLocal = false;
 
             Name = remotePlugin.DisplayName;
 
@@ -101,10 +111,25 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         {
             if (!IsUploading.Value)
             {
+                ErrorMessage.Value = null;
+                ResultMessage.Value = null;
+
                 IsUploading.Value = true;
 
-                if (_downloadPackageHandler != null)
-                    await _downloadPackageHandler.Invoke(this);
+                try
+                {
+
+                    if (_downloadPackageHandler != null)
+                    {
+                        var downloadedFileName = await _downloadPackageHandler.Invoke(_isLocal ? _remoteVersion : this);
+
+                        ResultMessage.Value = $"Success. File has been stored in: {downloadedFileName}";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessage.Value = $"Error: {ex.Message}";
+                }
 
                 IsUploading.Value = false;
             }
@@ -130,6 +155,8 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         internal BotInfoViewModel ApplyPackage(MetadataInfo info)
         {
+            PackageName = info.PackageName;
+
             CanUpload.Value = true;
 
             Source.Value = info.Source;
@@ -144,10 +171,16 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         internal void SetRemoteBot(BotInfoViewModel remoteBot)
         {
-            var remoteVersion = remoteBot.Version.Value;
+            var newVersion = remoteBot.Version.Value;
 
-            RemoteVersion.Value = remoteVersion;
-            CanUpload.Value = IsBetterVersion(RemoteVersion.Value);
+            if (IsBetterVersion(newVersion))
+            {
+                _remoteVersion = remoteBot;
+                _downloadPackageHandler = remoteBot._downloadPackageHandler;
+
+                CanUpload.Value = true;
+                RemoteVersion.Value = newVersion;
+            }
         }
 
         internal bool IsVisibleBot(string filter)

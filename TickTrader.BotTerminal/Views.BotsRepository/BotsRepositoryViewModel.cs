@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal.Views.BotsRepository
@@ -48,7 +49,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         public BoolProperty SelectAllBots { get; }
 
-        public BoolProperty CanUpdateBots { get; }
+        public BoolProperty CanUpdateAllBots { get; }
 
         public BoolProperty CollectionsRefreshed { get; }
 
@@ -57,44 +58,75 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         public BotsRepositoryViewModel(IAlgoAgent agent)
         {
-            DisplayName = "Bots repository";
             _agent = agent;
 
-            SelectedBot = _context.AddProperty<BotInfoViewModel>();
-            SelectedBot.Value = null;
+            Name = _agent.Name;
+            DisplayName = "Bots repository";
 
-            SelectAllBots = _context.AddBoolProperty().AddPostTrigger(SetSelectAllBots);
-            OnlyWithUpdates = _context.AddBoolProperty().AddPostTrigger(UpdateInstalledView);
-            SelectedTabIndex = _context.AddIntProperty().AddPostTrigger(ResetState);
-            CanUpdateBots = _context.AddBoolProperty();
+            SelectedBot = _context.AddProperty<BotInfoViewModel>();
+            CanUpdateAllBots = _context.AddBoolProperty();
             CollectionsRefreshed = _context.AddBoolProperty();
+            SelectAllBots = _context.AddBoolProperty().AddPostTrigger(SetSelectAllBots);
+            OnlyWithUpdates = _context.AddBoolProperty().AddPostTrigger(use => UpdateInstalledView(use));
+            SelectedTabIndex = _context.AddIntProperty().AddPostTrigger(_ => SelectedBot.Reset());
+
 
             FilteredInstalledString = _context.AddStrProperty().AddPostTrigger(FilterInstalledBotsByName);
             FilteredSourceString = _context.AddStrProperty().AddPostTrigger(FilterSourceBotsByName);
-            Name = _agent.Name;
+
+            _hasSelectedBots.PropertyChanged += (s, e) => CanUpdateAllBots.Value = _hasSelectedBots.Value;
+        }
+
+        protected override Task OnActivateAsync(CancellationToken token)
+        {
+            SelectedBot.Reset();
+            SelectAllBots.Reset();
+            OnlyWithUpdates.Reset();
+
+            FilteredInstalledString.Reset();
+            FilteredSourceString.Reset();
 
             LoadInstalledBots();
 
-            _ = RefreshSources();
+            _ = RefreshSources(token); // to open window immediately without await 
 
-            _hasSelectedBots.PropertyChanged += (s, e) => CanUpdateBots.Value = _hasSelectedBots.Value;
+            return Task.CompletedTask;
         }
 
 
-        public void UpdateAllSelectedBots()
+        public async Task UpdateAllSelectedBots()
         {
+            if (CanUpdateAllBots.Value)
+            {
+                CanUpdateAllBots.Value = false;
 
+                var botsToUpdate = CurrentBots.Where(u => u.IsSelected.Value && u.CanUpload.Value);
+
+                await Task.WhenAll(botsToUpdate.Select(u => u.DownloadPackage()));
+
+                CanUpdateAllBots.Value = _hasSelectedBots.Value;
+            }
         }
 
-        public void ResetState(int _)
-        {
-            SelectedBot.Value = null;
-        }
+        public Task RefreshSources() => RefreshSources(CancellationToken.None); //for UI
 
-        public Task RefreshSources() =>
+        public void FilterSourceBotsByName(string filter) =>
+            _ = UpdateCollectionView(Sources, () =>
+            {
+                foreach (var source in _sources)
+                    if (source.UpdateVisibleBotsCollection(filter))
+                        Sources.Add(source);
+
+                return Task.CompletedTask;
+            });
+
+        public void FilterInstalledBotsByName(string filter) =>
+            _ = UpdateInstalledView(OnlyWithUpdates.Value, filter);
+
+        private Task RefreshSources(CancellationToken token) =>
             UpdateCollectionView(Sources, async () =>
             {
-                await Task.WhenAll(_sources.Select(s => s.RefreshBotsInfo()));
+                await Task.WhenAll(_sources.Select(s => s.RefreshBotsInfo(token)));
 
                 foreach (var source in _sources)
                 {
@@ -108,32 +140,12 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                 FilteredSourceString.Value = string.Empty;
             });
 
-        public void FilterSourceBotsByName(string filter) =>
-            _ = UpdateCollectionView(Sources, () =>
-            {
-                foreach (var source in _sources)
-                    if (source.UpdateVisibleBotsCollection(filter))
-                        Sources.Add(source);
-
-                return Task.CompletedTask;
-            });
-
-        public void FilterInstalledBotsByName(string filter) =>
-            _ = UpdateCollectionView(CurrentBots, () =>
-            {
-                foreach (var botInfo in _botsInfo.Values)
-                    if (botInfo.IsVisibleBot(filter))
-                        CurrentBots.Add(botInfo);
-
-                return Task.CompletedTask;
-            });
-
         private async Task UpdateCollectionView<T>(ObservableCollection<T> collection, Func<Task> update)
         {
             CollectionsRefreshed.Value = false;
 
             collection.Clear();
-            SelectedBot.Value = null;
+            SelectedBot.Reset();
 
             await update();
 
@@ -161,19 +173,25 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                     botInfo.ApplyPackage(plugin, package.Identity);
             }
 
-            UpdateInstalledView(false);
+            UpdateInstalledView();
         }
 
-        private void UpdateInstalledView(bool useCanUpload)
-        {
-            CurrentBots.Clear();
+        private Task UpdateInstalledView(bool useCanUpload = false, string filter = null) =>
+            UpdateCollectionView(CurrentBots, () =>
+            {
+                filter ??= FilteredInstalledString?.Value ?? string.Empty; //for property initialization
 
-            var filteredBots = _botsInfo.Values.Where(b => !useCanUpload || b.CanUpload.Value);
+                var filteredBots = _botsInfo.Values
+                    .Where(b => !useCanUpload || b.CanUpload.Value)
+                    .Where(b => b.IsVisibleBot(filter))
+                    .OrderBy(b => b.Name);
 
-            CurrentBots.AddRange(filteredBots.OrderBy(b => b.Name));
+                CurrentBots.AddRange(filteredBots);
 
-            SetSelectAllBots(SelectAllBots.Value);
-        }
+                SetSelectAllBots(SelectAllBots.Value);
+
+                return Task.CompletedTask;
+            });
 
         private void SetSelectAllBots(bool select)
         {
