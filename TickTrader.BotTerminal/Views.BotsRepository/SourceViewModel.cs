@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using TickTrader.Algo.Package;
 using TickTrader.Algo.Tools.MetadataBuilder;
 using TickTrader.WpfWindowsSupportLibrary;
 
@@ -15,6 +14,8 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 {
     internal sealed class SourceViewModel
     {
+        private readonly List<BotInfoViewModel> _botsInfo = new();
+
         private readonly GitHubClient _client = new(new ProductHeaderValue("AndrewKhloptsau"));
         private readonly string _cacheFolder = Path.Combine(Environment.CurrentDirectory, "ReleaseCache");
 
@@ -26,11 +27,78 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         public ObservableCollection<BotInfoViewModel> BotsInfo { get; } = new();
 
 
-        public void OpenSourceInBrowser()
+        public void OpenSourceInBrowser() => OpenLinkInBrowser(Link);
+
+        private Task DownloadPackage(BotInfoViewModel model)
+        {
+            return Task.Delay(2000);
+        }
+
+        internal async Task RefreshBotsInfo()
         {
             try
             {
-                var sInfo = new ProcessStartInfo(Link)
+                if (string.IsNullOrEmpty(Link))
+                    return;
+
+                _botsInfo.Clear();
+                BotsInfo.Clear();
+
+                var release = await _client.Repository.Release.GetLatest("AndrewKhloptsau", "AlgoBots");
+
+                Directory.CreateDirectory(_cacheFolder);
+
+                var reposMetainfoAsset = release.Assets.FirstOrDefault(a => a.Name == "RepositoryInfo.json");
+
+
+                if (reposMetainfoAsset != null)
+                {
+                    var response = await _client.Connection.Get<byte[]>(new Uri(reposMetainfoAsset.BrowserDownloadUrl), new Dictionary<string, string>(), "application/octet-stream");
+
+                    using var stream = new MemoryStream(response.Body);
+
+                    var reposInfo = await JsonSerializer.DeserializeAsync<MetadataInfo[]>(stream);
+
+                    foreach (var botInfo in reposInfo)
+                    {
+                        foreach (var plugin in botInfo.Plugins)
+                        {
+                            var asset = new BotInfoViewModel(plugin, DownloadPackage);
+
+                            asset = asset.ApplyPackage(botInfo);
+
+                            _botsInfo.Add(asset);
+                            BotsInfo.Add(asset);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        internal bool UpdateVisibleBotsCollection(string filter)
+        {
+            BotsInfo.Clear();
+
+            foreach (var botInfo in _botsInfo)
+                if (botInfo.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                    BotsInfo.Add(botInfo);
+
+            return BotsInfo.Count > 0 || string.IsNullOrEmpty(filter);
+        }
+
+
+        internal static void OpenLinkInBrowser(string link)
+        {
+            try
+            {
+                if (link == null)
+                    return;
+
+                var sInfo = new ProcessStartInfo(link)
                 {
                     UseShellExecute = true,
                 };
@@ -41,65 +109,6 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             {
                 MessageBoxManager.OkError(ex.Message);
             }
-        }
-
-        internal async Task RefreshBotsInfo()
-        {
-            if (string.IsNullOrEmpty(Link))
-                return;
-
-            var release = await _client.Repository.Release.GetLatest("AndrewKhloptsau", "AlgoBots");
-
-            Directory.CreateDirectory(_cacheFolder);
-
-            var reposMetainfoAsset = release.Assets.FirstOrDefault(a => a.Name == "RepositoryInfo.json");
-
-
-            if (reposMetainfoAsset != null)
-            {
-                var response = await _client.Connection.Get<byte[]>(new Uri(reposMetainfoAsset.BrowserDownloadUrl), new Dictionary<string, string>(), "application/octet-stream");
-
-                using var stream = new MemoryStream(response.Body);
-
-                var metainfo = await JsonSerializer.DeserializeAsync<MetadataInfo>(stream);
-
-                foreach (var plugin in metainfo.Plugins)
-                {
-                    var asset = new BotInfoViewModel(plugin);
-
-                    BotsInfo.Add(asset.ApplyPackage(metainfo));
-                }
-            }
-
-            //var releaseFolder = Path.Combine(_cacheFolder, release.Name);
-
-            //if (!Directory.Exists(releaseFolder))
-            //{
-            //    Directory.CreateDirectory(releaseFolder);
-
-            //    foreach (var asset in release.Assets)
-            //    {
-            //        var assetPath = Path.Combine(releaseFolder, asset.Name);
-
-            //        var response = await _client.Connection.Get<byte[]>(new Uri(asset.BrowserDownloadUrl), new Dictionary<string, string>(), "application/octet-stream");
-
-            //        using var fileStream = new FileStream(assetPath, System.IO.FileMode.Create, FileAccess.Write);
-
-            //        await fileStream.WriteAsync(response.Body.AsMemory(0, response.Body.Length));
-            //    }
-            //}
-
-            //foreach (var packagePath in Directory.GetFiles(releaseFolder))
-            //{
-            //    var info = PackageLoadContext.ReflectionOnlyLoad(string.Empty, packagePath);
-
-            //    foreach (var plugin in info.Plugins)
-            //    {
-            //        var asset = new BotInfoViewModel(plugin.Descriptor_.DisplayName);
-            //        asset.ApplyPackage(plugin);
-            //        BotsInfo.Add(asset);
-            //    }
-            //}
         }
     }
 }

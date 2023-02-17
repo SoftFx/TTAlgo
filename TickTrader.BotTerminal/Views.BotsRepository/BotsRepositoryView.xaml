@@ -16,6 +16,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <TextBlock Foreground="DodgerBlue" Text="{TemplateBinding Content}" 
+                               TextWrapping="Wrap"
                                TextDecorations="Underline" 
                                Cursor="Hand"/>
                 </ControlTemplate>
@@ -138,6 +139,18 @@
         </Setter>
     </Style>
 
+    <Style x:Key="SpinnerStyle" TargetType="fa:IconBlock">
+        <Setter Property="Icon" Value="Spinner"/>
+        <Setter Property="FontSize" Value="50"/>
+        <Setter Property="fa:Awesome.SpinDuration" Value="4"/>
+        <Setter Property="fa:Awesome.Spin" Value="True"/>
+    </Style>
+
+    <Style x:Key="PackageSpinnerStyle" TargetType="fa:IconBlock" BasedOn="{StaticResource SpinnerStyle}">
+        <Setter Property="Foreground" Value="{StaticResource UpdateAvailableColor}"/>
+        <Setter Property="FontSize" Value="20"/>
+    </Style>
+
     <ControlTemplate x:Key="SelectedMetadataControl" TargetType="Control">
         <Grid Margin="5 0">
             <Grid.Resources>
@@ -188,12 +201,17 @@
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" Style="{StaticResource PropertyName}" Text="Author:"/>
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Author.Value}"/>
+
                 <TextBlock Grid.Row="1" Style="{StaticResource PropertyName}" Text="Source:"/>
+                <Button Grid.Row="1" Grid.Column="1" Content="{Binding Source.Value}" Margin="10 5" 
+                        Style="{StaticResource HyperlinkStyledButton}" cal:Message.Attach="OpenSourceInBrowser"/>
 
                 <TextBlock Grid.Row="2" Style="{StaticResource PropertyName}" Text="Category:"/>
                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Category.Value}"/>
 
                 <TextBlock Grid.Row="3" Style="{StaticResource PropertyName}" Text="Copyright:"/>
+                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Copyright.Value}"/>
 
                 <TextBlock Grid.Row="4" Style="{StaticResource PropertyName}" Text="Version:" Visibility="{Binding IsRemote}"/>
                 <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Version.Value}" Visibility="{Binding IsRemote}"/>
@@ -202,6 +220,7 @@
                 <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding ApiVersion.Value}" Visibility="{Binding IsRemote}"/>
 
                 <TextBlock Grid.Row="6" Style="{StaticResource PropertyName}" Text="Last update:" Visibility="{Binding IsRemote}"/>
+                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding BuildData.Value}"/>
 
                 <TextBlock Grid.Row="7" Style="{StaticResource PropertyName}" Text="Package size:" Visibility="{Binding IsRemote}"/>
                 <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding PackageSize.Value}" Visibility="{Binding IsRemote}"/>
@@ -211,7 +230,7 @@
             <TextBlock Grid.Row="3" Text="{l:UpdateBind Description.Value}" 
                        HorizontalAlignment="Stretch" TextWrapping="WrapWithOverflow"/>
 
-            <Grid Grid.Row="4" Margin="0 10 0 0" Visibility="{l:UpdateBind CanUpload.Value, Converter={StaticResource BoolToVis}}">
+            <Grid Grid.Row="4" Margin="0 10 0 0" Visibility="{l:BoolToVisBind CanUpload.Value}">
                 <Grid.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="Foreground" Value="{StaticResource UpdateAvailableColor}"/>
@@ -219,20 +238,26 @@
                         <Setter Property="VerticalAlignment" Value="Center"/>
                     </Style>
                 </Grid.Resources>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                </Grid.RowDefinitions>
+
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="90"/>
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Column="0" Text="{l:UpdateBind RemoteVersion.Value, StringFormat=New version {0} is available!}" Visibility="{Binding IsLocal}"/>
-
                 <TextBlock Grid.Column="0" Text="{l:UpdateBind Version.Value, StringFormat=Version {0} is ready for download!}" Visibility="{Binding IsRemote}"/>
 
-                <l:FlatButton Grid.Column="1">
+                <l:FlatButton Grid.Column="1" cal:Message.Attach="DownloadPackage" 
+                              cal:Action.TargetWithoutContext="{l:UpdateBind RelativeSource={RelativeSource Mode=Self}, Path=DataContext}"
+                              Visibility="{l:InvBoolToVisBind IsUploading.Value}">
                     <l:FlatButton.Style>
                         <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
-                            <Setter Property="Width" Value="80"/>
                             <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="Width" Value="80"/>
                             <Setter Property="Content" Value="Download"/>
                             <Setter Property="Foreground" Value="{StaticResource UpdateAvailableColor}"/>
                             <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
@@ -247,6 +272,9 @@
                         </Style>
                     </l:FlatButton.Style>
                 </l:FlatButton>
+
+                <fa:IconBlock Grid.Column="1" Style="{StaticResource PackageSpinnerStyle}" HorizontalAlignment="Center"
+                              Visibility="{l:BoolToVisBind IsUploading.Value}"/>
             </Grid>
 
             <Grid Grid.Row="5" Visibility="{Binding IsLocal}">
@@ -348,7 +376,7 @@
                                     </Button>
 
                                     <Grid Grid.ColumnSpan="4" Grid.Row="1" Margin="10 0 0 0"
-                                          Visibility="{Binding IsChecked, ElementName=infoBtn, Converter={StaticResource BoolToVis}}">
+                                          Visibility="{l:BoolToVisBind IsChecked, ElementName=infoBtn}">
 
                                         <Grid.Resources>
                                             <Style TargetType="TextBlock">
@@ -418,7 +446,7 @@
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="45"/>
                 </Grid.ColumnDefinitions>
 
                 <CheckBox Grid.Column="0" Grid.RowSpan="2" IsChecked="{l:UpdateBind IsSelected.Value}" Visibility="{Binding IsLocal}"/>
@@ -432,17 +460,20 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
                         <RowDefinition/>
+                        <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Text="{Binding Name}" FontWeight="Bold"/>
                     <TextBlock Grid.Row="1" Text="{l:UpdateBind Description.Value}" FontSize="10" TextWrapping="Wrap"/>
+
+                    <ProgressBar Grid.Row="2" Height="2" Margin="0 5" IsIndeterminate="True" Visibility="{l:BoolToVisBind IsUploading.Value}"/>
                 </Grid>
 
-                <Grid Grid.Column="3" Margin="20 0 0 0" HorizontalAlignment="Right">
+                <Grid Grid.Column="3" Margin="12 0 0 0">
                     <Grid.Resources>
                         <Style TargetType="TextBlock">
                             <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="HorizontalAlignment" Value="Right"/>
                         </Style>
                     </Grid.Resources>
 
@@ -451,19 +482,23 @@
                         <RowDefinition/>
                     </Grid.RowDefinitions>
 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="0" Text="{l:UpdateBind Version.Value}" Visibility="{Binding IsLocal}"/>
 
-                    <Button Grid.Column="0" Grid.Row="1" Margin="0 1 2 0" Style="{StaticResource WebToolButton}"
-                            Content="{fa:Icon CircleArrowUp}" ToolTip="Download new version"
-                            Visibility="{l:UpdateBind CanUpload.Value, Converter={StaticResource BoolToVis}}"/>
+                    <Grid Grid.Row="1" Visibility="{l:BoolToVisBind CanUpload.Value}" VerticalAlignment="Bottom">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="1" Grid.Row="0" Text="{l:UpdateBind Version.Value}" Visibility="{Binding IsLocal}"/>
-                    <TextBlock Grid.Column="1" Grid.Row="1" Text="{l:UpdateBind RemoteVersion.Value}" 
-                               Visibility="{l:UpdateBind CanUpload.Value, Converter={StaticResource BoolToVis}}"/>
+                        <Button Margin="0" Style="{StaticResource WebToolButton}" Content="{fa:Icon CircleArrowUp}" 
+                                ToolTip="Download new version" cal:Message.Attach="DownloadPackage" Height="13"
+                                Visibility="{l:InvBoolToVisBind IsUploading.Value}"/>
 
+                        <fa:IconBlock Margin="0" Style="{StaticResource PackageSpinnerStyle}" FontSize="13"
+                                      Visibility="{l:BoolToVisBind IsUploading.Value}"/>
+
+                        <TextBlock Grid.Column="1" Margin="0 0 0 2" Text="{l:UpdateBind RemoteVersion.Value}"/>
+                    </Grid>
                 </Grid>
             </Grid>
         </Border>
@@ -515,7 +550,7 @@
 
             <ListView Grid.Row="1" ItemsSource="{Binding BotsInfo}" ItemTemplate="{StaticResource BotMetadataItemTemplate}" 
                       SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}, Path=DataContext.SelectedBot.Value}"
-                      Visibility="{Binding IsChecked, ElementName=hiddenBtn, Converter={StaticResource BoolToVis}}"/>
+                      Visibility="{l:BoolToVisBind IsChecked, ElementName=hiddenBtn}"/>
         </Grid>
     </DataTemplate>
 
@@ -565,25 +600,27 @@
                                 </Grid.ColumnDefinitions>
 
                                 <CheckBox Grid.Column="0" IsChecked="{l:UpdateBind SelectAllBots.Value}"/>
-                                <TextBox Grid.Column="1" Margin="10 0" Style="{StaticResource SearchBlock}" />
+                                <TextBox Grid.Column="1" Margin="10 0" Style="{StaticResource SearchBlock}" Text="{l:UpdateBind FilteredInstalledString.Value, Delay=200}"/>
 
                                 <CheckBox Grid.Column="3" Content="Has updates" IsChecked="{l:UpdateBind OnlyWithUpdates.Value}"/>
                                 <l:FlatButton Grid.Column="4" Margin="10 0 0 0" Content="Update All"
                                           cal:Message.Attach="UpdateAllSelectedBots"
                                           IsEnabled="{l:UpdateBind CanUpdateBots.Value}"/>
                             </Grid>
-                            <ListView x:Name="localBots" Grid.Row="2" ItemsSource="{Binding CurrentBots}" SelectedItem="{Binding SelectedBot.Value}" 
-                                      ItemTemplate="{StaticResource BotMetadataItemTemplate}"/>
+                            <ListView x:Name="localBots" Grid.Row="2" ItemsSource="{Binding CurrentBots}" SelectedItem="{l:UpdateBind SelectedBot.Value}" 
+                                      ItemTemplate="{StaticResource BotMetadataItemTemplate}" Visibility="{l:BoolToVisBind CollectionsRefreshed.Value}"/>
+
+                            <fa:IconBlock Grid.Row="2" Style="{StaticResource SpinnerStyle}" Visibility="{l:InvBoolToVisBind CollectionsRefreshed.Value}"/>
                         </Grid>
 
                         <Rectangle Grid.Column="1" Style="{StaticResource ContentSplitter}"/>
 
-                        <Control Grid.Column="2" DataContext="{Binding SelectedBot.Value}" Template="{StaticResource SelectedMetadataControl}" 
+                        <Control Grid.Column="2" DataContext="{l:UpdateBind SelectedBot.Value}" Template="{StaticResource SelectedMetadataControl}" 
                                  Visibility="{Binding SelectedItem, ElementName=localBots, Converter={StaticResource NullOrEmptyToVis}}"/>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Browse">
-                    <Grid x:Name="gridname"  Margin="5 0">
+                    <Grid Margin="5 0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*"/>
                             <ColumnDefinition Width="auto"/>
@@ -593,19 +630,22 @@
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
 
-                            <Grid Margin="0 10">
+                            <TextBlock Text="Connected repositories" FontSize="20" FontWeight="Bold"/>
+
+                            <Grid Grid.Row="1" Margin="0 5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="auto"/>
                                     <ColumnDefinition/>
                                     <ColumnDefinition Width="auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Style="{StaticResource SearchBlock}"/>
+                                <TextBox Style="{StaticResource SearchBlock}" Text="{l:UpdateBind FilteredSourceString.Value, Delay=200}"/>
 
-                                <Button Grid.Column="2" ToolTip="Refresh all sources" Style="{StaticResource WebToolButton}" FontSize="14">
+                                <Button Grid.Column="2" ToolTip="Refresh all sources" Style="{StaticResource WebToolButton}" FontSize="14" cal:Message.Attach="RefreshSources">
                                     <StackPanel Orientation="Horizontal">
                                         <fa:IconBlock Icon="Refresh"/>
                                         <TextBlock Text="Refresh" Margin="2 0" FontFamily="Segoe UI"/>
@@ -613,13 +653,15 @@
                                 </Button>
                             </Grid>
 
-                            <ListView Grid.Row="1" ItemsSource="{Binding Sources}" ItemTemplate="{StaticResource SourceTemplate}" 
-                                      ItemContainerStyle="{StaticResource ListViewUnselectedItem}"/>
+                            <ListView Grid.Row="2" ItemsSource="{Binding Sources}" ItemTemplate="{StaticResource SourceTemplate}" ItemContainerStyle="{StaticResource ListViewUnselectedItem}"
+                                      Visibility="{l:BoolToVisBind CollectionsRefreshed.Value}"/>
+
+                            <fa:IconBlock Grid.Row="2" Style="{StaticResource SpinnerStyle}" Visibility="{l:InvBoolToVisBind CollectionsRefreshed.Value}"/>
                         </Grid>
 
                         <Rectangle Grid.Column="1" Style="{StaticResource ContentSplitter}"/>
 
-                        <Control Grid.Column="2" DataContext="{Binding SelectedBot.Value}" Template="{StaticResource SelectedMetadataControl}"
+                        <Control Grid.Column="2" DataContext="{l:UpdateBind SelectedBot.Value}" Template="{StaticResource SelectedMetadataControl}"
                                  Visibility="{l:UpdateBind RelativeSource={RelativeSource AncestorType={x:Type Grid}}, Path=DataContext.SelectedBot.Value, 
                                  Converter={StaticResource NullOrEmptyToVis}}"/>
                     </Grid>

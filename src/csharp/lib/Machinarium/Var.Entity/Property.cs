@@ -35,7 +35,12 @@ namespace Machinarium.Var
         public new BoolProperty AddPostTrigger(Action<bool> trigger) => (BoolProperty)base.AddPostTrigger(trigger);
     }
 
-    public class StrProperty : PropertyBase<Var<string>, string> { }
+    public class StrProperty : PropertyBase<Var<string>, string>
+    {
+        public new StrProperty AddPreTrigger(Action<string> trigger) => (StrProperty)base.AddPreTrigger(trigger);
+
+        public new StrProperty AddPostTrigger(Action<string> trigger) => (StrProperty)base.AddPostTrigger(trigger);
+    }
 
     public class DoubleProperty : PropertyBase<DoubleVar, double> { }
 

@@ -1,6 +1,7 @@
 ﻿using Machinarium.Var;
+using System;
 using System.Collections.ObjectModel;
-using System.Security.Principal;
+using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Tools.MetadataBuilder;
@@ -11,6 +12,8 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
     {
         private readonly VarContext _context = new();
         private readonly bool _isLocal;
+
+        private Func<BotInfoViewModel, Task> _downloadPackageHandler;
 
 
         public ObservableCollection<BotVersionViewModel> Versions { get; } = new();
@@ -42,6 +45,8 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         public BoolProperty IsSelected { get; }
 
+        public BoolProperty IsUploading { get; }
+
 
         public Visibility IsLocal => _isLocal ? Visibility.Visible : Visibility.Collapsed;
 
@@ -59,11 +64,13 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             Version = _context.AddStrProperty();
             ApiVersion = _context.AddStrProperty();
             RemoteVersion = _context.AddStrProperty();
+            BuildData = _context.AddStrProperty();
 
             PackageSize = _context.AddStrProperty();
 
             CanUpload = _context.AddBoolProperty();
             IsSelected = _context.AddBoolProperty();
+            IsUploading = _context.AddBoolProperty();
         }
 
         public BotInfoViewModel(string name) : this()
@@ -73,30 +80,42 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             Name = name;
         }
 
-        public BotInfoViewModel(PluginsInfo remotePlugin) : this()
+        public BotInfoViewModel(PluginsInfo remotePlugin, Func<BotInfoViewModel, Task> download) : this()
         {
             _isLocal = false;
+            _downloadPackageHandler = download;
 
             Name = remotePlugin.DisplayName;
 
             Version.Value = remotePlugin.Version;
+            RemoteVersion.Value = remotePlugin.Version;
             Copyright.Value = remotePlugin.Copyright;
             Description.Value = remotePlugin.Description;
             Category.Value = remotePlugin.Category;
         }
 
 
-        public BotInfoViewModel ApplyPackage(PluginInfo plugin, PackageIdentity identity = null)
+        public void OpenSourceInBrowser() => SourceViewModel.OpenLinkInBrowser(Source.Value);
+
+        public async Task DownloadPackage()
+        {
+            if (!IsUploading.Value)
+            {
+                IsUploading.Value = true;
+
+                if (_downloadPackageHandler != null)
+                    await _downloadPackageHandler.Invoke(this);
+
+                IsUploading.Value = false;
+            }
+        }
+
+
+        internal BotInfoViewModel ApplyPackage(PluginInfo plugin, PackageIdentity identity = null)
         {
             var descriptor = plugin.Descriptor_;
 
             Versions.Add(new BotVersionViewModel(plugin.Key.PackageId, descriptor, identity));
-
-            if (!_isLocal)
-            {
-                CanUpload.Value = true;
-                RemoteVersion.Value = descriptor.Version;
-            }
 
             if (!Version.HasValue || IsBetterVersion(descriptor.Version))
             {
@@ -105,12 +124,14 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                 Description.Value = descriptor.Description;
                 Category.Value = descriptor.Category;
             }
-            
+
             return this;
         }
 
-        public BotInfoViewModel ApplyPackage(MetadataInfo info)
+        internal BotInfoViewModel ApplyPackage(MetadataInfo info)
         {
+            CanUpload.Value = true;
+
             Source.Value = info.Source;
             Author.Value = info.Author;
 
@@ -121,12 +142,17 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             return this;
         }
 
-        public void SetRemoteBot(BotInfoViewModel remoteBot)
+        internal void SetRemoteBot(BotInfoViewModel remoteBot)
         {
             var remoteVersion = remoteBot.Version.Value;
 
             RemoteVersion.Value = remoteVersion;
             CanUpload.Value = IsBetterVersion(RemoteVersion.Value);
+        }
+
+        internal bool IsVisibleBot(string filter)
+        {
+            return Name.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(filter);
         }
 
         private bool IsBetterVersion(string newVersion)
