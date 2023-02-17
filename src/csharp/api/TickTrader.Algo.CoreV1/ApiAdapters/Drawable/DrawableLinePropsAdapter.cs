@@ -35,36 +35,6 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public bool RayLeft
-        {
-            get => _info.RayLeft;
-            set
-            {
-                _info.RayLeft = value;
-                OnChanged();
-            }
-        }
-
-        public bool RayRight
-        {
-            get => _info.RayRight;
-            set
-            {
-                _info.RayRight = value;
-                OnChanged();
-            }
-        }
-
-        public bool RayVertical
-        {
-            get => _info.RayVertical;
-            set
-            {
-                _info.RayVertical = value;
-                OnChanged();
-            }
-        }
-
 
         public DrawableLinePropsAdapter(DrawableLinePropsInfo info, IDrawableChangedWatcher watcher)
             : base(info, watcher)

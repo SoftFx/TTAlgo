@@ -80,6 +80,8 @@ namespace TickTrader.Algo.CoreV1
 
         public IDrawableBitmapProps Bitmap { get; }
 
+        public IDrawableSpecialProps Special { get; }
+
 
         internal bool IsNew { get; private set; }
 
@@ -101,6 +103,7 @@ namespace TickTrader.Algo.CoreV1
             Levels = new DrawableObjectLevelsAdapter(info.Levels, this);
             Control = new DrawableControlPropsAdapter(info.ControlProps, this);
             Bitmap = new DrawableBitmapPropsAdapter(info.BitmapProps, this);
+            Special = new DrawableSpecialPropsAdapter(info.SpecialProps, this);
         }
 
 

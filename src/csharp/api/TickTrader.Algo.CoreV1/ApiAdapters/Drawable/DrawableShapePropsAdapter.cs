@@ -35,16 +35,6 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public bool Fill
-        {
-            get => _info.Fill;
-            set
-            {
-                _info.Fill = value;
-                OnChanged();
-            }
-        }
-
         public Colors FillColor
         {
             get => _info.FillColorArgb.FromArgb();

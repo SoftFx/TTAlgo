@@ -53,34 +53,31 @@ message DrawableObjectInfo {
 
     bool is_background = 10;
     bool is_hidden = 11;
-    int64 z_index = 13;
-    google.protobuf.StringValue tooltip = 14;
+    int64 z_index = 12;
+    google.protobuf.StringValue tooltip = 13;
 
-    DrawableLinePropsInfo line_props = 100;
-    DrawableShapePropsInfo shape_props = 101;
-    DrawableSymbolPropsInfo symbol_props = 102;
-    DrawableTextPropsInfo text_props = 103;
-    DrawableControlPropsInfo control_props = 104;
-    DrawableBitmapPropsInfo bitmap_props = 105;
+    DrawableLinePropsInfo line_props = 20;
+    DrawableShapePropsInfo shape_props = 21;
+    DrawableSymbolPropsInfo symbol_props = 22;
+    DrawableTextPropsInfo text_props = 23;
+    DrawableControlPropsInfo control_props = 24;
+    DrawableBitmapPropsInfo bitmap_props = 25;
+    DrawableSpecialPropsInfo special_props = 26;
 
-    DrawableObjectAnchorsList anchors = 200;
-    DrawableObjectLevelsList levels = 201;
+    DrawableObjectAnchorsList anchors = 40;
+    DrawableObjectLevelsList levels = 41;
 }
 
 message DrawableLinePropsInfo {
     google.protobuf.UInt32Value color_argb = 1;
     int32 thickness = 2;
     Metadata.LineStyle style = 3;
-    bool ray_left = 4;
-    bool ray_right = 5;
-    bool ray_vertical = 6;
 }
 
 message DrawableShapePropsInfo {
     google.protobuf.UInt32Value border_color_argb = 1;
     int32 border_thickness = 2;
     Metadata.LineStyle border_style = 3;
-    bool fill = 4;
     google.protobuf.UInt32Value fill_color_argb = 5;
 }
 
@@ -97,7 +94,6 @@ message DrawableTextPropsInfo {
     google.protobuf.UInt32Value color_argb = 2;
     google.protobuf.StringValue font_family = 3;
     int32 font_size = 4;
-    double angle = 5;
 }
 
 message DrawableAnchorPropsInfo {
@@ -143,6 +139,18 @@ message DrawableBitmapPropsInfo {
     int32 width = 3;
     int32 height = 4;
     google.protobuf.StringValue file_path = 5;
+}
+
+message DrawableSpecialPropsInfo {
+    google.protobuf.DoubleValue angle = 1;
+    google.protobuf.DoubleValue scale = 2;
+    google.protobuf.DoubleValue deviation = 3;
+
+    bool ray_left = 10;
+    bool ray_right = 11;
+    bool ray_vertical = 12;
+    bool fill = 13;
+    bool button_state = 14;
 }
 
 message DrawableCollectionUpdate {

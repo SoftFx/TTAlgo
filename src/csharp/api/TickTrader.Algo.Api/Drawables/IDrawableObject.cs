@@ -24,6 +24,7 @@ namespace TickTrader.Algo.Api
         IDrawableObjectLevels Levels { get; }
         IDrawableControlProps Control { get; }
         IDrawableBitmapProps Bitmap { get; }
+        IDrawableSpecialProps Special { get; }
 
 
         void PushChanges();
@@ -35,9 +36,6 @@ namespace TickTrader.Algo.Api
         Colors Color { get; set; }
         int Thickness { get; set; }
         LineStyles Style { get; set; }
-        bool RayLeft { get; set; }
-        bool RayRight { get; set; }
-        bool RayVertical { get; set; }
     }
 
     public interface IDrawableShapeProps
@@ -46,7 +44,6 @@ namespace TickTrader.Algo.Api
         Colors BorderColor { get; set; }
         int BorderThickness { get; set; }
         LineStyles BorderStyle { get; set; }
-        bool Fill { get; set; }
         Colors FillColor { get; set; }
     }
 
@@ -77,7 +74,6 @@ namespace TickTrader.Algo.Api
         Colors Color { get; set; }
         string FontFamily { get; set; }
         int FontSize { get; set; }
-        double Angle { get; set; }
     }
 
     public interface IDrawableAnchorProps
@@ -143,5 +139,18 @@ namespace TickTrader.Algo.Api
         int Width { get; set; }
         int Height { get; set; }
         string FilePath { get; set; }
+    }
+
+    public interface IDrawableSpecialProps
+    {
+        double Angle { get; set; }
+        double Scale { get; set; }
+        double Deviation { get; set; }
+
+        bool RayLeft { get; set; }
+        bool RayRight { get; set; }
+        bool RayVertical { get; set; }
+        bool Fill { get; set; }
+        bool ButtonState { get; set; }
     }
 }

@@ -45,16 +45,6 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public double Angle
-        {
-            get => _info.Angle;
-            set
-            {
-                _info.Angle = value;
-                OnChanged();
-            }
-        }
-
 
         public DrawableTextPropsAdapter(DrawableTextPropsInfo info, IDrawableChangedWatcher watcher)
             : base(info, watcher)
