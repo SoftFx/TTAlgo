@@ -369,6 +369,21 @@ namespace TickTrader.Algo.CoreV1
                 case DrawableObjectType.EditControl: return Domain.Drawable.Types.ObjectType.EditControl;
                 case DrawableObjectType.ButtonControl: return Domain.Drawable.Types.ObjectType.ButtonControl;
                 case DrawableObjectType.BitmapControl: return Domain.Drawable.Types.ObjectType.BitmapControl;
+                case DrawableObjectType.Levels: return Domain.Drawable.Types.ObjectType.Levels;
+                case DrawableObjectType.Cycles: return Domain.Drawable.Types.ObjectType.Cycles;
+                case DrawableObjectType.LinRegChannel: return Domain.Drawable.Types.ObjectType.LinRegChannel;
+                case DrawableObjectType.StdDevChannel: return Domain.Drawable.Types.ObjectType.StdDevChannel;
+                case DrawableObjectType.EquidistantChannel: return Domain.Drawable.Types.ObjectType.EquidistantChannel;
+                case DrawableObjectType.GannLine: return Domain.Drawable.Types.ObjectType.GannLine;
+                case DrawableObjectType.GannFan: return Domain.Drawable.Types.ObjectType.GannFan;
+                case DrawableObjectType.GannGrid: return Domain.Drawable.Types.ObjectType.GannGrid;
+                case DrawableObjectType.FiboFan: return Domain.Drawable.Types.ObjectType.FiboFan;
+                case DrawableObjectType.FiboArcs: return Domain.Drawable.Types.ObjectType.FiboArcs;
+                case DrawableObjectType.FiboChannel: return Domain.Drawable.Types.ObjectType.FiboChannel;
+                case DrawableObjectType.FiboRetracement: return Domain.Drawable.Types.ObjectType.FiboRetracement;
+                case DrawableObjectType.FiboTimeZones: return Domain.Drawable.Types.ObjectType.FiboTimeZones;
+                case DrawableObjectType.FiboExpansion: return Domain.Drawable.Types.ObjectType.FiboExpansion;
+                case DrawableObjectType.AndrewsPitchfork: return Domain.Drawable.Types.ObjectType.AndrewsPitchfork;
                 default: throw new ArgumentException("Unknown object type");
             }
         }

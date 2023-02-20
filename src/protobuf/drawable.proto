@@ -23,6 +23,24 @@ message Drawable {
         TEXT = 8;
         BITMAP = 9;
 
+        LEVELS = 30;
+        CYCLES = 31;
+        LIN_REG_CHANNEL = 32;
+        STD_DEV_CHANNEL = 33;
+        EQUIDISTANT_CHANNEL = 34;
+
+        GANN_LINE = 40;
+        GANN_FAN = 41;
+        GANN_GRID = 42;
+
+        FIBO_FAN = 50;
+        FIBO_ARCS = 51;
+        FIBO_CHANNEL = 52;
+        FIBO_RETRACEMENT = 53;
+        FIBO_TIME_ZONES = 54;
+        FIBO_EXPANSION = 55;
+        ANDREWS_PITCHFORK = 56;
+
         LABEL_CONTROL = 100;
         RECTANGLE_CONTROL = 101;
         EDIT_CONTROL = 102;

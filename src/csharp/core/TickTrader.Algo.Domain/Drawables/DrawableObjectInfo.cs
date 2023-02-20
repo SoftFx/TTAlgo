@@ -74,6 +74,69 @@
                     BitmapProps = new DrawableBitmapPropsInfo();
                     ControlProps = new DrawableControlPropsInfo();
                     break;
+                case Drawable.Types.ObjectType.Levels:
+                    Levels = new DrawableObjectLevelsList(0);
+                    break;
+                case Drawable.Types.ObjectType.Cycles:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(2);
+                    break;
+                case Drawable.Types.ObjectType.LinRegChannel:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(2);
+                    break;
+                case Drawable.Types.ObjectType.StdDevChannel:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(2);
+                    break;
+                case Drawable.Types.ObjectType.EquidistantChannel:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(3);
+                    break;
+                case Drawable.Types.ObjectType.GannLine:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(2);
+                    break;
+                case Drawable.Types.ObjectType.GannFan:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(2);
+                    break;
+                case Drawable.Types.ObjectType.GannGrid:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(2);
+                    break;
+                case Drawable.Types.ObjectType.FiboFan:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(2);
+                    Levels = new DrawableObjectLevelsList(0);
+                    break;
+                case Drawable.Types.ObjectType.FiboArcs:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(2);
+                    Levels = new DrawableObjectLevelsList(0);
+                    break;
+                case Drawable.Types.ObjectType.FiboChannel:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(3);
+                    Levels = new DrawableObjectLevelsList(0);
+                    break;
+                case Drawable.Types.ObjectType.FiboRetracement:
+                    Anchors = new DrawableObjectAnchorsList(2);
+                    Levels = new DrawableObjectLevelsList(0);
+                    break;
+                case Drawable.Types.ObjectType.FiboTimeZones:
+                    Anchors = new DrawableObjectAnchorsList(2);
+                    Levels = new DrawableObjectLevelsList(0);
+                    break;
+                case Drawable.Types.ObjectType.FiboExpansion:
+                    Anchors = new DrawableObjectAnchorsList(3);
+                    Levels = new DrawableObjectLevelsList(0);
+                    break;
+                case Drawable.Types.ObjectType.AndrewsPitchfork:
+                    LineProps = new DrawableLinePropsInfo();
+                    Anchors = new DrawableObjectAnchorsList(3);
+                    Levels = new DrawableObjectLevelsList(0);
+                    break;
                 default: throw new AlgoException("Unsupported object type");
             }
         }
