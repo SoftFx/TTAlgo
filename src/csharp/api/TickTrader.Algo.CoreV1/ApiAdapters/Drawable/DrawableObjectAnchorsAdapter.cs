@@ -17,10 +17,11 @@ namespace TickTrader.Algo.CoreV1
 
         public DrawableObjectAnchorsAdapter(DrawableObjectAnchorsList info, IDrawableChangedWatcher watcher) : base(info, watcher)
         {
+            info = _info; // default .ctor will be called in base.ctor if null
             var n = info.Count;
             _anchors = new List<AnchorAdapter>(n);
             for (var i = 0; i < n; i++)
-                _anchors[i] = new AnchorAdapter(info[i], OnChanged);
+                _anchors.Add(new AnchorAdapter(info[i], OnChanged));
         }
 
 

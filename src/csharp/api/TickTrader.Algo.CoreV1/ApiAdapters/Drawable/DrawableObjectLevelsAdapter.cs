@@ -72,10 +72,9 @@ namespace TickTrader.Algo.CoreV1
         public DrawableObjectLevelsAdapter(DrawableObjectLevelsList info, IDrawableChangedWatcher watcher)
             : base(info, watcher)
         {
+            info = _info; // default .ctor will be called in base.ctor if null
             for (var i = 0; i < info.Count; i++)
-            {
                 _levels.Add(new LevelAdapter(info[i], OnChanged));
-            }
         }
 
 
