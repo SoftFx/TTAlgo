@@ -55,12 +55,12 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public bool RayVertical
+        public bool Ray
         {
-            get => _info.RayVertical;
+            get => _info.Ray;
             set
             {
-                _info.RayVertical = value;
+                _info.Ray = value;
                 OnChanged();
             }
         }

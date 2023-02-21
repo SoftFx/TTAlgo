@@ -8,6 +8,12 @@
             set => CreatedTimeRaw = value.Value;
         }
 
+        public DrawableVisibility Visibility
+        {
+            get => (DrawableVisibility)VisibilityBitmask;
+            set => VisibilityBitmask = (int)value;
+        }
+
 
         public DrawableObjectInfo(string name, Drawable.Types.ObjectType type)
         {
@@ -15,6 +21,7 @@
             Type = type;
             CreatedTime = UtcTicks.Now;
             TargetWindow = Metadata.Types.OutputTarget.Overlay;
+            VisibilityBitmask = (int)DrawableVisibility.AllTimeframes;
 
             InitFields();
         }

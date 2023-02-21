@@ -44,7 +44,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public long ZIndex
+        public int ZIndex
         {
             get => _info.ZIndex;
             set
@@ -60,6 +60,16 @@ namespace TickTrader.Algo.CoreV1
             set
             {
                 _info.Tooltip = value;
+                OnChanged();
+            }
+        }
+
+        public DrawableObjectVisibility Visibility
+        {
+            get => (DrawableObjectVisibility)_info.VisibilityBitmask;
+            set
+            {
+                _info.VisibilityBitmask = (int)value;
                 OnChanged();
             }
         }

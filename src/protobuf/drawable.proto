@@ -71,8 +71,9 @@ message DrawableObjectInfo {
 
     bool is_background = 10;
     bool is_hidden = 11;
-    int64 z_index = 12;
+    int32 z_index = 12;
     google.protobuf.StringValue tooltip = 13;
+    int32 visibility_bitmask = 14;
 
     DrawableLinePropsInfo line_props = 20;
     DrawableShapePropsInfo shape_props = 21;
@@ -166,7 +167,7 @@ message DrawableSpecialPropsInfo {
 
     bool ray_left = 10;
     bool ray_right = 11;
-    bool ray_vertical = 12;
+    bool ray = 12;
     bool fill = 13;
     bool button_state = 14;
 }

@@ -12,8 +12,9 @@ namespace TickTrader.Algo.Api
 
         bool IsBackground { get; set; }
         bool IsHidden { get; set; }
-        long ZIndex { get; set; }
+        int ZIndex { get; set; }
         string Tooltip { get; set; }
+        DrawableObjectVisibility Visibility { get; set; }
 
 
         IDrawableLineProps Line { get; }
@@ -149,7 +150,7 @@ namespace TickTrader.Algo.Api
 
         bool RayLeft { get; set; }
         bool RayRight { get; set; }
-        bool RayVertical { get; set; }
+        bool Ray { get; set; }
         bool Fill { get; set; }
         bool ButtonState { get; set; }
     }
