@@ -408,27 +408,81 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public static Domain.Drawable.Types.ControlAnchor ToDomainEnum(this DrawableControlAnchor anchor)
+        public static Domain.Drawable.Types.ControlZeroPosition ToDomainEnum(this DrawableControlZeroPosition pos)
         {
-            switch (anchor)
+            switch (pos)
             {
-                case DrawableControlAnchor.UpperLeft: return Domain.Drawable.Types.ControlAnchor.UpperLeft;
-                case DrawableControlAnchor.UpperRight: return Domain.Drawable.Types.ControlAnchor.UpperRight;
-                case DrawableControlAnchor.LowerLeft: return Domain.Drawable.Types.ControlAnchor.LowerLeft;
-                case DrawableControlAnchor.LowerRight: return Domain.Drawable.Types.ControlAnchor.LowerRight;
-                default: throw new ArgumentException("Unknown control anchor");
+                case DrawableControlZeroPosition.UpperLeft: return Domain.Drawable.Types.ControlZeroPosition.UpperLeft;
+                case DrawableControlZeroPosition.UpperRight: return Domain.Drawable.Types.ControlZeroPosition.UpperRight;
+                case DrawableControlZeroPosition.LowerLeft: return Domain.Drawable.Types.ControlZeroPosition.LowerLeft;
+                case DrawableControlZeroPosition.LowerRight: return Domain.Drawable.Types.ControlZeroPosition.LowerRight;
+                default: throw new ArgumentException("Unknown control zero position");
             }
         }
 
-        public static DrawableControlAnchor ToApiEnum(this Domain.Drawable.Types.ControlAnchor anchor)
+        public static DrawableControlZeroPosition ToApiEnum(this Domain.Drawable.Types.ControlZeroPosition pos)
         {
-            switch (anchor)
+            switch (pos)
             {
-                case Domain.Drawable.Types.ControlAnchor.UpperLeft: return DrawableControlAnchor.UpperLeft;
-                case Domain.Drawable.Types.ControlAnchor.UpperRight: return DrawableControlAnchor.UpperRight;
-                case Domain.Drawable.Types.ControlAnchor.LowerLeft: return DrawableControlAnchor.LowerLeft;
-                case Domain.Drawable.Types.ControlAnchor.LowerRight: return DrawableControlAnchor.LowerRight;
-                default: throw new ArgumentException("Unknown control anchor");
+                case Domain.Drawable.Types.ControlZeroPosition.UpperLeft: return DrawableControlZeroPosition.UpperLeft;
+                case Domain.Drawable.Types.ControlZeroPosition.UpperRight: return DrawableControlZeroPosition.UpperRight;
+                case Domain.Drawable.Types.ControlZeroPosition.LowerLeft: return DrawableControlZeroPosition.LowerLeft;
+                case Domain.Drawable.Types.ControlZeroPosition.LowerRight: return DrawableControlZeroPosition.LowerRight;
+                default: throw new ArgumentException("Unknown control zero position");
+            }
+        }
+
+        public static Domain.Drawable.Types.PositionMode ToDomainEnum(this DrawablePositionMode mode)
+        {
+            switch (mode)
+            {
+                case DrawablePositionMode.TopLeft: return Domain.Drawable.Types.PositionMode.TopLeft;
+                case DrawablePositionMode.TopCenter: return Domain.Drawable.Types.PositionMode.TopCenter;
+                case DrawablePositionMode.TopRight: return Domain.Drawable.Types.PositionMode.TopRight;
+                case DrawablePositionMode.CenterLeft: return Domain.Drawable.Types.PositionMode.CenterLeft;
+                case DrawablePositionMode.Center: return Domain.Drawable.Types.PositionMode.Center;
+                case DrawablePositionMode.CenterRight: return Domain.Drawable.Types.PositionMode.CenterRight;
+                case DrawablePositionMode.BottomLeft: return Domain.Drawable.Types.PositionMode.BottomLeft;
+                case DrawablePositionMode.BottomCenter: return Domain.Drawable.Types.PositionMode.BottomCenter;
+                case DrawablePositionMode.BottomRight: return Domain.Drawable.Types.PositionMode.BottomRight;
+                default: throw new ArgumentException("Unknown position mode");
+            }
+        }
+
+        public static DrawablePositionMode ToApiEnum(this Domain.Drawable.Types.PositionMode mode)
+        {
+            switch (mode)
+            {
+                case Domain.Drawable.Types.PositionMode.TopLeft: return DrawablePositionMode.TopLeft;
+                case Domain.Drawable.Types.PositionMode.TopCenter: return DrawablePositionMode.TopCenter;
+                case Domain.Drawable.Types.PositionMode.TopRight: return DrawablePositionMode.TopRight;
+                case Domain.Drawable.Types.PositionMode.CenterLeft: return DrawablePositionMode.CenterLeft;
+                case Domain.Drawable.Types.PositionMode.Center: return DrawablePositionMode.Center;
+                case Domain.Drawable.Types.PositionMode.CenterRight: return DrawablePositionMode.CenterRight;
+                case Domain.Drawable.Types.PositionMode.BottomLeft: return DrawablePositionMode.BottomLeft;
+                case Domain.Drawable.Types.PositionMode.BottomCenter: return DrawablePositionMode.BottomCenter;
+                case Domain.Drawable.Types.PositionMode.BottomRight: return DrawablePositionMode.BottomRight;
+                default: throw new ArgumentException("Unknown position mode");
+            }
+        }
+
+        public static Domain.Drawable.Types.GannDirection ToDomainEnum(this DrawableGannDirection direction)
+        {
+            switch (direction)
+            {
+                case DrawableGannDirection.UpTrend: return Domain.Drawable.Types.GannDirection.UpTrend;
+                case DrawableGannDirection.DownTrend: return Domain.Drawable.Types.GannDirection.DownTrend;
+                default: throw new ArgumentException("Unknown gann direction");
+            }
+        }
+
+        public static DrawableGannDirection ToApiEnum(this Domain.Drawable.Types.GannDirection direction)
+        {
+            switch (direction)
+            {
+                case Domain.Drawable.Types.GannDirection.UpTrend: return DrawableGannDirection.UpTrend;
+                case Domain.Drawable.Types.GannDirection.DownTrend: return DrawableGannDirection.DownTrend;
+                default: throw new ArgumentException("Unknown gann direction");
             }
         }
     }

@@ -85,6 +85,35 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
+        public bool FiboArcsFullEllipse
+        {
+            get => _info.FiboArcsFullEllipse;
+            set
+            {
+                _info.FiboArcsFullEllipse = value;
+                OnChanged();
+            }
+        }
+
+        public DrawablePositionMode AnchorPosition
+        {
+            get => _info.AnchorPosition.ToApiEnum();
+            set
+            {
+                _info.AnchorPosition = value.ToDomainEnum();
+                OnChanged();
+            }
+        }
+
+        public DrawableGannDirection GannDirection
+        {
+            get => _info.GannDirection.ToApiEnum();
+            set
+            {
+                _info.GannDirection = value.ToDomainEnum();
+                OnChanged();
+            }
+        }
 
         public DrawableSpecialPropsAdapter(DrawableSpecialPropsInfo info, IDrawableChangedWatcher watcher) : base(info, watcher)
         {

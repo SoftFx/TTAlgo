@@ -45,12 +45,22 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public DrawableControlAnchor Anchor
+        public DrawableControlZeroPosition ZeroPosistion
         {
-            get => _info.Anchor.ToApiEnum();
+            get => _info.ZeroPosition.ToApiEnum();
             set
             {
-                _info.Anchor = value.ToDomainEnum();
+                _info.ZeroPosition = value.ToDomainEnum();
+                OnChanged();
+            }
+        }
+
+        public DrawablePositionMode ContentAlignment
+        {
+            get => _info.ContentAlignment.ToApiEnum();
+            set
+            {
+                _info.ContentAlignment = value.ToDomainEnum();
                 OnChanged();
             }
         }

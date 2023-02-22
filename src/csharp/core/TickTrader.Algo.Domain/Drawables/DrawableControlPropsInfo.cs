@@ -6,7 +6,8 @@
         {
             X = 0; Y = 0;
             Width = 50; Height = 50;
-            Anchor = Drawable.Types.ControlAnchor.LowerLeft;
+            ZeroPosition = Drawable.Types.ControlZeroPosition.LowerLeft;
+            ContentAlignment = Drawable.Types.PositionMode.Center;
         }
     }
 }

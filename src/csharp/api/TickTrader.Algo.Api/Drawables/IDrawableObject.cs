@@ -48,8 +48,6 @@ namespace TickTrader.Algo.Api
         Colors FillColor { get; set; }
     }
 
-    public enum DrawableSymbolAnchor { Top, Bottom }
-
     public static class DrawableSymbolSpecialCodes
     {
         public const ushort Buy = 1;
@@ -114,14 +112,6 @@ namespace TickTrader.Algo.Api
         ushort DefaultFontSize { get; set; }
     }
 
-    public enum DrawableControlAnchor
-    {
-        UpperLeft = 0,
-        UpperRight = 1,
-        LowerLeft = 2,
-        LowerRight = 3,
-    }
-
     public interface IDrawableControlProps
     {
         bool IsSupported { get; }
@@ -129,7 +119,8 @@ namespace TickTrader.Algo.Api
         int Y { get; set; }
         uint? Width { get; set; }
         uint? Height { get; set; }
-        DrawableControlAnchor Anchor { get; set; }
+        DrawableControlZeroPosition ZeroPosistion { get; set; }
+        DrawablePositionMode ContentAlignment { get; set; }
     }
 
     public interface IDrawableBitmapProps
@@ -153,5 +144,8 @@ namespace TickTrader.Algo.Api
         bool Ray { get; set; }
         bool Fill { get; set; }
         bool ButtonState { get; set; }
+        bool FiboArcsFullEllipse { get; set; }
+        DrawablePositionMode AnchorPosition { get; set; }
+        DrawableGannDirection GannDirection { get; set; }
     }
 }
