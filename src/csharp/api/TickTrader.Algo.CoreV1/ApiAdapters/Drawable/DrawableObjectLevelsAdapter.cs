@@ -28,9 +28,9 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public int DefaultLineThickness
+        public ushort DefaultLineThickness
         {
-            get => _info.DefaultLineThickness;
+            get => (ushort)_info.DefaultLineThickness;
             set
             {
                 _info.DefaultLineThickness = value;
@@ -58,9 +58,9 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public int DefaultFontSize
+        public ushort DefaultFontSize
         {
-            get => _info.DefaultFontSize;
+            get => (ushort)_info.DefaultFontSize;
             set
             {
                 _info.DefaultFontSize = value;
@@ -145,9 +145,9 @@ namespace TickTrader.Algo.CoreV1
                 }
             }
 
-            public int? LineThickness
+            public ushort? LineThickness
             {
-                get => _info.LineThickness;
+                get => (ushort?)_info.LineThickness;
                 set
                 {
                     _info.LineThickness = value;
@@ -157,10 +157,10 @@ namespace TickTrader.Algo.CoreV1
 
             public LineStyles? LineStyle
             {
-                get => _info.LineStyle != Domain.Metadata.Types.LineStyle.UnknownLineStyle ? _info.LineStyle.ToApiEnum() : default(LineStyles?);
+                get => _info.LineStyle?.ToApiEnum();
                 set
                 {
-                    _info.LineStyle = value?.ToDomainEnum() ?? Domain.Metadata.Types.LineStyle.UnknownLineStyle;
+                    _info.LineStyle = value?.ToDomainEnum();
                     OnChanged();
                 }
             }
@@ -175,9 +175,9 @@ namespace TickTrader.Algo.CoreV1
                 }
             }
 
-            public int? FontSize
+            public ushort? FontSize
             {
-                get => _info.FontSize;
+                get => (ushort?)_info.FontSize;
                 set
                 {
                     _info.FontSize = value;

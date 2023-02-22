@@ -15,9 +15,9 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public int BorderThickness
+        public ushort BorderThickness
         {
-            get => _info.BorderThickness;
+            get => (ushort)_info.BorderThickness;
             set
             {
                 _info.BorderThickness = value;

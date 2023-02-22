@@ -35,9 +35,9 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public int FontSize
+        public ushort FontSize
         {
-            get => _info.FontSize;
+            get => (ushort)_info.FontSize;
             set
             {
                 _info.FontSize = value;

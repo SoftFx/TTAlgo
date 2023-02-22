@@ -5,32 +5,32 @@ namespace TickTrader.Algo.CoreV1
 {
     internal class DrawableSpecialPropsAdapter : DrawablePropsChangedBase<DrawableSpecialPropsInfo>, IDrawableSpecialProps
     {
-        public double Angle
+        public double? Angle
         {
-            get => _info.Angle ?? 0.0;
+            get => _info.Angle;
             set
             {
-                _info.Angle = value == 0.0 ? default(double?) : value;
+                _info.Angle = value;
                 OnChanged();
             }
         }
 
-        public double Scale
+        public double? Scale
         {
-            get => _info.Scale ?? 0.0;
+            get => _info.Scale;
             set
             {
-                _info.Scale = value == 0.0 ? default(double?) : value;
+                _info.Scale = value;
                 OnChanged();
             }
         }
 
-        public double Deviation
+        public double? Deviation
         {
-            get => _info?.Deviation ?? 0.0;
+            get => _info.Deviation;
             set
             {
-                _info.Deviation = value == 0.0 ? default(double?) : value;
+                _info.Deviation = value;
                 OnChanged();
             }
         }

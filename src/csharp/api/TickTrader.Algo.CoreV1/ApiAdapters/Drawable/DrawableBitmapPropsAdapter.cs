@@ -25,7 +25,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public int Width
+        public uint Width
         {
             get => _info.Width;
             set
@@ -35,7 +35,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public int Height
+        public uint Height
         {
             get => _info.Height;
             set

@@ -15,9 +15,9 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public int Thickness
+        public ushort Thickness
         {
-            get => _info.Thickness;
+            get => (ushort)_info.Thickness;
             set
             {
                 _info.Thickness = value;

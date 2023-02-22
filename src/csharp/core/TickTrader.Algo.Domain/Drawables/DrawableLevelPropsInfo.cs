@@ -2,6 +2,13 @@
 {
     public partial class DrawableLevelPropsInfo
     {
+        public Metadata.Types.LineStyle? LineStyle
+        {
+            get => LineStyleWrapper?.Value;
+            set => LineStyleWrapper = value.HasValue ? new LineStyleWrapper { Value = value.Value } : null;
+        }
+
+
         // expected defaults are the same as real
         //partial void OnConstruction()
         //{

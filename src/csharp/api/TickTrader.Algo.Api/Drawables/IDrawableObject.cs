@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Api
     {
         bool IsSupported { get; }
         Colors Color { get; set; }
-        int Thickness { get; set; }
+        ushort Thickness { get; set; }
         LineStyles Style { get; set; }
     }
 
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Api
     {
         bool IsSupported { get; }
         Colors BorderColor { get; set; }
-        int BorderThickness { get; set; }
+        ushort BorderThickness { get; set; }
         LineStyles BorderStyle { get; set; }
         Colors FillColor { get; set; }
     }
@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Api
     {
         bool IsSupported { get; }
         ushort Code { get; set; }
-        int Size { get; set; }
+        ushort Size { get; set; }
         Colors Color { get; set; }
         string FontFamily { get; set; } // default font here - "Wingdings"
         DrawableSymbolAnchor Anchor { get; set; }
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Api
         string Content { get; set; }
         Colors Color { get; set; }
         string FontFamily { get; set; }
-        int FontSize { get; set; }
+        ushort FontSize { get; set; }
     }
 
     public interface IDrawableAnchorProps
@@ -95,10 +95,10 @@ namespace TickTrader.Algo.Api
         double Value { get; set; }
         string Text { get; set; }
         Colors Color { get; set; }
-        int? LineThickness { get; set; }
+        ushort? LineThickness { get; set; }
         LineStyles? LineStyle { get; set; }
         string FontFamily { get; set; }
-        int? FontSize { get; set; }
+        ushort? FontSize { get; set; }
     }
 
     public interface IDrawableObjectLevels
@@ -108,10 +108,10 @@ namespace TickTrader.Algo.Api
         IDrawableLevelProps this[int index] { get; }
 
         Colors DefaultColor { get; set; }
-        int DefaultLineThickness { get; set; }
+        ushort DefaultLineThickness { get; set; }
         LineStyles DefaultLineStyle { get; set; }
         string DefaultFontFamily { get; set; }
-        int DefaultFontSize { get; set; }
+        ushort DefaultFontSize { get; set; }
     }
 
     public enum DrawableControlAnchor
@@ -127,8 +127,8 @@ namespace TickTrader.Algo.Api
         bool IsSupported { get; }
         int X { get; set; }
         int Y { get; set; }
-        int Width { get; set; }
-        int Height { get; set; }
+        uint? Width { get; set; }
+        uint? Height { get; set; }
         DrawableControlAnchor Anchor { get; set; }
     }
 
@@ -137,16 +137,16 @@ namespace TickTrader.Algo.Api
         bool IsSupported { get; }
         int OffsetX { get; set; }
         int OffsetY { get; set; }
-        int Width { get; set; }
-        int Height { get; set; }
+        uint Width { get; set; }
+        uint Height { get; set; }
         string FilePath { get; set; }
     }
 
     public interface IDrawableSpecialProps
     {
-        double Angle { get; set; }
-        double Scale { get; set; }
-        double Deviation { get; set; }
+        double? Angle { get; set; }
+        double? Scale { get; set; }
+        double? Deviation { get; set; }
 
         bool RayLeft { get; set; }
         bool RayRight { get; set; }

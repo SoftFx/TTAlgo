@@ -15,9 +15,9 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public int Size
+        public ushort Size
         {
-            get => _info.Size;
+            get => (ushort)_info.Size;
             set
             {
                 _info.Size = value;

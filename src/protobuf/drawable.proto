@@ -89,20 +89,20 @@ message DrawableObjectInfo {
 
 message DrawableLinePropsInfo {
     google.protobuf.UInt32Value color_argb = 1;
-    int32 thickness = 2;
+    uint32 thickness = 2;
     Metadata.LineStyle style = 3;
 }
 
 message DrawableShapePropsInfo {
     google.protobuf.UInt32Value border_color_argb = 1;
-    int32 border_thickness = 2;
+    uint32 border_thickness = 2;
     Metadata.LineStyle border_style = 3;
     google.protobuf.UInt32Value fill_color_argb = 5;
 }
 
 message DrawableSymbolPropsInfo {
     uint32 code = 1;
-    int32 size = 2;
+    uint32 size = 2;
     google.protobuf.UInt32Value color_argb = 3;
     google.protobuf.StringValue font_family = 4;
     Drawable.SymbolAnchor anchor = 5;
@@ -124,39 +124,43 @@ message DrawableObjectAnchorsList {
     repeated DrawableAnchorPropsInfo anchors = 1;
 }
 
+message LineStyleWrapper {
+    Metadata.LineStyle value = 1;
+}
+
 message DrawableLevelPropsInfo {
     double value = 1;
     google.protobuf.StringValue text = 2;
     google.protobuf.UInt32Value color_argb = 3;
-    google.protobuf.Int32Value line_thickness = 4;
-    Metadata.LineStyle line_style = 5;
+    google.protobuf.UInt32Value line_thickness = 4;
+    LineStyleWrapper line_style_wrapper = 5;
     google.protobuf.StringValue font_family = 6;
-    google.protobuf.Int32Value font_size = 7;
+    google.protobuf.UInt32Value font_size = 7;
 }
 
 message DrawableObjectLevelsList {
     repeated DrawableLevelPropsInfo levels = 1;
 
     google.protobuf.UInt32Value default_color_argb = 2;
-    int32 default_line_thickness = 3;
+    uint32 default_line_thickness = 3;
     Metadata.LineStyle default_line_style = 4;
     google.protobuf.StringValue default_font_family = 5;
-    int32 default_font_size = 6;
+    uint32 default_font_size = 6;
 }
 
 message DrawableControlPropsInfo {
     int32 x = 1;
     int32 y = 2;
-    int32 width = 3;
-    int32 height = 4;
+    google.protobuf.UInt32Value width = 3;
+    google.protobuf.UInt32Value height = 4;
     Drawable.ControlAnchor anchor = 5;
 }
 
 message DrawableBitmapPropsInfo {
     int32 offset_x = 1;
     int32 offset_y = 2;
-    int32 width = 3;
-    int32 height = 4;
+    uint32 width = 3;
+    uint32 height = 4;
     google.protobuf.StringValue file_path = 5;
 }
 
