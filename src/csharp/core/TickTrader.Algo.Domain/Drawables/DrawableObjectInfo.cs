@@ -11,7 +11,7 @@
         public DrawableVisibility Visibility
         {
             get => (DrawableVisibility)VisibilityBitmask;
-            set => VisibilityBitmask = (int)value;
+            set => VisibilityBitmask = (uint)value;
         }
 
 
@@ -21,7 +21,7 @@
             Type = type;
             CreatedTime = UtcTicks.Now;
             TargetWindow = Metadata.Types.OutputTarget.Overlay;
-            VisibilityBitmask = (int)DrawableVisibility.AllTimeframes;
+            VisibilityBitmask = (uint)DrawableVisibility.AllTimeframes;
 
             InitFields();
         }
@@ -29,122 +29,194 @@
 
         private void InitFields()
         {
-            switch (Type)
+            var type = Type;
+            LineProps = SupportsLineProps(type) ? new DrawableLinePropsInfo() : default;
+            ShapeProps = SupportsShapeProps(type) ? new DrawableShapePropsInfo() : default;
+            SymbolProps = SupportsSymbolProps(type) ? new DrawableSymbolPropsInfo() : default;
+            TextProps = SupportsTextProps(type) ? new DrawableTextPropsInfo() : default;
+            ControlProps = SupportsControlProps(type) ? new DrawableControlPropsInfo() : default;
+            BitmapProps = SupportsBitmapProps(type) ? new DrawableBitmapPropsInfo() : default;
+            SpecialProps = SupportsSpecialProps(type) ? new DrawableSpecialPropsInfo() : default;
+            Levels = SupportsLevelsList(type) ? new DrawableObjectLevelsList(0) : default;
+            var anchorsCnt = GetAnchorListSize(type);
+            Anchors = anchorsCnt != 0 ? new DrawableObjectAnchorsList(anchorsCnt) : default;
+        }
+
+        public static bool SupportsLineProps(Drawable.Types.ObjectType type)
+        {
+            switch (type)
             {
                 case Drawable.Types.ObjectType.VerticalLine:
                 case Drawable.Types.ObjectType.HorizontalLine:
-                    Anchors = new DrawableObjectAnchorsList(1);
-                    LineProps = new DrawableLinePropsInfo();
-                    break;
                 case Drawable.Types.ObjectType.TrendLine:
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    LineProps = new DrawableLinePropsInfo();
-                    break;
+                case Drawable.Types.ObjectType.Cycles:
+                case Drawable.Types.ObjectType.LinRegChannel:
+                case Drawable.Types.ObjectType.StdDevChannel:
+                case Drawable.Types.ObjectType.EquidistantChannel:
+                case Drawable.Types.ObjectType.GannLine:
+                case Drawable.Types.ObjectType.GannFan:
+                case Drawable.Types.ObjectType.GannGrid:
+                case Drawable.Types.ObjectType.FiboFan:
+                case Drawable.Types.ObjectType.FiboArcs:
+                case Drawable.Types.ObjectType.FiboChannel:
+                case Drawable.Types.ObjectType.AndrewsPitchfork:
+                    return true;
+                default: return false;
+            }
+        }
+
+        public static bool SupportsShapeProps(Drawable.Types.ObjectType type)
+        {
+            switch (type)
+            {
                 case Drawable.Types.ObjectType.Rectangle:
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    ShapeProps = new DrawableShapePropsInfo();
-                    break;
                 case Drawable.Types.ObjectType.Triangle:
                 case Drawable.Types.ObjectType.Ellipse:
-                    Anchors = new DrawableObjectAnchorsList(3);
-                    ShapeProps = new DrawableShapePropsInfo();
-                    break;
-                case Drawable.Types.ObjectType.Symbol:
-                    Anchors = new DrawableObjectAnchorsList(1);
-                    SymbolProps = new DrawableSymbolPropsInfo();
-                    break;
-                case Drawable.Types.ObjectType.Text:
-                    Anchors = new DrawableObjectAnchorsList(1);
-                    TextProps = new DrawableTextPropsInfo();
-                    break;
-                case Drawable.Types.ObjectType.Bitmap:
-                    Anchors = new DrawableObjectAnchorsList(1);
-                    BitmapProps = new DrawableBitmapPropsInfo();
-                    break;
-                case Drawable.Types.ObjectType.LabelControl:
-                    TextProps = new DrawableTextPropsInfo();
-                    ControlProps = new DrawableControlPropsInfo();
-                    break;
                 case Drawable.Types.ObjectType.RectangleControl:
-                    ShapeProps = new DrawableShapePropsInfo();
-                    ControlProps = new DrawableControlPropsInfo();
-                    break;
                 case Drawable.Types.ObjectType.EditControl:
-                    TextProps = new DrawableTextPropsInfo();
-                    ControlProps = new DrawableControlPropsInfo();
-                    break;
                 case Drawable.Types.ObjectType.ButtonControl:
-                    TextProps = new DrawableTextPropsInfo();
-                    ControlProps = new DrawableControlPropsInfo();
-                    break;
+                case Drawable.Types.ObjectType.TextBlockControl:
+                default: return false;
+            }
+        }
+
+        public static bool SupportsSymbolProps(Drawable.Types.ObjectType type)
+        {
+            switch (type)
+            {
+                case Drawable.Types.ObjectType.Symbol:
+                    return true;
+                default: return false;
+            }
+        }
+
+        public static bool SupportsTextProps(Drawable.Types.ObjectType type)
+        {
+            switch (type)
+            {
+                case Drawable.Types.ObjectType.Text:
+                case Drawable.Types.ObjectType.LabelControl:
+                case Drawable.Types.ObjectType.EditControl:
+                case Drawable.Types.ObjectType.ButtonControl:
+                case Drawable.Types.ObjectType.TextBlockControl:
+                    return true;
+                default: return false;
+            }
+        }
+
+        public static bool SupportsControlProps(Drawable.Types.ObjectType type)
+        {
+            switch (type)
+            {
+                case Drawable.Types.ObjectType.LabelControl:
+                case Drawable.Types.ObjectType.RectangleControl:
+                case Drawable.Types.ObjectType.EditControl:
+                case Drawable.Types.ObjectType.ButtonControl:
                 case Drawable.Types.ObjectType.BitmapControl:
-                    BitmapProps = new DrawableBitmapPropsInfo();
-                    ControlProps = new DrawableControlPropsInfo();
-                    break;
+                case Drawable.Types.ObjectType.TextBlockControl:
+                    return true;
+                default: return false;
+            }
+        }
+
+        public static bool SupportsBitmapProps(Drawable.Types.ObjectType type)
+        {
+            switch (type)
+            {
+                case Drawable.Types.ObjectType.Bitmap:
+                case Drawable.Types.ObjectType.BitmapControl:
+                    return true;
+                default: return false;
+            }
+        }
+
+        public static bool SupportsLevelsList(Drawable.Types.ObjectType type)
+        {
+            switch (type)
+            {
                 case Drawable.Types.ObjectType.Levels:
-                    Levels = new DrawableObjectLevelsList(0);
-                    break;
-                case Drawable.Types.ObjectType.Cycles:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    break;
-                case Drawable.Types.ObjectType.LinRegChannel:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    break;
-                case Drawable.Types.ObjectType.StdDevChannel:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    break;
-                case Drawable.Types.ObjectType.EquidistantChannel:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(3);
-                    break;
-                case Drawable.Types.ObjectType.GannLine:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    break;
-                case Drawable.Types.ObjectType.GannFan:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    break;
-                case Drawable.Types.ObjectType.GannGrid:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    break;
                 case Drawable.Types.ObjectType.FiboFan:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    Levels = new DrawableObjectLevelsList(0);
-                    break;
                 case Drawable.Types.ObjectType.FiboArcs:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    Levels = new DrawableObjectLevelsList(0);
-                    break;
                 case Drawable.Types.ObjectType.FiboChannel:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(3);
-                    Levels = new DrawableObjectLevelsList(0);
-                    break;
                 case Drawable.Types.ObjectType.FiboRetracement:
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    Levels = new DrawableObjectLevelsList(0);
-                    break;
                 case Drawable.Types.ObjectType.FiboTimeZones:
-                    Anchors = new DrawableObjectAnchorsList(2);
-                    Levels = new DrawableObjectLevelsList(0);
-                    break;
                 case Drawable.Types.ObjectType.FiboExpansion:
-                    Anchors = new DrawableObjectAnchorsList(3);
-                    Levels = new DrawableObjectLevelsList(0);
-                    break;
                 case Drawable.Types.ObjectType.AndrewsPitchfork:
-                    LineProps = new DrawableLinePropsInfo();
-                    Anchors = new DrawableObjectAnchorsList(3);
-                    Levels = new DrawableObjectLevelsList(0);
-                    break;
-                default: throw new AlgoException("Unsupported object type");
+                    return true;
+                default: return false;
+            }
+        }
+
+        public static int GetAnchorListSize(Drawable.Types.ObjectType type)
+        {
+            switch (type)
+            {
+                case Drawable.Types.ObjectType.VerticalLine:
+                case Drawable.Types.ObjectType.HorizontalLine:
+                case Drawable.Types.ObjectType.Symbol:
+                case Drawable.Types.ObjectType.Text:
+                case Drawable.Types.ObjectType.Bitmap:
+                    return 1;
+                case Drawable.Types.ObjectType.TrendLine:
+                case Drawable.Types.ObjectType.Rectangle:
+                case Drawable.Types.ObjectType.Ellipse:
+                case Drawable.Types.ObjectType.Cycles:
+                case Drawable.Types.ObjectType.LinRegChannel:
+                case Drawable.Types.ObjectType.StdDevChannel:
+                case Drawable.Types.ObjectType.GannLine:
+                case Drawable.Types.ObjectType.GannFan:
+                case Drawable.Types.ObjectType.GannGrid:
+                case Drawable.Types.ObjectType.FiboFan:
+                case Drawable.Types.ObjectType.FiboArcs:
+                case Drawable.Types.ObjectType.FiboRetracement:
+                case Drawable.Types.ObjectType.FiboTimeZones:
+                    return 2;
+                case Drawable.Types.ObjectType.Triangle:
+                case Drawable.Types.ObjectType.EquidistantChannel:
+                case Drawable.Types.ObjectType.FiboChannel:
+                case Drawable.Types.ObjectType.FiboExpansion:
+                case Drawable.Types.ObjectType.AndrewsPitchfork:
+                    return 3;
+                default: return 0;
+            }
+        }
+
+        public static bool SupportsSpecialProps(Drawable.Types.ObjectType type)
+        {
+            switch (type)
+            {
+                //case Drawable.Types.ObjectType.VerticalLine:
+                //case Drawable.Types.ObjectType.HorizontalLine:
+                case Drawable.Types.ObjectType.TrendLine: // RayLeft, RayRight, Angle
+                case Drawable.Types.ObjectType.Rectangle: // Fill
+                case Drawable.Types.ObjectType.Triangle: // Fill
+                case Drawable.Types.ObjectType.Ellipse: // Fill
+                //case Drawable.Types.ObjectType.Symbol:
+                case Drawable.Types.ObjectType.Text: // Angle, AnchorPosition
+                //case Drawable.Types.ObjectType.Bitmap: // ?Angle?, ?AnchorPosition?
+                //case Drawable.Types.ObjectType.Levels:
+                //case Drawable.Types.ObjectType.Cycles:
+                case Drawable.Types.ObjectType.LinRegChannel: // RayLeft, RayRight, Fill
+                case Drawable.Types.ObjectType.StdDevChannel: // RayLeft, RayRight, Fill
+                case Drawable.Types.ObjectType.EquidistantChannel: // RayLeft, RayRight, Fill
+                case Drawable.Types.ObjectType.GannLine: // RayLeft, RayRight, Angle, Scale
+                case Drawable.Types.ObjectType.GannFan: // Scale, GannDirection
+                case Drawable.Types.ObjectType.GannGrid: // Scale, GannDirection
+                //case Drawable.Types.ObjectType.FiboFan:
+                case Drawable.Types.ObjectType.FiboArcs: // Scale, FullEllipse
+                case Drawable.Types.ObjectType.FiboChannel: // Ray
+                case Drawable.Types.ObjectType.FiboRetracement: // RayRight
+                //case Drawable.Types.ObjectType.FiboTimeZones:
+                case Drawable.Types.ObjectType.FiboExpansion: // RayRight
+                case Drawable.Types.ObjectType.AndrewsPitchfork: // RayLeft, RayRight, ?Fill?
+                case Drawable.Types.ObjectType.LabelControl: // Angle, AnchorPosition
+                //case Drawable.Types.ObjectType.RectangleControl:
+                //case Drawable.Types.ObjectType.EditControl: ?ReadOnly?
+                case Drawable.Types.ObjectType.ButtonControl: // ButtonState
+                case Drawable.Types.ObjectType.BitmapControl: // ButtonState, AnchorPosition
+                //case Drawable.Types.ObjectType.TextBlockControl:
+                    return true;
+                default: return false;
             }
         }
     }

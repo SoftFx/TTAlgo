@@ -36,5 +36,6 @@
         EditControl = 102,
         ButtonControl = 103,
         BitmapControl = 104,
+        TextBlockControl = 105,
     }
 }

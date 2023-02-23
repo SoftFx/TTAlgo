@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Api
     }
 
     [Flags]
-    public enum DrawableObjectVisibility
+    public enum DrawableObjectVisibility : uint
     {
         NoTimeframes = 0,
         TimeframeS1 = 0x1,

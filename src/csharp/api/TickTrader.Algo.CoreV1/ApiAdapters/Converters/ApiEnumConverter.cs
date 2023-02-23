@@ -369,6 +369,7 @@ namespace TickTrader.Algo.CoreV1
                 case DrawableObjectType.EditControl: return Domain.Drawable.Types.ObjectType.EditControl;
                 case DrawableObjectType.ButtonControl: return Domain.Drawable.Types.ObjectType.ButtonControl;
                 case DrawableObjectType.BitmapControl: return Domain.Drawable.Types.ObjectType.BitmapControl;
+                case DrawableObjectType.TextBlockControl: return Domain.Drawable.Types.ObjectType.TextBlockControl;
                 case DrawableObjectType.Levels: return Domain.Drawable.Types.ObjectType.Levels;
                 case DrawableObjectType.Cycles: return Domain.Drawable.Types.ObjectType.Cycles;
                 case DrawableObjectType.LinRegChannel: return Domain.Drawable.Types.ObjectType.LinRegChannel;

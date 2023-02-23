@@ -46,6 +46,7 @@ message Drawable {
         EDIT_CONTROL = 102;
         BUTTON_CONTROL = 103;
         BITMAP_CONTROL = 104;
+        TEXT_BLOCK_CONTROL = 105;
     }
 
     enum SymbolAnchor {
@@ -92,7 +93,7 @@ message DrawableObjectInfo {
     bool is_hidden = 11;
     int32 z_index = 12;
     google.protobuf.StringValue tooltip = 13;
-    int32 visibility_bitmask = 14;
+    uint32 visibility_bitmask = 14;
 
     DrawableLinePropsInfo line_props = 20;
     DrawableShapePropsInfo shape_props = 21;

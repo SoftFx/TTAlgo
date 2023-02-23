@@ -69,7 +69,7 @@ namespace TickTrader.Algo.CoreV1
             get => (DrawableObjectVisibility)_info.VisibilityBitmask;
             set
             {
-                _info.VisibilityBitmask = (int)value;
+                _info.VisibilityBitmask = (uint)value;
                 OnChanged();
             }
         }

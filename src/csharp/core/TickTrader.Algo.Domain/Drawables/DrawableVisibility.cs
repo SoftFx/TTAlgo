@@ -3,7 +3,7 @@
 namespace TickTrader.Algo.Domain
 {
     [Flags]
-    public enum DrawableVisibility
+    public enum DrawableVisibility : uint
     {
         NoTimeframes = 0,
         TimeframeS1 = 0x1,
