@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.ObservableCollections;
+using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Domain;
+using TickTrader.FDK.Calculator;
 
 namespace TickTrader.BotTerminal.Views.BotsRepository
 {
@@ -67,7 +70,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             CanUpdateAllBots = _context.AddBoolProperty();
             CollectionsRefreshed = _context.AddBoolProperty();
             SelectAllBots = _context.AddBoolProperty().AddPostTrigger(SetSelectAllBots);
-            OnlyWithUpdates = _context.AddBoolProperty().AddPostTrigger(use => UpdateInstalledView(use));
+            OnlyWithUpdates = _context.AddBoolProperty().AddPostTrigger(_ => UpdateInstalledView());
             SelectedTabIndex = _context.AddIntProperty().AddPostTrigger(_ => SelectedBot.Reset());
 
 
@@ -75,6 +78,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             FilteredSourceString = _context.AddStrProperty().AddPostTrigger(FilterSourceBotsByName);
 
             _hasSelectedBots.PropertyChanged += (s, e) => CanUpdateAllBots.Value = _hasSelectedBots.Value;
+            _agent.Plugins.Updated += InstalledPluginsUpdatedHandler;
         }
 
         protected override Task OnActivateAsync(CancellationToken token)
@@ -121,21 +125,17 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             });
 
         public void FilterInstalledBotsByName(string filter) =>
-            _ = UpdateInstalledView(OnlyWithUpdates.Value, filter);
+            _ = UpdateInstalledView(filter);
 
         private Task RefreshSources(CancellationToken token) =>
             UpdateCollectionView(Sources, async () =>
             {
                 await Task.WhenAll(_sources.Select(s => s.RefreshBotsInfo(token)));
 
-                foreach (var source in _sources)
-                {
-                    foreach (var remoteBote in source.BotsInfo)
-                        if (_botsInfo.TryGetValue(remoteBote.Name, out var localBot))
-                            localBot.SetRemoteBot(remoteBote);
+                CheckNewVersionForInstalled();
 
+                foreach (var source in _sources)
                     Sources.Add(source);
-                }
 
                 FilteredSourceString.Value = string.Empty;
             });
@@ -155,35 +155,22 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         private void LoadInstalledBots()
         {
             var instPlugins = _agent.Plugins.Snapshot.Values.Where(p => p.Descriptor_.IsTradeBot);
-            var instPackages = _agent.Packages.Snapshot;
 
             foreach (var plugin in instPlugins)
-            {
-                var botName = plugin.Descriptor_.DisplayName;
-
-                if (!_botsInfo.TryGetValue(botName, out var botInfo))
-                {
-                    botInfo = new(botName);
-
-                    _hasSelectedBots |= botInfo.IsSelected.Var;
-                    _botsInfo.Add(botName, botInfo);
-                }
-
-                if (instPackages.TryGetValue(plugin.Key.PackageId, out var package))
-                    botInfo.ApplyPackage(plugin, package.Identity);
-            }
+                RegisterNewPlugin(plugin);
 
             UpdateInstalledView();
         }
 
-        private Task UpdateInstalledView(bool useCanUpload = false, string filter = null) =>
+        private Task UpdateInstalledView(string filter = null) =>
             UpdateCollectionView(CurrentBots, () =>
             {
+                var useCanUpload = OnlyWithUpdates?.Value ?? false;
+
                 filter ??= FilteredInstalledString?.Value ?? string.Empty; //for property initialization
 
                 var filteredBots = _botsInfo.Values
-                    .Where(b => !useCanUpload || b.CanUpload.Value)
-                    .Where(b => b.IsVisibleBot(filter))
+                    .Where(b => (!useCanUpload || b.CanUpload.Value) && b.IsVisibleBot(filter))
                     .OrderBy(b => b.Name);
 
                 CurrentBots.AddRange(filteredBots);
@@ -197,6 +184,69 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         {
             foreach (var bot in CurrentBots)
                 bot.IsSelected.Value = select;
+        }
+
+        private void InstalledPluginsUpdatedHandler(DictionaryUpdateArgs<Algo.Domain.PluginKey, Algo.Domain.PluginInfo> args)
+        {
+            switch (args.Action)
+            {
+                case DLinqAction.Insert:
+                    RegisterNewPlugin(args.NewItem);
+                    break;
+                case DLinqAction.Remove:
+                    RemovePlugin(args.OldItem);
+                    break;
+                default:
+                    break;
+            }
+
+            CheckNewVersionForInstalled();
+            UpdateInstalledView();
+        }
+
+        private void RegisterNewPlugin(PluginInfo plugin)
+        {
+            if (!plugin.Descriptor_.IsTradeBot)
+                return;
+
+            var botName = plugin.Descriptor_.DisplayName;
+
+            if (!_botsInfo.TryGetValue(botName, out var botInfo))
+            {
+                botInfo = new(botName);
+
+                _hasSelectedBots |= botInfo.IsSelected.Var;
+                _botsInfo.Add(botName, botInfo);
+            }
+
+            if (_agent.Packages.Snapshot.TryGetValue(plugin.Key.PackageId, out var package))
+                botInfo.ApplyPackage(plugin, package.Identity);
+        }
+
+        private void RemovePlugin(PluginInfo plugin)
+        {
+            if (!plugin.Descriptor_.IsTradeBot)
+                return;
+
+            var botName = plugin.Descriptor_.DisplayName;
+
+            if (_botsInfo.TryGetValue(botName, out var botInfo))
+                botInfo.RemoveVersion(plugin);
+
+            if (botInfo.Versions.Count == 0)
+                _botsInfo.Remove(botName);
+        }
+
+        private void CheckNewVersionForInstalled()
+        {
+            _botsInfo.Values.Foreach(u => u.ResetNewVersion());
+
+            foreach (var source in _sources)
+            {
+                foreach (var remoteBote in source.BotsInfo)
+                    if (_botsInfo.TryGetValue(remoteBote.Name, out var localBot))
+                        localBot.SetRemoteBot(remoteBote);
+            }
         }
     }
 }

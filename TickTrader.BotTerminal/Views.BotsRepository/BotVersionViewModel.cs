@@ -23,12 +23,16 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         public DateTime? CreatedDate { get; }
 
+        internal PluginDescriptor Descriptior { get; }
+
 
         public BotVersionViewModel(string packageId, PluginDescriptor descriptor, PackageIdentity identity)
         {
+            PackageId = packageId;
+            Descriptior = descriptor;
+
             Version = descriptor.Version;
             ApiVersion = descriptor.ApiVersionStr;
-            PackageId = packageId;
 
             Size = $"{identity?.Size / 1024} KB";
             PackagePath = identity?.FilePath;

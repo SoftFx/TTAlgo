@@ -1,6 +1,7 @@
 ﻿using Machinarium.Var;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Domain;
@@ -142,15 +143,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
             Versions.Add(new BotVersionViewModel(plugin.Key.PackageId, descriptor, identity));
 
-            if (!Version.HasValue || IsBetterVersion(descriptor.Version))
-            {
-                Version.Value = descriptor.Version;
-                ApiVersion.Value = descriptor.ApiVersionStr;
-                Description.Value = descriptor.Description;
-                Category.Value = descriptor.Category;
-            }
-
-            return this;
+            return FindBestVersion();
         }
 
         internal BotInfoViewModel ApplyPackage(MetadataInfo info)
@@ -169,6 +162,18 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             return this;
         }
 
+
+        internal void RemoveVersion(PluginInfo plugin)
+        {
+            var packageId = plugin.Key.PackageId;
+            var detectedVersion = Versions.FirstOrDefault(u => u.PackageId == packageId);
+
+            if (detectedVersion != null)
+                Versions.Remove(detectedVersion);
+
+            FindBestVersion();
+        }
+
         internal void SetRemoteBot(BotInfoViewModel remoteBot)
         {
             var newVersion = remoteBot.Version.Value;
@@ -181,6 +186,36 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                 CanUpload.Value = true;
                 RemoteVersion.Value = newVersion;
             }
+        }
+
+        internal void ResetNewVersion()
+        {
+            _remoteVersion = null;
+            _downloadPackageHandler = null;
+
+            CanUpload.Value = false;
+            RemoteVersion.Value = null;
+        }
+
+
+        private BotInfoViewModel FindBestVersion()
+        {
+            Version.Value = null;
+
+            foreach (var version in Versions)
+            {
+                var descriptor = version.Descriptior;
+
+                if (!Version.HasValue || IsBetterVersion(descriptor.Version))
+                {
+                    Version.Value = descriptor.Version;
+                    ApiVersion.Value = descriptor.ApiVersionStr;
+                    Description.Value = descriptor.Description;
+                    Category.Value = descriptor.Category;
+                }
+            }
+
+            return this;
         }
 
         internal bool IsVisibleBot(string filter)
