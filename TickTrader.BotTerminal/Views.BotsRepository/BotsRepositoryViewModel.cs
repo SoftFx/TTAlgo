@@ -154,6 +154,8 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         private void LoadInstalledBots()
         {
+            _botsInfo.Clear();
+
             var instPlugins = _agent.Plugins.Snapshot.Values.Where(p => p.Descriptor_.IsTradeBot);
 
             foreach (var plugin in instPlugins)
