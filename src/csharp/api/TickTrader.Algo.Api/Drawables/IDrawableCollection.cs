@@ -11,6 +11,10 @@
 
         IDrawableObject Create(string name, DrawableObjectType type, OutputTargets targetWindow = OutputTargets.Overlay);
 
+        bool TryGetObject(string name, out IDrawableObject obj);
+
+        int IndexOf(string name);
+
         void Remove(string name);
 
         void RemoveAt(int index);

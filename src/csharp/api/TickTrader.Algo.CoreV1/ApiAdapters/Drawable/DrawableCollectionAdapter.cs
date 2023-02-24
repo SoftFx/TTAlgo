@@ -5,7 +5,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal class DrawableCollection : IDrawableCollection
+    internal class DrawableCollectionAdapter : IDrawableCollection
     {
         private readonly object _syncObj = new object();
         private readonly List<DrawableObjectAdapter> _objects = new List<DrawableObjectAdapter>(16);
@@ -20,7 +20,7 @@ namespace TickTrader.Algo.CoreV1
         public IDrawableObject this[int index] => _objects[index];
 
 
-        public DrawableCollection(IDrawableUpdateSink updateSink)
+        public DrawableCollectionAdapter(IDrawableUpdateSink updateSink)
         {
             _updateSink = updateSink;
         }
@@ -46,32 +46,51 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public void Remove(string name)
+        public bool TryGetObject(string name, out IDrawableObject obj)
         {
-            DrawableObjectAdapter obj = default;
             lock (_syncObj)
             {
-                obj = _byNameCache[name];
+                var res = _byNameCache.TryGetValue(name, out var objAdapter);
+                obj = objAdapter;
+                return res;
+            }
+        }
+
+        public int IndexOf(string name)
+        {
+            lock (_syncObj)
+            {
+                if (!_byNameCache.TryGetValue(name, out var objAdapter))
+                    return -1;
+
+                return _objects.IndexOf(objAdapter);
+            }
+        }
+
+        public void Remove(string name)
+        {
+            lock (_syncObj)
+            {
+                var obj = _byNameCache[name];
                 _byNameCache.Remove(name);
                 _objects.Remove(obj);
-            }
 
-            if (obj != null && !obj.IsNew)
-                _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
+                if (obj != null && !obj.IsNew)
+                    _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
+            }
         }
 
         public void RemoveAt(int index)
         {
-            DrawableObjectAdapter obj = default;
             lock (_syncObj)
             {
-                obj = _objects[index];
+                var obj = _objects[index];
                 _objects.RemoveAt(index);
                 _byNameCache.Remove(obj.Name);
-            }
 
-            if (obj != null && !obj.IsNew)
-                _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
+                if (obj != null && !obj.IsNew)
+                    _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
+            }
         }
 
         public void Clear()
@@ -80,9 +99,9 @@ namespace TickTrader.Algo.CoreV1
             {
                 _objects.Clear();
                 _byNameCache.Clear();
-            }
 
-            _updateSink.Send(DrawableCollectionUpdate.Cleared());
+                _updateSink.Send(DrawableCollectionUpdate.Cleared());
+            }
         }
 
 

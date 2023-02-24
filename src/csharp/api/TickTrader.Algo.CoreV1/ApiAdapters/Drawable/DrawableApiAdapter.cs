@@ -12,7 +12,7 @@ namespace TickTrader.Algo.CoreV1
 
     internal class DrawableApiAdapter : IDrawableApi, IDrawableUpdateSink
     {
-        private readonly DrawableCollection _collection;
+        private readonly DrawableCollectionAdapter _collection;
 
 
         public IDrawableCollection LocalCollection => _collection;
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.CoreV1
 
         public DrawableApiAdapter()
         {
-            _collection = new DrawableCollection(this);
+            _collection = new DrawableCollectionAdapter(this);
         }
 
 
