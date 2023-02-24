@@ -35,32 +35,12 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public bool RayLeft
+        public DrawableLineRayMode RayMode
         {
-            get => _info.RayLeft;
+            get => _info.RayMode.ToApiEnum();
             set
             {
-                _info.RayLeft = value;
-                OnChanged();
-            }
-        }
-
-        public bool RayRight
-        {
-            get => _info.RayRight;
-            set
-            {
-                _info.RayRight = value;
-                OnChanged();
-            }
-        }
-
-        public bool Ray
-        {
-            get => _info.Ray;
-            set
-            {
-                _info.Ray = value;
+                _info.RayMode = value.ToDomainEnum();
                 OnChanged();
             }
         }
@@ -71,16 +51,6 @@ namespace TickTrader.Algo.CoreV1
             set
             {
                 _info.Fill = value;
-                OnChanged();
-            }
-        }
-
-        public bool ButtonState
-        {
-            get => _info.ButtonState;
-            set
-            {
-                _info.ButtonState = value;
                 OnChanged();
             }
         }
@@ -114,6 +84,7 @@ namespace TickTrader.Algo.CoreV1
                 OnChanged();
             }
         }
+
 
         public DrawableSpecialPropsAdapter(DrawableSpecialPropsInfo info, IDrawableChangedWatcher watcher) : base(info, watcher)
         {

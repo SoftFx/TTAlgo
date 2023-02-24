@@ -486,5 +486,29 @@ namespace TickTrader.Algo.CoreV1
                 default: throw new ArgumentException("Unknown gann direction");
             }
         }
+
+        public static Domain.Drawable.Types.LineRayMode ToDomainEnum(this DrawableLineRayMode mode)
+        {
+            switch (mode)
+            {
+                case DrawableLineRayMode.RayNone: return Domain.Drawable.Types.LineRayMode.RayNone;
+                case DrawableLineRayMode.RayLeft: return Domain.Drawable.Types.LineRayMode.RayLeft;
+                case DrawableLineRayMode.RayRight: return Domain.Drawable.Types.LineRayMode.RayRight;
+                case DrawableLineRayMode.RayAll: return Domain.Drawable.Types.LineRayMode.RayAll;
+                default: throw new ArgumentException("Unknown line ray mode");
+            }
+        }
+
+        public static DrawableLineRayMode ToApiEnum(this Domain.Drawable.Types.LineRayMode mode)
+        {
+            switch (mode)
+            {
+                case Domain.Drawable.Types.LineRayMode.RayNone: return DrawableLineRayMode.RayNone;
+                case Domain.Drawable.Types.LineRayMode.RayLeft: return DrawableLineRayMode.RayLeft;
+                case Domain.Drawable.Types.LineRayMode.RayRight: return DrawableLineRayMode.RayRight;
+                case Domain.Drawable.Types.LineRayMode.RayAll: return DrawableLineRayMode.RayAll;
+                default: throw new ArgumentException("Unknown line ray mode");
+            }
+        }
     }
 }

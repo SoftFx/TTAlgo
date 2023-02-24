@@ -121,6 +121,8 @@ namespace TickTrader.Algo.Api
         uint? Height { get; set; }
         DrawableControlZeroPosition ZeroPosistion { get; set; }
         DrawablePositionMode ContentAlignment { get; set; }
+        bool SwitchState { get; set; }
+        bool ReadOnly { get; set; }
     }
 
     public interface IDrawableBitmapProps
@@ -135,15 +137,14 @@ namespace TickTrader.Algo.Api
 
     public interface IDrawableSpecialProps
     {
+        bool IsSupported { get; }
+
         double? Angle { get; set; }
         double? Scale { get; set; }
         double? Deviation { get; set; }
 
-        bool RayLeft { get; set; }
-        bool RayRight { get; set; }
-        bool Ray { get; set; }
+        DrawableLineRayMode RayMode { get; set; }
         bool Fill { get; set; }
-        bool ButtonState { get; set; }
         bool FiboArcsFullEllipse { get; set; }
         DrawablePositionMode AnchorPosition { get; set; }
         DrawableGannDirection GannDirection { get; set; }

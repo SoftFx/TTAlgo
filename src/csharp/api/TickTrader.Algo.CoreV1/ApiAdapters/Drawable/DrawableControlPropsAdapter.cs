@@ -65,6 +65,26 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
+        public bool SwitchState
+        {
+            get => _info.SwitchState;
+            set
+            {
+                _info.SwitchState = value;
+                OnChanged();
+            }
+        }
+
+        public bool ReadOnly
+        {
+            get => _info.ReadOnly;
+            set
+            {
+                _info.ReadOnly = value;
+                OnChanged();
+            }
+        }
+
 
         public DrawableControlPropsAdapter(DrawableControlPropsInfo info, IDrawableChangedWatcher watcher)
             : base(info, watcher)

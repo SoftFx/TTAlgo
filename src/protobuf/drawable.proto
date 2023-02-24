@@ -56,7 +56,7 @@ message Drawable {
     }
 
     enum ControlZeroPosition {
-        UNKNOWN_CONTROL_ANCHOR = 0;
+        UNKNOWN_CONTROL_ZERO_POSITION = 0;
         UPPER_LEFT = 1;
         UPPER_RIGHT = 2;
         LOWER_LEFT = 3;
@@ -80,6 +80,14 @@ message Drawable {
         UNKNOWN_GANN_DIRECTION = 0;
         UP_TREND = 1;
         DOWN_TREND = 2;
+    }
+
+    enum LineRayMode {
+        UNKNOWN_LINE_RAY_MODE = 0;
+        RAY_NONE = 1;
+        RAY_LEFT = 2;
+        RAY_RIGHT = 3;
+        RAY_ALL = 4;
     }
 }
 
@@ -175,6 +183,8 @@ message DrawableControlPropsInfo {
     google.protobuf.UInt32Value height = 4;
     Drawable.ControlZeroPosition zero_position = 5;
     Drawable.PositionMode content_alignment = 6;
+    bool switch_state = 7;
+    bool read_only = 8;
 }
 
 message DrawableBitmapPropsInfo {
@@ -190,14 +200,11 @@ message DrawableSpecialPropsInfo {
     google.protobuf.DoubleValue scale = 2;
     google.protobuf.DoubleValue deviation = 3;
 
-    bool ray_left = 10;
-    bool ray_right = 11;
-    bool ray = 12;
-    bool fill = 13;
-    bool button_state = 14;
-    bool fibo_arcs_full_ellipse = 15;
-    Drawable.GannDirection gann_direction = 16;
-    Drawable.PositionMode anchor_position = 17;
+    Drawable.LineRayMode ray_mode = 10;
+    bool fill = 11;
+    bool fibo_arcs_full_ellipse = 12;
+    Drawable.GannDirection gann_direction = 13;
+    Drawable.PositionMode anchor_position = 14;
 }
 
 message DrawableCollectionUpdate {

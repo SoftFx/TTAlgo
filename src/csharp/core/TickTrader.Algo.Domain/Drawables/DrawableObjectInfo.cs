@@ -187,7 +187,7 @@
             {
                 //case Drawable.Types.ObjectType.VerticalLine:
                 //case Drawable.Types.ObjectType.HorizontalLine:
-                case Drawable.Types.ObjectType.TrendLine: // RayLeft, RayRight, Angle
+                case Drawable.Types.ObjectType.TrendLine: // RayMode, Angle
                 case Drawable.Types.ObjectType.Rectangle: // Fill
                 case Drawable.Types.ObjectType.Triangle: // Fill
                 case Drawable.Types.ObjectType.Ellipse: // Fill
@@ -196,24 +196,24 @@
                 //case Drawable.Types.ObjectType.Bitmap: // ?Angle?, ?AnchorPosition?
                 //case Drawable.Types.ObjectType.Levels:
                 //case Drawable.Types.ObjectType.Cycles:
-                case Drawable.Types.ObjectType.LinRegChannel: // RayLeft, RayRight, Fill
-                case Drawable.Types.ObjectType.StdDevChannel: // RayLeft, RayRight, Fill
-                case Drawable.Types.ObjectType.EquidistantChannel: // RayLeft, RayRight, Fill
-                case Drawable.Types.ObjectType.GannLine: // RayLeft, RayRight, Angle, Scale
+                case Drawable.Types.ObjectType.LinRegChannel: // RayMode, Fill
+                case Drawable.Types.ObjectType.StdDevChannel: // RayMode, Fill
+                case Drawable.Types.ObjectType.EquidistantChannel: // RayMode, Fill
+                case Drawable.Types.ObjectType.GannLine: // RayMode, Angle, Scale
                 case Drawable.Types.ObjectType.GannFan: // Scale, GannDirection
                 case Drawable.Types.ObjectType.GannGrid: // Scale, GannDirection
                 //case Drawable.Types.ObjectType.FiboFan:
                 case Drawable.Types.ObjectType.FiboArcs: // Scale, FullEllipse
-                case Drawable.Types.ObjectType.FiboChannel: // Ray
-                case Drawable.Types.ObjectType.FiboRetracement: // RayRight
+                case Drawable.Types.ObjectType.FiboChannel: // RayMode
+                case Drawable.Types.ObjectType.FiboRetracement: // RayMode
                 //case Drawable.Types.ObjectType.FiboTimeZones:
-                case Drawable.Types.ObjectType.FiboExpansion: // RayRight
-                case Drawable.Types.ObjectType.AndrewsPitchfork: // RayLeft, RayRight, ?Fill?
+                case Drawable.Types.ObjectType.FiboExpansion: // RayMode
+                case Drawable.Types.ObjectType.AndrewsPitchfork: // RayMode
                 case Drawable.Types.ObjectType.LabelControl: // Angle, AnchorPosition
                 //case Drawable.Types.ObjectType.RectangleControl:
-                //case Drawable.Types.ObjectType.EditControl: ?ReadOnly?
-                case Drawable.Types.ObjectType.ButtonControl: // ButtonState
-                case Drawable.Types.ObjectType.BitmapControl: // ButtonState, AnchorPosition
+                //case Drawable.Types.ObjectType.EditControl:
+                //case Drawable.Types.ObjectType.ButtonControl:
+                case Drawable.Types.ObjectType.BitmapControl: // AnchorPosition, ?Angle?
                 //case Drawable.Types.ObjectType.TextBlockControl:
                     return true;
                 default: return false;

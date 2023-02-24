@@ -53,4 +53,12 @@ namespace TickTrader.Algo.Api
         UpTrend = 0,
         DownTrend = 1,
     }
+
+    public enum DrawableLineRayMode
+    {
+        RayNone = 0,
+        RayLeft = 1,
+        RayRight = 2,
+        RayAll = 3,
+    }
 }
