@@ -54,6 +54,12 @@ namespace TickTrader.Algo.Api
         public const ushort Sell = 2;
         public const ushort LeftPriceLabel = 3;
         public const ushort RightPriceLabel = 4;
+        public const ushort ThumbsUp = 67;
+        public const ushort ThumbsDown= 68;
+        public const ushort ArrowUp = 241;
+        public const ushort ArrowDown = 242;
+        public const ushort StopSign = 251;
+        public const ushort CheckSign = 252;
     }
 
     public interface IDrawableSymbolProps

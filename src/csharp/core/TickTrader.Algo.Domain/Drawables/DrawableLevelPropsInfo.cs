@@ -45,7 +45,7 @@
             DefaultLineThickness = 1;
             DefaultLineStyle = Metadata.Types.LineStyle.Solid;
             DefaultFontFamily = "Arial";
-            DefaultFontSize = 8;
+            DefaultFontSize = 10;
         }
     }
 }

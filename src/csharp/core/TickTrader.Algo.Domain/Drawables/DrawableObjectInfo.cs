@@ -22,6 +22,7 @@
             CreatedTime = UtcTicks.Now;
             TargetWindow = Metadata.Types.OutputTarget.Overlay;
             VisibilityBitmask = (uint)DrawableVisibility.AllTimeframes;
+            IsHidden = true;
 
             InitFields();
         }
