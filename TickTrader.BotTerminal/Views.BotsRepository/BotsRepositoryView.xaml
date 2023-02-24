@@ -461,7 +461,7 @@
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="45"/>
+                    <ColumnDefinition Width="60"/>
                 </Grid.ColumnDefinitions>
 
                 <CheckBox Grid.Column="0" Grid.RowSpan="2" IsChecked="{l:UpdateBind IsSelected.Value}" Visibility="{Binding IsLocal}"/>
@@ -501,18 +501,19 @@
 
                     <Grid Grid.Row="1" Visibility="{l:BoolToVisBind CanUpload.Value}" VerticalAlignment="Bottom">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition/>
+                            <ColumnDefinition Width="auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Button Margin="0" Style="{StaticResource WebToolButton}" Content="{fa:Icon CircleArrowUp}" 
+                        <Button Grid.Column="1" Margin="5 0" Style="{StaticResource WebToolButton}" Content="{fa:Icon CircleArrowUp}" 
                                 ToolTip="Download new version" cal:Message.Attach="DownloadPackage" Height="13"
                                 Visibility="{l:InvBoolToVisBind IsUploading.Value}"/>
 
-                        <fa:IconBlock Margin="0" Style="{StaticResource PackageSpinnerStyle}" FontSize="13"
+                        <fa:IconBlock Grid.Column="1" Margin="5 0" Style="{StaticResource PackageSpinnerStyle}" FontSize="13"
                                       Visibility="{l:BoolToVisBind IsUploading.Value}"/>
 
-                        <TextBlock Grid.Column="1" Margin="0 0 0 2" Text="{l:UpdateBind RemoteVersion.Value}"/>
+                        <TextBlock Grid.Column="2" Margin="0 0 0 2" Text="{l:UpdateBind RemoteVersion.Value}"/>
                     </Grid>
                 </Grid>
             </Grid>

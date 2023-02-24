@@ -4,6 +4,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
@@ -11,11 +12,13 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AgentPluginSetupViewModel : Screen, IWindowModel
+    internal sealed class AgentPluginSetupViewModel : Screen, IWindowModel, IDisposable
     {
+        private const string DefaultDateTimeFormat = "dd.MM.yyyy hh:mm:ss";
+
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private AlgoEnvironment _algoEnv;
+        private readonly AlgoEnvironment _algoEnv;
         private AlgoAgentViewModel _selectedAgent;
         private AlgoAccountViewModel _selectedAccount;
         private AlgoPluginViewModel _selectedPlugin;
@@ -82,28 +85,38 @@ namespace TickTrader.BotTerminal
 
         public AlgoPluginViewModel SelectedPlugin
         {
-            get { return _selectedPlugin; }
+            get => _selectedPlugin;
             set
             {
-                if (_selectedPlugin == value)
+                if (_selectedPlugin == value || value is null)
                     return;
 
                 _selectedPlugin = value;
 
-                if (Mode == PluginSetupMode.Edit && _selectedPlugin == null)
-                {
-                    TryCloseAsync();
-                    return;
-                }
-
                 SelectedPluginVersions = Plugins.Where(u => u.DisplayName == _selectedPlugin.DisplayName).ToList();
+
+                SelectedPluginPackageId = _selectedPlugin.PackageInfo.PackageId;
+                SelectedPluginLastModify = _selectedPlugin.PackageInfo.Identity.LastModifiedUtc?.ToDateTime().ToString(DefaultDateTimeFormat);
+                SelectedPluginPackageSize = $"{_selectedPlugin.PackageInfo.Identity.Size / 1024} KB"; 
 
                 NotifyOfPropertyChange(nameof(SelectedPlugin));
                 NotifyOfPropertyChange(nameof(SelectedPluginVersions));
+
+                NotifyOfPropertyChange(nameof(SelectedPluginPackageId));
+                NotifyOfPropertyChange(nameof(SelectedPluginLastModify));
+                NotifyOfPropertyChange(nameof(SelectedPluginPackageSize));
+
                 NotifyOfPropertyChange(nameof(CanOk));
                 UpdateSetup();
             }
         }
+
+        public string SelectedPluginPackageId { get; private set; }
+
+        public string SelectedPluginLastModify { get; private set; }
+
+        public string SelectedPluginPackageSize { get; private set; }
+
 
         public PluginConfigViewModel Setup { get; private set; }
 
@@ -221,11 +234,16 @@ namespace TickTrader.BotTerminal
                 if (Type == Metadata.Types.PluginType.TradeBot && Mode == PluginSetupMode.New)
                 {
                     var fileUploadList = SelectedAgent.Model.IsRemote ? config.FixFileParametersForRemote() : null;
+
                     if (!SelectedAgent.Model.Bots.Snapshot.ContainsKey(config.InstanceId))
                         await SelectedAgent.Model.AddBot(SelectedAccount.AccountId, config);
-                    else await SelectedAgent.Model.ChangeBotConfig(config.InstanceId, config);
+                    else
+                        await SelectedAgent.Model.ChangeBotConfig(config.InstanceId, config);
+
                     await UploadBotFiles(config, fileUploadList);
+
                     SelectedAgent.OpenBotState(config.InstanceId);
+
                     if (Setup.RunBot)
                         await SelectedAgent.Model.StartBot(config.InstanceId);
                 }
@@ -332,7 +350,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void Dispose()
+        public void Dispose()
         {
             if (SelectedAgent != null)
             {
@@ -409,8 +427,7 @@ namespace TickTrader.BotTerminal
 
                 NotifyOfPropertyChange(nameof(Setup));
             }
-            else
-                if (Setup != null)
+            else if (Setup != null)
                 Setup.Visible = false;
         }
 

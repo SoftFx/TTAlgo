@@ -188,7 +188,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                 bot.IsSelected.Value = select;
         }
 
-        private void InstalledPluginsUpdatedHandler(DictionaryUpdateArgs<Algo.Domain.PluginKey, Algo.Domain.PluginInfo> args)
+        private void InstalledPluginsUpdatedHandler(DictionaryUpdateArgs<PluginKey, PluginInfo> args)
         {
             switch (args.Action)
             {

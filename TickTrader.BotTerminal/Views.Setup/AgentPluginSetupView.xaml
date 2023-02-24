@@ -81,6 +81,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="90"/>
@@ -94,19 +95,46 @@
                       IsEditable="True"
                       IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding AvailableBots}"
-                      SelectedItem="{Binding SelectedPlugin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectedItem="{l:UpdateBind SelectedPlugin}"
                       DisplayMemberPath="DisplayName"/>
 
             <Label Grid.Row="1" Grid.Column="0" Content="Version" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
                       IsEditable="True"
-                      IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding SelectedPluginVersions}"
-                      SelectedItem="{Binding SelectedPlugin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectedItem="{l:UpdateBind SelectedPlugin}"
                       DisplayMemberPath="DisplayNameWithVersion"
                       ToolTip="{Binding SelectedPlugin.FullPackagePath}"/>
 
-            <Button Grid.Row="2" Grid.ColumnSpan="4" 
+            <Grid Grid.Row="2" Grid.ColumnSpan="4">
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Margin" Value="5 2"/>
+                    </Style>
+                </Grid.Resources>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Package Id:"/>
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedPluginPackageId}" Margin="0 2" TextWrapping="Wrap"/>
+
+                <TextBlock Grid.Row="1" Text="Last modify:"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedPluginLastModify}" Margin="0 2"/>
+
+                <TextBlock Grid.Row="2" Text="Package size:"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedPluginPackageSize}" Margin="0 2"/>
+            </Grid>
+
+            <Button Grid.Row="3" Grid.ColumnSpan="4" 
                     Content="Upload..." 
                     cal:Message.Attach="UploadNewPlugin" 
                     Height="21" Width="65" 
