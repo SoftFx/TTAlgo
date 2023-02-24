@@ -4,7 +4,6 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
@@ -18,7 +17,6 @@ namespace TickTrader.BotTerminal
 
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly AlgoEnvironment _algoEnv;
         private AlgoAgentViewModel _selectedAgent;
         private AlgoAccountViewModel _selectedAccount;
         private AlgoPluginViewModel _selectedPlugin;
@@ -97,7 +95,7 @@ namespace TickTrader.BotTerminal
 
                 SelectedPluginPackageId = _selectedPlugin.PackageInfo.PackageId;
                 SelectedPluginLastModify = _selectedPlugin.PackageInfo.Identity.LastModifiedUtc?.ToDateTime().ToString(DefaultDateTimeFormat);
-                SelectedPluginPackageSize = $"{_selectedPlugin.PackageInfo.Identity.Size / 1024} KB"; 
+                SelectedPluginPackageSize = $"{_selectedPlugin.PackageInfo.Identity.Size / 1024} KB";
 
                 NotifyOfPropertyChange(nameof(SelectedPlugin));
                 NotifyOfPropertyChange(nameof(SelectedPluginVersions));
@@ -184,7 +182,6 @@ namespace TickTrader.BotTerminal
 
         private AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, string accountId, PluginKey pluginKey, Metadata.Types.PluginType type, SetupContextInfo setupContext, PluginSetupMode mode)
         {
-            _algoEnv = algoEnv;
             Mode = mode;
             Type = type;
             SetupContext = setupContext;
