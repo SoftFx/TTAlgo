@@ -4,6 +4,27 @@ namespace TickTrader.Algo.Api
 {
     public static class DrawableObjectExtensions
     {
+        public static IDrawableObject SetCommonProps(this IDrawableObject obj, bool isBackground = false,
+            bool isHidden = true, int zIndex = 0)
+        {
+            obj.IsBackground = isBackground;
+            obj.IsHidden = isHidden;
+            obj.ZIndex = zIndex;
+            return obj;
+        }
+
+        public static IDrawableObject SetTooltip(this IDrawableObject obj, string tooltip)
+        {
+            obj.Tooltip = tooltip;
+            return obj;
+        }
+
+        public static IDrawableObject SetVisibillity(this IDrawableObject obj, DrawableObjectVisibility visibility)
+        {
+            obj.Visibility = visibility;
+            return obj;
+        }
+
         public static IDrawableObject SetLineProps(this IDrawableObject obj, Colors color,
             ushort thickness = 1, LineStyles style = LineStyles.Solid)
         {
@@ -81,7 +102,7 @@ namespace TickTrader.Algo.Api
             return obj;
         }
 
-        public static IDrawableObject ConfigureControl(this IDrawableObject obj,
+        public static IDrawableObject SetControlProps(this IDrawableObject obj,
             DrawablePositionMode contentAlignment = DrawablePositionMode.Center, bool switchState = false, bool readOnly = false)
         {
             obj.Control.ContentAlignment = contentAlignment;
@@ -173,18 +194,69 @@ namespace TickTrader.Algo.Api
             return obj;
         }
 
-        public static IDrawableObject SetSpecialProps(this IDrawableObject obj, double? angle = null, double? scale = null, double? deviation = null,
-            DrawableLineRayMode rayMode = DrawableLineRayMode.RayNone, bool fill = false, bool fiboArcsFullEllipse = false,
-            DrawablePositionMode anchorPosition = DrawablePositionMode.TopLeft, DrawableGannDirection gannDirection = DrawableGannDirection.UpTrend)
+        //public static IDrawableObject SetSpecialProps(this IDrawableObject obj, double? angle = null, double? scale = null, double? deviation = null,
+        //    DrawableLineRayMode rayMode = DrawableLineRayMode.RayNone, bool fill = false, bool fiboArcsFullEllipse = false,
+        //    DrawablePositionMode anchorPosition = DrawablePositionMode.TopLeft, DrawableGannDirection gannDirection = DrawableGannDirection.UpTrend)
+        //{
+        //    obj.Special.Angle = angle;
+        //    obj.Special.Scale = scale;
+        //    obj.Special.Deviation = deviation;
+        //    obj.Special.RayMode = rayMode;
+        //    obj.Special.Fill = fill;
+        //    obj.Special.FiboArcsFullEllipse = fiboArcsFullEllipse;
+        //    obj.Special.AnchorPosition = anchorPosition;
+        //    obj.Special.GannDirection = gannDirection;
+        //    return obj;
+        //}
+
+        // SetCommonProps
+        // SetVisibillity
+
+        public static IDrawableObject SetAngle(this IDrawableObject obj, double? angle)
         {
             obj.Special.Angle = angle;
+            return obj;
+        }
+
+        public static IDrawableObject SetScale(this IDrawableObject obj, double? scale)
+        {
             obj.Special.Scale = scale;
+            return obj;
+        }
+
+        public static IDrawableObject SetDeviation(this IDrawableObject obj, double? deviation)
+        {
             obj.Special.Deviation = deviation;
+            return obj;
+        }
+
+        public static IDrawableObject SetRayMode(this IDrawableObject obj, DrawableLineRayMode rayMode)
+        {
             obj.Special.RayMode = rayMode;
+            return obj;
+        }
+
+        public static IDrawableObject SetFill(this IDrawableObject obj, bool fill)
+        {
             obj.Special.Fill = fill;
-            obj.Special.FiboArcsFullEllipse = fiboArcsFullEllipse;
-            obj.Special.AnchorPosition = anchorPosition;
-            obj.Special.GannDirection = gannDirection;
+            return obj;
+        }
+
+        public static IDrawableObject SetFiboArcsFullEllipse(this IDrawableObject obj, bool fullEllipse)
+        {
+            obj.Special.FiboArcsFullEllipse = fullEllipse;
+            return obj;
+        }
+
+        public static IDrawableObject SetAnchorPosition(this IDrawableObject obj, DrawablePositionMode position)
+        {
+            obj.Special.AnchorPosition = position;
+            return obj;
+        }
+
+        public static IDrawableObject SetGannDirection(this IDrawableObject obj, DrawableGannDirection direction)
+        {
+            obj.Special.GannDirection = direction;
             return obj;
         }
     }
