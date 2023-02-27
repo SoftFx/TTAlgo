@@ -317,7 +317,7 @@
                                 <Grid Grid.Row="0" Background="WhiteSmoke">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="30"/>
-                                        <ColumnDefinition Width="50"/>
+                                        <ColumnDefinition Width="70"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="100"/>
                                     </Grid.ColumnDefinitions>
@@ -342,7 +342,7 @@
 
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="30"/>
-                                        <ColumnDefinition Width="50"/>
+                                        <ColumnDefinition Width="70"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="100"/>
                                     </Grid.ColumnDefinitions>
