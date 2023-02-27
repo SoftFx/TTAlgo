@@ -94,9 +94,8 @@
             <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
                       IsEditable="True"
                       IsEnabled="{Binding IsNewMode}"
-                      ItemsSource="{Binding AvailableBots}"
-                      SelectedItem="{l:UpdateBind SelectedPlugin}"
-                      DisplayMemberPath="DisplayName"/>
+                      ItemsSource="{l:UpdateBind AvailableBots, Mode=OneWay}"
+                      SelectedItem="{l:UpdateBind SelectedPluginName}"/>
 
             <Label Grid.Row="1" Grid.Column="0" Content="Version" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"

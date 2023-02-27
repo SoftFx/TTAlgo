@@ -322,7 +322,7 @@
                                         <ColumnDefinition Width="100"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Column="1" Text="Version"/>
+                                    <TextBlock Grid.Column="1" Text="Bot Version"/>
                                     <TextBlock Grid.Column="2" Text="Api" />
                                 </Grid>
                                 <ItemsPresenter Grid.Row="1"/>
