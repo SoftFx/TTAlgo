@@ -97,6 +97,8 @@ namespace TickTrader.Algo.CoreV1
 
         internal bool IsChanged { get; private set; }
 
+        internal bool IsRemoved { get; private set; }
+
 
         public DrawableObjectAdapter(DrawableObjectInfo info, DrawableObjectType type, IDrawableUpdateSink updateSink)
         {
@@ -122,7 +124,7 @@ namespace TickTrader.Algo.CoreV1
 
         internal void PushChangesInternal()
         {
-            if (!IsNew && !IsChanged)
+            if (IsRemoved || (!IsNew && !IsChanged))
                 return;
 
             var infoCopy = _info.Clone();
@@ -143,6 +145,8 @@ namespace TickTrader.Algo.CoreV1
 
             _updateSink.Send(upd);
         }
+
+        internal void OnRemoved() => IsRemoved = true;
 
 
         private void OnChanged() => IsChanged = true;

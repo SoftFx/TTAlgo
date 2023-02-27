@@ -74,6 +74,7 @@ namespace TickTrader.Algo.CoreV1
                 var obj = _byNameCache[name];
                 _byNameCache.Remove(name);
                 _objects.Remove(obj);
+                obj.OnRemoved();
 
                 if (obj != null && !obj.IsNew)
                     _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
@@ -87,6 +88,7 @@ namespace TickTrader.Algo.CoreV1
                 var obj = _objects[index];
                 _objects.RemoveAt(index);
                 _byNameCache.Remove(obj.Name);
+                obj.OnRemoved();
 
                 if (obj != null && !obj.IsNew)
                     _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
@@ -97,6 +99,9 @@ namespace TickTrader.Algo.CoreV1
         {
             lock (_syncObj)
             {
+                foreach (var obj in _objects)
+                    obj.OnRemoved();
+
                 _objects.Clear();
                 _byNameCache.Clear();
 
