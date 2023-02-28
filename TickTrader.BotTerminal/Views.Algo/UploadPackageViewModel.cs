@@ -25,20 +25,21 @@ namespace TickTrader.BotTerminal
             });
 
             PackageId pkgId = null;
+
             if (packageId != null)
                 PackageId.Unpack(packageId, out pkgId);
 
             SetStartLocation(pkgId?.PackageName);
         }
 
-        protected override async Task RunLoadPackageProgress()
+        protected override Task RunLoadPackageProgress()
         {
             _progressModel.SetMessage($"Uploading Algo Package {LocalPackageName.DisplayValue} to {SelectedAlgoServer.Name}");
 
             var selectedPackagePath = FullPackagePath(LocalPackageName.Value);
             var progressListener = new FileProgressListenerAdapter(_progressModel, new FileInfo(selectedPackagePath).Length);
 
-            await SelectedAlgoServer.Model.UploadPackage(AlgoServerPackageName.Value, selectedPackagePath, progressListener);
+            return SelectedAlgoServer.Model.UploadPackage(AlgoServerPackageName.Value, selectedPackagePath, progressListener);
         }
 
 
