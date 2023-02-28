@@ -127,16 +127,23 @@ namespace TickTrader.Algo.Server
 
         private async Task UpdateConfig(UpdateConfigCmd cmd)
         {
-            if (_state.IsRunning())
+            if (_state.IsStarted())
                 throw Errors.PluginIsRunning(_id);
 
             _savedState.PackConfig(cmd.NewConfig);
             await _host.UpdateSavedState(_savedState);
+            var pkgIdChanged = _config.Key.PackageId != cmd.NewConfig.Key.PackageId;
             _config = cmd.NewConfig;
 
-            var infoCopy = GetInfoCopy();
-            _host.OnPluginUpdated(PluginModelUpdate.Updated(_id, infoCopy));
-            //_proxyDownlinkSrc.DispatchEvent(infoCopy);
+            if (pkgIdChanged)
+            {
+                _logger.Debug("Package changed on user request");
+                await InitPkgRuntimeId();
+            }
+            else
+            {
+                OnModelUpdated();
+            }
         }
 
         private void AttachLogsChannel(AttachLogsChannelCmd cmd)
@@ -280,7 +287,7 @@ namespace TickTrader.Algo.Server
                     _newestRuntimeId = await _host.GetPkgRuntimeId(_config.Key.PackageId);
                 }
 
-                var _ = UpdateRuntime(true);
+                _ = UpdateRuntime(true);
             }
             catch (Exception ex)
             {
@@ -299,15 +306,19 @@ namespace TickTrader.Algo.Server
                 {
                     _logger.Debug("Updating runtime...");
 
+                    bool updated = false;
                     try
                     {
-                        await UpdateRuntimeInternal();
+                        updated = await UpdateRuntimeInternal();
                     }
                     catch (Exception ex)
                     {
                         _logger.Error(ex, "Failed to update package runtime");
                         ChangeState(PluginModelInfo.Types.PluginState.Broken, "Runtime update failure");
                     }
+
+                    if (!updated && isInit)
+                        OnModelUpdated();
                 }
             }
         }
@@ -380,11 +391,16 @@ namespace TickTrader.Algo.Server
             if (_state == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
 
+            OnModelUpdated();
+
+            return true;
+        }
+
+        private void OnModelUpdated()
+        {
             var infoCopy = GetInfoCopy();
             _host.OnPluginUpdated(PluginModelUpdate.Updated(_id, infoCopy));
             //_proxyDownlinkSrc.DispatchEvent(infoCopy);
-
-            return true;
         }
 
         private void BreakBot(string reason)
