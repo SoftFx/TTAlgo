@@ -251,7 +251,6 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Text="{l:UpdateBind RemoteVersion.Value, StringFormat=New version {0} is available!}" Visibility="{Binding IsLocal}"/>
-                    <TextBlock Text="{l:UpdateBind Version.Value, StringFormat=Version {0} is ready for download!}" Visibility="{Binding IsRemote}"/>
 
                     <l:FlatButton Grid.Column="1" cal:Message.Attach="DownloadPackage" Visibility="{l:InvBoolToVisBind IsUploading.Value}"
                                   cal:Action.TargetWithoutContext="{l:UpdateBind RelativeSource={RelativeSource Mode=Self}, Path=DataContext}">
@@ -506,12 +505,14 @@
                             <ColumnDefinition Width="auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Button Grid.Column="1" Margin="5 0" Style="{StaticResource WebToolButton}" Content="{fa:Icon CircleArrowUp}" 
-                                ToolTip="Download new version" cal:Message.Attach="DownloadPackage" Height="13"
+                        <Grid Grid.Column="1" Visibility="{Binding IsLocal}">
+                            <Button Margin="5 0" Style="{StaticResource WebToolButton}" Content="{fa:Icon CircleArrowUp}" Height="13"
+                                ToolTip="Download new version" cal:Message.Attach="DownloadPackage" 
                                 Visibility="{l:InvBoolToVisBind IsUploading.Value}"/>
 
-                        <fa:IconBlock Grid.Column="1" Margin="5 0" Style="{StaticResource PackageSpinnerStyle}" FontSize="13"
-                                      Visibility="{l:BoolToVisBind IsUploading.Value}"/>
+                            <fa:IconBlock Margin="5 0"  Style="{StaticResource PackageSpinnerStyle}" FontSize="13"
+                                          Visibility="{l:BoolToVisBind IsUploading.Value}"/>
+                        </Grid>
 
                         <TextBlock Grid.Column="2" Margin="0 0 0 2" Text="{l:UpdateBind RemoteVersion.Value}"/>
                     </Grid>
