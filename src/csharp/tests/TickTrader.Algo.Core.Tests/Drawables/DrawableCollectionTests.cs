@@ -77,9 +77,9 @@ namespace TickTrader.Algo.Core.Tests.Drawables
         [TestMethod]
         public void TestExactlyOnceUpdate()
         {
+            const string name = "Test object";
             (var ctx, var collection) = DrawableTestContext.Create();
 
-            const string name = "Test object";
             var obj1 = collection.Create(name + 1, Api.DrawableObjectType.TextBlockControl);
             obj1.Shape.BorderThickness = 120;
             obj1.Text.FontSize = 120;
@@ -146,6 +146,35 @@ namespace TickTrader.Algo.Core.Tests.Drawables
                 Assert.AreEqual(objNames[i], ctx.Updates[i].ObjInfo.Name);
                 Assert.AreEqual(CollectionUpdate.Types.Action.Updated, ctx.Updates[i].Action);
             }
+        }
+
+        [TestMethod]
+        public void TestPushChangesMethod()
+        {
+            (var ctx, var collection) = DrawableTestContext.Create();
+
+            const int cnt = 5;
+            var objNames = DrawableTestContext.GetObjectNames(cnt, "TestObj");
+            CreateNumberOfObjects(collection, cnt, objNames, Api.DrawableObjectType.TextBlockControl);
+            ctx.FlushAndResetUpdates();
+
+            for (var i = 0; i < cnt; i++)
+                collection[i].Tooltip = "test modify";
+
+            var index = 2;
+            collection[index].PushChanges();
+            Assert.AreEqual(1, ctx.Updates.Count);
+            Assert.AreEqual(objNames[index], ctx.Updates[0].ObjInfo.Name);
+            ctx.ResetUpdates();
+
+            index = 4;
+            collection[index].PushChanges();
+            Assert.AreEqual(1, ctx.Updates.Count);
+            Assert.AreEqual(objNames[index], ctx.Updates[0].ObjInfo.Name);
+            ctx.ResetUpdates();
+
+            ctx.FlushUpdates();
+            Assert.AreEqual(3, ctx.Updates.Count);
         }
 
         [TestMethod]
