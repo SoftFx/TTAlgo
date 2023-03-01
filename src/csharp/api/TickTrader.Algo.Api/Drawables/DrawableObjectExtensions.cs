@@ -91,7 +91,7 @@ namespace TickTrader.Algo.Api
         {
             obj.Control.X = x;
             obj.Control.Y = y;
-            obj.Control.ZeroPosistion = zeroPosition;
+            obj.Control.ZeroPosition = zeroPosition;
             return obj;
         }
 

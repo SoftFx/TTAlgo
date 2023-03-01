@@ -45,7 +45,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public DrawableControlZeroPosition ZeroPosistion
+        public DrawableControlZeroPosition ZeroPosition
         {
             get => _info.ZeroPosition.ToApiEnum();
             set

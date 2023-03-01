@@ -125,7 +125,7 @@ namespace TickTrader.Algo.Api
         int Y { get; set; }
         uint? Width { get; set; }
         uint? Height { get; set; }
-        DrawableControlZeroPosition ZeroPosistion { get; set; }
+        DrawableControlZeroPosition ZeroPosition { get; set; }
         DrawablePositionMode ContentAlignment { get; set; }
         bool SwitchState { get; set; }
         bool ReadOnly { get; set; }

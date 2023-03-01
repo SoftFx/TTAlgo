@@ -77,6 +77,7 @@
                 case Drawable.Types.ObjectType.EditControl:
                 case Drawable.Types.ObjectType.ButtonControl:
                 case Drawable.Types.ObjectType.TextBlockControl:
+                    return true;
                 default: return false;
             }
         }

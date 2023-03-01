@@ -140,7 +140,7 @@ message DrawableTextPropsInfo {
     google.protobuf.StringValue content = 1;
     google.protobuf.UInt32Value color_argb = 2;
     google.protobuf.StringValue font_family = 3;
-    int32 font_size = 4;
+    uint32 font_size = 4;
 }
 
 message DrawableAnchorPropsInfo {
