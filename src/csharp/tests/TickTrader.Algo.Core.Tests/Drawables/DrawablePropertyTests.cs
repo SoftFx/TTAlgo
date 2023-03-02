@@ -14,8 +14,6 @@ namespace TickTrader.Algo.Core.Tests.Drawables
     [TestClass]
     public class DrawablePropertyTests
     {
-        private const BindingFlags PublicInstancePropFlags = BindingFlags.Public | BindingFlags.Instance;
-
         private static readonly Dictionary<string, ITypeValueProcessor> _typeProcessors = new();
 
 
@@ -26,11 +24,15 @@ namespace TickTrader.Algo.Core.Tests.Drawables
             RegisterTypeProcessor<int, Int32PropValueProcessor>();
             RegisterTypeProcessor<uint, UInt32PropValueProcessor>();
             RegisterTypeProcessor<uint?, NullUInt32PropValueProcessor>();
+            RegisterTypeProcessor<double, DoublePropValueProcessor>();
             RegisterTypeProcessor<double?, NullDoublePropValueProcessor>();
             RegisterTypeProcessor<ushort, UInt16PropValueProcessor>();
+            RegisterTypeProcessor<ushort?, NullUInt16PropValueProcessor>();
+            RegisterTypeProcessor<DateTime, DateTimePropValueProcessor>();
             RegisterTypeProcessor<DrawableObjectVisibility, VisibilityPropValueProcessor>();
             RegisterTypeProcessor<Colors, ColorPropValueProcessor>();
             RegisterTypeProcessor<LineStyles>(new EnumPropValueProcessor<LineStyles, Metadata.Types.LineStyle>(static s => s.ToDomainEnum()));
+            RegisterTypeProcessor<LineStyles?>(new NullEnumPropValueProcessor<LineStyles, Metadata.Types.LineStyle>(static s => s.ToDomainEnum()));
             RegisterTypeProcessor<DrawableSymbolAnchor>(new EnumPropValueProcessor<DrawableSymbolAnchor, Drawable.Types.SymbolAnchor>(static a => a.ToDomainEnum()));
             RegisterTypeProcessor<DrawableLineRayMode>(new EnumPropValueProcessor<DrawableLineRayMode, Drawable.Types.LineRayMode>(static m => m.ToDomainEnum()));
             RegisterTypeProcessor<DrawablePositionMode>(new EnumPropValueProcessor<DrawablePositionMode, Drawable.Types.PositionMode>(static m => m.ToDomainEnum()));
@@ -70,6 +72,7 @@ namespace TickTrader.Algo.Core.Tests.Drawables
         public void TestShapeProps()
         {
             const int cnt = 16;
+
             RunPropertyTest(cnt, obj => obj.Shape, info => info.ShapeProps, DrawableObjectInfo.SupportsShapeProps,
                 new Dictionary<string, string> { { "BorderColor", "BorderColorArgb" }, { "FillColor", "FillColorArgb" } });
         }
@@ -78,6 +81,7 @@ namespace TickTrader.Algo.Core.Tests.Drawables
         public void TestSymbolProps()
         {
             const int cnt = 16;
+
             RunPropertyTest(cnt, obj => obj.Symbol, info => info.SymbolProps, DrawableObjectInfo.SupportsSymbolProps,
                 new Dictionary<string, string> { { "Color", "ColorArgb" } });
         }
@@ -86,6 +90,7 @@ namespace TickTrader.Algo.Core.Tests.Drawables
         public void TestTextProps()
         {
             const int cnt = 16;
+
             RunPropertyTest(cnt, obj => obj.Text, info => info.TextProps, DrawableObjectInfo.SupportsTextProps,
                 new Dictionary<string, string> { { "Color", "ColorArgb" } });
         }
@@ -94,6 +99,7 @@ namespace TickTrader.Algo.Core.Tests.Drawables
         public void TestControlProps()
         {
             const int cnt = 16;
+
             RunPropertyTest(cnt, obj => obj.Control, info => info.ControlProps, DrawableObjectInfo.SupportsControlProps);
         }
 
@@ -111,6 +117,96 @@ namespace TickTrader.Algo.Core.Tests.Drawables
             const int cnt = 16;
 
             RunPropertyTest(cnt, obj => obj.Special, info => info.SpecialProps, DrawableObjectInfo.SupportsSpecialProps);
+        }
+
+        [TestMethod]
+        public void TestAnchorList()
+        {
+            const int cnt = 16;
+            const string name = "Test object";
+            var ignoreList = new HashSet<string> { };
+            var propNameMap = new Dictionary<string, string> { };
+            (var ctx, var collection) = DrawableTestContext.Create();
+
+            foreach (var objType in Enum.GetValues<DrawableObjectType>())
+            {
+                collection.Clear();
+                ctx.ResetUpdates();
+                var obj = collection.Create(name, objType);
+                ctx.FlushUpdates();
+                var anchorCnt = DrawableObjectInfo.GetAnchorListSize(objType.ToDomainEnum());
+                Assert.AreEqual(anchorCnt, obj.Anchors.Count, "Invalid anchor list size");
+                Assert.AreEqual(anchorCnt, ctx.Updates[0].ObjInfo.Anchors?.Count ?? 0, "Invalid anchor list size");
+                ctx.ResetUpdates();
+
+                for (var i = 0; i < cnt; i++)
+                {
+                    var testRes = TestProperties(ctx, obj, anchorCnt > 0, obj => obj.Anchors, info => info.Anchors, propNameMap, ignoreList);
+                    ProcessTestResults(testRes, $"Iteration #{i}; Type: {objType}");
+
+                    for (var j = 0; j < obj.Anchors.Count; j++)
+                    {
+                        var testResItem = TestProperties(ctx, obj, true, obj => obj.Anchors[j], info => info.Anchors[j], propNameMap, ignoreList);
+                        ProcessTestResults(testResItem, $"Iteration #{i}; Type: {objType}; Item {j}");
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestLevelList()
+        {
+            const int cnt = 16;
+            const int maxLevels = 128;
+            const string name = "Test object";
+            var ignoreList = new HashSet<string> { "Count" };
+            var propNameMap = new Dictionary<string, string> { { "DefaultColor", "DefaultColorArgb" } };
+            var ignoreListItem = new HashSet<string> { };
+            var propNameMapItem = new Dictionary<string, string> { { "Color", "ColorArgb" } };
+            (var ctx, var collection) = DrawableTestContext.Create();
+
+            foreach (var objType in Enum.GetValues<DrawableObjectType>())
+            //foreach (var objType in new[] { DrawableObjectType.Levels, DrawableObjectType.FiboChannel })
+            {
+                var hasLevels = DrawableObjectInfo.SupportsLevelsList(objType.ToDomainEnum());
+
+                collection.Clear();
+                var obj = collection.Create(name, objType);
+                ctx.FlushAndResetUpdates();
+
+                // test levels default props
+                for (var i = 0; i < cnt; i++)
+                {
+                    var testRes = TestProperties(ctx, obj, hasLevels, obj => obj.Levels, info => info.Levels, propNameMap, ignoreList);
+                    ProcessTestResults(testRes, $"Iteration #{i}; Type: {objType}");
+                }
+
+                for (var k = 1; k <= 2 * maxLevels; k++)
+                {
+                    var levelCnt = k <= maxLevels ? k : 2 * maxLevels - k;
+                    obj.Levels.Count = levelCnt;
+                    ctx.FlushUpdates();
+                    if (hasLevels)
+                    {
+                        Assert.AreEqual(levelCnt, obj.Levels.Count, "Invalid level list size");
+                        Assert.AreEqual(1, ctx.Updates.Count, "Expected update on levels cnt change");
+                        Assert.AreEqual(levelCnt, ctx.Updates[0].ObjInfo.Levels.Count, "Invalid level list size");
+                    }
+                    else
+                    {
+                        Assert.AreEqual(levelCnt, obj.Levels.Count, "Invalid level list size");
+                        Assert.AreEqual(0, ctx.Updates.Count, "No update when leves not supported");
+                    }
+                    ctx.ResetUpdates();
+
+                    const int sparseFactor = 8; // testing every level is time consuming
+                    for (var j = levelCnt % sparseFactor; j < obj.Levels.Count; j += sparseFactor)
+                    {
+                        var testRes = TestProperties(ctx, obj, hasLevels, obj => obj.Levels[j], info => info.Levels[j], propNameMapItem, ignoreListItem);
+                        ProcessTestResults(testRes, $"Iteration #{k}; Type: {objType}; Item {j}");
+                    }
+                }
+            }
         }
 
 
@@ -146,6 +242,7 @@ namespace TickTrader.Algo.Core.Tests.Drawables
 
             foreach (var objType in Enum.GetValues<DrawableObjectType>())
             {
+                collection.Clear();
                 var obj = collection.Create(name, objType);
                 ctx.FlushAndResetUpdates();
 
@@ -154,8 +251,6 @@ namespace TickTrader.Algo.Core.Tests.Drawables
                     var testRes = TestProperties(ctx, obj, isSupportedFunc(objType.ToDomainEnum()), apiSelector, domainSelector, propNameMap, ignoreList);
                     ProcessTestResults(testRes, $"Iteration #{i}; Type: {objType}");
                 }
-
-                collection.Clear();
             }
         }
 
@@ -192,7 +287,7 @@ namespace TickTrader.Algo.Core.Tests.Drawables
         {
             var testRes = new List<PropertyTestResult>();
 
-            var isSupportedProp = typeof(TApi).GetProperty("IsSupported");
+            var isSupportedProp = ReflectionCache<TApi>.IsSupportedProp;
             TApi apiView = apiSelector(obj);
             if (isSupportedProp != null)
             {
@@ -205,10 +300,13 @@ namespace TickTrader.Algo.Core.Tests.Drawables
                 }
             }
 
-            var apiProps = typeof(TApi).GetProperties(PublicInstancePropFlags).Where(p => p.CanWrite).ToArray();
-            var domainPropsLookup = typeof(TDomain).GetProperties(PublicInstancePropFlags).ToDictionary(p => p.Name);
+            var apiProps = ReflectionCache<TApi>.WriteProps;
+            var domainPropsLookup = ReflectionCache<TDomain>.PropsLookup;
             foreach (var apiProp in apiProps)
             {
+                if (ignoreList.Contains(apiProp.Name))
+                    continue;
+
                 var propRes = new PropertyTestResult(apiProp);
                 testRes.Add(propRes);
                 try
@@ -280,9 +378,19 @@ namespace TickTrader.Algo.Core.Tests.Drawables
                 }
             }
 
+            ctx.ResetUpdates();
             return testRes;
         }
 
+
+        private static class ReflectionCache<T>
+        {
+            private const BindingFlags PublicInstancePropFlags = BindingFlags.Public | BindingFlags.Instance;
+
+            public static readonly PropertyInfo IsSupportedProp = typeof(T).GetProperty("IsSupported");
+            public static readonly PropertyInfo[] WriteProps = typeof(T).GetProperties(PublicInstancePropFlags).Where(p => p.CanWrite).ToArray();
+            public static readonly Dictionary<string, PropertyInfo> PropsLookup = typeof(T).GetProperties(PublicInstancePropFlags).ToDictionary(p => p.Name);
+        }
 
         private class PropertyTestResult
         {
@@ -359,6 +467,11 @@ namespace TickTrader.Algo.Core.Tests.Drawables
             public override object Update(object x) => ((uint?)x + 1) ?? 1;
         }
 
+        private class DoublePropValueProcessor : DefaultTypeValueProcessor<double?>
+        {
+            public override object Update(object x) => (double)x + 0.42;
+        }
+
         private class NullDoublePropValueProcessor : DefaultTypeValueProcessor<double?>
         {
             public override object Update(object x) => ((double?)x + 0.42) ?? 0.21;
@@ -369,6 +482,20 @@ namespace TickTrader.Algo.Core.Tests.Drawables
             public bool CheckEqual(object x, object y) => (ushort)x == (uint)y; // domain type is uint (protobuf)
 
             public object Update(object x) => (ushort)((ushort)x + 1);
+        }
+
+        private class NullUInt16PropValueProcessor : ITypeValueProcessor
+        {
+            public bool CheckEqual(object x, object y) => (ushort?)x == (uint?)y; // domain type is uint? (protobuf)
+
+            public object Update(object x) => (ushort)(((ushort?)x + 1) ?? 1);
+        }
+
+        private class DateTimePropValueProcessor : DefaultTypeValueProcessor<DateTime>
+        {
+            public override bool CheckEqual(object x, object y) => new UtcTicks((DateTime)x) == (UtcTicks)y;
+
+            public override object Update(object x) => ((DateTime)x).AddYears(1);
         }
 
         private class VisibilityPropValueProcessor : ITypeValueProcessor
@@ -443,6 +570,30 @@ namespace TickTrader.Algo.Core.Tests.Drawables
             }
 
             public object Update(object x) => EnumValueGenerator<TApi>.NextValue(x);
+        }
+
+        private class NullEnumPropValueProcessor<TApi, TDomain> : ITypeValueProcessor
+            where TApi : struct, Enum where TDomain : struct, Enum
+        {
+            private static readonly IEqualityComparer<TDomain?> _cmp = EqualityComparer<TDomain?>.Default;
+
+            private readonly Func<TApi, TDomain> _convert;
+
+
+            public NullEnumPropValueProcessor(Func<TApi, TDomain> convert)
+            {
+                _convert = convert;
+            }
+
+
+            public bool CheckEqual(object x, object y)
+            {
+                var v1 = x == null ? default(TDomain?) : _convert((TApi)x);
+                var v2 = (TDomain?)y;
+                return _cmp.Equals(v1, v2);
+            }
+
+            public object Update(object x) => x == null ? default(TApi) : EnumValueGenerator<TApi>.NextValue(x);
         }
     }
 }
