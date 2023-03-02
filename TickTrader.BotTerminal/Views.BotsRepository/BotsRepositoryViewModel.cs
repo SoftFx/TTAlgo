@@ -21,13 +21,13 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             new()
             {
                 Name = "Public Bots",
-                Link = "https://github.com/AndrewKhloptsau/AlgoBots",
+                Link = "https://github.com/SoftFx/AlgoBots",
             },
 
-            new() //for test
-            {
-                Name = "Empty Source",
-            }
+            //new() //for test
+            //{
+            //    Name = "Empty Source",
+            //}
         };
 
         private readonly VarContext _context = new();

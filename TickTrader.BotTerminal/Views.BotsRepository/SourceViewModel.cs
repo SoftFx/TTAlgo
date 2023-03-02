@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 {
     internal sealed class SourceViewModel
     {
-        private const string DefaultOwnerName = "AndrewKhloptsau";
+        private const string DefaultOwnerName = "SoftFx";
         private const string DefaultClientName = "AlgoTerminal";
         private const string DefaultRepositoryName = "AlgoBots";
         private const string DefaultMetainfoFileName = "RepositoryInfo.json";
@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         private readonly Dictionary<string, string> _requestParams = new();
         private readonly List<BotInfoViewModel> _botsInfo = new();
 
-        private readonly GitHubClient _client = new(new ProductHeaderValue(DefaultClientName));
+        private readonly GitHubClient _client = new(new ProductHeaderValue($"{DefaultClientName}-{new Guid()}"));
         private readonly Task<string> _emptyTask = Task.FromResult<string>(default);
 
         private Release _lastRelease;
