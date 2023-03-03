@@ -259,6 +259,7 @@ namespace TickTrader.Algo.CoreV1
                 case Domain.MarkerInfo.Types.IconType.DownTriangle: return MarkerIcons.DownTriangle;
                 case Domain.MarkerInfo.Types.IconType.Diamond: return MarkerIcons.Diamond;
                 case Domain.MarkerInfo.Types.IconType.Square: return MarkerIcons.Square;
+                case Domain.MarkerInfo.Types.IconType.Wingdings: return MarkerIcons.Wingdings;
 
                 default: throw new ArgumentException($"Unsupported icon {icon}");
             }
@@ -275,6 +276,7 @@ namespace TickTrader.Algo.CoreV1
                 case MarkerIcons.DownTriangle: return Domain.MarkerInfo.Types.IconType.DownTriangle;
                 case MarkerIcons.Diamond: return Domain.MarkerInfo.Types.IconType.Diamond;
                 case MarkerIcons.Square: return Domain.MarkerInfo.Types.IconType.Square;
+                case MarkerIcons.Wingdings: return Domain.MarkerInfo.Types.IconType.Wingdings;
 
                 default: throw new ArgumentException($"Unsupported icon {icon}");
             }

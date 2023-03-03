@@ -89,9 +89,11 @@ namespace TickTrader.Algo.BacktesterApi
 
             public MarkerInfo.Types.IconType Icon => _marker.Icon;
 
-            public uint ColorArgb => _marker.ColorArgb;
+            public uint? ColorArgb => _marker.ColorArgb;
 
             public string DisplayText => _marker.DisplayText;
+
+            public ushort IconCode => (ushort)_marker.IconCode;
 
 
             public MarkerPointWrapper(OutputPoint point)
@@ -101,6 +103,7 @@ namespace TickTrader.Algo.BacktesterApi
             }
         }
 
+        // Old converter for reading legacy markers
         public class ForMarkerPoint : RoundClassMap<MarkerPointWrapper>
         {
             public const string Header = "TimeUtc_Marker";
@@ -125,10 +128,46 @@ namespace TickTrader.Algo.BacktesterApi
                 if (!reader.TryGetField<MarkerInfo.Types.IconType>(2, out var icon))
                     throw new ArgumentException($"Can't read icon type at row {reader.CurrentIndex}");
                 if (!reader.TryGetField<uint>(3, out var color))
-                    throw new ArgumentException($"Can't read market color at row {reader.CurrentIndex}");
+                    throw new ArgumentException($"Can't read marker color at row {reader.CurrentIndex}");
                 if (!reader.TryGetField<string>(4, out var text))
-                    throw new ArgumentException($"Can't read market text at row {reader.CurrentIndex}");
+                    throw new ArgumentException($"Can't read marker text at row {reader.CurrentIndex}");
                 var marker = new MarkerInfo { Icon = icon, ColorArgb = color, DisplayText = text };
+                return new OutputPoint(time, value, marker);
+            }
+        }
+
+        public class ForMarkerPoint2 : RoundClassMap<MarkerPointWrapper>
+        {
+            public const string Header = "TimeUtc_Marker2";
+
+            protected override string TimeHeader => Header;
+
+
+            public ForMarkerPoint2() : base()
+            {
+                Map(p => p.Icon).Index(2).Name("Icon");
+                Map(p => p.ColorArgb).Index(3).Name("ColorArgb").TypeConverter<NullUInt32HexConverter>();
+                Map(p => p.DisplayText).Index(4).Name("DisplayText");
+                Map(p => p.IconCode).Index(5).Name("SymbolCode");
+            }
+
+
+            public static OutputPoint Read(IReaderRow reader)
+            {
+                if (!UtcTicksTypeConverter.TryReadTime(reader[0], out var time))
+                    throw new ArgumentException($"Can't read time at row {reader.CurrentIndex}");
+                if (!reader.TryGetField<double>(1, out var value))
+                    throw new ArgumentException($"Can't read y value at row {reader.CurrentIndex}");
+                if (!reader.TryGetField<MarkerInfo.Types.IconType>(2, out var type))
+                    type = MarkerInfo.Types.IconType.UnknownIconType;
+                if (!reader.TryGetField<uint?>(3, out var color))
+                    color = null;
+                if (!reader.TryGetField<string>(4, out var text))
+                    throw new ArgumentException($"Can't read marker text at row {reader.CurrentIndex}");
+                if (!reader.TryGetField<ushort>(5, out var code) && type == MarkerInfo.Types.IconType.Wingdings)
+                    throw new ArgumentException($"Can't read marker code at row {reader.CurrentIndex}");
+
+                var marker = new MarkerInfo { Icon = type, ColorArgb = color, DisplayText = text, IconCode = code };
                 return new OutputPoint(time, value, marker);
             }
         }
@@ -292,6 +331,19 @@ namespace TickTrader.Algo.BacktesterApi
                     return string.Empty;
 
                 return dValue < _bigValue ? dValue.ToString(_doubleFormat) : dValue.ToString("G");
+            }
+        }
+
+        private sealed class NullUInt32HexConverter : ITypeConverter
+        {
+            public object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
+            {
+                return uint.TryParse(text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var result) ? result : default(uint?);
+            }
+
+            public string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
+            {
+                return value is uint uintValue ? uintValue.ToString("x8") : string.Empty;
             }
         }
     }
