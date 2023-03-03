@@ -15,12 +15,12 @@ namespace TickTrader.BotTerminal
         private bool _disposed;
 
 
-        public ChartHostProxy ChartHost { get; }
+        public ChartHostObserver ChartHost { get; }
 
         public IObservableList<DrawableObjectViewModel> DrawableObjects { get; }
 
 
-        public DrawableObjectObserver(ChartHostProxy chartHost)
+        public DrawableObjectObserver(ChartHostObserver chartHost)
         {
             ChartHost = chartHost;
 

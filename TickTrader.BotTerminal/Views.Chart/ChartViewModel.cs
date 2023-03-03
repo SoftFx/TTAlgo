@@ -28,6 +28,7 @@ namespace TickTrader.BotTerminal
         private readonly IVarList<PluginOutputModel> _allIndicators;
         private readonly IVarList<AlgoBotViewModel> _allBots;
         private readonly ChartHostProxy _chartHost;
+        private readonly ChartHostObserver _chartHostObserver;
         private readonly DrawableObjectObserver _drawableObserver;
 
         public BarChartModel BarChart { get; }
@@ -44,8 +45,9 @@ namespace TickTrader.BotTerminal
             smb = _algoEnv.ClientModel.Symbols.GetOrDefault(symbol);
 
             _chartHost = algoEnv.LocalAgent.IndicatorHost.CreateChart(symbol, period, Feed.Types.MarketSide.Bid, (int)_selSize).Result;
-            IndicatorObserver = new DynamicIndicatorObserver(_chartHost, smb.Digits);
-            _drawableObserver = new DrawableObjectObserver(_chartHost);
+            _chartHostObserver = new ChartHostObserver(_chartHost, true);
+            IndicatorObserver = new DynamicIndicatorObserver(_chartHostObserver, smb.Digits);
+            _drawableObserver = new DrawableObjectObserver(_chartHostObserver);
 
             this.BarChart = new BarChartModel(smb, _algoEnv);
 
@@ -53,7 +55,7 @@ namespace TickTrader.BotTerminal
             PriceDigits = smb.Digits;
             this.UiLock = new UiLock();
 
-            _allIndicators = _chartHost.Indicators.TransformToList();
+            _allIndicators = _chartHostObserver.Indicators.TransformToList();
             _allBots = _chartBots.OrderBy((id, bot) => id);
 
             Indicators = _allIndicators.Chain().Select(i => new IndicatorViewModel(_chartHost, i)).UseSyncContext().Chain().AsObservable();
@@ -164,7 +166,7 @@ namespace TickTrader.BotTerminal
 
         public override Task TryCloseAsync(bool? dialogResult = null)
         {
-            var task = Task.WhenAll(base.TryCloseAsync(dialogResult), _chartHost.DisposeAsync().AsTask());
+            var task = Task.WhenAll(base.TryCloseAsync(dialogResult), _chartHostObserver.DisposeAsync().AsTask());
 
             //Indicators.ForEach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
 
