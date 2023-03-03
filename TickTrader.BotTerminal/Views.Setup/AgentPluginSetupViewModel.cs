@@ -95,7 +95,7 @@ namespace TickTrader.BotTerminal
 
                 _selectedPluginName = value;
 
-                SelectedPlugin = Plugins.FirstOrDefault(x => x.DisplayName == _selectedPluginName);
+                SelectedPlugin = Plugins.Where(x => x.DisplayName == _selectedPluginName).OrderByDescending(u => u.Descriptor.Version).FirstOrDefault();
 
                 NotifyOfPropertyChange();
             }
