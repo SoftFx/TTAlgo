@@ -33,6 +33,7 @@ namespace TickTrader.Algo.CoreV1
         private IExecutorFixture accFixture;
         private IExecutorFixture _timerFixture;
         private readonly StatusFixture _statusFixture;
+        private readonly DrawablesFixture _drawablesFixture;
         private IAccountInfoProvider _externalAccData;
         private ITradeExecutor _externalTradeApi;
         private string _mainSymbol;
@@ -63,6 +64,7 @@ namespace TickTrader.Algo.CoreV1
             _marketFixture = new MarketStateFixture(this);
             _dispenser = new SubscriptionFixtureManager(this, _marketFixture);
             _timerFixture = new TimerFixture(this);
+            _drawablesFixture = new DrawablesFixture(this);
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
 
@@ -326,6 +328,7 @@ namespace TickTrader.Algo.CoreV1
                     // Start
                     _pluginLoggerFixture?.Start(); // should be after builder initializing
                     _statusFixture.Start();
+                    _drawablesFixture.Start();
                     _timerFixture.Start();
                     _fStrategy.Start(); // enqueue build action
                     _calcFixture.Start();
@@ -478,6 +481,7 @@ namespace TickTrader.Algo.CoreV1
                 _fStrategy.Stop();
                 accFixture.Stop();
                 _calcFixture.Stop();
+                _drawablesFixture.Stop();
                 _statusFixture.Stop();
                 _timerFixture.Stop();
 

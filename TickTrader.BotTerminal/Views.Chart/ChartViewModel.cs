@@ -28,6 +28,7 @@ namespace TickTrader.BotTerminal
         private readonly IVarList<PluginOutputModel> _allIndicators;
         private readonly IVarList<AlgoBotViewModel> _allBots;
         private readonly ChartHostProxy _chartHost;
+        private readonly DrawableObjectObserver _drawableObserver;
 
         public BarChartModel BarChart { get; }
 
@@ -44,6 +45,7 @@ namespace TickTrader.BotTerminal
 
             _chartHost = algoEnv.LocalAgent.IndicatorHost.CreateChart(symbol, period, Feed.Types.MarketSide.Bid, (int)_selSize).Result;
             IndicatorObserver = new DynamicIndicatorObserver(_chartHost, smb.Digits);
+            _drawableObserver = new DrawableObjectObserver(_chartHost);
 
             this.BarChart = new BarChartModel(smb, _algoEnv);
 
@@ -177,6 +179,7 @@ namespace TickTrader.BotTerminal
             BarChart.Dispose();
             //tickChart.Dispose();
             IndicatorObserver.Dispose();
+            _drawableObserver.Dispose();
 
             Indicators.Dispose();
             Bots.Dispose();
@@ -274,6 +277,12 @@ namespace TickTrader.BotTerminal
         public void OpenPlugin(object descriptorObj)
         {
             OpenAlgoSetup((AlgoPluginViewModel)descriptorObj);
+        }
+
+        public void OpenObjectList()
+        {
+            var wndKey = $"{ChartWindowId} Object List";
+            _shell.ToolWndManager.OpenOrActivateWindow(wndKey, () => new ObjectListViewModel(_drawableObserver));
         }
 
         private void OpenAlgoSetup(AlgoPluginViewModel item)

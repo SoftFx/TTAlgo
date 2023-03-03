@@ -230,9 +230,10 @@ namespace TickTrader.Algo.BacktesterApi
                 Func<IReaderRow, OutputPoint> parser = null;
                 switch (csv.HeaderRecord[0])
                 {
-                    case CsvMapping.ForDoublePoint.Header: parser = CsvMapping.ForDoublePoint.Read; break;
                     case CsvMapping.ForMarkerPoint.Header: parser = CsvMapping.ForMarkerPoint.Read; break;
-                    default: return;
+                    case CsvMapping.ForMarkerPoint2.Header: parser = CsvMapping.ForMarkerPoint2.Read; break;
+                    // For compatibility unknown headers should be treated as simple points
+                    default: parser = CsvMapping.ForDoublePoint.Read; break;
                 }
 
                 while (csv.Read())
@@ -463,7 +464,7 @@ namespace TickTrader.Algo.BacktesterApi
                 switch (firstPointMetadata)
                 {
                     case MarkerInfo:
-                        AsFile.SaveRoundedCsv<MarkerPointWrapper, ForMarkerPoint>(filePath, points.Select(p => new MarkerPointWrapper(p)), precision);
+                        AsFile.SaveRoundedCsv<MarkerPointWrapper, ForMarkerPoint2>(filePath, points.Select(p => new MarkerPointWrapper(p)), precision);
                         break;
                     default:
                         AsFile.SaveRoundedCsv<OutputPoint, ForDoublePoint>(filePath, points, precision);

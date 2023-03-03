@@ -259,6 +259,7 @@ namespace TickTrader.Algo.CoreV1
                 case Domain.MarkerInfo.Types.IconType.DownTriangle: return MarkerIcons.DownTriangle;
                 case Domain.MarkerInfo.Types.IconType.Diamond: return MarkerIcons.Diamond;
                 case Domain.MarkerInfo.Types.IconType.Square: return MarkerIcons.Square;
+                case Domain.MarkerInfo.Types.IconType.Wingdings: return MarkerIcons.Wingdings;
 
                 default: throw new ArgumentException($"Unsupported icon {icon}");
             }
@@ -275,6 +276,7 @@ namespace TickTrader.Algo.CoreV1
                 case MarkerIcons.DownTriangle: return Domain.MarkerInfo.Types.IconType.DownTriangle;
                 case MarkerIcons.Diamond: return Domain.MarkerInfo.Types.IconType.Diamond;
                 case MarkerIcons.Square: return Domain.MarkerInfo.Types.IconType.Square;
+                case MarkerIcons.Wingdings: return Domain.MarkerInfo.Types.IconType.Wingdings;
 
                 default: throw new ArgumentException($"Unsupported icon {icon}");
             }
@@ -334,6 +336,180 @@ namespace TickTrader.Algo.CoreV1
                 case OutputTargets.Window4: return Domain.Metadata.Types.OutputTarget.Window4;
 
                 default: throw new ArgumentException($"Unsupported output target {target}");
+            }
+        }
+
+        public static OutputTargets ToApiEnum(this Domain.Metadata.Types.OutputTarget target)
+        {
+            switch (target)
+            {
+                case Domain.Metadata.Types.OutputTarget.Overlay: return OutputTargets.Overlay;
+                case Domain.Metadata.Types.OutputTarget.Window1: return OutputTargets.Window1;
+                case Domain.Metadata.Types.OutputTarget.Window2: return OutputTargets.Window2;
+                case Domain.Metadata.Types.OutputTarget.Window3: return OutputTargets.Window3;
+                case Domain.Metadata.Types.OutputTarget.Window4: return OutputTargets.Window4;
+
+                default: throw new ArgumentException($"Unsupported output target {target}");
+            }
+        }
+
+        public static Domain.Drawable.Types.ObjectType ToDomainEnum(this DrawableObjectType type)
+        {
+            switch (type)
+            {
+                case DrawableObjectType.VerticalLine: return Domain.Drawable.Types.ObjectType.VerticalLine;
+                case DrawableObjectType.HorizontalLine: return Domain.Drawable.Types.ObjectType.HorizontalLine;
+                case DrawableObjectType.TrendLine: return Domain.Drawable.Types.ObjectType.TrendLine;
+                case DrawableObjectType.Rectangle: return Domain.Drawable.Types.ObjectType.Rectangle;
+                case DrawableObjectType.Triangle: return Domain.Drawable.Types.ObjectType.Triangle;
+                case DrawableObjectType.Ellipse: return Domain.Drawable.Types.ObjectType.Ellipse;
+                case DrawableObjectType.Symbol: return Domain.Drawable.Types.ObjectType.Symbol;
+                case DrawableObjectType.Text: return Domain.Drawable.Types.ObjectType.Text;
+                case DrawableObjectType.Bitmap: return Domain.Drawable.Types.ObjectType.Bitmap;
+                case DrawableObjectType.LabelControl: return Domain.Drawable.Types.ObjectType.LabelControl;
+                case DrawableObjectType.RectangleControl: return Domain.Drawable.Types.ObjectType.RectangleControl;
+                case DrawableObjectType.EditControl: return Domain.Drawable.Types.ObjectType.EditControl;
+                case DrawableObjectType.ButtonControl: return Domain.Drawable.Types.ObjectType.ButtonControl;
+                case DrawableObjectType.BitmapControl: return Domain.Drawable.Types.ObjectType.BitmapControl;
+                case DrawableObjectType.TextBlockControl: return Domain.Drawable.Types.ObjectType.TextBlockControl;
+                case DrawableObjectType.Levels: return Domain.Drawable.Types.ObjectType.Levels;
+                case DrawableObjectType.Cycles: return Domain.Drawable.Types.ObjectType.Cycles;
+                case DrawableObjectType.LinRegChannel: return Domain.Drawable.Types.ObjectType.LinRegChannel;
+                case DrawableObjectType.StdDevChannel: return Domain.Drawable.Types.ObjectType.StdDevChannel;
+                case DrawableObjectType.EquidistantChannel: return Domain.Drawable.Types.ObjectType.EquidistantChannel;
+                case DrawableObjectType.GannLine: return Domain.Drawable.Types.ObjectType.GannLine;
+                case DrawableObjectType.GannFan: return Domain.Drawable.Types.ObjectType.GannFan;
+                case DrawableObjectType.GannGrid: return Domain.Drawable.Types.ObjectType.GannGrid;
+                case DrawableObjectType.FiboFan: return Domain.Drawable.Types.ObjectType.FiboFan;
+                case DrawableObjectType.FiboArcs: return Domain.Drawable.Types.ObjectType.FiboArcs;
+                case DrawableObjectType.FiboChannel: return Domain.Drawable.Types.ObjectType.FiboChannel;
+                case DrawableObjectType.FiboRetracement: return Domain.Drawable.Types.ObjectType.FiboRetracement;
+                case DrawableObjectType.FiboTimeZones: return Domain.Drawable.Types.ObjectType.FiboTimeZones;
+                case DrawableObjectType.FiboExpansion: return Domain.Drawable.Types.ObjectType.FiboExpansion;
+                case DrawableObjectType.AndrewsPitchfork: return Domain.Drawable.Types.ObjectType.AndrewsPitchfork;
+                default: throw new ArgumentException("Unknown object type");
+            }
+        }
+
+        public static Domain.Drawable.Types.SymbolAnchor ToDomainEnum(this DrawableSymbolAnchor anchor)
+        {
+            switch (anchor)
+            {
+                case DrawableSymbolAnchor.Top: return Domain.Drawable.Types.SymbolAnchor.Top;
+                case DrawableSymbolAnchor.Bottom: return Domain.Drawable.Types.SymbolAnchor.Bottom;
+                default: throw new ArgumentException("Unknown symbol anchor");
+            }
+        }
+
+        public static DrawableSymbolAnchor ToApiEnum(this Domain.Drawable.Types.SymbolAnchor anchor)
+        {
+            switch (anchor)
+            {
+                case Domain.Drawable.Types.SymbolAnchor.Top: return DrawableSymbolAnchor.Top;
+                case Domain.Drawable.Types.SymbolAnchor.Bottom: return DrawableSymbolAnchor.Bottom;
+                default: throw new ArgumentException("Unknown symbol anchor");
+            }
+        }
+
+        public static Domain.Drawable.Types.ControlZeroPosition ToDomainEnum(this DrawableControlZeroPosition pos)
+        {
+            switch (pos)
+            {
+                case DrawableControlZeroPosition.UpperLeft: return Domain.Drawable.Types.ControlZeroPosition.UpperLeft;
+                case DrawableControlZeroPosition.UpperRight: return Domain.Drawable.Types.ControlZeroPosition.UpperRight;
+                case DrawableControlZeroPosition.LowerLeft: return Domain.Drawable.Types.ControlZeroPosition.LowerLeft;
+                case DrawableControlZeroPosition.LowerRight: return Domain.Drawable.Types.ControlZeroPosition.LowerRight;
+                default: throw new ArgumentException("Unknown control zero position");
+            }
+        }
+
+        public static DrawableControlZeroPosition ToApiEnum(this Domain.Drawable.Types.ControlZeroPosition pos)
+        {
+            switch (pos)
+            {
+                case Domain.Drawable.Types.ControlZeroPosition.UpperLeft: return DrawableControlZeroPosition.UpperLeft;
+                case Domain.Drawable.Types.ControlZeroPosition.UpperRight: return DrawableControlZeroPosition.UpperRight;
+                case Domain.Drawable.Types.ControlZeroPosition.LowerLeft: return DrawableControlZeroPosition.LowerLeft;
+                case Domain.Drawable.Types.ControlZeroPosition.LowerRight: return DrawableControlZeroPosition.LowerRight;
+                default: throw new ArgumentException("Unknown control zero position");
+            }
+        }
+
+        public static Domain.Drawable.Types.PositionMode ToDomainEnum(this DrawablePositionMode mode)
+        {
+            switch (mode)
+            {
+                case DrawablePositionMode.TopLeft: return Domain.Drawable.Types.PositionMode.TopLeft;
+                case DrawablePositionMode.TopCenter: return Domain.Drawable.Types.PositionMode.TopCenter;
+                case DrawablePositionMode.TopRight: return Domain.Drawable.Types.PositionMode.TopRight;
+                case DrawablePositionMode.CenterLeft: return Domain.Drawable.Types.PositionMode.CenterLeft;
+                case DrawablePositionMode.Center: return Domain.Drawable.Types.PositionMode.Center;
+                case DrawablePositionMode.CenterRight: return Domain.Drawable.Types.PositionMode.CenterRight;
+                case DrawablePositionMode.BottomLeft: return Domain.Drawable.Types.PositionMode.BottomLeft;
+                case DrawablePositionMode.BottomCenter: return Domain.Drawable.Types.PositionMode.BottomCenter;
+                case DrawablePositionMode.BottomRight: return Domain.Drawable.Types.PositionMode.BottomRight;
+                default: throw new ArgumentException("Unknown position mode");
+            }
+        }
+
+        public static DrawablePositionMode ToApiEnum(this Domain.Drawable.Types.PositionMode mode)
+        {
+            switch (mode)
+            {
+                case Domain.Drawable.Types.PositionMode.TopLeft: return DrawablePositionMode.TopLeft;
+                case Domain.Drawable.Types.PositionMode.TopCenter: return DrawablePositionMode.TopCenter;
+                case Domain.Drawable.Types.PositionMode.TopRight: return DrawablePositionMode.TopRight;
+                case Domain.Drawable.Types.PositionMode.CenterLeft: return DrawablePositionMode.CenterLeft;
+                case Domain.Drawable.Types.PositionMode.Center: return DrawablePositionMode.Center;
+                case Domain.Drawable.Types.PositionMode.CenterRight: return DrawablePositionMode.CenterRight;
+                case Domain.Drawable.Types.PositionMode.BottomLeft: return DrawablePositionMode.BottomLeft;
+                case Domain.Drawable.Types.PositionMode.BottomCenter: return DrawablePositionMode.BottomCenter;
+                case Domain.Drawable.Types.PositionMode.BottomRight: return DrawablePositionMode.BottomRight;
+                default: throw new ArgumentException("Unknown position mode");
+            }
+        }
+
+        public static Domain.Drawable.Types.GannDirection ToDomainEnum(this DrawableGannDirection direction)
+        {
+            switch (direction)
+            {
+                case DrawableGannDirection.UpTrend: return Domain.Drawable.Types.GannDirection.UpTrend;
+                case DrawableGannDirection.DownTrend: return Domain.Drawable.Types.GannDirection.DownTrend;
+                default: throw new ArgumentException("Unknown gann direction");
+            }
+        }
+
+        public static DrawableGannDirection ToApiEnum(this Domain.Drawable.Types.GannDirection direction)
+        {
+            switch (direction)
+            {
+                case Domain.Drawable.Types.GannDirection.UpTrend: return DrawableGannDirection.UpTrend;
+                case Domain.Drawable.Types.GannDirection.DownTrend: return DrawableGannDirection.DownTrend;
+                default: throw new ArgumentException("Unknown gann direction");
+            }
+        }
+
+        public static Domain.Drawable.Types.LineRayMode ToDomainEnum(this DrawableLineRayMode mode)
+        {
+            switch (mode)
+            {
+                case DrawableLineRayMode.RayNone: return Domain.Drawable.Types.LineRayMode.RayNone;
+                case DrawableLineRayMode.RayLeft: return Domain.Drawable.Types.LineRayMode.RayLeft;
+                case DrawableLineRayMode.RayRight: return Domain.Drawable.Types.LineRayMode.RayRight;
+                case DrawableLineRayMode.RayAll: return Domain.Drawable.Types.LineRayMode.RayAll;
+                default: throw new ArgumentException("Unknown line ray mode");
+            }
+        }
+
+        public static DrawableLineRayMode ToApiEnum(this Domain.Drawable.Types.LineRayMode mode)
+        {
+            switch (mode)
+            {
+                case Domain.Drawable.Types.LineRayMode.RayNone: return DrawableLineRayMode.RayNone;
+                case Domain.Drawable.Types.LineRayMode.RayLeft: return DrawableLineRayMode.RayLeft;
+                case Domain.Drawable.Types.LineRayMode.RayRight: return DrawableLineRayMode.RayRight;
+                case Domain.Drawable.Types.LineRayMode.RayAll: return DrawableLineRayMode.RayAll;
+                default: throw new ArgumentException("Unknown line ray mode");
             }
         }
     }

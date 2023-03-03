@@ -151,6 +151,7 @@ namespace TickTrader.Algo.IndicatorHost
             await indicator.Init();
             _ = indicator.OutputChannel.Consume(update => _proxyDownlinkSrc.DispatchEvent(new ChartHostProxy.OutputDataUpdatedMsg(pluginId, update)));
             _ = indicator.LogChannel.Consume(log => _parent.Tell(new IndicatorLogRecord(pluginId, _info.Id, _chartDisplayName, log)));
+            _ = indicator.DrawableChannel.Consume(update => _proxyDownlinkSrc.DispatchEvent(new ChartHostProxy.DrawableObjectUpdatedMsg(pluginId, update)));
 
             if (_isStarted)
                 await StartIndicator(plugin);
@@ -325,6 +326,8 @@ namespace TickTrader.Algo.IndicatorHost
 
             public Channel<PluginLogRecord> LogChannel { get; }
 
+            public Channel<DrawableCollectionUpdate> DrawableChannel { get; }
+
 
             public IndicatorModel(IActorRef plugin)
             {
@@ -332,6 +335,7 @@ namespace TickTrader.Algo.IndicatorHost
 
                 OutputChannel = DefaultChannelFactory.CreateForOneToOne<OutputSeriesUpdate>();
                 LogChannel = DefaultChannelFactory.CreateForOneToOne<PluginLogRecord>();
+                DrawableChannel = DefaultChannelFactory.CreateForOneToOne<DrawableCollectionUpdate>();
             }
 
 
@@ -339,12 +343,14 @@ namespace TickTrader.Algo.IndicatorHost
             {
                 await PluginRef.Ask(new PluginActor.AttachOutputsChannelCmd(OutputChannel));
                 await PluginRef.Ask(new PluginActor.AttachLogsChannelCmd(LogChannel, false));
+                await PluginRef.Ask(new PluginActor.AttachDrawableChannelCmd(DrawableChannel));
             }
 
             public void Deinit()
             {
                 OutputChannel.Writer.TryComplete();
                 LogChannel.Writer.TryComplete();
+                DrawableChannel.Writer.TryComplete();
             }
 
             public void OnModelUpdate(PluginModelUpdate update)

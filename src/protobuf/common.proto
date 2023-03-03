@@ -12,6 +12,15 @@ message Update {
     }
 }
 
+message CollectionUpdate {
+    enum Action {
+        ADDED = 0;
+        UPDATED = 1;
+        REMOVED = 2;
+        CLEARED = 3;
+    }
+}
+
 message Feed {
     enum MarketSide {
         BID = 0;

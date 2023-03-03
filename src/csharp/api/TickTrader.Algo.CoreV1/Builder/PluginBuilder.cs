@@ -28,6 +28,7 @@ namespace TickTrader.Algo.CoreV1
         private PluginPermissions _permissions;
         private ICalculatorApi _calc;
         private IndicatorsCollection _indicators;
+        private DrawableApiAdapter _drawableApi;
 
         internal PluginBuilder(PluginMetadata descriptor)
         {
@@ -49,6 +50,7 @@ namespace TickTrader.Algo.CoreV1
             _permissions = new PluginPermissions { Isolated = true, TradeAllowed = false };
 
             _indicators = new IndicatorsCollection();
+            _drawableApi = new DrawableApiAdapter();
 
             GetDefaultOptMetric = GetFinalEquity;
 
@@ -124,6 +126,8 @@ namespace TickTrader.Algo.CoreV1
         internal PluginLoggerAdapter LogAdapter => logAdapter;
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
+
+        public Action<DrawableCollectionUpdate> DrawablesUpdated { get => _drawableApi.Updated; set => _drawableApi.Updated = value; }
 
         public IReadOnlyDictionary<object, IDataBuffer> DataBuffers { get { return inputBuffers; } }
 
@@ -314,6 +318,7 @@ namespace TickTrader.Algo.CoreV1
         ITimerApi IPluginContext.TimerApi => TimerApi;
         TimeFrames IPluginContext.TimeFrame => TimeFrame.ToApiEnum();
         IndicatorProvider IPluginContext.Indicators => _indicators;
+        IDrawableApi IPluginContext.DrawableApi => _drawableApi;
 
         void IPluginContext.OnExit()
         {
@@ -357,6 +362,7 @@ namespace TickTrader.Algo.CoreV1
         protected void OnAfterInvoke()
         {
             statusApi.Apply();
+            _drawableApi.FlushAll();
         }
 
         internal void InvokePluginMethod(Action<PluginBuilder, object> invokeAction, bool initMethod = false)

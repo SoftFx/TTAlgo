@@ -479,6 +479,8 @@ namespace TickTrader.Algo.Server
                 plugin.Tell(payload.Unpack<PluginExitedMsg>());
             else if (payload.Is(PluginAbortedMsg.Descriptor))
                 OnPluginAborted(payload.Unpack<PluginAbortedMsg>());
+            else if (payload.Is(DrawableCollectionUpdate.Descriptor))
+                plugin.Tell(payload.Unpack<DrawableCollectionUpdate>());
         }
 
         private void PluginErrorHandler(string id, Any payload)

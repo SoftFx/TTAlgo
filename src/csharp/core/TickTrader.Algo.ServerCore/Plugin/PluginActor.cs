@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Server
         private readonly ActorEventSource<PluginLogRecord> _logEventSrc = new ActorEventSource<PluginLogRecord>();
         private readonly ActorEventSource<PluginStatusUpdate> _statusEventSrc = new ActorEventSource<PluginStatusUpdate>();
         private readonly ActorEventSource<OutputSeriesUpdate> _outputEventSrc = new ActorEventSource<OutputSeriesUpdate>();
+        private readonly ActorEventSource<DrawableCollectionUpdate> _drawableEventSrc = new ActorEventSource<DrawableCollectionUpdate>();
         private readonly ActorEventSource<object> _proxyDownlinkSrc = new ActorEventSource<object>();
 
         private PluginSavedState _savedState;
@@ -48,12 +49,14 @@ namespace TickTrader.Algo.Server
             Receive<AttachLogsChannelCmd>(AttachLogsChannel);
             Receive<AttachStatusChannelCmd>(AttachStatusChannel);
             Receive<AttachOutputsChannelCmd>(cmd => _outputEventSrc.Subscribe(cmd.OutputSink));
+            Receive<AttachDrawableChannelCmd>(cmd => _drawableEventSrc.Subscribe(cmd.DrawableSink));
             Receive<PluginLogsRequest, PluginLogsResponse>(GetLogs);
             Receive<PluginStatusRequest, PluginStatusResponse>(GetStatus);
 
             Receive<PluginLogRecord>(OnLogUpdated);
             Receive<PluginStatusUpdate>(OnStatusUpdated);
             Receive<OutputSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
+            Receive<DrawableCollectionUpdate>(upd => _drawableEventSrc.DispatchEvent(upd));
             Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
             Receive<PluginExitedMsg>(OnExited);
             Receive<RuntimeControlModel.RuntimeCrashedMsg>(OnRuntimeCrashed);
@@ -552,5 +555,7 @@ namespace TickTrader.Algo.Server
                 OutputSink = outputSink;
             }
         }
+
+        public record AttachDrawableChannelCmd(ChannelWriter<DrawableCollectionUpdate> DrawableSink);
     }
 }

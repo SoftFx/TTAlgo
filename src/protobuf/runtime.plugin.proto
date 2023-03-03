@@ -76,18 +76,21 @@ message BarSeriesUpdate {
 
 message MarkerInfo {
     enum IconType {
-        CIRCLE = 0;
-        UP_ARROW = 1;
-        DOWN_ARROW = 2;
-        UP_TRIANGLE = 3;
-        DOWN_TRIANGLE = 4;
-        DIAMOND = 5;
-        SQUARE = 6;
+        UNKNOWN_ICON_TYPE = 0;
+        CIRCLE = 1;
+        UP_ARROW = 2;
+        DOWN_ARROW = 3;
+        UP_TRIANGLE = 4;
+        DOWN_TRIANGLE = 5;
+        DIAMOND = 6;
+        SQUARE = 7;
+        WINGDINGS = 8;
     }
 
     google.protobuf.StringValue display_text = 1;
     IconType icon = 2;
-    uint32 color_argb = 3;
+    google.protobuf.UInt32Value color_argb = 3;
+    uint32 icon_code = 4;
 }
 
 

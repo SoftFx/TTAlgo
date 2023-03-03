@@ -12,6 +12,8 @@
     <SolidColorBrush x:Key="Shell_PrimaryBackground" Color="White"/>
     <SolidColorBrush x:Key="Shell_SecondaryBackground" Color="LightGray"/>
 
+    <SolidColorBrush x:Key="DataGrid_SelectionBackground" Color="LightBlue" />
+
     <SolidColorBrush x:Key="RateUpColor" Color="#009344"/>
     <SolidColorBrush x:Key="RateUpHighlightColor" Color="#006836"/>
     <SolidColorBrush x:Key="RateDownColor" Color="#F15923"/>
