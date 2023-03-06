@@ -11,6 +11,8 @@ namespace TickTrader.Algo.Server.PublicAPI
     {
         private static readonly Dictionary<Types.PayloadType, MessageDescriptor> _updateDescriptorMap = new Dictionary<Types.PayloadType, MessageDescriptor>();
         private static readonly Dictionary<string, Types.PayloadType> _updateTypeMap = new Dictionary<string, Types.PayloadType>();
+        private static readonly object _staticLock = new object();
+        private static bool _descriptorCacheInitialized;
 
 
         public bool TryUnpack(out IMessage update)
@@ -46,20 +48,30 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             // protobuf code gen uses static ctor to init Descriptor property
 
-            if (_updateDescriptorMap.Count > 0)
+            if (_descriptorCacheInitialized)
                 return;
 
-            RegisterDescriptor(HeartbeatUpdate.Descriptor, Types.PayloadType.Heartbeat);
-            RegisterDescriptor(AlgoServerMetadataUpdate.Descriptor, Types.PayloadType.ServerMetadataUpdate);
-            RegisterDescriptor(PackageUpdate.Descriptor, Types.PayloadType.PackageUpdate);
-            RegisterDescriptor(PackageStateUpdate.Descriptor, Types.PayloadType.PackageStateUpdate);
-            RegisterDescriptor(AccountModelUpdate.Descriptor, Types.PayloadType.AccountModelUpdate);
-            RegisterDescriptor(AccountStateUpdate.Descriptor, Types.PayloadType.AccountStateUpdate);
-            RegisterDescriptor(PluginModelUpdate.Descriptor, Types.PayloadType.PluginModelUpdate);
-            RegisterDescriptor(PluginStateUpdate.Descriptor, Types.PayloadType.PluginStateUpdate);
-            RegisterDescriptor(PluginLogUpdate.Descriptor, Types.PayloadType.PluginLogUpdate);
-            RegisterDescriptor(PluginStatusUpdate.Descriptor, Types.PayloadType.PluginStatusUpdate);
-            RegisterDescriptor(AlertListUpdate.Descriptor, Types.PayloadType.AlertListUpdate);
+            lock (_staticLock)
+            {
+                // Multiple threads might wait on lock
+                // Check that we are here for the first time
+                if (_descriptorCacheInitialized)
+                    return;
+
+                RegisterDescriptor(HeartbeatUpdate.Descriptor, Types.PayloadType.Heartbeat);
+                RegisterDescriptor(AlgoServerMetadataUpdate.Descriptor, Types.PayloadType.ServerMetadataUpdate);
+                RegisterDescriptor(PackageUpdate.Descriptor, Types.PayloadType.PackageUpdate);
+                RegisterDescriptor(PackageStateUpdate.Descriptor, Types.PayloadType.PackageStateUpdate);
+                RegisterDescriptor(AccountModelUpdate.Descriptor, Types.PayloadType.AccountModelUpdate);
+                RegisterDescriptor(AccountStateUpdate.Descriptor, Types.PayloadType.AccountStateUpdate);
+                RegisterDescriptor(PluginModelUpdate.Descriptor, Types.PayloadType.PluginModelUpdate);
+                RegisterDescriptor(PluginStateUpdate.Descriptor, Types.PayloadType.PluginStateUpdate);
+                RegisterDescriptor(PluginLogUpdate.Descriptor, Types.PayloadType.PluginLogUpdate);
+                RegisterDescriptor(PluginStatusUpdate.Descriptor, Types.PayloadType.PluginStatusUpdate);
+                RegisterDescriptor(AlertListUpdate.Descriptor, Types.PayloadType.AlertListUpdate);
+
+                _descriptorCacheInitialized = true;
+            }
         }
 
         private static void RegisterDescriptor(MessageDescriptor descriptor, Types.PayloadType type)
