@@ -77,6 +77,7 @@ namespace Machinarium.Var
         public T Value
         {
             get => _var.Value;
+
             set
             {
                 _preChangeTriggers?.ForEach(u => u?.Invoke(_var.Value));
