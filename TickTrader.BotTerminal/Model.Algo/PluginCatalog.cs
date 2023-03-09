@@ -1,10 +1,9 @@
 ﻿using Machinarium.Qnil;
-using NLog;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginCatalogItem
+    internal sealed class PluginCatalogItem
     {
         public IAlgoAgent Agent { get; }
 
@@ -27,11 +26,9 @@ namespace TickTrader.BotTerminal
     }
 
 
-    internal class PluginCatalog
+    internal sealed class PluginCatalog
     {
-        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
-        private IAlgoAgent _algoAgent;
+        private readonly IAlgoAgent _algoAgent;
 
 
         public IVarList<PluginCatalogItem> PluginList { get; }

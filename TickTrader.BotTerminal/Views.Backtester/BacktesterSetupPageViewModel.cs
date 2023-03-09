@@ -88,7 +88,7 @@ namespace TickTrader.BotTerminal
             SelectedPluginInfo = new Property<string>();
             SelectedPlugin = new Property<AlgoPluginViewModel>().AddPostTrigger(plugin =>
             {
-                SelectedPluginInfo.Value = $"Package id: {plugin?.PackageInfo.PackageId}";
+                SelectedPluginInfo.Value = $"Package path: {plugin?.PackageInfo.Identity.FilePath}";
             });
 
             SelectedPluginVersions = new Property<List<AlgoPluginViewModel>>();
