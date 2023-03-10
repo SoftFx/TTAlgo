@@ -5,6 +5,7 @@ using NLog;
 //using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.BacktesterApi;
@@ -244,10 +245,26 @@ namespace TickTrader.BotTerminal
                 await LoadChartData(config, results, TradeHistoryPage.Reports, observer);
             }
 
-            if (execStatus.HasError)
-                observer.StopProgress(execStatus.ToString());
+            var statusBuilder = new StringBuilder();
+            statusBuilder.AppendLine(execStatus.ToString());
+            var hasError = execStatus.HasError;
+            if (results.ReadErrors.Count > 0)
+            {
+                hasError = true;
+                statusBuilder.AppendLine(results.FormatReadErrors());
+                foreach (var error in results.ReadErrors)
+                {
+                    var ex = error.Exception;
+                    if (ex != null)
+                        _logger.Error(ex, "Backtester results read error");
+                }
+            }
+
+            var status = statusBuilder.ToString().TrimEnd();
+            if (hasError)
+                observer.StopProgress(status);
             else
-                observer.SetMessage(execStatus.ToString());
+                observer.SetMessage(status);
         }
 
         private void FireOnStart(BacktesterConfig config)

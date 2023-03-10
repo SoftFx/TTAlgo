@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
@@ -54,6 +55,8 @@ namespace TickTrader.Algo.BacktesterApi
 
         public PluginDescriptor PluginInfo { get; private set; }
 
+        public List<ReadError> ReadErrors { get; } = new List<ReadError>();
+
 
         public BacktesterResults(string path)
         {
@@ -86,13 +89,31 @@ namespace TickTrader.Algo.BacktesterApi
             using (var file = File.Open(filePath, FileMode.Open))
             using (var zip = new ZipArchive(file))
             {
-                res.ExecStatus = AsZipEntry.TryReadJson<ExecutionStatus>(zip, ExecStatusFileName) ?? ExecutionStatus.NotFound;
+                res.ExecStatus = AsZipEntry.TryReadJson<ExecutionStatus>(zip, ExecStatusFileName, res) ?? ExecutionStatus.NotFound;
                 if (!res.ExecStatus.ResultsNotCorrupted)
                     return res;
 
-                res._version = AsZipEntry.TryReadJson<VersionInfo>(zip, VersionFileName);
-                res.Stats = AsZipEntry.TryReadJson<TestingStatistics>(zip, StatsFileName);
-                res.PluginInfo = AsZipEntry.TryReadProtoJson<PluginDescriptor>(zip, PluginInfoFileName, PluginDescriptor.JsonParser);
+                res._version = AsZipEntry.TryReadJson<VersionInfo>(zip, VersionFileName, res);
+                if (res._version == null)
+                {
+                    res.ReadErrors.Add(new ReadError(ReadErrorCode.MissingVersion));
+                }
+                else if (res._version.ResultsVersion > VersionInfo.CurrentVersion)
+                {
+                    res.ReadErrors.Add(new ReadError(ReadErrorCode.NewerVersion, $"{res._version.ResultsVersion} > {VersionInfo.CurrentVersion}"));
+                }
+
+                res.Stats = AsZipEntry.TryReadJson<TestingStatistics>(zip, StatsFileName, res) ?? new TestingStatistics();
+
+                if (res._version?.PluginInfoUri == PluginDescriptor.JsonUri)
+                {
+                    res.PluginInfo = AsZipEntry.TryReadProtoJson<PluginDescriptor>(zip, PluginInfoFileName, PluginDescriptor.JsonParser, res);
+                }
+                else if (res._version != null)
+                {
+                    res.ReadErrors.Add(new ReadError(ReadErrorCode.UnknownPluginInfo, res._version?.PluginInfoUri));
+                }
+
                 foreach (var entry in zip.Entries)
                 {
                     var entryName = entry.Name;
@@ -100,22 +121,25 @@ namespace TickTrader.Algo.BacktesterApi
                     {
                         var symbol = Path.GetFileNameWithoutExtension(entryName).Substring(5);
                         var data = new List<BarData>();
-                        AsZipEntry.TryReadCsv<BarData, CsvMapping.ForBarData>(zip, entryName, data);
+                        AsZipEntry.TryReadCsv<BarData, CsvMapping.ForBarData>(zip, entryName, data, res);
                         res.Feed.Add(symbol, data);
                     }
                     else if (entryName.StartsWith(OutputFilePrefix))
                     {
                         var outputId = Path.GetFileNameWithoutExtension(entryName).Substring(7);
                         var data = new List<OutputPoint>();
-                        AsZipEntry.TryReadOutputData(zip, entryName, data);
+                        AsZipEntry.TryReadOutputData(zip, entryName, data, res);
                         res.Outputs.Add(outputId, data);
                     }
                 }
 
-                AsZipEntry.TryReadCsv<PluginLogRecord, CsvMapping.ForLogRecord>(zip, JournalFileName, res.Journal);
-                AsZipEntry.TryReadCsv<BarData, CsvMapping.ForBarData>(zip, EquityFileName, res.Equity);
-                AsZipEntry.TryReadCsv<BarData, CsvMapping.ForBarData>(zip, MarginFileName, res.Margin);
-                AsZipEntry.TryReadCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, TradeHistoryFileName, res.TradeHistory);
+                AsZipEntry.TryReadCsv<PluginLogRecord, CsvMapping.ForLogRecord>(zip, JournalFileName, res.Journal, res);
+                if (res.PluginInfo != null && res.PluginInfo.Type == Metadata.Types.PluginType.TradeBot)
+                {
+                    AsZipEntry.TryReadCsv<BarData, CsvMapping.ForBarData>(zip, EquityFileName, res.Equity, res);
+                    AsZipEntry.TryReadCsv<BarData, CsvMapping.ForBarData>(zip, MarginFileName, res.Margin, res);
+                    AsZipEntry.TryReadCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, TradeHistoryFileName, res.TradeHistory, res);
+                }
             }
             return res;
         }
@@ -139,6 +163,35 @@ namespace TickTrader.Algo.BacktesterApi
             }
 
             return new Result<BacktesterConfig>($"Backtester config not found in '{path}'");
+        }
+
+        public string FormatReadErrors()
+        {
+            if (ReadErrors.Count == 0)
+                return string.Empty;
+
+            var sb = new StringBuilder();
+            foreach (var error in ReadErrors)
+            {
+                var (code, details, ex) = error;
+                var msg = code switch
+                {
+                    ReadErrorCode.NotFound => $"Can't find '{details}'",
+                    ReadErrorCode.ParseError => $"Failed to parse '{details}'",
+                    ReadErrorCode.MissingVersion => $"Version info not found",
+                    ReadErrorCode.NewerVersion => $"Result are generated using newer version ({details})",
+                    ReadErrorCode.UnknownPluginInfo => $"Unsupported plugin info format '{details}'",
+                    _ => $"Unknown error: code={code}, details={details}",
+                };
+                sb.Append(msg);
+                if (ex != null)
+                {
+                    sb.Append(": ");
+                    sb.Append(ex.Message);
+                }
+                sb.AppendLine();
+            }
+            return sb.ToString().TrimEnd();
         }
 
 
@@ -265,44 +318,54 @@ namespace TickTrader.Algo.BacktesterApi
                     SaveAsCsv<T, TMap>(stream, data);
             }
 
-            public static T TryReadJson<T>(ZipArchive zip, string entryName)
+            public static T TryReadJson<T>(ZipArchive zip, string entryName, BacktesterResults res)
             {
-                if (!TryGetZipEntry(zip, entryName, out var entry))
+                if (!TryGetZipEntry(zip, entryName, res, out var entry))
                     return default;
 
-                using (var stream = entry.Open())
+                return TryParse(entryName, res, () =>
                 {
-                    return ReadAsJson<T>(stream, entry.Length);
-                }
+                    using (var stream = entry.Open())
+                        return ReadAsJson<T>(stream, entry.Length);
+                });
             }
 
-            public static T TryReadProtoJson<T>(ZipArchive zip, string entryName, JsonParser jsonParser)
+            public static T TryReadProtoJson<T>(ZipArchive zip, string entryName, JsonParser jsonParser, BacktesterResults res)
                 where T : IMessage, new()
             {
-                if (!TryGetZipEntry(zip, entryName, out var entry))
+                if (!TryGetZipEntry(zip, entryName, res, out var entry))
                     return default;
 
-                using (var stream = entry.Open())
-                    return ReadAsProtoJson<T>(stream, jsonParser);
+                return TryParse(entryName, res, () =>
+                {
+                    using (var stream = entry.Open())
+                        return ReadAsProtoJson<T>(stream, jsonParser);
+                });
             }
 
-            public static void TryReadCsv<T, TMap>(ZipArchive zip, string entryName, List<T> storage)
+            public static void TryReadCsv<T, TMap>(ZipArchive zip, string entryName, List<T> storage, BacktesterResults res)
                 where TMap : ClassMap<T>
             {
-                if (!TryGetZipEntry(zip, entryName, out var entry))
+                if (!TryGetZipEntry(zip, entryName, res, out var entry))
                     return;
 
-                using (var stream = entry.Open())
-                    ReadAsCsv<T, TMap>(stream, storage);
+                TryParse(entryName, res, () =>
+                {
+                    using (var stream = entry.Open())
+                        ReadAsCsv<T, TMap>(stream, storage);
+                });
             }
 
-            public static void TryReadOutputData(ZipArchive zip, string entryName, List<OutputPoint> storage)
+            public static void TryReadOutputData(ZipArchive zip, string entryName, List<OutputPoint> storage, BacktesterResults res)
             {
-                if (!TryGetZipEntry(zip, entryName, out var entry))
+                if (!TryGetZipEntry(zip, entryName, res, out var entry))
                     return;
 
-                using (var stream = entry.Open())
-                    ReadAsOutputData(stream, storage);
+                TryParse(entryName, res, () =>
+                {
+                    using (var stream = entry.Open())
+                        ReadAsOutputData(stream, storage);
+                });
             }
 
 
@@ -312,10 +375,45 @@ namespace TickTrader.Algo.BacktesterApi
                 return entry.Open();
             }
 
-            private static bool TryGetZipEntry(ZipArchive zip, string entryName, out ZipArchiveEntry entry)
+            private static bool TryGetZipEntry(ZipArchive zip, string entryName, BacktesterResults res, out ZipArchiveEntry entry)
             {
                 entry = zip.GetEntry(entryName);
+                var hasEntry = entry != null;
+                if (res != null && !hasEntry)
+                    res.ReadErrors.Add(new ReadError(ReadErrorCode.NotFound, entryName));
                 return entry != null;
+            }
+
+            private static void TryParse(string entryName, BacktesterResults res, Action readAction)
+            {
+                try
+                {
+                    readAction();
+                }
+                catch (Exception ex)
+                {
+                    if (res == null)
+                        throw;
+
+                    res.ReadErrors.Add(new ReadError(ReadErrorCode.ParseError, entryName, ex));
+                }
+            }
+
+            private static T TryParse<T>(string entryName, BacktesterResults res, Func<T> readAction)
+            {
+                try
+                {
+                    return readAction();
+                }
+                catch (Exception ex)
+                {
+                    if (res == null)
+                        throw;
+
+                    res.ReadErrors.Add(new ReadError(ReadErrorCode.ParseError, entryName, ex));
+                }
+
+                return default;
             }
         }
 
@@ -482,8 +580,21 @@ namespace TickTrader.Algo.BacktesterApi
 
         private class VersionInfo
         {
-            public int ResultsVersion { get; set; } = 1;
+            public const int CurrentVersion = 1;
+
+            public int ResultsVersion { get; set; } = CurrentVersion;
             public string PluginInfoUri { get; set; } = PluginDescriptor.JsonUri;
+        }
+
+
+        public enum ReadErrorCode { NotFound, ParseError, MissingVersion, NewerVersion, UnknownPluginInfo }
+
+
+        public record ReadError(ReadErrorCode Code, string Details, Exception Exception)
+        {
+            public ReadError(ReadErrorCode code) : this(code, null, null) { }
+
+            public ReadError(ReadErrorCode code, string details) : this(code, details, null) { }
         }
     }
 }
