@@ -16,6 +16,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
     internal sealed class BotsRepositoryViewModel : Screen, IWindowModel
     {
         private readonly Dictionary<string, BotInfoViewModel> _botsInfo = new();
+        private readonly Dictionary<string, PackageInfoViewModel> _packages = new();
         private readonly List<SourceViewModel> _sources = new()
         {
             new()
@@ -79,6 +80,8 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
             _hasSelectedBots.PropertyChanged += (s, e) => CanUpdateAllBots.Value = _hasSelectedBots.Value;
             _agent.Plugins.Updated += InstalledPluginsUpdatedHandler;
+            _agent.Packages.Updated += InstalledPackagesUpdateHandler;
+            _agent.BotStateChanged += BotStateChanged;
         }
 
         protected override Task OnActivateAsync(CancellationToken token)
@@ -155,6 +158,13 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         private void LoadInstalledBots()
         {
             _botsInfo.Clear();
+            _packages.Clear();
+
+            foreach (var (id, package) in _agent.Packages.Snapshot)
+                _packages.Add(id, new PackageInfoViewModel(id, package.Identity));
+
+            foreach (var (_, bot) in _agent.Bots.Snapshot)
+                BotStateChanged(bot);
 
             var instPlugins = _agent.Plugins.Snapshot.Values.Where(p => p.Descriptor_.IsTradeBot);
 
@@ -206,6 +216,23 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             UpdateInstalledView();
         }
 
+        private void InstalledPackagesUpdateHandler(DictionaryUpdateArgs<string, PackageInfo> args)
+        {
+            var key = args.Key;
+
+            switch (args.Action)
+            {
+                case DLinqAction.Insert:
+                    _packages[key] = new PackageInfoViewModel(args.Key, args.NewItem.Identity);
+                    break;
+                case DLinqAction.Remove:
+                    _packages.Remove(key);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         private void RegisterNewPlugin(PluginInfo plugin)
         {
             if (!plugin.Descriptor_.IsTradeBot)
@@ -221,8 +248,8 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                 _botsInfo.Add(botName, botInfo);
             }
 
-            if (_agent.Packages.Snapshot.TryGetValue(plugin.Key.PackageId, out var package))
-                botInfo.ApplyPackage(plugin, package.Identity);
+            if (_packages.TryGetValue(plugin.Key.PackageId, out var package))
+                botInfo.ApplyPackage(plugin, package);
         }
 
         private void RemovePlugin(PluginInfo plugin)
@@ -249,6 +276,12 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
                     if (_botsInfo.TryGetValue(remoteBote.Name, out var localBot))
                         localBot.SetRemoteBot(remoteBote);
             }
+        }
+
+        private void BotStateChanged(ITradeBot bot)
+        {
+            if (_packages.TryGetValue(bot.Config.Key.PackageId, out var package))
+                package.ChangeBotStatus(bot.InstanceId, bot.State);
         }
     }
 }

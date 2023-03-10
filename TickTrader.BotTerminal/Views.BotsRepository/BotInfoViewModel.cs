@@ -137,11 +137,9 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         }
 
 
-        internal BotInfoViewModel ApplyPackage(PluginInfo plugin, PackageIdentity identity = null)
+        internal BotInfoViewModel ApplyPackage(PluginInfo plugin, PackageInfoViewModel identity)
         {
-            var descriptor = plugin.Descriptor_;
-
-            Versions.Add(new BotVersionViewModel(plugin.Key.PackageId, descriptor, identity));
+            Versions.Add(new BotVersionViewModel(plugin.Descriptor_, identity));
 
             return FindBestVersion();
         }
@@ -157,7 +155,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
             ApiVersion.Value = info.ApiVersion;
             BuildData.Value = info.BuildDate;
-            PackageSize.Value = $"{info.PackageSize / 1024} KB";
+            PackageSize.Value = info.PackageSize.ToKB();
 
             return this;
         }
@@ -166,7 +164,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         internal void RemoveVersion(PluginInfo plugin)
         {
             var packageId = plugin.Key.PackageId;
-            var detectedVersion = Versions.FirstOrDefault(u => u.PackageId == packageId);
+            var detectedVersion = Versions.FirstOrDefault(u => u.PackageInfo.Id == packageId);
 
             if (detectedVersion != null)
                 Versions.Remove(detectedVersion);
@@ -220,12 +218,9 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
 
         internal bool IsVisibleBot(string filter)
         {
-            return Name.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(filter);
+            return Name.Contains(filter, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(filter);
         }
 
-        private bool IsBetterVersion(string newVersion)
-        {
-            return string.Compare(newVersion, Version.Value) == 1;
-        }
+        private bool IsBetterVersion(string newVersion) => string.Compare(newVersion, Version.Value) == 1;
     }
 }

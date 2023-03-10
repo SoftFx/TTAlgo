@@ -1,8 +1,6 @@
 ﻿using Machinarium.Qnil;
 using System;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
