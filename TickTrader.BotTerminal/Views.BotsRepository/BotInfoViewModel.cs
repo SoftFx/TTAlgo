@@ -1,6 +1,6 @@
-﻿using Machinarium.Var;
+﻿using Machinarium.ObservableCollections;
+using Machinarium.Var;
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
         private BotInfoViewModel _remoteVersion;
 
 
-        public ObservableCollection<BotVersionViewModel> Versions { get; } = new();
+        public ObservableRangeCollection<BotVersionViewModel> Versions { get; } = new();
 
         public string Name { get; }
 
@@ -195,10 +195,17 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             RemoteVersion.Value = null;
         }
 
+        internal bool IsVisibleBot(string filter)
+        {
+            return Name.Contains(filter, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(filter);
+        }
+
 
         private BotInfoViewModel FindBestVersion()
         {
             Version.Value = null;
+
+            SortVersions();
 
             foreach (var version in Versions)
             {
@@ -216,9 +223,12 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             return this;
         }
 
-        internal bool IsVisibleBot(string filter)
+        private void SortVersions()
         {
-            return Name.Contains(filter, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(filter);
+            var versions = Versions.OrderByDescending(u => u.Version).ToList();
+
+            Versions.Clear();
+            Versions.AddRange(versions);
         }
 
         private bool IsBetterVersion(string newVersion) => string.Compare(newVersion, Version.Value) == 1;
