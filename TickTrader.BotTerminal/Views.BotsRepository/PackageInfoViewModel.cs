@@ -81,7 +81,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             var runningCnt = _botsStates.Values.Count(u => u == PluginModelInfo.Types.PluginState.Running);
             
             CanRemove.Value = runningCnt == 0;
-            DisabledRemoveTooltip.Value = $"Cannot remove the package. {runningCnt} bots are running!";
+            DisabledRemoveTooltip.Value = $"Cannot remove the package. {runningCnt} {(runningCnt > 1 ? "bots are" : "bot is")} running!";
         }
     }
 }
