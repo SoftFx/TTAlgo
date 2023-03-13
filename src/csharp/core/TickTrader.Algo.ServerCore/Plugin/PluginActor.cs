@@ -367,6 +367,16 @@ namespace TickTrader.Algo.Server
                 return false;
             }
 
+            var attached = await RuntimeControlModel.AttachPlugin(runtime, _id, Self);
+            if (!attached)
+            {
+                BreakBot($"Can't attach to new runtime");
+                return false;
+            }
+
+            _currentRuntimeId = runtimeId;
+            _runtime = runtime;
+
             _pluginInfo = await RuntimeControlModel.GetPluginInfo(runtime, pluginKey);
             if (_pluginInfo == null)
             {
@@ -380,16 +390,6 @@ namespace TickTrader.Algo.Server
                 BreakBot(AlgoMetadataException.CreateMessageDescription(descriptor.Error, null));
                 return false;
             }
-
-            var attached = await RuntimeControlModel.AttachPlugin(runtime, _id, Self);
-            if (!attached)
-            {
-                BreakBot($"Can't attach to new runtime");
-                return false;
-            }
-
-            _currentRuntimeId = runtimeId;
-            _runtime = runtime;
 
             if (_state == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
