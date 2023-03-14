@@ -4,6 +4,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using TickTrader.Algo.Core.Setup;
@@ -88,19 +89,7 @@ namespace TickTrader.BotTerminal
 
         public IReadOnlyList<StorageSymbolKey> AvailableSymbols { get; private set; }
 
-        public StorageSymbolKey MainSymbol
-        {
-            get { return _mainSymbol; }
-            set
-            {
-                if (_mainSymbol == value)
-                    return;
-
-                _mainSymbol = value;
-
-                NotifyOfPropertyChange(nameof(MainSymbol));
-            }
-        }
+        public Validable<StorageSymbolKey> MainSymbol { get; }
 
         public IReadOnlyList<MappingInfo> AvailableMappings { get; private set; }
 
@@ -224,7 +213,8 @@ namespace TickTrader.BotTerminal
             SetupMetadata = setupMetadata;
             _idProvider = idProvider;
             Mode = mode;
-            MainSymbol = setupMetadata.DefaultSymbol.ToKey();
+            MainSymbol = _var.AddValidable(setupMetadata.DefaultSymbol.ToKey()).AddPostTrigger(_ => Validate());
+            MainSymbol.AddValidationRule(s => s != null, "Invalid main symbol");
             Visible = true;
             RunBot = true;
 
@@ -240,7 +230,7 @@ namespace TickTrader.BotTerminal
         {
             SelectedTimeFrame = cfg.Timeframe.ToApi();
             SelectedModel.Value = cfg.ModelTimeframe.ToApi();
-            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol.ToKey()) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
+            MainSymbol.Value = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol.ToKey()) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
 
             if (!IsEmulation)
             {
@@ -269,7 +259,7 @@ namespace TickTrader.BotTerminal
             {
                 Timeframe = SelectedTimeFrame.ToServer(),
                 ModelTimeframe = SelectedModel.Value.ToServer(),
-                MainSymbol = MainSymbol.ToConfig(),
+                MainSymbol = MainSymbol.Value.ToConfig(),
                 SelectedMapping = SelectedMapping.Key,
                 InstanceId = InstanceId,
                 Permissions = new PluginPermissions { TradeAllowed = _allowTrade, Isolated = _isolate }
@@ -283,7 +273,7 @@ namespace TickTrader.BotTerminal
         {
             SelectedModel.Value = AlgoApi.Feed.Types.Timeframe.Ticks;
             SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame.ToApi();
-            MainSymbol = (StorageSymbolKey)AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
+            MainSymbol.Value = (StorageSymbolKey)AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
             InstanceId = _idProvider.GeneratePluginId(Descriptor);
 
@@ -404,7 +394,9 @@ namespace TickTrader.BotTerminal
 
         private bool CheckValidity()
         {
-            return Descriptor.Error == Metadata.Types.MetadataErrorCode.NoMetadataError && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
+            return Descriptor.Error == Metadata.Types.MetadataErrorCode.NoMetadataError
+                && (_allProperties?.All(p => !p.HasError) ?? true)
+                && IsInstanceIdValid && !_var.HasError.Value;
         }
 
         private void Init()

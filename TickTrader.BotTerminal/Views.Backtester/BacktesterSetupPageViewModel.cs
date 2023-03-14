@@ -176,7 +176,7 @@ namespace TickTrader.BotTerminal
                     _mainSymbolToken.Id = a.New.Name;
 
                     if (_openedPluginSetup != null)
-                        _openedPluginSetup.Setup.MainSymbol = a.New.Key.ToKey();
+                        _openedPluginSetup.Setup.MainSymbol.Value = a.New.Key.ToKey();
 
                     MainSymbolShadowSetup.SelectedSymbolName.Value = a.New.Name;
                 }
@@ -355,7 +355,7 @@ namespace TickTrader.BotTerminal
         {
             var setup = new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), GetClientAccountMetadata());
             setup.Setup.SelectedModel.Value = SelectedModel.Value.ToApi();
-            setup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
+            setup.Setup.MainSymbol.Value = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
             setup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
             return setup.GetConfig();
         }
@@ -382,7 +382,7 @@ namespace TickTrader.BotTerminal
                     : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), GetClientAccountMetadata(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
                 _openedPluginSetup.Setup.SelectedModel.Value = SelectedModel.Value.ToApi();
-                _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
+                _openedPluginSetup.Setup.MainSymbol.Value = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
                 _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
                 _openedPluginSetup.Closed += PluginSetupClosed;
                 _openedPluginSetup.Setup.ConfigLoaded += Setup_ConfigLoaded;
@@ -408,7 +408,7 @@ namespace TickTrader.BotTerminal
 
         private void Setup_ConfigLoaded(PluginConfigViewModel config)
         {
-            MainSymbolSetup.SelectedSymbol.Value = _catalog[config.MainSymbol];
+            MainSymbolSetup.SelectedSymbol.Value = _catalog[config.MainSymbol.Value];
             MainSymbolSetup.SelectedSymbolName.Value = MainSymbolSetup.SelectedSymbol.Value.Name;
             MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame.ToServer();
         }

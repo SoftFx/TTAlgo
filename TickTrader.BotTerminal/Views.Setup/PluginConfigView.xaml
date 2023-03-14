@@ -265,8 +265,8 @@
                 <ColumnDefinition Width="90" />
             </Grid.ColumnDefinitions>
 
-            <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
-                      SelectedValue="{Binding SelectedSymbol}"
+            <ComboBox Grid.Column="0" IsEditable="True" Margin="0"
+                      SelectedValue="{Binding SelectedSymbol, ValidatesOnDataErrors=True}"
                       ItemsSource="{Binding AvailableSymbols}"
                       DisplayMemberPath="Name"/>
             <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
@@ -286,8 +286,8 @@
                 <ColumnDefinition Width="90" />
             </Grid.ColumnDefinitions>
 
-            <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
-                      SelectedValue="{Binding SelectedSymbol}"
+            <ComboBox Grid.Column="0" IsEditable="True" Margin="0"
+                      SelectedValue="{Binding SelectedSymbol, ValidatesOnDataErrors=True}"
                       ItemsSource="{Binding AvailableSymbols}"
                       DisplayMemberPath="Name"/>
             <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
@@ -410,8 +410,8 @@
                 <ColumnDefinition Width="90"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="Main Symbol" />
-            <ComboBox Grid.Row="0" Grid.Column="1" IsEditable="False" Margin="0"
-                      SelectedValue="{Binding MainSymbol}" IsEnabled="{Binding IsBot}"
+            <ComboBox Grid.Row="0" Grid.Column="1" IsEditable="True" Margin="0"
+                      SelectedValue="{l:ValidationBinding MainSymbol.Value}" IsEnabled="{Binding IsBot}"
                       ItemTemplate="{StaticResource SymbolComboItemTemplate}"
                       ItemsSource="{Binding Source={StaticResource SymbolsCollection}}"
                       DisplayMemberPath="Name">
