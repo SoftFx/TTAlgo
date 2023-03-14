@@ -6,6 +6,8 @@ namespace TickTrader.Algo.Server
 {
     public class EnvService
     {
+        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<EnvService>();
+
         private readonly Lazy<string> _botLogFolder, _logFolder,
             _algoRepoFolder, _algoWorkFolder, _appDataFolder, _serverStatePath;
 
@@ -44,13 +46,24 @@ namespace TickTrader.Algo.Server
 
 
         public string GetPluginWorkingFolder(string pluginId)
-            => PathHelper.EnsureDirectoryCreated(Path.Combine(AlgoWorkingFolder, PathHelper.Escape(pluginId)));
+            => InitSubFolder(AlgoWorkingFolder, PathHelper.Escape(pluginId));
 
         public string GetPluginLogsFolder(string pluginId)
-            => PathHelper.EnsureDirectoryCreated(Path.Combine(BotLogFolder, PathHelper.Escape(pluginId)));
+            => InitSubFolder(BotLogFolder, PathHelper.Escape(pluginId));
 
 
         private static string InitSubFolder(string basePath, string subPath)
-            => PathHelper.EnsureDirectoryCreated(Path.Combine(basePath, subPath));
+        {
+            var folderPath = Path.Combine(basePath, subPath);
+            try
+            {
+                PathHelper.EnsureDirectoryCreated(folderPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Can't create directory '{folderPath}'");
+            }
+            return folderPath;
+        }
     }
 }

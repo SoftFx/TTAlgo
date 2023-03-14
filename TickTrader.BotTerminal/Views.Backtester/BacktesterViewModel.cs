@@ -156,7 +156,8 @@ namespace TickTrader.BotTerminal
                 }
 
                 var descriptorName = PathHelper.Escape(SetupPage.SelectedPlugin.Value.Descriptor.DisplayName);
-                var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, descriptorName);
+                var backtesterDir = PathHelper.EnsureDirectoryCreated(EnvService.Instance.BacktestResultsFolder); // could be deleted between emulations
+                var pathPrefix = System.IO.Path.Combine(backtesterDir, descriptorName);
                 var configPath = PathHelper.GenerateUniqueFilePath(pathPrefix, ".zip");
                 config.Save(configPath);
 

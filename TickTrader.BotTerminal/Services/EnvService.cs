@@ -98,7 +98,7 @@ namespace TickTrader.BotTerminal
                 }
                 catch (IOException ex)
                 {
-                    _logger.Error("Cannot create directory {0}: {1}", folderPath, ex.Message);
+                    _logger.Error(ex, $"Can't create directory '{folderPath}'");
                 }
             }
 
