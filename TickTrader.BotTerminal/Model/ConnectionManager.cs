@@ -226,13 +226,17 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                await _agent.AddAccount(new Algo.Domain.ServerControl.AddAccountRequest
+                var accId = AccountId.Pack(server, login);
+                if (!_agent.Accounts.Snapshot.ContainsKey(accId))
                 {
-                    Server = server,
-                    UserId = login,
-                    DisplayName = $"{server} - {login}",
-                    Creds = new AccountCreds(pwd),
-                });
+                    await _agent.AddAccount(new Algo.Domain.ServerControl.AddAccountRequest
+                    {
+                        Server = server,
+                        UserId = login,
+                        DisplayName = $"{server} - {login}",
+                        Creds = new AccountCreds(pwd),
+                    });
+                }
             }
             catch (Exception ex)
             {
