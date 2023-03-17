@@ -308,9 +308,7 @@ namespace TickTrader.BotTerminal
             UpdateTradeSummary();
 
             var pluginConfig = config.PluginConfig;
-            var plugin = pluginConfig?.Key == null ? null
-                : (Plugins.FirstOrDefault(p => p.Key.Equals(pluginConfig.Key)) // try exact match, then just descriptorId
-                    ?? Plugins.FirstOrDefault(p => p.Key.DescriptorId == pluginConfig.Key.DescriptorId));
+            var plugin = pluginConfig?.Key == null ? null : Plugins.FirstOrDefault(p => p.Key.Equals(pluginConfig.Key));
             var selectedPluginName = plugin == null ? null : new PluginNameAndGroup(plugin.DisplayName, plugin.CurrentGroup);
 
             SelectedPluginName.Value = selectedPluginName;
