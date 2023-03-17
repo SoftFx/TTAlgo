@@ -95,7 +95,10 @@ namespace TickTrader.BotTerminal
             SelectedPluginName = new Property<PluginNameAndGroup>().AddPostTrigger(plugin =>
             {
                 if (plugin == null)
+                {
+                    SelectedPluginVersions.Value = null;
                     return;
+                }
 
                 SelectedPluginVersions.Value = Plugins?.Where(u => u.DisplayName == plugin.DisplayName).OrderByDescending(u => u.Descriptor.Version).ToList();
                 SelectedPlugin.Value = SelectedPluginVersions.Value?.FirstOrDefault();
@@ -305,8 +308,10 @@ namespace TickTrader.BotTerminal
             UpdateTradeSummary();
 
             var pluginConfig = config.PluginConfig;
-            var plugin = Plugins.FirstOrDefault(p => p.Key.Equals(pluginConfig.Key));
-            var selectedPluginName = new PluginNameAndGroup(plugin.DisplayName, plugin.CurrentGroup);
+            var plugin = pluginConfig?.Key == null ? null
+                : (Plugins.FirstOrDefault(p => p.Key.Equals(pluginConfig.Key)) // try exact match, then just descriptorId
+                    ?? Plugins.FirstOrDefault(p => p.Key.DescriptorId == pluginConfig.Key.DescriptorId));
+            var selectedPluginName = plugin == null ? null : new PluginNameAndGroup(plugin.DisplayName, plugin.CurrentGroup);
 
             SelectedPluginName.Value = selectedPluginName;
             SelectedPlugin.Value = plugin;
