@@ -248,9 +248,12 @@ namespace TickTrader.BotTerminal
 
             var statusBuilder = new StringBuilder();
             statusBuilder.AppendLine(execStatus.ToString());
-            if (loadConfig && SetupPage.SelectedPlugin.Value == null)
-                statusBuilder.AppendLine($"Missing package '{SetupPage.PluginConfig?.Key?.PackageId}'");
             var hasError = execStatus.HasError;
+            if (loadConfig && SetupPage.SelectedPlugin.Value == null)
+            {
+                statusBuilder.AppendLine($"Missing package '{SetupPage.PluginConfig?.Key?.PackageId}'");
+                hasError = true;
+            }
             if (results.ReadErrors.Count > 0)
             {
                 hasError = true;
