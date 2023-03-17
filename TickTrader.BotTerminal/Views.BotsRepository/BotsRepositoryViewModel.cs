@@ -65,7 +65,7 @@ namespace TickTrader.BotTerminal.Views.BotsRepository
             _agent = agent;
 
             Name = _agent.Name;
-            DisplayName = "Bots repository";
+            DisplayName = "Bots manager";
 
             SelectedBot = _context.AddProperty<BotInfoViewModel>();
             CanUpdateAllBots = _context.AddBoolProperty();
