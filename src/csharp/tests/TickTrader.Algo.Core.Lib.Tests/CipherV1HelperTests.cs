@@ -10,12 +10,7 @@ namespace TickTrader.Algo.Core.Lib.Tests
         [TestMethod]
         public void CheckCommonPayloadSizes()
         {
-            var data = new byte[64];
-
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                rng.GetNonZeroBytes(data);
-            }
+            var data = RandomNumberGenerator.GetBytes(64);
 
             for (var size = 1; size <= data.Length; size++)
             {
@@ -36,11 +31,7 @@ namespace TickTrader.Algo.Core.Lib.Tests
 
             static MockCipherOptions()
             {
-                _key = new byte[CipherV1Helper.SecretKeySize];
-                using (var rng = new RNGCryptoServiceProvider())
-                {
-                    rng.GetNonZeroBytes(_key);
-                }
+                _key = RandomNumberGenerator.GetBytes(CipherV1Helper.SecretKeySize);
             }
 
             public void GetSecretKey(byte[] buffer)
