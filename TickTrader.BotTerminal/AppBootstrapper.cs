@@ -25,7 +25,6 @@ namespace TickTrader.BotTerminal
     public class AppBootstrapper : BootstrapperBase
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        private static readonly AutoViewManager autoViewLocator = new AutoViewManager();
 
         private readonly AppInstanceRestrictor _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
         private readonly SimpleContainer _container = new();
@@ -35,16 +34,17 @@ namespace TickTrader.BotTerminal
         private ShellViewModel _shell;
 
 
-        public static CultureInfo CultureCache { get; private set; }
+        public static CultureInfo CultureCache { get; } = CultureInfo.CurrentCulture;
+
+        public static AutoViewManager AutoViewLocator { get; } = new();
 
 
         public AppBootstrapper()
         {
-            CultureCache = CultureInfo.CurrentCulture;
-
             LocaleSelector.Instance.ActivateDefault();
-
             Initialize();
+
+            ValidateAppFolder();
 
             _hasWriteAccess = HasWriteAccess();
             if (_hasWriteAccess)
@@ -59,8 +59,23 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public static AutoViewManager AutoViewLocator => autoViewLocator;
 
+        private static void ValidateAppFolder()
+        {
+            _ = AppFolderResolver.Result; // First time init
+            if (AppFolderResolver.HasError)
+            {
+                MessageBox.Show($"Failed to resolve app folder. Check windows logs for details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.FailFast("Failed to resolve app folder", AppFolderResolver.Error);
+            }
+            else if (string.IsNullOrEmpty(AppFolderResolver.Result))
+            {
+                const string err = "Unexpected error: app folder resolved to empty string";
+                MessageBox.Show(err, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.FailFast(err);
+            }
+        }
+        
         private static void ConfigureCaliburn()
         {
             ViewLocator.AddDefaultTypeMapping("Page");
@@ -71,7 +86,7 @@ namespace TickTrader.BotTerminal
                 var viewType = ViewLocator.LocateTypeForModelType(modelType, displayLocation, context);
 
                 if (viewType == null)
-                    return autoViewLocator.CreateView(modelType, context);
+                    return AutoViewLocator.CreateView(modelType, context);
 
                 return ViewLocator.GetOrCreateViewType(viewType);
             };

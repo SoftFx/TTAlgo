@@ -140,14 +140,14 @@ namespace TickTrader.BotTerminal
 
         private async Task Init(PersistModel storage)
         {
-            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var dataFolder = EnvService.Instance.AppFolder;
             var hostSettings = LocalAlgoAgent.GetHostSettings();
-            hostSettings.RuntimeSettings.WorkingDirectory = baseDir;
+            hostSettings.RuntimeSettings.WorkingDirectory = dataFolder;
             _algoHost = AlgoHostActor.Create(hostSettings);
 
             var indicatorHostSettings = new IndicatorHostSettings
             {
-                DataFolder = baseDir,
+                DataFolder = dataFolder,
                 HostSettings = hostSettings,
             };
 
@@ -156,7 +156,7 @@ namespace TickTrader.BotTerminal
 
             var serverSettings = new AlgoServerSettings
             {
-                DataFolder = baseDir,
+                DataFolder = dataFolder,
                 EnableAccountLogs = Properties.Settings.Default.EnableConnectionLogs,
                 HostSettings = hostSettings,
             };
