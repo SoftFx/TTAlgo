@@ -61,6 +61,7 @@
                 <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotListOverlayView.xaml" />
+                <ResourceDictionary Source="Views.Chart/ObjectListView.xaml" />
 
                 <ResourceDictionary Source="Views.Setup/PluginConfigView.xaml" />
                 <ResourceDictionary Source="Views.Setup/AgentPluginSetupView.xaml" />
@@ -91,6 +92,7 @@
                 <ResourceDictionary Source="Views.FeedStorage/LoadingWindows/FeedImportView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/SymbolCfgEditorView.xaml" />
 
+                <ResourceDictionary Source="Views.BotsRepository/BotsRepositoryView.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

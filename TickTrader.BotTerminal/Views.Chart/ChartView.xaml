@@ -64,6 +64,8 @@
                             SelectedItem="{Binding Chart.SelectedChartType, Mode=TwoWay}"
                             IsEnabled="{Binding UiLock.IsNotLocked}"/>
 
+                    <MenuItem Header="Object List..." cal:Message.Attach="OpenObjectList" />
+
                     <MenuItem Header="Add Indicator" IsEnabled="{Binding CanAddIndicator}"
                               Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=Chart.HasAvailableIndicators}"
                               cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"

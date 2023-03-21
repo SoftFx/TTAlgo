@@ -11,19 +11,21 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AgentPluginSetupViewModel : Screen, IWindowModel
+    internal sealed class AgentPluginSetupViewModel : Screen, IWindowModel, IDisposable
     {
+        private const string DefaultDateTimeFormat = "dd.MM.yyyy hh:mm:ss";
+
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private AlgoEnvironment _algoEnv;
         private AlgoAgentViewModel _selectedAgent;
         private AlgoAccountViewModel _selectedAccount;
         private AlgoPluginViewModel _selectedPlugin;
         private CancellationTokenSource _updateSetupMetadataSrc;
         private TaskCompletionSource<SetupMetadata> _updateSetupMetadataTaskSrc;
         private CancellationToken _updateSetupToken;
-        private bool _hasPendingRequest;
+
         private string _requestError;
+        private bool _hasPendingRequest;
         private bool _showFileProgress;
 
         public IObservableList<AlgoAgentViewModel> Agents { get; }
@@ -42,10 +44,12 @@ namespace TickTrader.BotTerminal
                     _selectedAgent.Model.BotStateChanged -= BotStateChanged;
                     _selectedAgent.Model.AccessLevelChanged -= OnAccessLevelChanged;
                 }
+
                 _selectedAgent = value;
                 NotifyOfPropertyChange(nameof(SelectedAgent));
                 NotifyOfPropertyChange(nameof(IsNotTerminal));
                 InitAgent();
+
                 _selectedAgent.Plugins.Updated += AllPlugins_Updated;
                 _selectedAgent.Model.BotStateChanged += BotStateChanged;
                 _selectedAgent.Model.AccessLevelChanged += OnAccessLevelChanged;
@@ -73,36 +77,77 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoPluginViewModel> Plugins { get; private set; }
 
-        public AlgoPluginViewModel SelectedPlugin
+        public List<string> AvailableBots { get; private set; }
+
+        public List<AlgoPluginViewModel> SelectedPluginVersions { get; private set; }
+
+
+        private string _selectedPluginName;
+
+        public string SelectedPluginName
         {
-            get { return _selectedPlugin; }
+            get => _selectedPluginName;
+
             set
             {
-                if (_selectedPlugin == value)
+                if (_selectedPluginName == value)
+                    return;
+
+                _selectedPluginName = value;
+
+                SelectedPlugin = Plugins.Where(x => x.DisplayName == _selectedPluginName).OrderByDescending(u => u.Descriptor.Version).FirstOrDefault();
+
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public AlgoPluginViewModel SelectedPlugin
+        {
+            get => _selectedPlugin;
+            set
+            {
+                if (_selectedPlugin == value || value is null)
                     return;
 
                 _selectedPlugin = value;
 
-                if (Mode == PluginSetupMode.Edit && _selectedPlugin == null)
-                {
-                    TryCloseAsync();
-                    return;
-                }
+                SelectedPluginVersions = Plugins.Where(u => u.DisplayName == _selectedPlugin.DisplayName).ToList();
+                _selectedPluginName = _selectedPlugin.DisplayName;
+
+                SelectedPluginPackageId = _selectedPlugin.PackageInfo.PackageId;
+                SelectedPluginLastModify = _selectedPlugin.PackageInfo.Identity.LastModifiedUtc?.ToDateTime().ToString(DefaultDateTimeFormat);
+                SelectedPluginPackageSize = $"{_selectedPlugin.PackageInfo.Identity.Size / 1024} KB";
 
                 NotifyOfPropertyChange(nameof(SelectedPlugin));
+                NotifyOfPropertyChange(nameof(SelectedPluginName));
+                NotifyOfPropertyChange(nameof(SelectedPluginVersions));
+
+                NotifyOfPropertyChange(nameof(SelectedPluginPackageId));
+                NotifyOfPropertyChange(nameof(SelectedPluginLastModify));
+                NotifyOfPropertyChange(nameof(SelectedPluginPackageSize));
+
                 NotifyOfPropertyChange(nameof(CanOk));
                 UpdateSetup();
             }
         }
 
+        public string SelectedPluginPackageId { get; private set; }
+
+        public string SelectedPluginLastModify { get; private set; }
+
+        public string SelectedPluginPackageSize { get; private set; }
+
+
         public PluginConfigViewModel Setup { get; private set; }
 
         public ITradeBot Bot { get; private set; }
 
-        public bool PluginIsStopped => Bot == null ? true : Bot.State.IsStopped();
+        public bool PluginIsStopped => Bot == null || Bot.State.IsStopped();
 
         public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest && SelectedPlugin != null
             && (IsNewMode ? SelectedAgent.Model.AccessManager.CanAddPlugin() : SelectedAgent.Model.AccessManager.CanChangePluginConfig());
+
+        public bool IsNotTerminal => Mode == PluginSetupMode.New && SelectedAgent.Name != LocalAlgoAgent.LocalAgentName;
 
         public Metadata.Types.PluginType Type { get; }
 
@@ -154,23 +199,22 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public ProgressViewModel FileProgress { get; }
+        public ProgressViewModel FileProgress { get; } = new();
+
 
         private AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, string accountId, PluginKey pluginKey, Metadata.Types.PluginType type, SetupContextInfo setupContext, PluginSetupMode mode)
         {
-            _algoEnv = algoEnv;
             Mode = mode;
             Type = type;
             SetupContext = setupContext;
 
             Agents = algoEnv.Agents.AsObservable();
-            SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName) ?? (Agents.Any() ? Agents.First() : null);
-            SelectedAccount = Accounts.FirstOrDefault(a => a.AccountId.Equals(accountId)) ?? (Accounts.Any() ? Accounts.First() : null);
-            SelectedPlugin = Plugins.FirstOrDefault(i => i.Key.Equals(pluginKey)) ?? (Plugins.Any() ? Plugins.First() : null);
+            SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName) ?? Agents.FirstOrDefault();
+            SelectedAccount = Accounts.FirstOrDefault(a => a.AccountId.Equals(accountId)) ?? Accounts.FirstOrDefault();
+            SelectedPlugin = Plugins.FirstOrDefault(i => i.Key.Equals(pluginKey)) ?? Plugins.FirstOrDefault();
             PluginType = GetPluginTypeDisplayName(Type);
 
             ShowFileProgress = false;
-            FileProgress = new ProgressViewModel();
         }
 
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, string accountId, PluginKey pluginKey, Metadata.Types.PluginType type, SetupContextInfo setupContext)
@@ -188,7 +232,6 @@ namespace TickTrader.BotTerminal
             DisplayName = $"{bot.InstanceId} Bot Instance";
         }
 
-        public bool IsNotTerminal => Mode == PluginSetupMode.New && SelectedAgent.Name != LocalAlgoAgent.LocalAgentName;
 
         public void AddNewAccount() => SelectedAgent.UpdatePluginAccountSettings(this);
 
@@ -199,29 +242,31 @@ namespace TickTrader.BotTerminal
             Setup.Reset();
         }
 
-        public async void Ok()
+        public async Task Ok()
         {
             var config = GetConfig();
+            var algoServer = SelectedAgent.Model;
+
             RequestError = null;
             HasPendingRequest = true;
+
             try
             {
+                var fileUploadList = algoServer.IsRemote ? config.FixFileParametersForRemote() : null;
+
+                if (!algoServer.Bots.Snapshot.ContainsKey(config.InstanceId))
+                    await algoServer.AddBot(SelectedAccount.AccountId, config);
+                else
+                    await algoServer.ChangeBotConfig(config.InstanceId, config);
+
+                await UploadBotFiles(config, fileUploadList);
+
                 if (Type == Metadata.Types.PluginType.TradeBot && Mode == PluginSetupMode.New)
                 {
-                    var fileUploadList = SelectedAgent.Model.IsRemote ? config.FixFileParametersForRemote() : null;
-                    if (!SelectedAgent.Model.Bots.Snapshot.ContainsKey(config.InstanceId))
-                        await SelectedAgent.Model.AddBot(SelectedAccount.AccountId, config);
-                    else await SelectedAgent.Model.ChangeBotConfig(config.InstanceId, config);
-                    await UploadBotFiles(config, fileUploadList);
                     SelectedAgent.OpenBotState(config.InstanceId);
+
                     if (Setup.RunBot)
-                        await SelectedAgent.Model.StartBot(config.InstanceId);
-                }
-                else
-                {
-                    var fileUploadList = SelectedAgent.Model.IsRemote ? config.FixFileParametersForRemote() : null;
-                    await SelectedAgent.Model.ChangeBotConfig(Bot.InstanceId, config);
-                    await UploadBotFiles(config, fileUploadList);
+                        await algoServer.StartBot(config.InstanceId);
                 }
 
                 await TryCloseAsync();
@@ -230,25 +275,17 @@ namespace TickTrader.BotTerminal
             {
                 RequestError = ex.Message;
             }
+
             HasPendingRequest = false;
         }
 
-        public async void Cancel()
-        {
-            await TryCloseAsync();
-        }
+        public Task Cancel() => TryCloseAsync();
 
         public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
             Dispose();
             return base.CanCloseAsync(cancellationToken);
         }
-
-        //public override void CanClose(Action<bool> callback)
-        //{
-        //    callback(true);
-        //    Dispose();
-        //}
 
         public PluginConfig GetConfig()
         {
@@ -281,9 +318,11 @@ namespace TickTrader.BotTerminal
         {
             Accounts = SelectedAgent.Accounts.AsObservable();
             Plugins = SelectedAgent.Plugins.Where(p => p.Descriptor.Type == Type).AsObservable();
+            AvailableBots = Plugins.DistinctBy(u => u.Descriptor.DisplayName).Select(u => u.DisplayName).ToList();
 
             NotifyOfPropertyChange(nameof(Accounts));
             NotifyOfPropertyChange(nameof(Plugins));
+            NotifyOfPropertyChange(nameof(AvailableBots));
 
             SelectedAccount = Accounts.FirstOrDefault();
             SelectedPlugin = Plugins.FirstOrDefault();
@@ -324,7 +363,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void Dispose()
+        public void Dispose()
         {
             if (SelectedAgent != null)
             {
@@ -336,14 +375,14 @@ namespace TickTrader.BotTerminal
                 Setup.ValidityChanged -= Validate;
         }
 
-        private string GetPluginTypeDisplayName(Metadata.Types.PluginType type)
+        private static string GetPluginTypeDisplayName(Metadata.Types.PluginType type)
         {
-            switch (type)
+            return type switch
             {
-                case Metadata.Types.PluginType.TradeBot: return "Bot";
-                case Metadata.Types.PluginType.Indicator: return "Indicator";
-                default: return "PluginType";
-            }
+                Metadata.Types.PluginType.TradeBot => "Bot",
+                Metadata.Types.PluginType.Indicator => "Indicator",
+                _ => "PluginType",
+            };
         }
 
         private async void UpdateSetupMetadata()
@@ -401,8 +440,7 @@ namespace TickTrader.BotTerminal
 
                 NotifyOfPropertyChange(nameof(Setup));
             }
-            else
-                if (Setup != null)
+            else if (Setup != null)
                 Setup.Visible = false;
         }
 
@@ -414,7 +452,7 @@ namespace TickTrader.BotTerminal
             ShowFileProgress = true;
             try
             {
-                foreach (var (fileName, path) in fileUploadList)
+                foreach (var (_, path) in fileUploadList)
                 {
                     if (System.IO.File.Exists(path) && System.IO.Path.GetFullPath(path) == path)
                     {

@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\sdk\TickTrader.Algo.Tools\MetadataBuilder\MetadataInfo.cs" Link="MetadataInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\api\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj" />
     <ProjectReference Include="..\..\lib\TickTrader.Algo.Async\TickTrader.Algo.Async.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />

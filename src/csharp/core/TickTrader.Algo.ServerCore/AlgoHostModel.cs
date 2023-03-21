@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.Server
@@ -16,6 +17,8 @@ namespace TickTrader.Algo.Server
         public static Task<string> UploadPackage(IActorRef actor, UploadPackageRequest request, string filePath) => actor.Ask<string>(new UploadPackageCmd(request, filePath));
 
         public static Task RemovePackage(IActorRef actor, RemovePackageRequest request) => actor.Ask(request);
+
+        public static Task<MappingCollectionInfo> GetMappings(IActorRef actor) => actor.Ask<MappingCollectionInfo>(new MappingsInfoRequest());
 
 
         public class StartCmd : Singleton<StartCmd> { }

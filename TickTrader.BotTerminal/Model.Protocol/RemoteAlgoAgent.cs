@@ -237,9 +237,9 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        async Task<string> AlgoServerApi.IAlgoServerEventHandler.Get2FACode()
+        Task<string> AlgoServerApi.IAlgoServerEventHandler.Get2FACode()
         {
-            return await _get2FAHandler(Name);
+            return _get2FAHandler(Name);
         }
 
         void AlgoServerApi.IAlgoServerEventHandler.InitPackageList(List<AlgoServerApi.PackageInfo> packages)

@@ -13,7 +13,7 @@
     </Style>
 
     <!-- View Template -->
-    
+
     <ControlTemplate x:Key="SetupPage.Classic">
 
         <ControlTemplate.Resources>
@@ -58,9 +58,9 @@
                 <Grid Margin="5" IsEnabled="{Binding CanSetup.Value}">
 
                     <Grid.Resources>
-                        <CollectionViewSource x:Key="PluginsCollection" Source="{Binding Plugins}">
+                        <CollectionViewSource x:Key="PluginsCollection" Source="{l:UpdateBind PluginsNames.Value}">
                             <CollectionViewSource.GroupDescriptions>
-                                <PropertyGroupDescription PropertyName="CurrentGroup"/>
+                                <PropertyGroupDescription PropertyName="Group"/>
                             </CollectionViewSource.GroupDescriptions>
                         </CollectionViewSource>
                     </Grid.Resources>
@@ -81,55 +81,58 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <Label Grid.Column="0" Grid.Row="0" Content="Bot/Indicator:"/>
-                    <l:ErrorIndicator Grid.Column="1" Grid.Row="0" Error="{l:ResxBinding PluginErrorProp.Value, Prefix=PluginError_}"
-                                      VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
                     <ComboBox Grid.Column="2" Grid.Row="0" ItemsSource="{Binding Source={StaticResource PluginsCollection}}"
-                              ItemTemplate="{StaticResource PluginComboItemTemplate}" SelectedValue="{Binding SelectedPlugin.Value}"
+                              ItemTemplate="{StaticResource PluginComboItemTemplate}" SelectedValue="{Binding SelectedPluginName.Value}"
                               IsEditable="True" IsTextSearchCaseSensitive="False" IsTextSearchEnabled="True" TextSearch.TextPath="DisplayName">
                         <ComboBox.GroupStyle>
                             <GroupStyle HeaderTemplate="{StaticResource PluginComboGroupTemplate}" />
                         </ComboBox.GroupStyle>
                     </ComboBox>
 
-                    <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="3" Grid.Row="0" cal:Message.Attach="OpenPluginSetup"
+                    <Label Grid.Column="0" Grid.Row="1" Content="Version:"/>
+                    <l:ErrorIndicator Grid.Column="1" Grid.Row="1" Error="{l:ResxBinding PluginErrorProp.Value, Prefix=PluginError_}"
+                                      VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <ComboBox Grid.Column="2" Grid.Row="1" ItemsSource="{l:UpdateBind SelectedPluginVersions.Value}"
+                              SelectedValue="{l:UpdateBind SelectedPlugin.Value}" DisplayMemberPath="DisplayNameWithVersion">
+                    </ComboBox>
+
+                    <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="3" Grid.Row="1" cal:Message.Attach="OpenPluginSetup"
                             IsEnabled="{Binding IsPluginSelected.Value}" Style="{StaticResource SideButtonStyle}"/>
 
-                    <!--<Grid Grid.Column="2" Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                    </Grid>-->
+                    <TextBlock Grid.Column="2" Grid.Row="2" Text="{l:UpdateBind SelectedPluginInfo.Value}" FontSize="11" TextWrapping="Wrap" Margin="2 0 0 5"/>
 
-                    <Label Content="Mode:" Grid.Column="0" Grid.Row="1"/>
-                    <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="1">
+                    <Label Content="Mode:" Grid.Column="0" Grid.Row="3"/>
+                    <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="3">
                         <ComboBox SelectedItem="{Binding ModeProp.Value}" ItemsSource="{Binding Modes}" DisplayMemberPath="Value"
                                   Width="120" IsEnabled="False"
                                   ItemContainerStyle="{StaticResource OptionalComboBoxItemStyle}"/>
                     </StackPanel>
-                    
-                    <Label Content="Account:" Grid.Column="0" Grid.Row="2"/>
-                    <TextBox Text="{Binding TradeSettingsSummary.Value, Mode=OneWay}" Grid.Column="2" Grid.Row="2" IsReadOnly="True"/>
 
-                    <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="3" Grid.Row="2" cal:Message.Attach="OpenTradeSetup"
+                    <Label Content="Account:" Grid.Column="0" Grid.Row="4"/>
+                    <TextBox Text="{Binding TradeSettingsSummary.Value, Mode=OneWay}" Grid.Column="2" Grid.Row="4" IsReadOnly="True"/>
+
+                    <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="3" Grid.Row="4" cal:Message.Attach="OpenTradeSetup"
                             Style="{StaticResource SideButtonStyle}"/>
 
-                    <ContentControl cal:View.Model="{Binding MainSymbolSetup}" Grid.Row="3" Grid.ColumnSpan="4"/>
+                    <ContentControl cal:View.Model="{Binding MainSymbolSetup}" Grid.Row="5" Grid.ColumnSpan="4"/>
 
-                    <Label Grid.Column="0" Grid.Row="4" Content="Model:"/>
-                    <ComboBox Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="2" ItemsSource="{Binding AvailableModels.Value}" SelectedItem="{Binding SelectedModel.Value}"
+                    <Label Grid.Column="0" Grid.Row="6" Content="Model:"/>
+                    <ComboBox Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="2" ItemsSource="{Binding AvailableModels.Value}" SelectedItem="{Binding SelectedModel.Value}"
                               ItemTemplate="{StaticResource ModelTemplate}" Margin="0,4,4,0"/>
 
-                    <TextBlock Grid.ColumnSpan="4" Grid.Row="5" Text="Symbols' Data Feed" HorizontalAlignment="Center" Margin="0,10" FontStyle="Italic"/>
+                    <TextBlock Grid.ColumnSpan="4" Grid.Row="7" Text="Symbols' Data Feed" HorizontalAlignment="Center" Margin="0,10" FontStyle="Italic"/>
 
-                    <ItemsControl ItemsSource="{Binding FeedSymbols}" Grid.ColumnSpan="4" Grid.Row="6" ItemTemplate="{StaticResource CaliburnViewTemplate}"/>
+                    <ItemsControl ItemsSource="{Binding FeedSymbols}" Grid.ColumnSpan="4" Grid.Row="8" ItemTemplate="{StaticResource CaliburnViewTemplate}"/>
 
-                    <Label Grid.Column="0" Grid.Row="7" Content="Time range:"/>
-                    <l:WaitIndicator x:Name="RangeUpdateIndicator" Grid.Column="2" Grid.Row="7" Height="22" Content="Updating..." Margin="2" Visibility="Hidden" />
-                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="2" Grid.Row="7" Grid.ColumnSpan="2" Margin="0,4,4,0"
+                    <Label Grid.Column="0" Grid.Row="9" Content="Time range:"/>
+                    <l:WaitIndicator x:Name="RangeUpdateIndicator" Grid.Column="2" Grid.Row="9" Height="22" Content="Updating..." Margin="2" Visibility="Hidden" />
+                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="2" Grid.Row="9" Grid.ColumnSpan="2" Margin="0,4,4,0"
                                     IsEnabled="{Binding IsDateRangeEnabled.Value}"/>
                 </Grid>
             </Grid>

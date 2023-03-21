@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    public abstract class InputSetupViewModel : PropertySetupViewModel
+    public abstract class InputSetupViewModel : PropertySetupViewModel, IDataErrorInfo
     {
         private StorageSymbolKey _defaultSymbol;
         private StorageSymbolKey _selectedSymbol;
@@ -29,8 +30,13 @@ namespace TickTrader.BotTerminal
 
                 _selectedSymbol = value;
                 NotifyOfPropertyChange(nameof(SelectedSymbol));
+                CheckSelectedSymbol();
             }
         }
+
+        string IDataErrorInfo.Error => null;
+
+        string IDataErrorInfo.this[string columnName] => columnName == nameof(SelectedSymbol) ? Error?.Code : null;
 
 
         private InputSetupViewModel(InputDescriptor descriptor, StorageSymbolKey defaultSymbol)
@@ -66,6 +72,12 @@ namespace TickTrader.BotTerminal
         {
             input.PropertyId = Id;
             input.SelectedSymbol = _selectedSymbol.ToConfig();
+        }
+
+
+        private void CheckSelectedSymbol()
+        {
+            Error = _selectedSymbol == null ? new ErrorMsgModel(ErrorMsgCodes.RequiredButNotSet) : null;
         }
 
 

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,28 +20,36 @@ using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BacktesterSetupPageViewModel : Page, IPluginIdProvider, IAlgoSetupContext, IAlgoSetupMetadata
+    internal record PluginNameAndGroup(string DisplayName, AlgoPluginViewModel.GroupType Group);
+
+
+    internal sealed class BacktesterSetupPageViewModel : Page, IPluginIdProvider, IAlgoSetupContext, IAlgoSetupMetadata
     {
-        private readonly VarContext _var = new VarContext();
+        private readonly ReadOnlyCollection<ISetupSymbolInfo> _observableSymbolTokens;
+        private readonly OptionalItem<BacktesterMode> _optModeItem;
         private readonly TraderClientModel _client;
+
+        private readonly VarContext _var = new();
+
+        private readonly SymbolToken _mainSymbolToken;
+        private readonly ISymbolCatalog _catalog;
+        private readonly WindowManager _localWnd;
         private readonly AlgoEnvironment _env;
-        private ISymbolCatalog _catalog;
-        private WindowManager _localWnd;
+
         private readonly BoolProperty _isDateRangeValid;
         private readonly BoolProperty _allSymbolsValid;
         private readonly BoolVar _isPluginValid;
-        private readonly SymbolToken _mainSymbolToken;
-        private readonly IReadOnlyList<ISetupSymbolInfo> _observableSymbolTokens;
-        private readonly IVarSet<SymbolKey, ISetupSymbolInfo> _symbolTokens;
+
+
         private BacktesterPluginSetupViewModel _openedPluginSetup;
-        private readonly OptionalItem<BacktesterMode> _optModeItem;
+
 
         public BacktesterSetupPageViewModel(TraderClientModel client, ISymbolCatalog catalog, AlgoEnvironment env, BoolVar isRunning)
         {
             DisplayName = "Setup";
 
-            _env = env ?? throw new ArgumentNullException("env");
-            _catalog = catalog ?? throw new ArgumentNullException("catalog");
+            _env = env ?? throw new ArgumentNullException(nameof(env));
+            _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
             _client = client;
 
             _allSymbolsValid = _var.AddBoolProperty();
@@ -66,12 +73,37 @@ namespace TickTrader.BotTerminal
             UpdateSymbolsState();
 
             AvailableModels = _var.AddProperty<List<Feed.Types.Timeframe>>();
-            SelectedModel = _var.AddProperty<Feed.Types.Timeframe>(Feed.Types.Timeframe.M1);
+            SelectedModel = _var.AddProperty(Feed.Types.Timeframe.M1);
 
             ModeProp = _var.AddProperty<OptionalItem<BacktesterMode>>();
             PluginErrorProp = _var.AddProperty<string>();
 
-            SelectedPlugin = new Property<AlgoPluginViewModel>();
+            PluginsNames = _var.AddProperty<List<PluginNameAndGroup>>();
+            Plugins = env.LocalAgentVM.PluginList;
+
+            Plugins.CollectionChanged += (_, _) => UploadPluginNamesCollection();
+
+            UploadPluginNamesCollection(); // for first initialization
+
+            SelectedPluginInfo = new Property<string>();
+            SelectedPlugin = new Property<AlgoPluginViewModel>().AddPostTrigger(plugin =>
+            {
+                SelectedPluginInfo.Value = $"Package path: {plugin?.PackageInfo.Identity.FilePath}";
+            });
+
+            SelectedPluginVersions = new Property<List<AlgoPluginViewModel>>();
+            SelectedPluginName = new Property<PluginNameAndGroup>().AddPostTrigger(plugin =>
+            {
+                if (plugin == null)
+                {
+                    SelectedPluginVersions.Value = null;
+                    return;
+                }
+
+                SelectedPluginVersions.Value = Plugins?.Where(u => u.DisplayName == plugin.DisplayName).OrderByDescending(u => u.Descriptor.Version).ToList();
+                SelectedPlugin.Value = SelectedPluginVersions.Value?.FirstOrDefault();
+            });
+
             IsPluginSelected = SelectedPlugin.Var.IsNotNull();
             IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.IsTradeBot);
             //IsRunning = ActionOverlay.IsRunning;
@@ -81,9 +113,6 @@ namespace TickTrader.BotTerminal
             CanSetup = !isRunning & client.IsConnected;
             //CanStop = ActionOverlay.CanCancel;
             //CanSave = !IsRunning & _hasDataToSave.Var;
-
-
-            Plugins = env.LocalAgentVM.PluginList;
 
             TradeSettingsSummary = _var.AddProperty<string>();
 
@@ -150,7 +179,7 @@ namespace TickTrader.BotTerminal
                     _mainSymbolToken.Id = a.New.Name;
 
                     if (_openedPluginSetup != null)
-                        _openedPluginSetup.Setup.MainSymbol = a.New.Key.ToKey();
+                        _openedPluginSetup.Setup.MainSymbol.Value = a.New.Key.ToKey();
 
                     MainSymbolShadowSetup.SelectedSymbolName.Value = a.New.Name;
                 }
@@ -164,13 +193,26 @@ namespace TickTrader.BotTerminal
             UpdateTradeSummary();
         }
 
+        private void UploadPluginNamesCollection()
+        {
+            PluginsNames.Value = Plugins.DistinctBy(u => u.DisplayName).Select(u => new PluginNameAndGroup(u.DisplayName, u.CurrentGroup)).ToList();
+        }
+
         public BoolVar CanSetup { get; }
         public BoolVar IsSetupValid { get; }
         public BacktesterSettings Settings { get; private set; } = new BacktesterSettings();
-        public IObservableList<AlgoPluginViewModel> Plugins { get; private set; }
+
+        public IObservableList<AlgoPluginViewModel> Plugins { get; }
+
+        public Property<List<PluginNameAndGroup>> PluginsNames { get; }
+
+        public Property<List<AlgoPluginViewModel>> SelectedPluginVersions { get; }
+
         public Property<List<Feed.Types.Timeframe>> AvailableModels { get; private set; }
         public Property<Feed.Types.Timeframe> SelectedModel { get; private set; }
         public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
+        public Property<PluginNameAndGroup> SelectedPluginName { get; }
+        public Property<string> SelectedPluginInfo { get; }
         public Property<string> PluginErrorProp { get; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolShadowSetup { get; private set; }
@@ -266,7 +308,11 @@ namespace TickTrader.BotTerminal
             UpdateTradeSummary();
 
             var pluginConfig = config.PluginConfig;
-            SelectedPlugin.Value = Plugins.FirstOrDefault(p => p.Key.Equals(pluginConfig.Key));
+            var plugin = pluginConfig?.Key == null ? null : Plugins.FirstOrDefault(p => p.Key.Equals(pluginConfig.Key));
+            var selectedPluginName = plugin == null ? null : new PluginNameAndGroup(plugin.DisplayName, plugin.CurrentGroup);
+
+            SelectedPluginName.Value = selectedPluginName;
+            SelectedPlugin.Value = plugin;
             PluginConfig = pluginConfig;
 
             SelectedModel.Value = config.Core.ModelTimeframe;
@@ -282,7 +328,7 @@ namespace TickTrader.BotTerminal
             MainSymbolSetup.SelectedTimeframe.Value = config.Core.MainTimeframe;
             MainSymbolShadowSetup.SelectedTimeframe.Value = mainSymbolKey.TimeFrame;
 
-            foreach(var pair in config.Core.FeedConfig)
+            foreach (var pair in config.Core.FeedConfig)
             {
                 if (pair.Key == mainSymbolName)
                     continue;
@@ -312,7 +358,7 @@ namespace TickTrader.BotTerminal
         {
             var setup = new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), GetClientAccountMetadata());
             setup.Setup.SelectedModel.Value = SelectedModel.Value.ToApi();
-            setup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
+            setup.Setup.MainSymbol.Value = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
             setup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
             return setup.GetConfig();
         }
@@ -339,7 +385,7 @@ namespace TickTrader.BotTerminal
                     : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), GetClientAccountMetadata(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
                 _openedPluginSetup.Setup.SelectedModel.Value = SelectedModel.Value.ToApi();
-                _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
+                _openedPluginSetup.Setup.MainSymbol.Value = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
                 _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
                 _openedPluginSetup.Closed += PluginSetupClosed;
                 _openedPluginSetup.Setup.ConfigLoaded += Setup_ConfigLoaded;
@@ -365,7 +411,7 @@ namespace TickTrader.BotTerminal
 
         private void Setup_ConfigLoaded(PluginConfigViewModel config)
         {
-            MainSymbolSetup.SelectedSymbol.Value = _catalog[config.MainSymbol];
+            MainSymbolSetup.SelectedSymbol.Value = _catalog[config.MainSymbol.Value];
             MainSymbolSetup.SelectedSymbolName.Value = MainSymbolSetup.SelectedSymbol.Value.Name;
             MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame.ToServer();
         }

@@ -10,6 +10,9 @@
     <Protobuf Include="..\..\..\protobuf\common.proto" GrpcServices="None">
       <Link>protos\common.proto</Link>
     </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\drawable.proto">
+      <Link>protos\drawable.proto</Link>
+    </Protobuf>
     <Protobuf Include="..\..\..\protobuf\runtime.feed.proto" GrpcServices="None">
       <Link>protos\runtime.feed.proto</Link>
     </Protobuf>

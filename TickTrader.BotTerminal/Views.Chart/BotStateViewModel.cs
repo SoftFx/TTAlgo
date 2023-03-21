@@ -13,15 +13,37 @@ using TickTrader.Algo.Server.PublicAPI.Converters;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotStateViewModel : Screen
+    internal sealed class BotStateViewModel : Screen
     {
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private AlgoEnvironment _algoEnv;
-        private IAlgoAgent _agent;
-        private string _botId;
+        private readonly AlgoEnvironment _algoEnv;
+        private readonly IAlgoAgent _agent;
+        private readonly string _botId;
+
         private bool _isInitialized;
         private bool _isActivated;
+
+
+        public AlgoBotViewModel Bot { get; private set; }
+
+        public BotJournalViewModel BotJournal { get; private set; }
+
+        public string ExecStatus { get; private set; }
+
+
+        public bool IsRunning => Bot?.IsRunning ?? false;
+
+        public bool IsRemote => Bot?.Model.IsRemote ?? true;
+
+        public bool CanStartStop => Bot?.CanStartStop ?? false;
+
+        public bool CanBrowse => !(Bot?.Model.IsRemote ?? true) || Bot.Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs.ToApi());
+
+        public int ErrorsCount => Bot?.Model.Journal.MessageCount[JournalMessageType.Error] ?? 0;
+
+        public string BotInfo => string.Join(Environment.NewLine, GetBotInfo());
+
 
         public BotStateViewModel(AlgoEnvironment algoEnv, IAlgoAgent agent, string botId)
         {
@@ -37,22 +59,6 @@ namespace TickTrader.BotTerminal
             _agent.AccessLevelChanged += OnAccessLevelChanged;
         }
 
-        public AlgoBotViewModel Bot { get; private set; }
-        public bool IsRunning => Bot?.IsRunning ?? false;
-        public bool CanStartStop => Bot?.CanStartStop ?? false;
-        public bool CanBrowse => !(Bot?.Model.IsRemote ?? true) || Bot.Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs.ToApi());
-        public string ExecStatus { get; private set; }
-        public string BotInfo => string.Join(Environment.NewLine, GetBotInfo());
-        public int ErrorsCount => Bot?.Model.Journal.MessageCount[JournalMessageType.Error] ?? 0;
-        public BotJournalViewModel BotJournal { get; private set; }
-        public bool IsRemote => Bot?.Model.IsRemote ?? true;
-
-        //public override void TryClose(bool? dialogResult = default(bool?))
-        //{
-        //    base.TryClose(dialogResult);
-
-        //    Deinit();
-        //}
 
         public override Task TryCloseAsync(bool? dialogResult = null)
         {
@@ -191,31 +197,43 @@ namespace TickTrader.BotTerminal
             if (Bot == null)
                 return Enumerable.Empty<string>();
 
-            var res = new List<string>();
-            res.Add($"AlgoServer: {Bot.Agent.Name}");
+            var res = new List<string>(1 << 10)
+            {
+                $"AlgoServer: {Bot.Agent.Name}"
+            };
+
             if (Bot.Agent.Model.Accounts.Snapshot.TryGetValue(Bot.AccountId, out var acc))
                 res.Add($"Account: {acc.DisplayName}");
-            else res.Add($"Account Id: {Bot.AccountId}");
+            else
+                res.Add($"Account Id: {Bot.AccountId}");
+
             res.Add($"Instance Id: {Bot.InstanceId}");
+
             res.Add("------------ Permissions ------------");
             Bot.Model.Config.Permissions.ToPermissionsList().ForEach(p => res.Add(p));
+
             if (Bot.Model.Descriptor != null)
             {
                 res.Add("------------ Plugin Info ------------");
                 res.Add($"Name: {Bot.Model.Descriptor.DisplayName}");
                 res.Add($"Version: {Bot.Model.Descriptor.Version}");
             }
+
             if (Bot.Model.Config != null)
             {
                 var config = Bot.Model.Config;
+
                 res.Add("------------ Plugin Config ------------");
                 res.Add($"Algo Package Id: {config.Key.PackageId}");
                 res.Add($"Symbol: {config.MainSymbol.Name}");
                 res.Add($"Timeframe: {config.Timeframe}");
                 res.Add($"Model: {config.ModelTimeframe}");
+
                 if (Bot.Model.Descriptor != null)
                     res.Add($"Show on chart: {Bot.Model.Descriptor.SetupMainSymbol}");
+
                 var properties = config.UnpackProperties();
+
                 if (properties.Any())
                 {
                     res.Add("");
@@ -224,6 +242,7 @@ namespace TickTrader.BotTerminal
                         .Select(x => $"{x.PropertyId}: {x.ValObj}").OrderBy(x => x).ToArray());
                 }
             }
+
             return res;
         }
 

@@ -7,13 +7,66 @@ namespace TickTrader.BotTerminal
         public UpdateBind() : base()
         {
             UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-            Mode = BindingMode.OneWay;
+            Mode = BindingMode.TwoWay;
         }
 
         public UpdateBind(string path) : base(path)
         {
             UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-            Mode = BindingMode.OneWay;
+            Mode = BindingMode.TwoWay;
+        }
+    }
+
+
+    public class BoolToVisBind : UpdateBind
+    {
+        private readonly BooleanToVisibilityConverter _converter = new();
+
+        public BoolToVisBind() : base()
+        {
+            Converter = _converter;
+        }
+
+        public BoolToVisBind(string path) : base(path)
+        {
+            Converter = _converter;
+        }
+    }
+
+
+    public class InvBoolToVisBind : UpdateBind
+    {
+        private readonly BooleanToVisibilityConverter _converter = new()
+        {
+            Invert = true,
+        };
+
+
+        public InvBoolToVisBind() : base()
+        {
+            Converter = _converter;
+        }
+
+        public InvBoolToVisBind(string path) : base(path)
+        {
+            Converter = _converter;
+        }
+    }
+
+
+    public class EmptyToVisBind : UpdateBind
+    {
+        private readonly NullToVisibilityConverter _converter = new();
+
+
+        public EmptyToVisBind() : base()
+        {
+            Converter = _converter;
+        }
+
+        public EmptyToVisBind(string path) : base(path)
+        {
+            Converter = _converter;
         }
     }
 }

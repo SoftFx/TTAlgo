@@ -47,6 +47,7 @@ namespace Machinarium.Var
         {
             var property = new Property<T>
             {
+                DefaultValue = initialValue,
                 Value = initialValue,
                 Name = notifyName,
                 DisplayConverter = displayConverter,
@@ -60,8 +61,22 @@ namespace Machinarium.Var
         {
             var property = new IntProperty
             {
+                DefaultValue = initialValue,
                 Value = initialValue,
                 Name = notifyName
+            };
+
+            AddChild(property);
+            return property;
+        }
+
+        protected StrProperty AddStrProperty(string initialValue = null, string notifyName = null)
+        {
+            var property = new StrProperty
+            {
+                DefaultValue = initialValue,
+                Value = initialValue,
+                Name = notifyName,
             };
 
             AddChild(property);
@@ -72,6 +87,7 @@ namespace Machinarium.Var
         {
             var property = new DoubleProperty
             {
+                DefaultValue = initialValue,
                 Value = initialValue,
                 Name = notifyName
             };
@@ -84,6 +100,7 @@ namespace Machinarium.Var
         {
             var property = new BoolProperty
             {
+                DefaultValue = initialValue,
                 Value = initialValue,
                 Name = notifyName
             };
@@ -96,6 +113,7 @@ namespace Machinarium.Var
         {
             var property = new Validable<T>(null)
             {
+                DefaultValue = initialValue,
                 Value = initialValue,
                 Name = notifyName
             };
@@ -108,6 +126,7 @@ namespace Machinarium.Var
         {
             var property = new IntValidable
             {
+                DefaultValue = initialValue,
                 Value = initialValue,
                 Name = notifyName
             };
@@ -120,6 +139,7 @@ namespace Machinarium.Var
         {
             var property = new DoubleValidable(conv)
             {
+                DefaultValue = initialValue,
                 Value = initialValue,
                 Name = notifyName
             };
@@ -132,6 +152,7 @@ namespace Machinarium.Var
         {
             var property = new BoolValidable
             {
+                DefaultValue = initialValue,
                 Value = initialValue,
                 Name = notifyName
             };

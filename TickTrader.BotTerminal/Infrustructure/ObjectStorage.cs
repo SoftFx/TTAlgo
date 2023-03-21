@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Xml;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
@@ -85,6 +86,7 @@ namespace TickTrader.BotTerminal
 
         public void Save(string fileName, MemoryStream binData)
         {
+            PathHelper.EnsureDirectoryCreated(_folder);
             string filePath = Path.Combine(_folder, fileName);
             using (var file = File.Open(filePath, FileMode.Create))
                 binData.WriteTo(file);

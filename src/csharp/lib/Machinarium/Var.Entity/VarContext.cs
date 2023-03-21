@@ -21,6 +21,11 @@ namespace Machinarium.Var
             return base.AddIntProperty(initialValue, notifyName);
         }
 
+        public new StrProperty AddStrProperty(string initialValue = null, string notifyName = null)
+        {
+            return base.AddStrProperty(initialValue, notifyName);
+        }
+
         public new DoubleProperty AddDoubleProperty(double initialValue = 0, string notifyName = null)
         {
             return base.AddDoubleProperty(initialValue, notifyName);

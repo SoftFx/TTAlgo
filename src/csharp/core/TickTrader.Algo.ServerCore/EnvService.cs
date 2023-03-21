@@ -1,50 +1,44 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Server
 {
     public class EnvService
     {
+        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<EnvService>();
+
+        private readonly Lazy<string> _botLogFolder, _logFolder,
+            _algoRepoFolder, _algoWorkFolder, _appDataFolder, _serverStatePath;
+
+
         public string AppFolder { get; }
 
-        public string FeedHistoryCacheFolder { get; }
+        public string BotLogFolder => _botLogFolder.Value;
 
-        public string BotLogFolder { get; }
+        public string LogFolder => _logFolder.Value;
 
-        public string LogFolder { get; }
+        public string AlgoRepositoryFolder => _algoRepoFolder.Value;
 
-        public string AlgoRepositoryFolder { get; }
+        public string AlgoWorkingFolder => _algoWorkFolder.Value;
 
-        public string AlgoExtFolder { get; }
+        public string AppDataFolder => _appDataFolder.Value;
 
-        public string AlgoWorkingFolder { get; }
-
-        public string AppDataFolder { get; }
-
-        public string ServerStateFilePath { get; }
+        public string ServerStateFilePath => _serverStatePath.Value;
 
 
         public EnvService(string appFolder)
         {
             AppFolder = appFolder;
 
-            BotLogFolder = Path.Combine(appFolder, "BotLogs");
-            LogFolder = Path.Combine(appFolder, "Logs");
-            AlgoRepositoryFolder = Path.Combine(appFolder, "AlgoRepository");
-            AlgoExtFolder = Path.Combine(appFolder, "AlgoExt");
-            AlgoWorkingFolder = Path.Combine(appFolder, "AlgoData");
-            FeedHistoryCacheFolder = Path.Combine(appFolder, "FeedCache");
-            AppDataFolder = Path.Combine(appFolder, "Settings");
-            ServerStateFilePath = Path.Combine(AppDataFolder, "server.state.json");
-
             PathHelper.EnsureDirectoryCreated(appFolder);
-            PathHelper.EnsureDirectoryCreated(AlgoRepositoryFolder);
-            PathHelper.EnsureDirectoryCreated(AlgoExtFolder);
-            PathHelper.EnsureDirectoryCreated(AlgoWorkingFolder);
-            PathHelper.EnsureDirectoryCreated(BotLogFolder);
-            PathHelper.EnsureDirectoryCreated(LogFolder);
-            PathHelper.EnsureDirectoryCreated(FeedHistoryCacheFolder);
-            PathHelper.EnsureDirectoryCreated(AppDataFolder);
+
+            _botLogFolder = new Lazy<string>(() => InitSubFolder(appFolder, "BotLogs"), true);
+            _logFolder = new Lazy<string>(() => InitSubFolder(appFolder, "Logs"), true);
+            _algoRepoFolder = new Lazy<string>(() => InitSubFolder(appFolder, "AlgoRepository"), true);
+            _algoWorkFolder = new Lazy<string>(() => InitSubFolder(appFolder, "AlgoData"), true);
+            _appDataFolder = new Lazy<string>(() => InitSubFolder(appFolder, "Settings"), true);
+            _serverStatePath = new Lazy<string>(() => Path.Combine(AppDataFolder, "server.state.json"), true);
 
             //PathHelper.SetDirectoryCompression(BotLogFolder);
             //PathHelper.SetDirectoryCompression(LogFolder);
@@ -52,13 +46,24 @@ namespace TickTrader.Algo.Server
 
 
         public string GetPluginWorkingFolder(string pluginId)
-        {
-            return PathHelper.EnsureDirectoryCreated(Path.Combine(AlgoWorkingFolder, PathHelper.Escape(pluginId)));
-        }
+            => InitSubFolder(AlgoWorkingFolder, PathHelper.Escape(pluginId));
 
         public string GetPluginLogsFolder(string pluginId)
+            => InitSubFolder(BotLogFolder, PathHelper.Escape(pluginId));
+
+
+        private static string InitSubFolder(string basePath, string subPath)
         {
-            return PathHelper.EnsureDirectoryCreated(Path.Combine(BotLogFolder, PathHelper.Escape(pluginId)));
+            var folderPath = Path.Combine(basePath, subPath);
+            try
+            {
+                PathHelper.EnsureDirectoryCreated(folderPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Can't create directory '{folderPath}'");
+            }
+            return folderPath;
         }
     }
 }

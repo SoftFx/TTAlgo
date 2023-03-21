@@ -1,37 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TickTrader.Algo.Api
+﻿namespace TickTrader.Algo.Api
 {
     public interface Marker
     {
         double Y { get; set; }
         MarkerIcons Icon { get; set; }
-        //MarkerAlignments Alignment { get; set; }
         string DisplayText { get; set; }
-        //IDictionary<string, string> DisplayProperties { get; }
         Colors Color { get; set; }
+        ushort IconCode { get; set; }
+
         void Clear();
     }
 
-    //public enum MarkerAlignments
-    //{
-    //    Top,
-    //    Center,
-    //    Bottom
-    //}
-
     public enum MarkerIcons
     {
-        Circle,
-        UpArrow,
-        DownArrow,
-        UpTriangle,
-        DownTriangle,
-        Diamond,
-        Square
+        Circle = 0,
+        UpArrow = 1,
+        DownArrow = 2,
+        UpTriangle = 3,
+        DownTriangle = 4,
+        Diamond = 5,
+        Square = 6,
+        Wingdings = 7,
     }
 }

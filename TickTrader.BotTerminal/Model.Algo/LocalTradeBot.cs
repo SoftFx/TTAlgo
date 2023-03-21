@@ -145,17 +145,17 @@ namespace TickTrader.BotTerminal
 
         private static JournalMessageType Convert(PluginLogRecord.Types.LogSeverity severity)
         {
-            switch (severity)
+            return severity switch
             {
-                case PluginLogRecord.Types.LogSeverity.Info: return JournalMessageType.Info;
-                case PluginLogRecord.Types.LogSeverity.Error: return JournalMessageType.Error;
-                case PluginLogRecord.Types.LogSeverity.Custom: return JournalMessageType.Custom;
-                case PluginLogRecord.Types.LogSeverity.Trade: return JournalMessageType.Trading;
-                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
-                case PluginLogRecord.Types.LogSeverity.TradeFail: return JournalMessageType.TradingFail;
-                case PluginLogRecord.Types.LogSeverity.Alert: return JournalMessageType.Alert;
-                default: return JournalMessageType.Info;
-            }
+                PluginLogRecord.Types.LogSeverity.Info => JournalMessageType.Info,
+                PluginLogRecord.Types.LogSeverity.Error => JournalMessageType.Error,
+                PluginLogRecord.Types.LogSeverity.Custom => JournalMessageType.Custom,
+                PluginLogRecord.Types.LogSeverity.Trade => JournalMessageType.Trading,
+                PluginLogRecord.Types.LogSeverity.TradeSuccess => JournalMessageType.TradingSuccess,
+                PluginLogRecord.Types.LogSeverity.TradeFail => JournalMessageType.TradingFail,
+                PluginLogRecord.Types.LogSeverity.Alert => JournalMessageType.Alert,
+                _ => JournalMessageType.Info,
+            };
         }
 
         private bool ApplyNewRecordsFilter(TimeKey timeKey)
