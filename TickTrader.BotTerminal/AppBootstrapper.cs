@@ -10,6 +10,7 @@ using System.Windows;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Fdk2;
 using TickTrader.Algo.Account.Settings;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Logging;
@@ -26,9 +27,8 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly AppInstanceRestrictor _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
         private readonly SimpleContainer _container = new();
-
+        private readonly AppInstanceRestrictor _instanceRestrictor;
         private readonly bool _hasWriteAccess;
 
         private ShellViewModel _shell;
@@ -46,6 +46,7 @@ namespace TickTrader.BotTerminal
 
             ValidateAppFolder();
 
+            _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
             _hasWriteAccess = HasWriteAccess();
             if (_hasWriteAccess)
             {
@@ -62,13 +63,13 @@ namespace TickTrader.BotTerminal
 
         private static void ValidateAppFolder()
         {
-            _ = AppFolderResolver.Result; // First time init
-            if (AppFolderResolver.HasError)
+            AppInfoResolver.Init();
+            if (AppInfoResolver.HasError)
             {
                 MessageBox.Show($"Failed to resolve app folder. Check windows logs for details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                Environment.FailFast("Failed to resolve app folder", AppFolderResolver.Error);
+                Environment.FailFast("Failed to resolve app folder", AppInfoResolver.Error);
             }
-            else if (string.IsNullOrEmpty(AppFolderResolver.Result))
+            else if (string.IsNullOrEmpty(AppInfoResolver.DataPath))
             {
                 const string err = "Unexpected error: app folder resolved to empty string";
                 MessageBox.Show(err, "Error", MessageBoxButton.OK, MessageBoxImage.Error);

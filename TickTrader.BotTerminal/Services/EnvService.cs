@@ -1,6 +1,7 @@
 ﻿using NLog;
 using System;
 using System.IO;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
@@ -24,7 +25,7 @@ namespace TickTrader.BotTerminal
             {
                 if (_instance == null)
                 {
-                    var appFolder = AppFolderResolver.Result;
+                    var appFolder = AppInfoResolver.DataPath;
                     if (string.IsNullOrEmpty(appFolder))
                         // Before first caller MUST validate AppFolderResolver.Result manually and inpect Errors 
                         throw new ArgumentException("Invalid app folder");
