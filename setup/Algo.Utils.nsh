@@ -318,14 +318,33 @@ var LogFile
 
 !macro _Print Msg
 
-    nsislog::log $LogFile "${Msg}"
+    ;nsislog::log $LogFile "${Msg}"
+    !insertmacro _LogString $LogFile "${Msg}"
     DetailPrint "${Msg}"
 
 !macroend
 
 !macro _Log Msg
 
-    nsislog::log $LogFile "${Msg}"
+    ;nsislog::log $LogFile "${Msg}"
+    !insertmacro _LogString $LogFile "${Msg}"
+
+!macroend
+
+!macro _LogString File Msg
+
+    push $5
+
+    FileOpen $5 ${File} a
+    ;Docs: If the file cannot be opened the handle output is set to empty and the error flag is set
+    ${If} $5 != 0
+        FileSeek $5 0 END
+        FileWrite $5 "${Msg}$\r$\n"
+        FileClose $5
+    ${EndIf}
+    ClearErrors
+
+    pop $5
 
 !macroend
 
