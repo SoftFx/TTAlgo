@@ -387,7 +387,7 @@ Function FinishPageLeave
         ${NSD_GetState} $Terminal_RunCheckBox $Void
         ${If} $Void == ${BST_CHECKED}
             StrCpy $OUTDIR $Terminal_InstDir ; Exec command working dir is set to $OUTDIR
-            Exec "$Terminal_InstDir\${TERMINAL_EXE}"
+            Exec "$Terminal_InstDir\bin\current\${TERMINAL_EXE}"
         ${EndIf}
 
     ${EndIf}

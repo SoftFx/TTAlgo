@@ -273,7 +273,7 @@ namespace TickTrader.BotTerminal
                 switch (res)
                 {
                     case AccessElevationStatus.AlreadyThere:
-                        MessageBox.Show($"Don't have access to write in directory {Directory.GetCurrentDirectory()}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"Don't have access to write in directory {EnvService.Instance.AppFolder}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         return false;
                     case AccessElevationStatus.Launched:
                     case AccessElevationStatus.UserCancelled:

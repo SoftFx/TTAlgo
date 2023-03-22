@@ -127,10 +127,10 @@ namespace TickTrader.Algo.AppCommon
         {
             var dataPath = info.DataPath;
             return string.IsNullOrEmpty(dataPath)
-                ? _appFolder
+                ? appFolder
                 : Path.IsPathRooted(dataPath)
                     ? dataPath
-                    : Path.Combine(_appFolder, dataPath);
+                    : Path.Combine(appFolder, dataPath);
         }
     }
 }

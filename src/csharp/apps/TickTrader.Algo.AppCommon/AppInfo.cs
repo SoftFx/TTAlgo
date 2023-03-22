@@ -16,7 +16,7 @@ namespace TickTrader.Algo.AppCommon
 
         public static AppInfo LoadFromJson(string path)
         {
-            using var file = File.Open(path, FileMode.Open);
+            using var file = File.Open(path, FileMode.Open, FileAccess.Read);
             return JsonSerializer.Deserialize<AppInfo>(file);
         }
 
