@@ -70,20 +70,16 @@ var TestCollection_Selected
 !endif
     File "${ICONS_DIR}\terminal.ico"
 
+    SetOutPath "$Terminal_InstDir"
+    ${GenerateAppInfo} $Terminal_InstDir $Terminal_Id
+
 !macroend
 
 !macro _DeleteTerminalFiles
 
-    ${Log} "Removing AlgoTerminal files to $Terminal_InstDir"
+    ${Log} "Removing AlgoTerminal files from $Terminal_InstDir"
     StrCpy $INSTDIR $Terminal_InstDir
-    RMDir /r "$Terminal_InstDir\bin\current"
-;!ifdef DEBUG
-;    Delete "$INSTDIR\${TERMINAL_EXE}"
-;!else
-    ; Remove installed files, but leave generated
-;    !include Terminal.Uninstall.nsi
-;!endif
-;    Delete "$INSTDIR\terminal.ico"
+    RMDir /r "$Terminal_InstDir\bin\"
 
 !macroend
 

@@ -318,7 +318,6 @@ var LogFile
 
 !macro _Print Msg
 
-    ;nsislog::log $LogFile "${Msg}"
     !insertmacro _LogString $LogFile "${Msg}"
     DetailPrint "${Msg}"
 
@@ -326,7 +325,6 @@ var LogFile
 
 !macro _Log Msg
 
-    ;nsislog::log $LogFile "${Msg}"
     !insertmacro _LogString $LogFile "${Msg}"
 
 !macroend
@@ -454,3 +452,28 @@ var SDK_RebootNeeded
 !define SDK_Install '!insertmacro _InstallSDK'
 
 ;-----.NET SDK installation-----
+
+;-----AppInfo.json-----
+
+var JsonTmp
+
+!macro _GenerateAppInfo InstallPath InstallId
+
+    ${If} ${FileExists} "${InstallPath}\appinfo.json"
+        ${Print} "AppInfo already exists"
+    ${Else}
+        ${Print} "Generating AppInfo"
+
+        File "/oname=appinfo.json" "appinfo.template.json"
+        nsJSON::Set /file "$OUTDIR\appinfo.json"
+        nsJSON::Quote "${InstallId}"
+        pop $JsonTmp
+        nsJSON::Set `InstallId` /value $JsonTmp
+        nsJSON::Serialize /file "$OUTDIR\appinfo.json"
+    ${EndIf}
+
+!macroend
+
+!define GenerateAppInfo '!insertmacro _GenerateAppInfo'
+
+;-----AppInfo.json-----
