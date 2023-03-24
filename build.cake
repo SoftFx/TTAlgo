@@ -257,8 +257,22 @@ Task("PublishServer")
    }
 });
 
-Task("PublishPublicApi")
+Task("PublishGithubProjects")
    .IsDependentOn("Test")
+   .IsDependentOn("PublishTerminal")
+   .IsDependentOn("PublishConfigurator")
+   .IsDependentOn("PublishServer")
+   .WithCriteria(isGithubBuild);
+
+Task("PublishTeamCityProjects")
+   .IsDependentOn("Test")
+   .IsDependentOn("PublishTerminal")
+   .IsDependentOn("PublishConfigurator")
+   .IsDependentOn("PublishServer")
+   .WithCriteria(!isGithubBuild);
+
+Task("PublishPublicApi")
+   .IsDependentOn("PublishTeamCityProjects")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPublicApi") : null;
@@ -290,7 +304,7 @@ Task("PublishPublicApi")
 });
 
 Task("PublishSymbolStorage")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishTeamCityProjects")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishSymbolStorage") : null;
@@ -311,7 +325,7 @@ Task("PublishSymbolStorage")
 });
 
 Task("PublishBacktesterApi")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishTeamCityProjects")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterApi") : null;
@@ -332,7 +346,7 @@ Task("PublishBacktesterApi")
 });
 
 Task("PublishBacktesterHost")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishTeamCityProjects")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterHost") : null;
@@ -353,7 +367,7 @@ Task("PublishBacktesterHost")
 });
 
 Task("PublishRuntimeHost")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishTeamCityProjects")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishRuntimeHost") : null;
@@ -374,7 +388,7 @@ Task("PublishRuntimeHost")
 });
 
 Task("PublishPkgLoader")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishTeamCityProjects")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPkgLoader") : null;
@@ -396,7 +410,7 @@ Task("PublishPkgLoader")
 });
 
 Task("PublishIndicatorHost")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishTeamCityProjects")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishIndicatorHost") : null;
@@ -529,6 +543,7 @@ public void PrintArguments()
    Information("Details: {0}", details);
    Information("SkipTests: {0}", skipTests);
    Information("NsisPath: {0}", nsisDirPath);
+   Information("IsGithubBuild: {0}", isGithubBuild);
 }
 
 public string ConsoleOrBuildSystemArgument(string name, string defautValue) => ConsoleOrBuildSystemArgument<string>(name, defautValue);
