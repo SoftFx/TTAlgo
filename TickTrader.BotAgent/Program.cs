@@ -85,6 +85,7 @@ namespace TickTrader.BotAgent
 
             var pathToContentRoot = AppInfoResolver.DataPath;
             var pathToWebAdmin = Path.Combine(pathToContentRoot, "WebAdmin");
+            PathHelper.EnsureDirectoryCreated(pathToWebAdmin);
             var pathToAppSettings = Path.Combine(pathToWebAdmin, "appsettings.json");
 
             var binDir = AppDomain.CurrentDomain.BaseDirectory;

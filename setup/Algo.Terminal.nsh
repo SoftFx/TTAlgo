@@ -68,9 +68,10 @@ var TestCollection_Selected
 !else
     File /r "${TERMINAL_BINDIR}\*.*"
 !endif
-    File "${ICONS_DIR}\terminal.ico"
 
     SetOutPath "$Terminal_InstDir"
+    ; Icon is required there for installed programs list
+    File "${ICONS_DIR}\terminal.ico"
     ${GenerateAppInfo} $Terminal_InstDir $Terminal_Id
 
 !macroend
@@ -80,6 +81,7 @@ var TestCollection_Selected
     ${Log} "Removing AlgoTerminal files from $Terminal_InstDir"
     StrCpy $INSTDIR $Terminal_InstDir
     RMDir /r "$Terminal_InstDir\bin\"
+    Delete "$INSTDIR\terminal.ico"
 
 !macroend
 
