@@ -23,6 +23,8 @@ var sdkSolutionPath = sourcesDirPath.CombineWithFilePath("src/csharp/TickTrader.
 var nsisPath = DirectoryPath.FromString(nsisDirPath).CombineWithFilePath("makensis.exe");
 var setupDirPath = sourcesDirPath.Combine("setup");
 
+var isGithubBuild = BuildSystem.IsRunningOnGitHubActions;
+
 var outputPath = sourcesDirPath.Combine("bin");
 var terminalProjectPath = sourcesDirPath.CombineWithFilePath("TickTrader.BotTerminal/TickTrader.BotTerminal.csproj");
 var terminalBinPath = outputPath.Combine("terminal");
