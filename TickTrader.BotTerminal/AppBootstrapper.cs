@@ -44,7 +44,8 @@ namespace TickTrader.BotTerminal
             LocaleSelector.Instance.ActivateDefault();
             Initialize();
 
-            ValidateAppFolder();
+            ValidateAppInfo();
+            Directory.SetCurrentDirectory(AppInfoResolver.DataPath);
 
             _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
             _hasWriteAccess = HasWriteAccess();
@@ -61,7 +62,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private static void ValidateAppFolder()
+        private static void ValidateAppInfo()
         {
             AppInfoResolver.Init();
             if (AppInfoResolver.HasError)

@@ -9,9 +9,9 @@ namespace TickTrader.Algo.AppCommon
 
         private static readonly object _staticLock = new();
 
-        private static bool _isInit;
+        private static bool _isInit, _isDevDir;
         private static AppInfo _info;
-        private static string _appFolder, _dataPath;
+        private static string _appInfoFolder, _dataPath;
 
 
         public static AppInfo Info
@@ -25,17 +25,6 @@ namespace TickTrader.Algo.AppCommon
             }
         }
 
-        public static string AppFolder
-        {
-            get
-            {
-                if (!_isInit)
-                    Init();
-
-                return _appFolder;
-            }
-        }
-
         public static string DataPath
         {
             get
@@ -44,6 +33,28 @@ namespace TickTrader.Algo.AppCommon
                     Init();
 
                 return _dataPath;
+            }
+        }
+
+        public static string AppInfoFolder
+        {
+            get
+            {
+                if (!_isInit)
+                    Init();
+
+                return _appInfoFolder;
+            }
+        }
+
+        public static bool IsDevDir
+        {
+            get
+            {
+                if (!_isInit)
+                    Init();
+
+                return _isDevDir;
             }
         }
 
@@ -59,13 +70,12 @@ namespace TickTrader.Algo.AppCommon
                 if (_isInit)
                     return;
 
-                _isInit = true;
                 try
                 {
-                    _appFolder = GetAppFolder(out var isDevDir);
-                    var appInfoPath = Path.Combine(_appFolder, DataFileName);
+                    ResolveAppInfoFolder();
+                    var appInfoPath = Path.Combine(_appInfoFolder, DataFileName);
 
-                    if (isDevDir)
+                    if (_isDevDir)
                         InitDevDir(appInfoPath);
 
                     if (!File.Exists(appInfoPath))
@@ -73,7 +83,7 @@ namespace TickTrader.Algo.AppCommon
 
                     _info = AppInfo.LoadFromJson(appInfoPath);
                     _dataPath = _info.IsPortable
-                        ? ResolvePortablePath(_info, _appFolder)
+                        ? ResolvePortablePath(_info)
                         : ResolveLocalAppDataPath(_info);
                 }
                 catch (Exception ex)
@@ -81,11 +91,13 @@ namespace TickTrader.Algo.AppCommon
                     Error = ex;
                     _dataPath = null;
                 }
+
+                _isInit = true;
             }
         }
 
 
-        private static string GetAppFolder(out bool isDevDir)
+        private static void ResolveAppInfoFolder()
         {
             var binFolder = AppDomain.CurrentDomain.BaseDirectory;
             var pathParts = binFolder.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
@@ -96,12 +108,12 @@ namespace TickTrader.Algo.AppCommon
                 throw new Exception("Invalid install path. Can't find app directory");
 
             // Expected build dir pattern: {some_path}/project/bin/[debug|release]/{tfm}
-            isDevDir = n > 4
+            _isDevDir = n > 4
                 && string.Equals(pathParts[n - 3], "bin", StringComparison.OrdinalIgnoreCase)
                 && (string.Equals(pathParts[n - 2], "release", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(pathParts[n - 2], "debug", StringComparison.OrdinalIgnoreCase));
 
-            return Path.GetFullPath(Path.Combine(binFolder, "..", "..")); // simplify path
+            _appInfoFolder = Path.GetFullPath(Path.Combine(binFolder, "..", "..")); // simplify path
         }
 
         private static void InitDevDir(string appInfoPath)
@@ -123,14 +135,14 @@ namespace TickTrader.Algo.AppCommon
             return Path.Combine(localAppData, "TickTrader Algo", $"Terminal {installId}");
         }
 
-        private static string ResolvePortablePath(AppInfo info, string appFolder)
+        private static string ResolvePortablePath(AppInfo info)
         {
-            var dataPath = info.DataPath;
+            var dataPath = Environment.ExpandEnvironmentVariables(info.DataPath);
             return string.IsNullOrEmpty(dataPath)
-                ? appFolder
+                ? _appInfoFolder
                 : Path.IsPathRooted(dataPath)
                     ? dataPath
-                    : Path.Combine(appFolder, dataPath);
+                    : Path.Combine(_appInfoFolder, dataPath);
         }
     }
 }
