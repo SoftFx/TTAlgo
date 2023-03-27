@@ -4,7 +4,7 @@
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-var target = ConsoleOrBuildSystemArgument("Target", "BuildAll");
+var target = ConsoleOrBuildSystemArgument("Target", "Test");
 var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
 var version = ConsoleOrBuildSystemArgument("Version", "1.19");
 var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
@@ -165,34 +165,34 @@ Task("BuildAll")
    .IsDependentOn("BuildMainProject")
    .IsDependentOn("BuildSdk");
 
-// Task("Test")
-//    .IsDependentOn("BuildAll")
-//    .Does(() =>
-// {
-//    if (skipTests)
-//    {
-//       Information("Test were skipped intentionally");
-//       return;
-//    }
+Task("Test")
+   .IsDependentOn("BuildAll")
+   .Does(() =>
+{
+   if (skipTests)
+   {
+      Information("Test were skipped intentionally");
+      return;
+   }
 
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Test") : null;
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Test") : null;
 
-//    try
-//    {
-//       var testProjects = GetFiles(sourcesDirPath.Combine("src/csharp/tests/**/*.csproj").ToString());
-//       foreach(var testProj in testProjects)
-//       {
-//          DotNetTest(testProj.ToString(), new DotNetTestSettings {
-//             Configuration = configuration,
-//             Verbosity = details,
-//          });
-//       }
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+   try
+   {
+      var testProjects = GetFiles(sourcesDirPath.Combine("src/csharp/tests/**/*.csproj").ToString());
+      foreach(var testProj in testProjects)
+      {
+         DotNetTest(testProj.ToString(), new DotNetTestSettings {
+            Configuration = configuration,
+            Verbosity = details,
+         });
+      }
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
 // Task("PublishTerminal")
 //    .IsDependentOn("Test")
