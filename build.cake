@@ -4,7 +4,7 @@
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-var target = ConsoleOrBuildSystemArgument("Target", "Test");
+var target = ConsoleOrBuildSystemArgument("Target", "PublishGithubProjects");
 var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
 var version = ConsoleOrBuildSystemArgument("Version", "1.19");
 var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
@@ -194,75 +194,75 @@ Task("Test")
    }
 });
 
-// Task("PublishTerminal")
-//    .IsDependentOn("Test")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishTerminal") : null;
+Task("PublishTerminal")
+   .IsDependentOn("Test")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishTerminal") : null;
 
-//    try
-//    {
-//       // we need to change post-build tasks to work with publish
-//       DotNetBuild(terminalProjectPath.FullPath, new DotNetBuildSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          NoRestore = true,
-//          OutputDirectory = terminalBinPath,
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+   try
+   {
+      // we need to change post-build tasks to work with publish
+      DotNetBuild(terminalProjectPath.FullPath, new DotNetBuildSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoRestore = true,
+         OutputDirectory = terminalBinPath,
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-// Task("PublishConfigurator")
-//    .IsDependentOn("Test")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishConfigurator") : null;
+Task("PublishConfigurator")
+   .IsDependentOn("Test")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishConfigurator") : null;
 
-//    try
-//    {
-//       DotNetPublish(configuratorProjectPath.FullPath, new DotNetPublishSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          NoBuild = true,
-//          OutputDirectory = configuratorBinPath,
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+   try
+   {
+      DotNetPublish(configuratorProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = configuratorBinPath,
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-// Task("PublishServer")
-//    .IsDependentOn("Test")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishServer") : null;
+Task("PublishServer")
+   .IsDependentOn("Test")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishServer") : null;
 
-//    try
-//    {
-//       DotNetPublish(serverProjectPath.FullPath, new DotNetPublishSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          OutputDirectory = serverBinPath,
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+   try
+   {
+      DotNetPublish(serverProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         OutputDirectory = serverBinPath,
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-// Task("PublishGithubProjects")
-//    .IsDependentOn("Test")
-//    .IsDependentOn("PublishTerminal")
-//    .IsDependentOn("PublishConfigurator")
-//    .IsDependentOn("PublishServer")
-//    .WithCriteria(isGithubBuild);
+Task("PublishGithubProjects")
+   .IsDependentOn("Test")
+   .IsDependentOn("PublishTerminal")
+   .IsDependentOn("PublishConfigurator")
+   .IsDependentOn("PublishServer")
+   .WithCriteria(isGithubBuild);
 
 // Task("PublishTeamCityProjects")
 //    .IsDependentOn("Test")
