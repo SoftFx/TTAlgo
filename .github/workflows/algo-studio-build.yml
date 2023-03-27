@@ -32,7 +32,7 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: Run PowerShell script
-      run: ${{ env.BuildScriptPath }} --SkipTests=True --ArtifactsDirName=${{ env.BUILD_OUTPUT_FOLDER }}
+      run: ${{ env.BuildScriptPath }} --SkipTests=False --ArtifactsDirName=${{ env.BUILD_OUTPUT_FOLDER }}
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
