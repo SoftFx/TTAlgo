@@ -21,7 +21,7 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: self-hosted
     env:
       BuildScriptPath: ./build.ps1
     steps:
