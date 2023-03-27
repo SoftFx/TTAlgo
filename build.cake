@@ -124,145 +124,145 @@ Task("BuildMainProject")
    }
 });
 
-Task("BuildSdk")
-   .IsDependentOn("Clean")
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("BuildSdk") : null;
+// Task("BuildSdk")
+//    .IsDependentOn("Clean")
+//    .Does(() =>
+// {
+//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("BuildSdk") : null;
 
-   try
-   {
-      DotNetRestore(sdkSolutionPath.ToString());
+//    try
+//    {
+//       DotNetRestore(sdkSolutionPath.ToString());
 
-      var msBuildPath = DirectoryPath.FromString(msBuildDirPath).CombineWithFilePath("MSBuild.exe").ToString();
-      if (!System.IO.File.Exists(msBuildPath))
-      {
-         Information("Looking for MSBuild with VS extension SDK. File '{0}' doesn't exists", msBuildPath);
+//       var msBuildPath = DirectoryPath.FromString(msBuildDirPath).CombineWithFilePath("MSBuild.exe").ToString();
+//       if (!System.IO.File.Exists(msBuildPath))
+//       {
+//          Information("Looking for MSBuild with VS extension SDK. File '{0}' doesn't exists", msBuildPath);
 
-         var vsInstallPath = VSWhereLatest(new VSWhereLatestSettings{ Requires = "Microsoft.VisualStudio.Workload.VisualStudioExtension" });
-         msBuildPath = GetFiles(vsInstallPath.CombineWithFilePath("MSBuild/**/Bin/MSBuild.exe").ToString()).FirstOrDefault()?.ToString();
-         if (string.IsNullOrEmpty(msBuildPath))
-            throw new Exception("Failed to resolve MSBuild with VS extension sdk");
+//          var vsInstallPath = VSWhereLatest(new VSWhereLatestSettings{ Requires = "Microsoft.VisualStudio.Workload.VisualStudioExtension" });
+//          msBuildPath = GetFiles(vsInstallPath.CombineWithFilePath("MSBuild/**/Bin/MSBuild.exe").ToString()).FirstOrDefault()?.ToString();
+//          if (string.IsNullOrEmpty(msBuildPath))
+//             throw new Exception("Failed to resolve MSBuild with VS extension sdk");
 
-         Information("Found MSBuild at '{0}'", msBuildPath);
-      }
+//          Information("Found MSBuild at '{0}'", msBuildPath);
+//       }
 
-      var msBuildSettings = new MSBuildSettings {
-         ToolPath = msBuildPath,
-         Configuration = configuration,
-         Verbosity = Verbosity.Normal,
-      };
+//       var msBuildSettings = new MSBuildSettings {
+//          ToolPath = msBuildPath,
+//          Configuration = configuration,
+//          Verbosity = Verbosity.Normal,
+//       };
 
-      MSBuild(sdkSolutionPath, msBuildSettings);
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+//       MSBuild(sdkSolutionPath, msBuildSettings);
+//    }
+//    finally
+//    {
+//       block?.Dispose();
+//    }
+// });
 
-Task("BuildAll")
-   .IsDependentOn("BuildMainProject")
-   .IsDependentOn("BuildSdk");
+// Task("BuildAll")
+//    .IsDependentOn("BuildMainProject")
+//    .IsDependentOn("BuildSdk");
 
-Task("Test")
-   .IsDependentOn("BuildAll")
-   .Does(() =>
-{
-   if (skipTests)
-   {
-      Information("Test were skipped intentionally");
-      return;
-   }
+// Task("Test")
+//    .IsDependentOn("BuildAll")
+//    .Does(() =>
+// {
+//    if (skipTests)
+//    {
+//       Information("Test were skipped intentionally");
+//       return;
+//    }
 
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Test") : null;
+//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Test") : null;
 
-   try
-   {
-      var testProjects = GetFiles(sourcesDirPath.Combine("src/csharp/tests/**/*.csproj").ToString());
-      foreach(var testProj in testProjects)
-      {
-         DotNetTest(testProj.ToString(), new DotNetTestSettings {
-            Configuration = configuration,
-            Verbosity = details,
-         });
-      }
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+//    try
+//    {
+//       var testProjects = GetFiles(sourcesDirPath.Combine("src/csharp/tests/**/*.csproj").ToString());
+//       foreach(var testProj in testProjects)
+//       {
+//          DotNetTest(testProj.ToString(), new DotNetTestSettings {
+//             Configuration = configuration,
+//             Verbosity = details,
+//          });
+//       }
+//    }
+//    finally
+//    {
+//       block?.Dispose();
+//    }
+// });
 
-Task("PublishTerminal")
-   .IsDependentOn("Test")
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishTerminal") : null;
+// Task("PublishTerminal")
+//    .IsDependentOn("Test")
+//    .Does(() =>
+// {
+//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishTerminal") : null;
 
-   try
-   {
-      // we need to change post-build tasks to work with publish
-      DotNetBuild(terminalProjectPath.FullPath, new DotNetBuildSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoRestore = true,
-         OutputDirectory = terminalBinPath,
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+//    try
+//    {
+//       // we need to change post-build tasks to work with publish
+//       DotNetBuild(terminalProjectPath.FullPath, new DotNetBuildSettings {
+//          Configuration = configuration,
+//          Verbosity = details,
+//          NoRestore = true,
+//          OutputDirectory = terminalBinPath,
+//       });
+//    }
+//    finally
+//    {
+//       block?.Dispose();
+//    }
+// });
 
-Task("PublishConfigurator")
-   .IsDependentOn("Test")
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishConfigurator") : null;
+// Task("PublishConfigurator")
+//    .IsDependentOn("Test")
+//    .Does(() =>
+// {
+//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishConfigurator") : null;
 
-   try
-   {
-      DotNetPublish(configuratorProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = configuratorBinPath,
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+//    try
+//    {
+//       DotNetPublish(configuratorProjectPath.FullPath, new DotNetPublishSettings {
+//          Configuration = configuration,
+//          Verbosity = details,
+//          NoBuild = true,
+//          OutputDirectory = configuratorBinPath,
+//       });
+//    }
+//    finally
+//    {
+//       block?.Dispose();
+//    }
+// });
 
-Task("PublishServer")
-   .IsDependentOn("Test")
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishServer") : null;
+// Task("PublishServer")
+//    .IsDependentOn("Test")
+//    .Does(() =>
+// {
+//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishServer") : null;
 
-   try
-   {
-      DotNetPublish(serverProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         OutputDirectory = serverBinPath,
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+//    try
+//    {
+//       DotNetPublish(serverProjectPath.FullPath, new DotNetPublishSettings {
+//          Configuration = configuration,
+//          Verbosity = details,
+//          OutputDirectory = serverBinPath,
+//       });
+//    }
+//    finally
+//    {
+//       block?.Dispose();
+//    }
+// });
 
-Task("PublishGithubProjects")
-   .IsDependentOn("Test")
-   .IsDependentOn("PublishTerminal")
-   .IsDependentOn("PublishConfigurator")
-   .IsDependentOn("PublishServer")
-   .WithCriteria(isGithubBuild);
+// Task("PublishGithubProjects")
+//    .IsDependentOn("Test")
+//    .IsDependentOn("PublishTerminal")
+//    .IsDependentOn("PublishConfigurator")
+//    .IsDependentOn("PublishServer")
+//    .WithCriteria(isGithubBuild);
 
 // Task("PublishTeamCityProjects")
 //    .IsDependentOn("Test")
