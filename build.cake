@@ -4,7 +4,7 @@
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-var target = ConsoleOrBuildSystemArgument("Target", "PublishGithubProjects");
+var target = ConsoleOrBuildSystemArgument("Target", "BuildMainProject");
 var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
 var version = ConsoleOrBuildSystemArgument("Version", "1.19");
 var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
