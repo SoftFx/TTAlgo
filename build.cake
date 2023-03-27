@@ -4,7 +4,7 @@
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-var target = ConsoleOrBuildSystemArgument("Target", "PublishGithubProjects");
+var target = ConsoleOrBuildSystemArgument("Target", "ZipGithubArtifacts");
 var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
 var version = ConsoleOrBuildSystemArgument("Version", "1.19");
 var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
@@ -72,10 +72,6 @@ Setup(ctx =>
       }
    }
 });
-
-// Teardown(ctx =>
-// {
-// });
 
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS
@@ -494,6 +490,23 @@ Task("PublishGithubProjects")
 //       block?.Dispose();
 //    }
 // });
+
+Task("ZipGithubArtifacts")
+   .IsDependentOn("PublishGithubProjects")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("ZipArtifacts") : null;
+
+   try
+   {
+      Zip(terminalBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.zip"));
+      Zip(serverBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
 // Task("CreateInstaller")
 //    .IsDependentOn("PrepareArtifacts")
