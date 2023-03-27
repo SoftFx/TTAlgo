@@ -4,7 +4,7 @@
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-var target = ConsoleOrBuildSystemArgument("Target", "BuildMainProject");
+var target = ConsoleOrBuildSystemArgument("Target", "BuildAll");
 var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
 var version = ConsoleOrBuildSystemArgument("Version", "1.19");
 var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
@@ -124,46 +124,46 @@ Task("BuildMainProject")
    }
 });
 
-// Task("BuildSdk")
-//    .IsDependentOn("Clean")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("BuildSdk") : null;
+Task("BuildSdk")
+   .IsDependentOn("Clean")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("BuildSdk") : null;
 
-//    try
-//    {
-//       DotNetRestore(sdkSolutionPath.ToString());
+   try
+   {
+      DotNetRestore(sdkSolutionPath.ToString());
 
-//       var msBuildPath = DirectoryPath.FromString(msBuildDirPath).CombineWithFilePath("MSBuild.exe").ToString();
-//       if (!System.IO.File.Exists(msBuildPath))
-//       {
-//          Information("Looking for MSBuild with VS extension SDK. File '{0}' doesn't exists", msBuildPath);
+      var msBuildPath = DirectoryPath.FromString(msBuildDirPath).CombineWithFilePath("MSBuild.exe").ToString();
+      if (!System.IO.File.Exists(msBuildPath))
+      {
+         Information("Looking for MSBuild with VS extension SDK. File '{0}' doesn't exists", msBuildPath);
 
-//          var vsInstallPath = VSWhereLatest(new VSWhereLatestSettings{ Requires = "Microsoft.VisualStudio.Workload.VisualStudioExtension" });
-//          msBuildPath = GetFiles(vsInstallPath.CombineWithFilePath("MSBuild/**/Bin/MSBuild.exe").ToString()).FirstOrDefault()?.ToString();
-//          if (string.IsNullOrEmpty(msBuildPath))
-//             throw new Exception("Failed to resolve MSBuild with VS extension sdk");
+         var vsInstallPath = VSWhereLatest(new VSWhereLatestSettings{ Requires = "Microsoft.VisualStudio.Workload.VisualStudioExtension" });
+         msBuildPath = GetFiles(vsInstallPath.CombineWithFilePath("MSBuild/**/Bin/MSBuild.exe").ToString()).FirstOrDefault()?.ToString();
+         if (string.IsNullOrEmpty(msBuildPath))
+            throw new Exception("Failed to resolve MSBuild with VS extension sdk");
 
-//          Information("Found MSBuild at '{0}'", msBuildPath);
-//       }
+         Information("Found MSBuild at '{0}'", msBuildPath);
+      }
 
-//       var msBuildSettings = new MSBuildSettings {
-//          ToolPath = msBuildPath,
-//          Configuration = configuration,
-//          Verbosity = Verbosity.Normal,
-//       };
+      var msBuildSettings = new MSBuildSettings {
+         ToolPath = msBuildPath,
+         Configuration = configuration,
+         Verbosity = Verbosity.Normal,
+      };
 
-//       MSBuild(sdkSolutionPath, msBuildSettings);
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+      MSBuild(sdkSolutionPath, msBuildSettings);
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-// Task("BuildAll")
-//    .IsDependentOn("BuildMainProject")
-//    .IsDependentOn("BuildSdk");
+Task("BuildAll")
+   .IsDependentOn("BuildMainProject")
+   .IsDependentOn("BuildSdk");
 
 // Task("Test")
 //    .IsDependentOn("BuildAll")
