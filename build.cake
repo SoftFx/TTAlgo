@@ -4,7 +4,7 @@
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-var target = ConsoleOrBuildSystemArgument("Target", "ZipGithubArtifacts");
+var target = ConsoleOrBuildSystemArgument("Target", "CreateAllArtifacts");
 var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
 var version = ConsoleOrBuildSystemArgument("Version", "1.19");
 var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
@@ -253,246 +253,222 @@ Task("PublishServer")
    }
 });
 
-Task("PublishGithubProjects")
+Task("PublishMainProjects")
    .IsDependentOn("Test")
    .IsDependentOn("PublishTerminal")
    .IsDependentOn("PublishConfigurator")
    .IsDependentOn("PublishServer")
-   .WithCriteria(isGithubBuild);
 
-// Task("PublishTeamCityProjects")
-//    .IsDependentOn("Test")
-//    .IsDependentOn("PublishTerminal")
-//    .IsDependentOn("PublishConfigurator")
-//    .IsDependentOn("PublishServer")
-//    .WithCriteria(!isGithubBuild);
+Task("PublishPublicApi")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPublicApi") : null;
 
-// Task("PublishPublicApi")
-//    .IsDependentOn("PublishTeamCityProjects")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPublicApi") : null;
+   try
+   {
+      DotNetPublish(publicApiProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = publicApiBinPath.Combine("net472"),
+         Framework = "net472"
+      });
 
-//    try
-//    {
-//       DotNetPublish(publicApiProjectPath.FullPath, new DotNetPublishSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          NoBuild = true,
-//          OutputDirectory = publicApiBinPath.Combine("net472"),
-//          Framework = "net472"
-//       });
+      DeleteFiles(publicApiBinPath.Combine("net472").CombineWithFilePath("libgrpc_csharp_ext*").ToString());
 
-//       DeleteFiles(publicApiBinPath.Combine("net472").CombineWithFilePath("libgrpc_csharp_ext*").ToString());
+      DotNetPublish(publicApiProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = publicApiBinPath.Combine("net6.0"),
+         Framework = "net6.0"
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-//       DotNetPublish(publicApiProjectPath.FullPath, new DotNetPublishSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          NoBuild = true,
-//          OutputDirectory = publicApiBinPath.Combine("net6.0"),
-//          Framework = "net6.0"
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+Task("PublishSymbolStorage")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishSymbolStorage") : null;
 
-// Task("PublishSymbolStorage")
-//    .IsDependentOn("PublishTeamCityProjects")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishSymbolStorage") : null;
+   try
+   {
+      DotNetPublish(symbolStorageProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = symbolStorageBinPath,
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-//    try
-//    {
-//       DotNetPublish(symbolStorageProjectPath.FullPath, new DotNetPublishSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          NoBuild = true,
-//          OutputDirectory = symbolStorageBinPath,
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+Task("PublishBacktesterApi")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterApi") : null;
 
-// Task("PublishBacktesterApi")
-//    .IsDependentOn("PublishTeamCityProjects")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterApi") : null;
+   try
+   {
+      DotNetPublish(backtesterApiProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = backtesterApiBinPath
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-//    try
-//    {
-//       DotNetPublish(backtesterApiProjectPath.FullPath, new DotNetPublishSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          NoBuild = true,
-//          OutputDirectory = backtesterApiBinPath
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+Task("PublishBacktesterHost")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterHost") : null;
 
-// Task("PublishBacktesterHost")
-//    .IsDependentOn("PublishTeamCityProjects")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterHost") : null;
+   try
+   {
+      DotNetPublish(backtesterHostProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = backtesterHostBinPath
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-//    try
-//    {
-//       DotNetPublish(backtesterHostProjectPath.FullPath, new DotNetPublishSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          NoBuild = true,
-//          OutputDirectory = backtesterHostBinPath
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+Task("PublishRuntimeHost")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishRuntimeHost") : null;
 
-// Task("PublishRuntimeHost")
-//    .IsDependentOn("PublishTeamCityProjects")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishRuntimeHost") : null;
+   try
+   {
+      DotNetPublish(runtimeHostProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = runtimeHostBinPath,
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-//    try
-//    {
-//       DotNetPublish(runtimeHostProjectPath.FullPath, new DotNetPublishSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          NoBuild = true,
-//          OutputDirectory = runtimeHostBinPath,
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+Task("PublishPkgLoader")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPkgLoader") : null;
 
-// Task("PublishPkgLoader")
-//    .IsDependentOn("PublishTeamCityProjects")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPkgLoader") : null;
+   try
+   {
+      DotNetPublish(pkgLoaderProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = pkgLoaderBinPath,
+         Framework = "net6.0",
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-//    try
-//    {
-//       DotNetPublish(pkgLoaderProjectPath.FullPath, new DotNetPublishSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          NoBuild = true,
-//          OutputDirectory = pkgLoaderBinPath,
-//          Framework = "net6.0",
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+Task("PublishIndicatorHost")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishIndicatorHost") : null;
 
-// Task("PublishIndicatorHost")
-//    .IsDependentOn("PublishTeamCityProjects")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishIndicatorHost") : null;
+   try
+   {
+      DotNetPublish(indicatorHostProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = indicatorHostBinPath,
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-//    try
-//    {
-//       DotNetPublish(indicatorHostProjectPath.FullPath, new DotNetPublishSettings {
-//          Configuration = configuration,
-//          Verbosity = details,
-//          NoBuild = true,
-//          OutputDirectory = indicatorHostBinPath,
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+Task("PublishAllProjects")
+   .IsDependentOn("PublishTerminal")
+   .IsDependentOn("PublishConfigurator")
+   .IsDependentOn("PublishServer")
+   .IsDependentOn("PublishPublicApi")
+   .IsDependentOn("PublishSymbolStorage")
+   .IsDependentOn("PublishBacktesterApi")
+   .IsDependentOn("PublishBacktesterHost")
+   .IsDependentOn("PublishRuntimeHost")
+   .IsDependentOn("PublishPkgLoader")
+   .IsDependentOn("PublishIndicatorHost");
 
-// Task("PublishAllProjects")
-//    .IsDependentOn("PublishTerminal")
-//    .IsDependentOn("PublishConfigurator")
-//    .IsDependentOn("PublishServer")
-//    .IsDependentOn("PublishPublicApi")
-//    .IsDependentOn("PublishSymbolStorage")
-//    .IsDependentOn("PublishBacktesterApi")
-//    .IsDependentOn("PublishBacktesterHost")
-//    .IsDependentOn("PublishRuntimeHost")
-//    .IsDependentOn("PublishPkgLoader")
-//    .IsDependentOn("PublishIndicatorHost");
+Task("PrepareArtifacts")
+   .IsDependentOn("PublishAllProjects")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PrepareArtifacts") : null;
 
-// Task("PrepareArtifacts")
-//    .IsDependentOn("PublishAllProjects")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PrepareArtifacts") : null;
+   try
+   {
+      var redistPath = terminalBinPath.Combine("Redist");
+      var repoPath = terminalBinPath.Combine("AlgoRepository");
 
-//    try
-//    {
-//       var redistPath = terminalBinPath.Combine("Redist");
-//       var repoPath = terminalBinPath.Combine("AlgoRepository");
+      CreateDirectory(redistPath);
+      CreateDirectory(repoPath);
+      CopyFiles(vsExtensionPath.FullPath, redistPath);
+      CopyFiles(vsExtensionPath.FullPath, artifactsPath);
+      CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").FullPath, repoPath);
 
-//       CreateDirectory(redistPath);
-//       CreateDirectory(repoPath);
-//       CopyFiles(vsExtensionPath.FullPath, redistPath);
-//       CopyFiles(vsExtensionPath.FullPath, artifactsPath);
-//       CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").FullPath, repoPath);
+      var configuratorInstallPath = serverBinPath.Combine("Configurator");
+      CopyDirectory(configuratorBinPath, configuratorInstallPath);
 
-//       var configuratorInstallPath = serverBinPath.Combine("Configurator");
-//       CopyDirectory(configuratorBinPath, configuratorInstallPath);
+      CopyDirectory(pkgLoaderBinPath.FullPath, indicatorHostBinPath);
+      var indicatorHostRuntimePath = indicatorHostBinPath.Combine("bin").Combine("runtime");
+      CopyDirectory(runtimeHostBinPath, indicatorHostRuntimePath);
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-//       CopyDirectory(pkgLoaderBinPath.FullPath, indicatorHostBinPath);
-//       var indicatorHostRuntimePath = indicatorHostBinPath.Combine("bin").Combine("runtime");
-//       CopyDirectory(runtimeHostBinPath, indicatorHostRuntimePath);
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
-
-// Task("ZipArtifacts")
-//    .IsDependentOn("PrepareArtifacts")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("ZipArtifacts") : null;
-
-//    try
-//    {
-//       Zip(terminalBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.zip"));
-//       Zip(serverBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
-//       Zip(configuratorBinPath, artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
-//       Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.zip"));
-//       Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
-//       Zip(backtesterApiBinPath, artifactsPath.CombineWithFilePath($"BacktesterApi {buildId}.zip"));
-//       Zip(backtesterHostBinPath, artifactsPath.CombineWithFilePath($"BacktesterV1Host {buildId}.x64.zip"));
-//       Zip(indicatorHostBinPath, artifactsPath.CombineWithFilePath($"IndicatorHost {buildId}.zip"));
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
-
-Task("ZipGithubArtifacts")
-   .IsDependentOn("PublishGithubProjects")
+Task("ZipArtifacts")
+   .IsDependentOn("PrepareArtifacts")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("ZipArtifacts") : null;
@@ -501,6 +477,16 @@ Task("ZipGithubArtifacts")
    {
       Zip(terminalBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.zip"));
       Zip(serverBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
+
+      if (!isGithubBuild)
+      {
+         Zip(configuratorBinPath, artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
+         Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.zip"));
+         Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
+         Zip(backtesterApiBinPath, artifactsPath.CombineWithFilePath($"BacktesterApi {buildId}.zip"));
+         Zip(backtesterHostBinPath, artifactsPath.CombineWithFilePath($"BacktesterV1Host {buildId}.x64.zip"));
+         Zip(indicatorHostBinPath, artifactsPath.CombineWithFilePath($"IndicatorHost {buildId}.zip"));
+      }
    }
    finally
    {
@@ -508,39 +494,39 @@ Task("ZipGithubArtifacts")
    }
 });
 
-// Task("CreateInstaller")
-//    .IsDependentOn("PrepareArtifacts")
-//    .Does(() =>
-// {
-//    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("CreateInstaller") : null;
+Task("CreateInstaller")
+   .IsDependentOn("PrepareArtifacts")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("CreateInstaller") : null;
 
-//    try
-//    {
-//       if (!System.IO.File.Exists(nsisPath.MakeAbsolute(Context.Environment).ToString()))
-//       {
-//          if (BuildSystem.IsLocalBuild)
-//             Error("Failed to create installer: NSIS not found!");
-//          else
-//             throw new Exception("Failed to create installer: NSIS not found!");
-//       }
+   try
+   {
+      if (!System.IO.File.Exists(nsisPath.MakeAbsolute(Context.Environment).ToString()))
+      {
+         if (BuildSystem.IsLocalBuild)
+            Error("Failed to create installer: NSIS not found!");
+         else
+            throw new Exception("Failed to create installer: NSIS not found!");
+      }
 
-//       CreateUninstallScript(terminalBinPath, setupDirPath.CombineWithFilePath("Terminal.Uninstall.nsi"));
-//       CreateUninstallScript(serverBinPath, setupDirPath.CombineWithFilePath("AlgoServer.Uninstall.nsi"));
-//       CreateUninstallScript(configuratorBinPath, setupDirPath.CombineWithFilePath("Configurator.Uninstall.nsi"));
+      CreateUninstallScript(terminalBinPath, setupDirPath.CombineWithFilePath("Terminal.Uninstall.nsi"));
+      CreateUninstallScript(serverBinPath, setupDirPath.CombineWithFilePath("AlgoServer.Uninstall.nsi"));
+      CreateUninstallScript(configuratorBinPath, setupDirPath.CombineWithFilePath("Configurator.Uninstall.nsi"));
 
-//       StartProcess(nsisPath, new ProcessSettings {
-//          Arguments = $"/DPRODUCT_BUILD={buildId} {setupDirPath.CombineWithFilePath("Algo.Setup.nsi").FullPath}",
-//       });
-//    }
-//    finally
-//    {
-//       block?.Dispose();
-//    }
-// });
+      StartProcess(nsisPath, new ProcessSettings {
+         Arguments = $"/DPRODUCT_BUILD={buildId} {setupDirPath.CombineWithFilePath("Algo.Setup.nsi").FullPath}",
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
 
-// Task("CreateAllArtifacts")
-//    .IsDependentOn("ZipArtifacts")
-//    .IsDependentOn("CreateInstaller");
+Task("CreateAllArtifacts")
+   .IsDependentOn("ZipArtifacts")
+   .IsDependentOn("CreateInstaller");
 
 PrintArguments();
 RunTarget(target);
