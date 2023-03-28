@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Core
 
         public bool Validate(string botId)
         {
-            return botId.Length <= MaxLength && !Regex.IsMatch(botId, Pattern);
+            return !string.IsNullOrEmpty(botId) && botId.Length <= MaxLength && !Regex.IsMatch(botId, Pattern);
         }
     }
 }

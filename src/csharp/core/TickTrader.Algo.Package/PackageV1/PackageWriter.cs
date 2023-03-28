@@ -7,29 +7,35 @@ namespace TickTrader.Algo.Package.V1
 {
     public class PackageWriter
     {
-        public const string MetadataFileName = "metadata.xml";
         public const string DefaultExtension = ".ttalgo";
 
-        private Action<string> trace;
+        private readonly Action<string> _trace;
 
         public string MainFileName { get; set; }
+
         public string Runtime { get; set; }
+
         public string ProjectFile { get; set; }
+
         public string Workspace { get; set; }
+
         public string SrcFolder { get; set; }
+
         public string Ide { get; set; }
+
 
         public PackageWriter()
         {
-            this.trace = t => System.Diagnostics.Debug.WriteLine(t);
+            _trace = t => System.Diagnostics.Debug.WriteLine(t);
         }
 
         public PackageWriter(Action<string> traceWriteAction)
         {
-            this.trace = traceWriteAction;
+            _trace = traceWriteAction;
         }
 
-        public void Save(string targetFolder, string pkgFileName = null)
+
+        public string Save(string targetFolder, string pkgFileName = null)
         {
             if (string.IsNullOrEmpty(targetFolder))
                 throw new ArgumentException("targetFolder is empty.");
@@ -41,16 +47,16 @@ namespace TickTrader.Algo.Package.V1
                 throw new Exception("SrcFolder is not set.");
 
             if (string.IsNullOrEmpty(pkgFileName))
-                pkgFileName = Path.GetFileNameWithoutExtension(MainFileName) + DefaultExtension;
+                pkgFileName = GetPackageNameWithExtension(Path.GetFileNameWithoutExtension(MainFileName));
             else if (!pkgFileName.EndsWith(DefaultExtension))
-                pkgFileName += DefaultExtension;
+                pkgFileName = GetPackageNameWithExtension(pkgFileName);
 
             string pckgPath = Path.Combine(targetFolder, pkgFileName);
 
-            trace("Creating Algo package...");
-            trace("\tPackage name = " + pkgFileName);
-            trace("\tSource folder = " + SrcFolder);
-            trace("\tOutput file  = " + pckgPath);
+            _trace("Creating Algo package...");
+            _trace("\tPackage name = " + pkgFileName);
+            _trace("\tSource folder = " + SrcFolder);
+            _trace("\tOutput file  = " + pckgPath);
 
             var package = new Package();
             var files = Directory.GetFiles(SrcFolder);
@@ -72,14 +78,18 @@ namespace TickTrader.Algo.Package.V1
 
             Save(package, pckgPath);
 
-            trace("Done.");
+            _trace("Done.");
+
+            return pckgPath;
         }
+
+        public static string GetPackageNameWithExtension(string pkgFileName) => $"{pkgFileName}{DefaultExtension}";
 
 
         private void Save(Package pckg, string path)
         {
             int retry = 1;
-            while(true)
+            while (true)
             {
                 FileStream stream = null;
                 try
@@ -92,11 +102,10 @@ namespace TickTrader.Algo.Package.V1
                 }
                 finally
                 {
-                    if (stream != null)
-                        stream.Dispose();
+                    stream?.Dispose();
                 }
 
-                trace("File is locked! Retry " + retry + " ...");
+                _trace($"File is locked! Retry {retry}...");
 
                 if (++retry <= 10)
                     Thread.Sleep(200);
@@ -105,7 +114,7 @@ namespace TickTrader.Algo.Package.V1
             }
         }
 
-        private bool TryOpenWrite(string path, out FileStream stream)
+        private static bool TryOpenWrite(string path, out FileStream stream)
         {
             try
             {

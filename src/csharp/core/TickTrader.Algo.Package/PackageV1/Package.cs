@@ -12,21 +12,23 @@ namespace TickTrader.Algo.Package.V1
         public const string MetadataFileName = "package.metadata.xml";
         public const string DefaultExtension = ".ttalgo";
 
-        private Dictionary<string, byte[]> files;
+        private readonly Dictionary<string, byte[]> _files;
 
         public PackageMetadata Metadata { get; private set; }
 
+
         public Package()
         {
-            this.Metadata = new PackageMetadata();
-            this.files = new Dictionary<string, byte[]>();
+            Metadata = new PackageMetadata();
+            _files = new Dictionary<string, byte[]>();
         }
 
         protected Package(PackageMetadata metadata, Dictionary<string, byte[]> files)
         {
-            this.Metadata = metadata;
-            this.files = files;
+            Metadata = metadata;
+            _files = files;
         }
+
 
         public bool AddFile(string path, byte[] fileBytes)
         {
@@ -41,14 +43,14 @@ namespace TickTrader.Algo.Package.V1
         {
             var normalizedPath = path.ToLowerInvariant();
             byte[] bytes;
-            files.TryGetValue(normalizedPath, out bytes);
+            _files.TryGetValue(normalizedPath, out bytes);
             return bytes;
         }
 
         private void AddFileEntry(string inPackagePath, byte[] bytes)
         {
             var normalizedPath = inPackagePath.ToLowerInvariant();
-            files.Add(normalizedPath, bytes);
+            _files.Add(normalizedPath, bytes);
         }
 
         public void Save(ref FileStream stream)
@@ -59,7 +61,7 @@ namespace TickTrader.Algo.Package.V1
 
                 // write files
 
-                foreach (var file in files)
+                foreach (var file in _files)
                 {
                     var fileName = Path.GetFileName(file.Key);
                     var entry = archive.CreateEntry(fileName, CompressionLevel.Optimal);
@@ -120,18 +122,25 @@ namespace TickTrader.Algo.Package.V1
 
         private static MemoryStream ToXml<T>(T obj)
         {
-            MemoryStream stream = new MemoryStream();
-            DataContractSerializer serializer = new DataContractSerializer(typeof(T));
-            var xmlSettings = new System.Xml.XmlWriterSettings { Indent = true };
+            var stream = new MemoryStream();
+            var serializer = new DataContractSerializer(typeof(T));
+
+            var xmlSettings = new System.Xml.XmlWriterSettings
+            {
+                Indent = true
+            };
+
             using (var xmlWriter = System.Xml.XmlWriter.Create(stream, xmlSettings))
                 serializer.WriteObject(xmlWriter, obj);
+
             stream.Seek(0, SeekOrigin.Begin);
             return stream;
         }
 
         private static T FromXml<T>(MemoryStream stream)
         {
-            DataContractSerializer serializer = new DataContractSerializer(typeof(T));
+            var serializer = new DataContractSerializer(typeof(T));
+
             return (T)serializer.ReadObject(stream);
         }
     }

@@ -5,6 +5,7 @@ using NLog;
 //using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.BacktesterApi;
@@ -155,7 +156,8 @@ namespace TickTrader.BotTerminal
                 }
 
                 var descriptorName = PathHelper.Escape(SetupPage.SelectedPlugin.Value.Descriptor.DisplayName);
-                var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, descriptorName);
+                var backtesterDir = PathHelper.EnsureDirectoryCreated(EnvService.Instance.BacktestResultsFolder); // could be deleted between emulations
+                var pathPrefix = System.IO.Path.Combine(backtesterDir, descriptorName);
                 var configPath = PathHelper.GenerateUniqueFilePath(pathPrefix, ".zip");
                 config.Save(configPath);
 
@@ -244,10 +246,31 @@ namespace TickTrader.BotTerminal
                 await LoadChartData(config, results, TradeHistoryPage.Reports, observer);
             }
 
-            if (execStatus.HasError)
-                observer.StopProgress(execStatus.ToString());
+            var statusBuilder = new StringBuilder();
+            statusBuilder.AppendLine(execStatus.ToString());
+            var hasError = execStatus.HasError;
+            if (loadConfig && SetupPage.SelectedPlugin.Value == null)
+            {
+                statusBuilder.AppendLine($"Missing package '{SetupPage.PluginConfig?.Key?.PackageId}'");
+                hasError = true;
+            }
+            if (results.ReadErrors.Count > 0)
+            {
+                hasError = true;
+                statusBuilder.AppendLine(results.FormatReadErrors());
+                foreach (var error in results.ReadErrors)
+                {
+                    var ex = error.Exception;
+                    if (ex != null)
+                        _logger.Error(ex, "Backtester results read error");
+                }
+            }
+
+            var status = statusBuilder.ToString().TrimEnd();
+            if (hasError)
+                observer.StopProgress(status);
             else
-                observer.SetMessage(execStatus.ToString());
+                observer.SetMessage(status);
         }
 
         private void FireOnStart(BacktesterConfig config)

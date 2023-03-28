@@ -1,0 +1,214 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+import "google/protobuf/wrappers.proto";
+
+import "common.proto";
+import "runtime.package.proto";
+
+
+message Drawable {
+    enum ObjectType {
+        UNKNOWN_OBJECT_TYPE = 0;
+        VERTICAL_LINE = 1;
+        HORIZONTAL_LINE = 2;
+        TREND_LINE = 3;
+        RECTANGLE = 4;
+        TRIANGLE = 5;
+        ELLIPSE = 6;
+        SYMBOL = 7;
+        TEXT = 8;
+        BITMAP = 9;
+
+        LEVELS = 30;
+        CYCLES = 31;
+        LIN_REG_CHANNEL = 32;
+        STD_DEV_CHANNEL = 33;
+        EQUIDISTANT_CHANNEL = 34;
+
+        GANN_LINE = 40;
+        GANN_FAN = 41;
+        GANN_GRID = 42;
+
+        FIBO_FAN = 50;
+        FIBO_ARCS = 51;
+        FIBO_CHANNEL = 52;
+        FIBO_RETRACEMENT = 53;
+        FIBO_TIME_ZONES = 54;
+        FIBO_EXPANSION = 55;
+        ANDREWS_PITCHFORK = 56;
+
+        LABEL_CONTROL = 100;
+        RECTANGLE_CONTROL = 101;
+        EDIT_CONTROL = 102;
+        BUTTON_CONTROL = 103;
+        BITMAP_CONTROL = 104;
+        TEXT_BLOCK_CONTROL = 105;
+    }
+
+    enum SymbolAnchor {
+        UNKNOWN_ANCHOR_TYPE = 0;
+        TOP = 1;
+        BOTTOM = 2;
+    }
+
+    enum ControlZeroPosition {
+        UNKNOWN_CONTROL_ZERO_POSITION = 0;
+        UPPER_LEFT = 1;
+        UPPER_RIGHT = 2;
+        LOWER_LEFT = 3;
+        LOWER_RIGHT = 4;
+    }
+
+    enum PositionMode {
+        UNKNOWN_POSITION_MODE = 0;
+        TOP_LEFT = 1;
+        TOP_CENTER = 2;
+        TOP_RIGHT = 3;
+        CENTER_LEFT = 4;
+        CENTER = 5;
+        CENTER_RIGHT = 6;
+        BOTTOM_LEFT = 7;
+        BOTTOM_CENTER = 8;
+        BOTTOM_RIGHT = 9;
+    }
+
+    enum GannDirection {
+        UNKNOWN_GANN_DIRECTION = 0;
+        UP_TREND = 1;
+        DOWN_TREND = 2;
+    }
+
+    enum LineRayMode {
+        UNKNOWN_LINE_RAY_MODE = 0;
+        RAY_NONE = 1;
+        RAY_LEFT = 2;
+        RAY_RIGHT = 3;
+        RAY_ALL = 4;
+    }
+}
+
+message DrawableObjectInfo {
+    google.protobuf.StringValue name = 1;
+    Drawable.ObjectType type = 2;
+    sfixed64 created_time_raw = 3;
+    Metadata.OutputTarget target_window = 4;
+
+    bool is_background = 10;
+    bool is_hidden = 11;
+    int32 z_index = 12;
+    google.protobuf.StringValue tooltip = 13;
+    uint32 visibility_bitmask = 14;
+
+    DrawableLinePropsInfo line_props = 20;
+    DrawableShapePropsInfo shape_props = 21;
+    DrawableSymbolPropsInfo symbol_props = 22;
+    DrawableTextPropsInfo text_props = 23;
+    DrawableControlPropsInfo control_props = 24;
+    DrawableBitmapPropsInfo bitmap_props = 25;
+    DrawableSpecialPropsInfo special_props = 26;
+
+    DrawableObjectAnchorsList anchors = 40;
+    DrawableObjectLevelsList levels = 41;
+}
+
+message DrawableLinePropsInfo {
+    google.protobuf.UInt32Value color_argb = 1;
+    uint32 thickness = 2;
+    Metadata.LineStyle style = 3;
+}
+
+message DrawableShapePropsInfo {
+    google.protobuf.UInt32Value border_color_argb = 1;
+    uint32 border_thickness = 2;
+    Metadata.LineStyle border_style = 3;
+    google.protobuf.UInt32Value fill_color_argb = 5;
+}
+
+message DrawableSymbolPropsInfo {
+    uint32 code = 1;
+    uint32 size = 2;
+    google.protobuf.UInt32Value color_argb = 3;
+    google.protobuf.StringValue font_family = 4;
+    Drawable.SymbolAnchor anchor = 5;
+}
+
+message DrawableTextPropsInfo {
+    google.protobuf.StringValue content = 1;
+    google.protobuf.UInt32Value color_argb = 2;
+    google.protobuf.StringValue font_family = 3;
+    uint32 font_size = 4;
+}
+
+message DrawableAnchorPropsInfo {
+    sfixed64 time_raw = 1;
+    double price = 2;
+}
+
+message DrawableObjectAnchorsList {
+    repeated DrawableAnchorPropsInfo anchors = 1;
+}
+
+message LineStyleWrapper {
+    Metadata.LineStyle value = 1;
+}
+
+message DrawableLevelPropsInfo {
+    double value = 1;
+    google.protobuf.StringValue text = 2;
+    google.protobuf.UInt32Value color_argb = 3;
+    google.protobuf.UInt32Value line_thickness = 4;
+    LineStyleWrapper line_style_wrapper = 5;
+    google.protobuf.StringValue font_family = 6;
+    google.protobuf.UInt32Value font_size = 7;
+}
+
+message DrawableObjectLevelsList {
+    repeated DrawableLevelPropsInfo levels = 1;
+
+    google.protobuf.UInt32Value default_color_argb = 2;
+    uint32 default_line_thickness = 3;
+    Metadata.LineStyle default_line_style = 4;
+    google.protobuf.StringValue default_font_family = 5;
+    uint32 default_font_size = 6;
+}
+
+message DrawableControlPropsInfo {
+    int32 x = 1;
+    int32 y = 2;
+    google.protobuf.UInt32Value width = 3;
+    google.protobuf.UInt32Value height = 4;
+    Drawable.ControlZeroPosition zero_position = 5;
+    Drawable.PositionMode content_alignment = 6;
+    bool switch_state = 7;
+    bool read_only = 8;
+}
+
+message DrawableBitmapPropsInfo {
+    int32 offset_x = 1;
+    int32 offset_y = 2;
+    uint32 width = 3;
+    uint32 height = 4;
+    google.protobuf.StringValue file_path = 5;
+}
+
+message DrawableSpecialPropsInfo {
+    google.protobuf.DoubleValue angle = 1;
+    google.protobuf.DoubleValue scale = 2;
+    google.protobuf.DoubleValue deviation = 3;
+
+    Drawable.LineRayMode ray_mode = 10;
+    bool fill = 11;
+    bool fibo_arcs_full_ellipse = 12;
+    Drawable.GannDirection gann_direction = 13;
+    Drawable.PositionMode anchor_position = 14;
+}
+
+message DrawableCollectionUpdate {
+    CollectionUpdate.Action action = 1;
+    google.protobuf.StringValue obj_name = 2;
+    DrawableObjectInfo obj_info = 3;
+}

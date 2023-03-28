@@ -4,6 +4,17 @@
 
     <!-- DataGrid Style -->
 
+    <Style x:Key="DataGridCell_Style" TargetType="DataGridCell">
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{DynamicResource DataGrid_SelectionBackground}" />
+                <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Shell_SecondaryBackground}" />
+                <Setter Property="BorderThickness" Value="1"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="DataGrid_Style" TargetType="DataGrid">
         <Setter Property="AutoGenerateColumns" Value="False"/>
         <Setter Property="IsReadOnly" Value="True"/>
@@ -16,6 +27,7 @@
         <Setter Property="VerticalGridLinesBrush" Value="LightGray"/>
         <Setter Property="FontSize" Value="11"/>
         <Setter Property="SelectionUnit" Value="FullRow"/>
+        <Setter Property="CellStyle" Value="{StaticResource DataGridCell_Style}" />
         <!--<Style.Resources>
             <Style TargetType="DataGridColumnHeader">
                 <Setter Property="Padding" Value="4"/>

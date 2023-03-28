@@ -13,11 +13,13 @@ namespace TickTrader.Algo.CoreV1
         private Colors _color = Colors.Auto;
         private string _text;
         private MarkerIcons _icon;
+        private ushort _iconCode;
         private Action<Marker> _changed = EmptyHandler;
+
 
         public Colors Color
         {
-            get { return _color; }
+            get => _color;
             set
             {
                 _color = value;
@@ -27,7 +29,7 @@ namespace TickTrader.Algo.CoreV1
 
         public string DisplayText
         {
-            get { return _text; }
+            get => _text;
             set
             {
                 _text = Normalize(value);
@@ -37,7 +39,7 @@ namespace TickTrader.Algo.CoreV1
 
         public MarkerIcons Icon
         {
-            get { return _icon; }
+            get => _icon;
             set
             {
                 _icon = value;
@@ -47,7 +49,7 @@ namespace TickTrader.Algo.CoreV1
 
         public double Y
         {
-            get { return _y; }
+            get => _y;
             set
             {
                 _y = value;
@@ -55,9 +57,19 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
+        public ushort IconCode
+        {
+            get => _iconCode;
+            set
+            {
+                _iconCode = value;
+                Changed(this);
+            }
+        }
+
         public Action<Marker> Changed
         {
-            get { return _changed; }
+            get => _changed;
             set
             {
                 if (_changed == null)
@@ -65,6 +77,7 @@ namespace TickTrader.Algo.CoreV1
                 _changed = value;
             }
         }
+
 
         public void Clear()
         {
@@ -91,8 +104,9 @@ namespace TickTrader.Algo.CoreV1
             return new MarkerInfo
             {
                 DisplayText = DisplayText,
-                ColorArgb = Color.ToArgb(ApiColorConverter.GreenColor),
+                ColorArgb = Color.ToArgb(),
                 Icon = Icon.ToDomainEnum(),
+                IconCode = IconCode,
             };
         }
 
@@ -103,9 +117,11 @@ namespace TickTrader.Algo.CoreV1
                 _color = info.ColorArgb.FromArgb(),
                 _text = info.DisplayText,
                 _icon = info.Icon.ToApiEnum(),
+                _iconCode = (ushort)info.IconCode,
             };
         }
 
+        // seems redundant. Needs additional verification
         private string Normalize(string input)
         {
             if (input == null)
@@ -119,6 +135,7 @@ namespace TickTrader.Algo.CoreV1
             _color = Colors.Auto;
             _text = string.Empty;
             _icon = MarkerIcons.Circle;
+            _iconCode = 0;
         }
     }
 }

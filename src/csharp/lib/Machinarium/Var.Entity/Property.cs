@@ -21,9 +21,26 @@ namespace Machinarium.Var
         public new Property<T> AddPostTrigger(Action<T> trigger) => (Property<T>)base.AddPostTrigger(trigger);
     }
 
-    public class IntProperty : PropertyBase<IntVar, int> { }
+    public class IntProperty : PropertyBase<IntVar, int>
+    {
+        public new IntProperty AddPreTrigger(Action<int> trigger) => (IntProperty)base.AddPreTrigger(trigger);
 
-    public class BoolProperty : PropertyBase<BoolVar, bool> { }
+        public new IntProperty AddPostTrigger(Action<int> trigger) => (IntProperty)base.AddPostTrigger(trigger);
+    }
+
+    public class BoolProperty : PropertyBase<BoolVar, bool>
+    {
+        public new BoolProperty AddPreTrigger(Action<bool> trigger) => (BoolProperty)base.AddPreTrigger(trigger);
+
+        public new BoolProperty AddPostTrigger(Action<bool> trigger) => (BoolProperty)base.AddPostTrigger(trigger);
+    }
+
+    public class StrProperty : PropertyBase<Var<string>, string>
+    {
+        public new StrProperty AddPreTrigger(Action<string> trigger) => (StrProperty)base.AddPreTrigger(trigger);
+
+        public new StrProperty AddPostTrigger(Action<string> trigger) => (StrProperty)base.AddPostTrigger(trigger);
+    }
 
     public class DoubleProperty : PropertyBase<DoubleVar, double> { }
 
@@ -60,6 +77,7 @@ namespace Machinarium.Var
         public T Value
         {
             get => _var.Value;
+
             set
             {
                 _preChangeTriggers?.ForEach(u => u?.Invoke(_var.Value));
@@ -69,6 +87,8 @@ namespace Machinarium.Var
                 _postChangeTriggers?.ForEach(u => u?.Invoke(value));
             }
         }
+
+        internal T DefaultValue { get; set; }
 
         protected PropertyBase<TVar, T> AddPreTrigger(Action<T> trigger)
         {
@@ -95,6 +115,8 @@ namespace Machinarium.Var
         public string DisplayValue => ConvertValueTo(Value);
 
         public bool HasValue => !EqualityComparer<T>.Default.Equals(Value, default);
+
+        public void Reset() => Value = DefaultValue;
 
         Var<T> IProperty<T>.Var => Var;
 

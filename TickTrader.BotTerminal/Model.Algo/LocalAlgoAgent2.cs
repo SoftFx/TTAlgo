@@ -173,7 +173,7 @@ namespace TickTrader.BotTerminal
             await _server.Start();
 
             _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
-            _mappings = await _server.GetMappingsInfo(new MappingsInfoRequest());
+            _mappings = await IndicatorHost.PkgStorage.GetMappings();
             _setupContext = new SetupContextInfo(Feed.Types.Timeframe.M1,
                 new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 

@@ -103,9 +103,9 @@
                   cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenNewChart()]" SelectedItem="{Binding SelectedSymbol.Value}">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding SymbolName}" Header="Symbol" Width="Auto" ElementStyle="{StaticResource DataGridCell.SymbolName.Classic}" CanUserResize="False" />
-                <DataGridTextColumn Header="Bid" Width="Auto" Binding="{Binding Bid.Rate.DisplayValue}" CanUserSort="False" SortMemberPath="{Binding Bid.Rate.Value}" ElementStyle="{StaticResource BidTextStyle.Classic}" CanUserResize="False"/>
-                <DataGridTextColumn Header="Ask" Width="Auto" Binding="{Binding Ask.Rate.DisplayValue}" CanUserSort="False" SortMemberPath="{Binding Ask.Rate.Value}" ElementStyle="{StaticResource AskTextStyle.Classic}" CanUserResize="False"/>
-                <DataGridTextColumn Header="Time" Width="Auto" Binding="{Binding QuoteTime.DisplayValue}" CanUserSort="False" SortMemberPath="{Binding QuoteTime.Value}" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False"/>
+                <DataGridTextColumn Header="Bid" Width="Auto" Binding="{Binding Bid.Rate.DisplayValue}" CanUserSort="False" ElementStyle="{StaticResource BidTextStyle.Classic}" CanUserResize="False"/>
+                <DataGridTextColumn Header="Ask" Width="Auto" Binding="{Binding Ask.Rate.DisplayValue}" CanUserSort="False" ElementStyle="{StaticResource AskTextStyle.Classic}" CanUserResize="False"/>
+                <DataGridTextColumn Header="Time" Width="Auto" Binding="{Binding QuoteTime.DisplayValue}" SortMemberPath="QuoteTime.Value" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False" />
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
                 <ContextMenu>

@@ -8,7 +8,7 @@ namespace TickTrader.BotTerminal
     {
         public static void InstallVsPackage()
         {
-            var vsixPath = Path.Combine(EnvService.Instance.RedistFolder, "TickTrader.Algo.VS.Package.vsix");
+            var vsixPath = Path.Combine(EnvService.Instance.BinFolder, "Redist", "TickTrader.Algo.VS.Package.vsix");
             if (File.Exists(vsixPath))
             {
                 Process.Start(new ProcessStartInfo { FileName = vsixPath, UseShellExecute = true });

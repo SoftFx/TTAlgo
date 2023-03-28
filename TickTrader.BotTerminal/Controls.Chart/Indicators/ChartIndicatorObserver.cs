@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         private readonly object _syncObj = new();
         private readonly Dictionary<(string, OutputTarget), int> _subWindowIdLookup = new();
         private readonly VarDictionary<int, OutputSubWindowViewModel> _subWindows = new();
-        private readonly ChartHostProxy _chartHost;
+        private readonly ChartHostObserver _chartHost;
         private readonly IVarList<OutputWrapper> _outputWrappers;
         private readonly int _digits;
 
@@ -28,7 +28,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public IObservableList<OutputSubWindowViewModel> SubWindows { get; }
 
 
-        public DynamicIndicatorObserver(ChartHostProxy chartHost, int digits)
+        public DynamicIndicatorObserver(ChartHostObserver chartHost, int digits)
         {
             _chartHost = chartHost;
             _digits = digits;

@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Server
         private readonly ActorEventSource<PluginLogRecord> _logEventSrc = new ActorEventSource<PluginLogRecord>();
         private readonly ActorEventSource<PluginStatusUpdate> _statusEventSrc = new ActorEventSource<PluginStatusUpdate>();
         private readonly ActorEventSource<OutputSeriesUpdate> _outputEventSrc = new ActorEventSource<OutputSeriesUpdate>();
+        private readonly ActorEventSource<DrawableCollectionUpdate> _drawableEventSrc = new ActorEventSource<DrawableCollectionUpdate>();
         private readonly ActorEventSource<object> _proxyDownlinkSrc = new ActorEventSource<object>();
 
         private PluginSavedState _savedState;
@@ -48,12 +49,14 @@ namespace TickTrader.Algo.Server
             Receive<AttachLogsChannelCmd>(AttachLogsChannel);
             Receive<AttachStatusChannelCmd>(AttachStatusChannel);
             Receive<AttachOutputsChannelCmd>(cmd => _outputEventSrc.Subscribe(cmd.OutputSink));
+            Receive<AttachDrawableChannelCmd>(cmd => _drawableEventSrc.Subscribe(cmd.DrawableSink));
             Receive<PluginLogsRequest, PluginLogsResponse>(GetLogs);
             Receive<PluginStatusRequest, PluginStatusResponse>(GetStatus);
 
             Receive<PluginLogRecord>(OnLogUpdated);
             Receive<PluginStatusUpdate>(OnStatusUpdated);
             Receive<OutputSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
+            Receive<DrawableCollectionUpdate>(upd => _drawableEventSrc.DispatchEvent(upd));
             Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
             Receive<PluginExitedMsg>(OnExited);
             Receive<RuntimeControlModel.RuntimeCrashedMsg>(OnRuntimeCrashed);
@@ -127,16 +130,23 @@ namespace TickTrader.Algo.Server
 
         private async Task UpdateConfig(UpdateConfigCmd cmd)
         {
-            if (_state.IsRunning())
+            if (_state.IsStarted())
                 throw Errors.PluginIsRunning(_id);
 
             _savedState.PackConfig(cmd.NewConfig);
             await _host.UpdateSavedState(_savedState);
+            var pkgIdChanged = _config.Key.PackageId != cmd.NewConfig.Key.PackageId;
             _config = cmd.NewConfig;
 
-            var infoCopy = GetInfoCopy();
-            _host.OnPluginUpdated(PluginModelUpdate.Updated(_id, infoCopy));
-            //_proxyDownlinkSrc.DispatchEvent(infoCopy);
+            if (pkgIdChanged)
+            {
+                _logger.Debug("Package changed on user request");
+                await InitPkgRuntimeId();
+            }
+            else
+            {
+                OnModelUpdated();
+            }
         }
 
         private void AttachLogsChannel(AttachLogsChannelCmd cmd)
@@ -280,7 +290,7 @@ namespace TickTrader.Algo.Server
                     _newestRuntimeId = await _host.GetPkgRuntimeId(_config.Key.PackageId);
                 }
 
-                var _ = UpdateRuntime(true);
+                _ = UpdateRuntime(true);
             }
             catch (Exception ex)
             {
@@ -299,15 +309,19 @@ namespace TickTrader.Algo.Server
                 {
                     _logger.Debug("Updating runtime...");
 
+                    bool updated = false;
                     try
                     {
-                        await UpdateRuntimeInternal();
+                        updated = await UpdateRuntimeInternal();
                     }
                     catch (Exception ex)
                     {
                         _logger.Error(ex, "Failed to update package runtime");
                         ChangeState(PluginModelInfo.Types.PluginState.Broken, "Runtime update failure");
                     }
+
+                    if (!updated && isInit)
+                        OnModelUpdated();
                 }
             }
         }
@@ -353,6 +367,16 @@ namespace TickTrader.Algo.Server
                 return false;
             }
 
+            var attached = await RuntimeControlModel.AttachPlugin(runtime, _id, Self);
+            if (!attached)
+            {
+                BreakBot($"Can't attach to new runtime");
+                return false;
+            }
+
+            _currentRuntimeId = runtimeId;
+            _runtime = runtime;
+
             _pluginInfo = await RuntimeControlModel.GetPluginInfo(runtime, pluginKey);
             if (_pluginInfo == null)
             {
@@ -367,24 +391,19 @@ namespace TickTrader.Algo.Server
                 return false;
             }
 
-            var attached = await RuntimeControlModel.AttachPlugin(runtime, _id, Self);
-            if (!attached)
-            {
-                BreakBot($"Can't attach to new runtime");
-                return false;
-            }
-
-            _currentRuntimeId = runtimeId;
-            _runtime = runtime;
-
             if (_state == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
 
+            OnModelUpdated();
+
+            return true;
+        }
+
+        private void OnModelUpdated()
+        {
             var infoCopy = GetInfoCopy();
             _host.OnPluginUpdated(PluginModelUpdate.Updated(_id, infoCopy));
             //_proxyDownlinkSrc.DispatchEvent(infoCopy);
-
-            return true;
         }
 
         private void BreakBot(string reason)
@@ -536,5 +555,7 @@ namespace TickTrader.Algo.Server
                 OutputSink = outputSink;
             }
         }
+
+        public record AttachDrawableChannelCmd(ChannelWriter<DrawableCollectionUpdate> DrawableSink);
     }
 }
