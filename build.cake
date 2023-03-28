@@ -257,7 +257,7 @@ Task("PublishMainProjects")
    .IsDependentOn("Test")
    .IsDependentOn("PublishTerminal")
    .IsDependentOn("PublishConfigurator")
-   .IsDependentOn("PublishServer")
+   .IsDependentOn("PublishServer");
 
 Task("PublishPublicApi")
    .IsDependentOn("PublishMainProjects")
