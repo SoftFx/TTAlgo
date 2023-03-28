@@ -180,6 +180,7 @@ namespace TickTrader.BotAgent
 
         private static void ValidateAppInfo()
         {
+            AppInfoResolver.IgnorePortableFlag = true;
             AppInfoResolver.Init();
             if (AppInfoResolver.HasError)
             {

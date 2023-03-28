@@ -62,6 +62,10 @@ namespace TickTrader.Algo.AppCommon
 
         public static bool HasError => Error != null;
 
+        public static bool IgnorePortableFlag { get; set; }
+
+        public static string AppShortName { get; set; } = "Terminal";
+
 
         public static void Init()
         {
@@ -82,7 +86,7 @@ namespace TickTrader.Algo.AppCommon
                         throw new Exception($"Invalid install: Can't find '{DataFileName}'");
 
                     _info = AppInfo.LoadFromJson(appInfoPath);
-                    _dataPath = _info.IsPortable
+                    _dataPath = (IgnorePortableFlag || _info.IsPortable)
                         ? ResolvePortablePath(_info)
                         : ResolveLocalAppDataPath(_info);
                 }
@@ -132,7 +136,7 @@ namespace TickTrader.Algo.AppCommon
                 throw new Exception($"Invalid install: InstallId = '{installId}'");
 
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            return Path.Combine(localAppData, "TickTrader Algo", $"Terminal {installId}");
+            return Path.Combine(localAppData, "TickTrader Algo", $"{AppShortName} {installId}");
         }
 
         private static string ResolvePortablePath(AppInfo info)
