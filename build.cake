@@ -516,7 +516,7 @@ Task("CreateInstaller")
       CreateUninstallScript(configuratorBinPath, setupDirPath.CombineWithFilePath("Configurator.Uninstall.nsi"));
 
       StartProcess(nsisPath, new ProcessSettings {
-         Arguments = $"/DPRODUCT_BUILD={buildId} {setupDirPath.CombineWithFilePath("Algo.Setup.nsi").FullPath}",
+         Arguments = $"/DPRODUCT_BUILD={buildId} /DOUTPUT_DIR=../{artifactsDirName} {setupDirPath.CombineWithFilePath("Algo.Setup.nsi").FullPath}",
       });
    }
    finally
