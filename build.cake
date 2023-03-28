@@ -439,7 +439,6 @@ Task("PublishAllProjects")
 
 Task("PrepareArtifacts")
    .IsDependentOn("PublishAllProjects")
-   .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PrepareArtifacts") : null;
