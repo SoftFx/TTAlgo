@@ -23,6 +23,8 @@ var sdkSolutionPath = sourcesDirPath.CombineWithFilePath("src/csharp/TickTrader.
 var nsisPath = DirectoryPath.FromString(nsisDirPath).CombineWithFilePath("makensis.exe");
 var setupDirPath = sourcesDirPath.Combine("setup");
 
+var isGithubBuild = BuildSystem.IsRunningOnGitHubActions;
+
 var outputPath = sourcesDirPath.Combine("bin");
 var terminalProjectPath = sourcesDirPath.CombineWithFilePath("TickTrader.BotTerminal/TickTrader.BotTerminal.csproj");
 var terminalBinPath = outputPath.Combine("terminal");
@@ -70,10 +72,6 @@ Setup(ctx =>
       }
    }
 });
-
-// Teardown(ctx =>
-// {
-// });
 
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS
@@ -255,8 +253,15 @@ Task("PublishServer")
    }
 });
 
-Task("PublishPublicApi")
+Task("PublishMainProjects")
    .IsDependentOn("Test")
+   .IsDependentOn("PublishTerminal")
+   .IsDependentOn("PublishConfigurator")
+   .IsDependentOn("PublishServer");
+
+Task("PublishPublicApi")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPublicApi") : null;
@@ -288,7 +293,8 @@ Task("PublishPublicApi")
 });
 
 Task("PublishSymbolStorage")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishSymbolStorage") : null;
@@ -309,7 +315,8 @@ Task("PublishSymbolStorage")
 });
 
 Task("PublishBacktesterApi")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterApi") : null;
@@ -330,7 +337,8 @@ Task("PublishBacktesterApi")
 });
 
 Task("PublishBacktesterHost")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterHost") : null;
@@ -351,7 +359,8 @@ Task("PublishBacktesterHost")
 });
 
 Task("PublishRuntimeHost")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishRuntimeHost") : null;
@@ -372,7 +381,8 @@ Task("PublishRuntimeHost")
 });
 
 Task("PublishPkgLoader")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPkgLoader") : null;
@@ -394,7 +404,8 @@ Task("PublishPkgLoader")
 });
 
 Task("PublishIndicatorHost")
-   .IsDependentOn("Test")
+   .IsDependentOn("PublishMainProjects")
+   .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishIndicatorHost") : null;
@@ -435,20 +446,26 @@ Task("PrepareArtifacts")
    try
    {
       var redistPath = terminalBinPath.Combine("Redist");
-      var repoPath = terminalBinPath.Combine("AlgoRepository");
 
       CreateDirectory(redistPath);
-      CreateDirectory(repoPath);
       CopyFiles(vsExtensionPath.FullPath, redistPath);
       CopyFiles(vsExtensionPath.FullPath, artifactsPath);
-      CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").FullPath, repoPath);
 
       var configuratorInstallPath = serverBinPath.Combine("Configurator");
       CopyDirectory(configuratorBinPath, configuratorInstallPath);
 
-      CopyDirectory(pkgLoaderBinPath.FullPath, indicatorHostBinPath);
-      var indicatorHostRuntimePath = indicatorHostBinPath.Combine("bin").Combine("runtime");
-      CopyDirectory(runtimeHostBinPath, indicatorHostRuntimePath);
+      if (!isGithubBuild)
+      {
+         var repoPath = terminalBinPath.Combine("AlgoRepository");
+
+         CreateDirectory(repoPath);         
+         CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").FullPath, repoPath);
+
+         CopyDirectory(pkgLoaderBinPath.FullPath, indicatorHostBinPath);
+
+         var indicatorHostRuntimePath = indicatorHostBinPath.Combine("bin").Combine("runtime");
+         CopyDirectory(runtimeHostBinPath, indicatorHostRuntimePath);
+      }
    }
    finally
    {
@@ -466,12 +483,16 @@ Task("ZipArtifacts")
    {
       Zip(terminalBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.zip"));
       Zip(serverBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
-      Zip(configuratorBinPath, artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
-      Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.zip"));
-      Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
-      Zip(backtesterApiBinPath, artifactsPath.CombineWithFilePath($"BacktesterApi {buildId}.zip"));
-      Zip(backtesterHostBinPath, artifactsPath.CombineWithFilePath($"BacktesterV1Host {buildId}.x64.zip"));
-      Zip(indicatorHostBinPath, artifactsPath.CombineWithFilePath($"IndicatorHost {buildId}.zip"));
+
+      if (!isGithubBuild)
+      {
+         Zip(configuratorBinPath, artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
+         Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.zip"));
+         Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
+         Zip(backtesterApiBinPath, artifactsPath.CombineWithFilePath($"BacktesterApi {buildId}.zip"));
+         Zip(backtesterHostBinPath, artifactsPath.CombineWithFilePath($"BacktesterV1Host {buildId}.x64.zip"));
+         Zip(indicatorHostBinPath, artifactsPath.CombineWithFilePath($"IndicatorHost {buildId}.zip"));
+      }
    }
    finally
    {
@@ -500,7 +521,7 @@ Task("CreateInstaller")
       CreateUninstallScript(configuratorBinPath, setupDirPath.CombineWithFilePath("Configurator.Uninstall.nsi"));
 
       StartProcess(nsisPath, new ProcessSettings {
-         Arguments = $"/DPRODUCT_BUILD={buildId} {setupDirPath.CombineWithFilePath("Algo.Setup.nsi").FullPath}",
+         Arguments = $"/DPRODUCT_BUILD={buildId} /DOUTPUT_DIR=../{artifactsDirName} {setupDirPath.CombineWithFilePath("Algo.Setup.nsi").FullPath}",
       });
    }
    finally
@@ -527,6 +548,7 @@ public void PrintArguments()
    Information("Details: {0}", details);
    Information("SkipTests: {0}", skipTests);
    Information("NsisPath: {0}", nsisDirPath);
+   Information("IsGithubBuild: {0}", isGithubBuild);
 }
 
 public string ConsoleOrBuildSystemArgument(string name, string defautValue) => ConsoleOrBuildSystemArgument<string>(name, defautValue);

@@ -40,10 +40,13 @@
     !define SETUP_FILENAME "Algo Studio ${PRODUCT_BUILD}.Setup.exe"
 !endif
 
+!ifndef OUTPUT_DIR
+    !define OUTPUT_DIR "..\artifacts.build"
+!endif
+
 !define BASE_NAME "TickTrader"
 !define BASE_INSTDIR "$PROGRAMFILES64\${BASE_NAME}"
 
-!define OUTPUT_DIR "..\artifacts.build"
 !define ICONS_DIR "..\icons"
 !define BANNER_PATH "banner.bmp"
 !define BANNER_TMP_PATH "$PLUGINSDIR\banner.bmp"
