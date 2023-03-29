@@ -1,5 +1,5 @@
-name: AlgoStudio build
-run-name: AlgoStudio build ${{ inputs.releaseVersion }}
+name: TTAlgo build
+run-name: TTAlgo build ${{ inputs.releaseVersion }}
 on:
   workflow_dispatch:
     inputs:
@@ -12,7 +12,7 @@ on:
         required: true
         default: false
 env:
-  ARTIFACT_NAME: 'AlgoStudio Release'
+  ARTIFACT_NAME: 'TTAlgo Release'
   BUILD_OUTPUT_FOLDER: build.output
 
 jobs:
@@ -48,7 +48,7 @@ jobs:
 
       - id: save-tag
         name: Create tag
-        run: echo "tag=AlgoStudio-v${{ inputs.releaseVersion }}" >> $GITHUB_OUTPUT
+        run: echo "tag=release-v${{ inputs.releaseVersion }}" >> $GITHUB_OUTPUT
 
       - name: Push tag
         uses: rickstaa/action-create-tag@v1
