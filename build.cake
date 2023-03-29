@@ -451,15 +451,15 @@ Task("PrepareArtifacts")
       CopyFiles(vsExtensionPath.FullPath, redistPath);
       CopyFiles(vsExtensionPath.FullPath, artifactsPath);
 
+      var configuratorInstallPath = serverBinPath.Combine("Configurator");
+      CopyDirectory(configuratorBinPath, configuratorInstallPath);
+
       if (!isGithubBuild)
       {
          var repoPath = terminalBinPath.Combine("AlgoRepository");
 
          CreateDirectory(repoPath);         
          CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").FullPath, repoPath);
-
-         var configuratorInstallPath = serverBinPath.Combine("Configurator");
-         CopyDirectory(configuratorBinPath, configuratorInstallPath);
 
          CopyDirectory(pkgLoaderBinPath.FullPath, indicatorHostBinPath);
 
