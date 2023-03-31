@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.AppCommon.Update;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Updater
 {
@@ -10,41 +11,46 @@ namespace TickTrader.Algo.Updater
     {
         static void Main(string[] args)
         {
-            if (args.Length < 2)
-                ExitWithCode(UpdateExitCodes.InvalidArgs);
+            var ctx = new UpdateContext();
+            if (ctx.HasError)
+            {
+                // log error
+                Environment.Exit((int)ctx.ErrorCode);
+                return;
+            }
 
-            if (!Enum.TryParse<UpdateAppTypes>(args[0], out var appType))
-                ExitWithCode(UpdateExitCodes.InvalidAppType);
-            var exeFileName = UpdateHelper.GetAppExeFileName(appType);
-            if (string.IsNullOrEmpty(exeFileName))
-                ExitWithCode(UpdateExitCodes.UnexpectedAppType);
-
-            var installPath = args[1];
-            if (!Directory.Exists(installPath))
-                ExitWithCode(UpdateExitCodes.AppPathNotFound);
-
-            var currentFolder = InstallPathHelper.GetCurrentVersionFolder(installPath);
-            if (!Directory.Exists(currentFolder))
-                ExitWithCode(UpdateExitCodes.CurrentVersionNotFound);
-            var updateFolder = InstallPathHelper.GetUpdateVersionFolder(installPath);
-            if (!Directory.Exists(updateFolder))
-                ExitWithCode(UpdateExitCodes.UpdateVersionNotFound);
-            if (!File.Exists(Path.Combine(updateFolder, exeFileName)))
-                ExitWithCode(UpdateExitCodes.UpdateVersionMissingExe);
-
-            // Wait for current process to stop. PID - ?. Service stop in case of server - ?
-
-            var fallbackFolder = InstallPathHelper.GetFallbackVersionFolder(installPath);
-            if (Directory.Exists(fallbackFolder))
-                Directory.Delete(fallbackFolder, true);
-
-            Directory.Move(currentFolder, fallbackFolder);
-            Directory.Move(updateFolder, currentFolder);
-
-            switch (appType)
+            Console.WriteLine("Waiting for app to stop...");
+            switch (ctx.AppType)
             {
                 case UpdateAppTypes.Terminal:
-                    var exePath = Path.Combine(currentFolder, exeFileName);
+                    if (ctx.TargetProcess != null)
+                    {
+                        ctx.TargetProcess.WaitForExit(UpdateHelper.ShutdownTimeout);
+                    }
+                    break;
+                case UpdateAppTypes.Server:
+                    // Wait for StopService. ServiceId - ?
+                    break;
+            }
+            Console.WriteLine("App stopped");
+
+            var rollbackFolder = InstallPathHelper.GetRollbackVersionFolder(ctx.InstallPath);
+            if (Directory.Exists(rollbackFolder))
+            {
+                Console.WriteLine("Removing old rollback version...");
+                Directory.Delete(rollbackFolder, true);
+            }
+
+            Directory.Move(ctx.CurrentBinFolder, rollbackFolder);
+            Console.WriteLine("Moved current version to rollback");
+            Console.WriteLine("Copying new version files...");
+            PathHelper.CopyDirectory(ctx.UpdateBinFolder, ctx.CurrentBinFolder, true, false);
+            Console.WriteLine("Finished copying new files");
+
+            switch (ctx.AppType)
+            {
+                case UpdateAppTypes.Terminal:
+                    var exePath = Path.Combine(ctx.CurrentBinFolder, ctx.ExeFileName);
                     Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true });
                     break;
                 case UpdateAppTypes.Server:
@@ -52,8 +58,5 @@ namespace TickTrader.Algo.Updater
                     break;
             }
         }
-
-
-        private static void ExitWithCode(UpdateExitCodes code) => Environment.Exit((int)code);
     }
 }

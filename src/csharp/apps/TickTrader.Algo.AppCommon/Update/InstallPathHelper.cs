@@ -6,8 +6,6 @@ namespace TickTrader.Algo.AppCommon
     {
         public static string GetCurrentVersionFolder(string installPath) => Path.Combine(installPath, "bin", "current");
 
-        public static string GetUpdateVersionFolder(string installPath) => Path.Combine(installPath, "bin", "update");
-
-        public static string GetFallbackVersionFolder(string installPath) => Path.Combine(installPath, "bin", "fallback");
+        public static string GetRollbackVersionFolder(string installPath) => Path.Combine(installPath, "bin", "rollback");
     }
 }
