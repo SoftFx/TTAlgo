@@ -10,6 +10,7 @@ using System.Windows;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Fdk2;
 using TickTrader.Algo.Account.Settings;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Logging;
@@ -25,27 +26,28 @@ namespace TickTrader.BotTerminal
     public class AppBootstrapper : BootstrapperBase
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        private static readonly AutoViewManager autoViewLocator = new AutoViewManager();
 
-        private readonly AppInstanceRestrictor _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
         private readonly SimpleContainer _container = new();
-
+        private readonly AppInstanceRestrictor _instanceRestrictor;
         private readonly bool _hasWriteAccess;
 
         private ShellViewModel _shell;
 
 
-        public static CultureInfo CultureCache { get; private set; }
+        public static CultureInfo CultureCache { get; } = CultureInfo.CurrentCulture;
+
+        public static AutoViewManager AutoViewLocator { get; } = new();
 
 
         public AppBootstrapper()
         {
-            CultureCache = CultureInfo.CurrentCulture;
-
             LocaleSelector.Instance.ActivateDefault();
-
             Initialize();
 
+            ValidateAppInfo();
+            Directory.SetCurrentDirectory(AppInfoResolver.DataPath);
+
+            _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
             _hasWriteAccess = HasWriteAccess();
             if (_hasWriteAccess)
             {
@@ -59,8 +61,23 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public static AutoViewManager AutoViewLocator => autoViewLocator;
 
+        private static void ValidateAppInfo()
+        {
+            AppInfoResolver.Init();
+            if (AppInfoResolver.HasError)
+            {
+                MessageBox.Show($"Failed to resolve app folder. Check windows logs for details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.FailFast("Failed to resolve app folder", AppInfoResolver.Error);
+            }
+            else if (string.IsNullOrEmpty(AppInfoResolver.DataPath))
+            {
+                const string err = "Unexpected error: app folder resolved to empty string";
+                MessageBox.Show(err, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.FailFast(err);
+            }
+        }
+        
         private static void ConfigureCaliburn()
         {
             ViewLocator.AddDefaultTypeMapping("Page");
@@ -71,7 +88,7 @@ namespace TickTrader.BotTerminal
                 var viewType = ViewLocator.LocateTypeForModelType(modelType, displayLocation, context);
 
                 if (viewType == null)
-                    return autoViewLocator.CreateView(modelType, context);
+                    return AutoViewLocator.CreateView(modelType, context);
 
                 return ViewLocator.GetOrCreateViewType(viewType);
             };
@@ -257,7 +274,7 @@ namespace TickTrader.BotTerminal
                 switch (res)
                 {
                     case AccessElevationStatus.AlreadyThere:
-                        MessageBox.Show($"Don't have access to write in directory {Directory.GetCurrentDirectory()}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"Don't have access to write in directory {EnvService.Instance.AppFolder}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         return false;
                     case AccessElevationStatus.Launched:
                     case AccessElevationStatus.UserCancelled:

@@ -61,27 +61,26 @@ var TestCollection_Selected
 !macro _UnpackTerminal
 
     ${Log} "Unpacking AlgoTerminal files to $Terminal_InstDir"
-    SetOutPath $Terminal_InstDir
+    SetOutPath "$Terminal_InstDir\bin\current"
 !ifdef DEBUG
     Sleep 3000
     File "${TERMINAL_BINDIR}\${TERMINAL_EXE}"
 !else
     File /r "${TERMINAL_BINDIR}\*.*"
 !endif
+
+    SetOutPath "$Terminal_InstDir"
+    ; Icon is required there for installed programs list
     File "${ICONS_DIR}\terminal.ico"
+    ${GenerateAppInfo} $Terminal_InstDir $Terminal_Id
 
 !macroend
 
 !macro _DeleteTerminalFiles
 
-    ${Log} "Removing AlgoTerminal files to $Terminal_InstDir"
+    ${Log} "Removing AlgoTerminal files from $Terminal_InstDir"
     StrCpy $INSTDIR $Terminal_InstDir
-!ifdef DEBUG
-    Delete "$INSTDIR\${TERMINAL_EXE}"
-!else
-    ; Remove installed files, but leave generated
-    !include Terminal.Uninstall.nsi
-!endif
+    RMDir /r "$Terminal_InstDir\bin\"
     Delete "$INSTDIR\terminal.ico"
 
 !macroend
@@ -118,13 +117,13 @@ var TestCollection_Selected
     ${Log} "Shortcut name: $Terminal_ShortcutName"
     ${If} $Terminal_DesktopSelected == ${TRUE}
         ${Print} "Adding Desktop Shortcut"
-        CreateShortcut "$DESKTOP\$Terminal_ShortcutName.lnk" "$Terminal_InstDir\${TERMINAL_EXE}"
+        CreateShortcut "$DESKTOP\$Terminal_ShortcutName.lnk" "$Terminal_InstDir\bin\current\${TERMINAL_EXE}"
     ${EndIf}
 
     ${If} $Terminal_StartMenuSelected == ${TRUE}
         ${Print} "Adding StartMenu Shortcut"
         CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\"
-        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\$Terminal_ShortcutName.lnk" "$Terminal_InstDir\${TERMINAL_EXE}"
+        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\$Terminal_ShortcutName.lnk" "$Terminal_InstDir\bin\current\${TERMINAL_EXE}"
     ${EndIf}
 
 !macroend

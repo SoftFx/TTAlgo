@@ -210,7 +210,7 @@ namespace TickTrader.BotTerminal
             observer.StartProgress(0, progressMax);
             observer.SetMessage("Emulating...");
 
-            BacktesterRunner.Instance.BinDirPath = System.IO.Path.Combine(EnvService.Instance.AppFolder, "bin", "backtester");
+            BacktesterRunner.Instance.BinDirPath = System.IO.Path.Combine(EnvService.Instance.BinFolder, "bin", "backtester");
             BacktesterRunner.Instance.WorkDir = EnvService.Instance.BacktestResultsFolder;
             using (var tester = await BacktesterRunner.Instance.NewInstance(configPath))
             {

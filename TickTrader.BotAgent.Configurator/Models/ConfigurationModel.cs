@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -123,6 +124,8 @@ namespace TickTrader.BotAgent.Configurator
                 model.UpdateCurrentModelValues();
             }
 
+            var appSettingsDir = Path.GetDirectoryName(CurrentAgent.AppSettingPath);
+            PathHelper.EnsureDirectoryCreated(appSettingsDir);
             using (var configStreamWriter = new StreamWriter(CurrentAgent.AppSettingPath))
             {
                 configStreamWriter.Write(_configurationObject.ToString());

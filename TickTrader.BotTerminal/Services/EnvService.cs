@@ -1,6 +1,7 @@
 ﻿using NLog;
 using System;
 using System.IO;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
@@ -9,6 +10,8 @@ namespace TickTrader.BotTerminal
     {
         private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
+        private static EnvService _instance;
+
         private readonly Lazy<string> _botLogFolder, _logFolder, _journalFolder,
             _algoRepoFolder, _algoCommonRepoFolder, _algoDataFolder, _appSettingsFolder,
             _feedCacheFolder, _customFeedCacheFolder, _profilesFolder, _profilesCacheFolder,
@@ -16,8 +19,22 @@ namespace TickTrader.BotTerminal
         private readonly Lazy<IObjectStorage> _userStorage, _protectedUserStorage, _profileStorage;
 
 
-        public static EnvService Instance { get; } = new();
+        public static EnvService Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    var appFolder = AppInfoResolver.DataPath;
+                    if (string.IsNullOrEmpty(appFolder))
+                        // Before first caller MUST validate AppFolderResolver.Result manually and inpect Errors 
+                        throw new ArgumentException("Invalid app folder");
+                    _instance = new EnvService(appFolder);
+                }
 
+                return _instance;
+            }
+        }
 
         public string ApplicationName { get; } = "AlgoTerminal";
         public string BinFolder { get; } = AppDomain.CurrentDomain.BaseDirectory;
@@ -43,15 +60,12 @@ namespace TickTrader.BotTerminal
         public IObjectStorage ProfilesCacheStorage => _profileStorage.Value;
 
 
-        private EnvService()
+        private EnvService(string appFolder)
         {
             var myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var appDocumentsFolder = Path.Combine(myDocumentsFolder, ApplicationName);
 
-            //AppFolder = System.Deployment.Application.ApplicationDeployment.IsNetworkDeployed
-            //    ? appDocumentsFolder // Click Once Mode
-            //    : BinFolder; // Portable Mode
-            AppFolder = BinFolder;
+            AppFolder = appFolder;
             AppLockFilePath = Path.Combine(AppFolder, "applock");
 
             _appSettingsFolder = new Lazy<string>(() => InitSubFolder(AppFolder, "Settings"), true);
