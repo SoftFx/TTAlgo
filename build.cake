@@ -47,6 +47,10 @@ var pkgLoaderBinPath = outputPath.Combine("pkg-loader");
 var indicatorHostProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.IndicatorHost/TickTrader.Algo.IndicatorHost.csproj");
 var indicatorHostBinPath = outputPath.Combine("indicator-host");
 var vsExtensionPath = sourcesDirPath.CombineWithFilePath($"src/csharp/sdk/TickTrader.Algo.VS.Package/bin/{configuration}/TickTrader.Algo.VS.Package.vsix");
+var updaterProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/apps/TickTrader.Algo.Updater/TickTrader.Algo.Updater.csproj");
+var updaterBinPath = outputPath.Combine("updater");
+var terminalUpdateBinPath = outputPath.Combine("terminal-update");
+var serverUpdateBinPath = outputPath.Combine("server-update");
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
@@ -253,11 +257,33 @@ Task("PublishServer")
    }
 });
 
+Task("PublishUpdater")
+   .IsDependentOn("Test")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishUpdater") : null;
+
+   try
+   {
+      DotNetPublish(updaterProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = updaterBinPath,
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
+
 Task("PublishMainProjects")
    .IsDependentOn("Test")
    .IsDependentOn("PublishTerminal")
    .IsDependentOn("PublishConfigurator")
-   .IsDependentOn("PublishServer");
+   .IsDependentOn("PublishServer")
+   .IsDependentOn("PublishUpdater");
 
 Task("PublishPublicApi")
    .IsDependentOn("PublishMainProjects")
@@ -473,6 +499,28 @@ Task("PrepareArtifacts")
    }
 });
 
+Task("CreateUpdate")
+   .IsDependentOn("PrepareArtifacts")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("CreateUpdate") : null;
+
+   try
+   {
+      CopyDirectory(updaterBinPath, terminalUpdateBinPath);
+      CopyDirectory(terminalBinPath, terminalUpdateBinPath.Combine("update"));
+      Zip(terminalUpdateBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.Update.zip"));
+
+      CopyDirectory(updaterBinPath, serverUpdateBinPath);
+      CopyDirectory(serverBinPath, serverUpdateBinPath.Combine("update"));
+      Zip(serverUpdateBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.Update.zip"));
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
+
 Task("ZipArtifacts")
    .IsDependentOn("PrepareArtifacts")
    .Does(() =>
@@ -532,6 +580,7 @@ Task("CreateInstaller")
 
 Task("CreateAllArtifacts")
    .IsDependentOn("ZipArtifacts")
+   .IsDependentOn("CreateUpdate")
    .IsDependentOn("CreateInstaller");
 
 PrintArguments();
