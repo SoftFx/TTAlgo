@@ -14,6 +14,7 @@ var details = ConsoleOrBuildSystemArgument<DotNetVerbosity>("Details", DotNetVer
 var skipTests = ConsoleOrBuildSystemArgument("SkipTests", false); // used on TeamCity to enable test results integration
 var nsisDirPath = ConsoleOrBuildSystemArgument("NsisPath", @"c:/Program Files (x86)/NSIS/");
 var msBuildDirPath = ConsoleOrBuildSystemArgument("MSBuildPath", "");
+var useGithubBuild = ConsoleOrBuildSystemArgument("UseGithubBuild", false);
 
 var sourcesDirPath = DirectoryPath.FromString(sourcesDir);
 var buildId = $"{version}.{buildNumber}.0";
@@ -23,7 +24,7 @@ var sdkSolutionPath = sourcesDirPath.CombineWithFilePath("src/csharp/TickTrader.
 var nsisPath = DirectoryPath.FromString(nsisDirPath).CombineWithFilePath("makensis.exe");
 var setupDirPath = sourcesDirPath.Combine("setup");
 
-var isGithubBuild = BuildSystem.IsRunningOnGitHubActions;
+var isGithubBuild = useGithubBuild || BuildSystem.IsRunningOnGitHubActions;
 
 var outputPath = sourcesDirPath.Combine("bin");
 var terminalProjectPath = sourcesDirPath.CombineWithFilePath("TickTrader.BotTerminal/TickTrader.BotTerminal.csproj");
@@ -109,8 +110,8 @@ Task("BuildMainProject")
 
    try
    {
-      var msBuildSettings = new DotNetMSBuildSettings();
-      msBuildSettings.WithProperty("AlgoPackage_OutputPath", artifactsPath.MakeAbsolute(Context.Environment).ToString());
+      var msBuildSettings = GetMSBuildSettingsWithVersionProps()
+         .WithProperty("AlgoPackage_OutputPath", artifactsPath.MakeAbsolute(Context.Environment).ToString());
 
       DotNetBuild(mainSolutionPath.ToString(), new DotNetBuildSettings {
          Configuration = configuration,
@@ -208,6 +209,7 @@ Task("PublishTerminal")
          Verbosity = details,
          NoRestore = true,
          OutputDirectory = terminalBinPath,
+         MSBuildSettings = GetMSBuildSettingsWithVersionProps(),
       });
    }
    finally
@@ -249,6 +251,7 @@ Task("PublishServer")
          Configuration = configuration,
          Verbosity = details,
          OutputDirectory = serverBinPath,
+         MSBuildSettings = GetMSBuildSettingsWithVersionProps(),
       });
    }
    finally
@@ -642,3 +645,8 @@ private void CleanUpInstallDir(DirectoryInfo appDirectory, StringBuilder nsisScr
    nsisScript.AppendLine($"\tRMDir \"{instDirFullPath}\\\"");
    nsisScript.AppendLine();
 }
+
+private DotNetMSBuildSettings GetMSBuildSettingsWithVersionProps()
+   => new DotNetMSBuildSettings()
+      .WithProperty("BuildVersion", version.ToString())
+      .WithProperty("BuildNumber", buildNumber.ToString());

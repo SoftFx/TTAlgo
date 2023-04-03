@@ -5,6 +5,7 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>algo.snk</AssemblyOriginatorKeyFile>
     <VersionPrefix>1.5.3</VersionPrefix>
+    <FileVersion>$(VersionPrefix).0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet package definition">

@@ -10,8 +10,6 @@
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <Deterministic>false</Deterministic>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
     <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
     <ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
     <SatelliteResourceLanguages>en-gb;ru-ru;ru</SatelliteResourceLanguages>
@@ -153,18 +151,18 @@
       <BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net6.0\**\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)bin\runtime\%(RecursiveDir)"
-		  SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
+          SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
     <Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\%(RecursiveDir)"
-		  SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
+          SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
   </Target>
 
   <Target Name="RemoveUnusedNativeLibs" AfterTargets="Build">
-	  <RemoveDir Directories="$(TargetDir)\runtimes\osx;$(TargetDir)runtimes\linux-arm;$(TargetDir)runtimes\linux-arm64;$(TargetDir)runtimes\win-arm64" />
+    <RemoveDir Directories="$(TargetDir)\runtimes\osx;$(TargetDir)runtimes\linux-arm;$(TargetDir)runtimes\linux-arm64;$(TargetDir)runtimes\win-arm64" />
   </Target>
 
   <Target Name="CleanGeneratedFiles" AfterTargets="Clean">
     <RemoveDir Directories="$(TargetDir)AlgoRuntime\" />
     <RemoveDir Directories="$(TargetDir)bin\" />
     <RemoveDir Directories="$(TargetDir)Resources\" />
-  </Target>	
+  </Target>
 </Project>

@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <!-- Reset FileVersion defined above for all SDK projects -->
+        <FileVersion></FileVersion>
+    </PropertyGroup>
+</Project>
