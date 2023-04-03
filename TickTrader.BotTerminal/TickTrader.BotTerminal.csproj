@@ -3,7 +3,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <AssemblyName>TickTrader.AlgoTerminal</AssemblyName>
-    <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
     <PlatformTarget>x64</PlatformTarget>
     <MapFileExtensions>true</MapFileExtensions>
     <UseApplicationTrust>false</UseApplicationTrust>
@@ -14,7 +14,7 @@
     <FileVersion>1.0.0.0</FileVersion>
     <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
     <ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
-    <SatelliteResourceLanguages>en-gb,ru-ru</SatelliteResourceLanguages>
+    <SatelliteResourceLanguages>en-gb;ru-ru;ru</SatelliteResourceLanguages>
 
     <UseLiveCharts2Src>false</UseLiveCharts2Src>
     <UseAvalonDockSrc>false</UseAvalonDockSrc>
@@ -144,26 +144,27 @@
     <Copy SourceFiles="@(EnGbLocale)" DestinationFolder="$(TargetDir)Resources\en-gb" />
     <Copy SourceFiles="@(RuRuLocale)" DestinationFolder="$(TargetDir)Resources\ru-ru" />
     <Copy SourceFiles="@(RuLocale)" DestinationFolder="$(TargetDir)Resources\ru" />
-    <!--<RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
-		<RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />-->
-  </Target>
-
-  <Target Name="RemoveLinuxLibs" AfterTargets="Build">
-    <Delete Files="$(TargetDir)\libgrpc_csharp_ext.x64.dylib;$(TargetDir)\libgrpc_csharp_ext.x64.so" />
+    <RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)ru" />
   </Target>
 
   <Target Name="CopyBinaries" AfterTargets="Build">
     <ItemGroup>
-      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host\bin\$(Configuration)\net6.0\*.*" />
-      <BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net6.0\*.*" />
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host\bin\$(Configuration)\net6.0\**\*.*" />
+      <BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net6.0\**\*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)bin\runtime\" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)bin\runtime\%(RecursiveDir)"
+		  SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
+    <Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\%(RecursiveDir)"
+		  SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
+  </Target>
+
+  <Target Name="RemoveUnusedNativeLibs" AfterTargets="Build">
+	  <RemoveDir Directories="$(TargetDir)\runtimes\osx;$(TargetDir)runtimes\linux-arm;$(TargetDir)runtimes\linux-arm64;$(TargetDir)runtimes\win-arm64" />
   </Target>
 
   <Target Name="CleanGeneratedFiles" AfterTargets="Clean">
     <RemoveDir Directories="$(TargetDir)AlgoRuntime\" />
     <RemoveDir Directories="$(TargetDir)bin\" />
     <RemoveDir Directories="$(TargetDir)Resources\" />
-  </Target>
+  </Target>	
 </Project>
