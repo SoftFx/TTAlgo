@@ -1,5 +1,5 @@
 ﻿using Caliburn.Micro;
-using System;
+using System.Diagnostics;
 using System.Reflection;
 using TickTrader.Algo.Core.Lib;
 
@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
         static AboutDialogViewModel()
         {
             var entryAssembly = Assembly.GetEntryAssembly();
-            _version = entryAssembly.GetName().Version.ToString();
+            _version = FileVersionInfo.GetVersionInfo(entryAssembly.Location).FileVersion;
             _buildDate = entryAssembly.GetLinkerTime().ToString("yyyy.MM.dd");
         }
 

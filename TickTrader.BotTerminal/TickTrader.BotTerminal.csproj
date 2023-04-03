@@ -133,7 +133,10 @@
     </None>
   </ItemGroup>
 
-  <Target Name="MoveResources" AfterTargets="Build">
+  <!-- Additional probing paths have very different design in .NET 6 -->
+  <!-- https://github.com/dotnet/runtime/issues/73710#issuecomment-1222651405 -->
+  <!-- The only options available now is to resolve them manually -->
+  <!--<Target Name="MoveResources" AfterTargets="Build">
     <ItemGroup>
       <EnGbLocale Include="$(TargetDir)en-gb\*.resources.dll" />
       <RuRuLocale Include="$(TargetDir)ru-ru\*.resources.dll" />
@@ -143,7 +146,7 @@
     <Copy SourceFiles="@(RuRuLocale)" DestinationFolder="$(TargetDir)Resources\ru-ru" />
     <Copy SourceFiles="@(RuLocale)" DestinationFolder="$(TargetDir)Resources\ru" />
     <RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)ru" />
-  </Target>
+  </Target>-->
 
   <Target Name="CopyBinaries" AfterTargets="Build">
     <ItemGroup>
