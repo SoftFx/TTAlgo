@@ -8,21 +8,20 @@ namespace TickTrader.Algo.AppCommon.Update
     {
         public const string EnvVarPrefix = "TTAlgoUpdater_";
         public const string AppTypeVarName = EnvVarPrefix + nameof(AppType);
-        public const string ProcessIdVarName = EnvVarPrefix + nameof(ProcessId);
         public const string InstallPathVarName = EnvVarPrefix + nameof(InstallPath);
+        public const string UpdatePathVarName = EnvVarPrefix + nameof(UpdatePath);
 
 
         public UpdateAppTypes? AppType { get; set; }
 
-        public int? ProcessId { get; set; }
-
         public string InstallPath { get; set; }
+
+        public string UpdatePath { get; set; } // debug param
 
 
         public void SaveAsEnvVars(IDictionary<string, string> envVars)
         {
             envVars.Add(AppTypeVarName, AppType?.ToString() ?? "");
-            envVars.Add(ProcessIdVarName, ProcessId?.ToString() ?? "");
             envVars.Add(InstallPathVarName, InstallPath);
         }
 
@@ -32,10 +31,10 @@ namespace TickTrader.Algo.AppCommon.Update
 
             if (TryGetString(envVars, AppTypeVarName, out var appTypeStr) && Enum.TryParse<UpdateAppTypes>(appTypeStr, out var appType))
                 res.AppType = appType;
-            if (TryGetString(envVars, ProcessIdVarName, out var processIdStr) && int.TryParse(processIdStr, out var processId))
-                res.ProcessId = processId;
             if (TryGetString(envVars, InstallPathVarName, out var installPathStr))
                 res.InstallPath = installPathStr;
+            if (TryGetString(envVars, UpdatePathVarName, out var updatePathStr))
+                res.UpdatePath = updatePathStr;
 
             return res;
         }

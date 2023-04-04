@@ -10,7 +10,6 @@
         CurrentVersionNotFound = 5,
         UpdateVersionNotFound = 6,
         UpdateVersionMissingExe = 7,
-        InvalidProcessId = 8,
     }
 
     public enum UpdateAppTypes

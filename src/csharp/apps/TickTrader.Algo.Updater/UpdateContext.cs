@@ -24,8 +24,6 @@ namespace TickTrader.Algo.Updater
 
         public string UpdateBinFolder { get; set; }
 
-        public Process TargetProcess { get; set; }
-
 
         public UpdateContext()
         {
@@ -71,22 +69,13 @@ namespace TickTrader.Algo.Updater
             CurrentBinFolder = InstallPathHelper.GetCurrentVersionFolder(InstallPath);
             if (!Directory.Exists(CurrentBinFolder))
                 return UpdateErrorCodes.CurrentVersionNotFound;
-            UpdateBinFolder = UpdateHelper.GetUpdateBinFolder(AppDomain.CurrentDomain.BaseDirectory);
+            UpdateBinFolder = !string.IsNullOrEmpty(updParams.UpdatePath)
+                ? updParams.UpdatePath
+                : UpdateHelper.GetUpdateBinFolder(AppDomain.CurrentDomain.BaseDirectory);
             if (!Directory.Exists(UpdateBinFolder))
                 return UpdateErrorCodes.UpdateVersionNotFound;
             if (!File.Exists(Path.Combine(UpdateBinFolder, ExeFileName)))
                 return UpdateErrorCodes.UpdateVersionMissingExe;
-
-            try
-            {
-                var pid = updParams.ProcessId;
-                if (pid.HasValue)
-                    Process.GetProcessById(pid.Value);
-            }
-            catch
-            {
-                return UpdateErrorCodes.InvalidProcessId;
-            }
 
             return UpdateErrorCodes.NoError;
         }

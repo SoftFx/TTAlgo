@@ -1,0 +1,20 @@
+{
+  "profiles": {
+    "TerminalUpdate": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "TTAlgoUpdater_AppType": "Terminal",
+        "TTAlgoUpdater_InstallPath": "d:\\workspace\\AlgoTerminal_upd",
+        "TTAlgoUpdater_UpdatePath": "d:\\workspace\\AlgoTerminal_upd\\UpdateCache\\current\\update"
+      }
+    },
+    "ServerUpdate": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "TTAlgoUpdater_AppType": "Server",
+        "TTAlgoUpdater_InstallPath": "d:\\workspace\\AlgoServer_upd",
+        "TTAlgoUpdater_UpdatePath": "d:\\workspace\\AlgoServer_upd\\UpdateCache\\current\\update"
+      }
+    }
+  }
+}

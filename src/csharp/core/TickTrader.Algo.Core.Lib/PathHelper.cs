@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Core.Lib
 
             foreach(var srcSubDir in subDirs)
             {
-                var dstSubDir = Path.Combine(dstDir, Path.GetDirectoryName(srcSubDir));
+                var dstSubDir = Path.Combine(dstDir, Path.GetFileName(srcSubDir));
                 CopyDirectory(srcSubDir, dstSubDir, recursive, overwrite);
             }
         }

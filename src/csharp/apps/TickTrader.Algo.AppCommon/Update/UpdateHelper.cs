@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -29,10 +29,10 @@ namespace TickTrader.Algo.AppCommon.Update
         public static UpdateErrorCodes RunUpdate(string updatePath, UpdaterParams updParams)
         {
             var updaterExe = Path.Combine(updatePath, UpdaterFileName);
-            var startInfo = new ProcessStartInfo(updaterExe) { UseShellExecute = true, WorkingDirectory = updatePath };
+            var startInfo = new ProcessStartInfo(updaterExe) { UseShellExecute = false, WorkingDirectory = updatePath };
             updParams.SaveAsEnvVars(startInfo.Environment);
 
-            var proc = Process.Start(updaterExe);
+            var proc = Process.Start(startInfo);
             proc.WaitForExit(UpdateFailTimeout); // wait in case of any issues with update
 
             if (proc.HasExited)
