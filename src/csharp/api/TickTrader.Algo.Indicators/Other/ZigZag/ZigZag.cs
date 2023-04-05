@@ -85,11 +85,21 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
                 _prevLastHigh = _lastHigh;
                 _low.ApplyChanges();
                 _high.ApplyChanges();
+                if (_low.Count == Bars.Count)
+                {
+                    _low.RemoveAt(0);
+                    _high.RemoveAt(0);
+                    _lastLowPos--; _prevLastLowPos--;
+                    _lastHighPos--; _prevLastHighPos--;
+                }
             }
-            _lastLow = _prevLastLow;
-            _lastHigh = _prevLastHigh;
-            _low.RevertChanges();
-            _high.RevertChanges();
+            else
+            {
+                _lastLow = _prevLastLow;
+                _lastHigh = _prevLastHigh;
+                _low.RevertChanges();
+                _high.RevertChanges();
+            }
             _low.Add(double.NaN);
             _high.Add(double.NaN);
             if (Bars.Count >= Math.Max(Depth, Backstep))
@@ -180,6 +190,8 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
         private void DrawZigZagSection(bool isVisible = true)
         {
             if (double.IsNaN(_lastZzLow) || double.IsNaN(_lastZzHigh))
+                return;
+            if (_lastLowPos < 0 || _lastHighPos < 0)
                 return;
             var n = Bars.Count - 1;
             var start = Math.Min(_lastHighPos, _lastLowPos);
