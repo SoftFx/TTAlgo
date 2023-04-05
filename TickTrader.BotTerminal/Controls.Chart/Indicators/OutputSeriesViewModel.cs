@@ -137,7 +137,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public DynamicOutputSeriesViewModel(OutputSeriesProxy output, IndicatorChartSettings settings)
         {
             _output = output;
-            _observablePoints = _points.Select(IndicatorPointsFactory.GetDefaultPoint).Chain().AsObservable();
+            _observablePoints = _points.Where(p => !double.IsNaN(p.Value)).Chain().Select(IndicatorPointsFactory.GetDefaultPoint).Chain().AsObservable();
             Series = CartesianOutputSeries.CreateSeries(output.Descriptor, output.Config, settings);
             Series.Values = _observablePoints;
         }
@@ -154,36 +154,25 @@ namespace TickTrader.BotTerminal.Controls.Chart
             var updates = _output.TakePendingUpdates();
             foreach (var update in updates)
             {
+                // Internally output buffer is index based, sparse buffers will have very few real points
+                // We should preserve all original points to remove correct points when buffers are truncated
+
                 switch (update.UpdateAction)
                 {
                     case DataSeriesUpdate.Types.Action.Append:
                     case DataSeriesUpdate.Types.Action.Update:
                         for (var i = 0; i < update.BufferTruncatedBy; i++)
                             _points.RemoveAt(0);
-                        foreach (var wirePoint in update.Points)
-                        {
-                            if (double.IsNaN(wirePoint.Value))
-                            {
-                                _points.Remove(new OutputPoint(new UtcTicks(wirePoint.Time), double.NaN));
-                            }
-                            else
-                            {
-                                var point = wirePoint.Unpack();
-                                _points.Add(point);
-                            }
-                        }
                         break;
                     case DataSeriesUpdate.Types.Action.Reset:
                         _points.Clear();
-                        foreach (var wirePoint in update.Points)
-                        {
-                            if (double.IsNaN(wirePoint.Value))
-                                continue; // NaN values don't exist on chart
-
-                            var point = wirePoint.Unpack();
-                            _points.Add(point);
-                        }
                         break;
+                }
+
+                foreach (var wirePoint in update.Points)
+                {
+                    var point = wirePoint.Unpack();
+                    _points.Add(point);
                 }
             }
         }
