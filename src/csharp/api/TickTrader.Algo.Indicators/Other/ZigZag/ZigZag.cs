@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
         [Output(DisplayName = "ZigZag", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries Zigzag { get; set; }
 
-        [Output(DisplayName = "ZigZag Line", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
+        //[Output(DisplayName = "ZigZag Line", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries ZigzagLine { get; set; }
 
         public int LastPositionChanged
@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
         {
             var pos = 0;
             Zigzag[pos] = double.NaN;
-            ZigzagLine[pos] = double.NaN;
+            //ZigzagLine[pos] = double.NaN;
             var n = Bars.Count - 1;
             if (isNewBar)
             {
@@ -189,19 +189,19 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
 
         private void DrawZigZagSection(bool isVisible = true)
         {
-            if (double.IsNaN(_lastZzLow) || double.IsNaN(_lastZzHigh))
-                return;
-            if (_lastLowPos < 0 || _lastHighPos < 0)
-                return;
-            var n = Bars.Count - 1;
-            var start = Math.Min(_lastHighPos, _lastLowPos);
-            var end = Math.Max(_lastHighPos, _lastLowPos);
-            var step = isVisible ? (Zigzag[n - end] - Zigzag[n - start])/(end - start) : double.NaN;
-            ZigzagLine[n - start] = Zigzag[n - start] + 0*step;
-            for (var i = start; i < end; i++)
-            {
-                ZigzagLine[n - i - 1] = ZigzagLine[n - i] + step;
-            }
+            //if (double.IsNaN(_lastZzLow) || double.IsNaN(_lastZzHigh))
+            //    return;
+            //if (_lastLowPos < 0 || _lastHighPos < 0)
+            //    return;
+            //var n = Bars.Count - 1;
+            //var start = Math.Min(_lastHighPos, _lastLowPos);
+            //var end = Math.Max(_lastHighPos, _lastLowPos);
+            //var step = isVisible ? (Zigzag[n - end] - Zigzag[n - start])/(end - start) : double.NaN;
+            //ZigzagLine[n - start] = Zigzag[n - start] + 0*step;
+            //for (var i = start; i < end; i++)
+            //{
+            //    ZigzagLine[n - i - 1] = ZigzagLine[n - i] + step;
+            //}
         }
 
         private void ApplyZigZagChanges()
