@@ -85,7 +85,8 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
                 _prevLastHigh = _lastHigh;
                 _low.ApplyChanges();
                 _high.ApplyChanges();
-                if (_low.Count == Bars.Count)
+                // if we get more than 1 new bar count will be lower than before
+                while (_low.Count >= Bars.Count)
                 {
                     _low.RemoveAt(0);
                     _high.RemoveAt(0);
