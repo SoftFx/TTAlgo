@@ -109,7 +109,7 @@ namespace TickTrader.BotTerminal.Controls.Chart
         public StaticOutputSeriesViewModel(OutputSeriesModel output, IndicatorChartSettings settings)
         {
             Series = CartesianOutputSeries.CreateSeries(output.Descriptor, output.Config, settings);
-            Series.Values = output.Values.Select(IndicatorPointsFactory.GetDefaultPoint).ToList();
+            Series.Values = output.Values.Where(p => !double.IsNaN(p.Value)).Select(IndicatorPointsFactory.GetDefaultPoint).ToList();
         }
 
 
