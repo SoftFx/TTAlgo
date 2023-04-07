@@ -1,8 +1,14 @@
-﻿using System;
+﻿using Serilog;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.AppCommon.Update;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Updater
 {
@@ -25,6 +31,9 @@ namespace TickTrader.Algo.Updater
         public string UpdateBinFolder { get; set; }
 
 
+        public event Action<string> StatusUpdated;
+
+
         public UpdateContext()
         {
             try
@@ -37,6 +46,9 @@ namespace TickTrader.Algo.Updater
                 ErrorCode = UpdateErrorCodes.InitError;
             }
         }
+
+
+        public Task RunUpdateAsync() => Task.Run(() => RunUpdate());
 
 
         private UpdateErrorCodes InitInternal()
@@ -79,5 +91,112 @@ namespace TickTrader.Algo.Updater
 
             return UpdateErrorCodes.NoError;
         }
+
+        public async Task RunUpdate()
+        {
+            var processesToStop = GetAllProcessesForFolder("TickTrader.Algo", CurrentBinFolder);
+
+            UpdateStatus("Waiting for app to stop...");
+            switch (AppType)
+            {
+                case UpdateAppTypes.Terminal:
+                    if (processesToStop.Count != 0)
+                    {
+                        var cnt = 0;
+                        while (processesToStop.Any(p => !p.HasExited))
+                        {
+                            if (cnt % 50 == 0)
+                            {
+                                var msgBuilder = new StringBuilder();
+                                msgBuilder.AppendLine("Waiting for stop of process: ");
+                                foreach (var p in processesToStop.Where(p => !p.HasExited)) msgBuilder.AppendLine($"{p.ProcessName} ({p.Id})");
+                                UpdateStatus(msgBuilder.ToString());
+                            }
+                            cnt++;
+                            await Task.Delay(100);
+                        }
+                    }
+                    break;
+                case UpdateAppTypes.Server:
+                    // Wait for StopService. ServiceId - ?
+                    break;
+            }
+            UpdateStatus("App stopped");
+
+            var rollbackFolder = InstallPathHelper.GetRollbackVersionFolder(InstallPath);
+            if (Directory.Exists(rollbackFolder))
+            {
+                UpdateStatus("Removing old rollback version...");
+                Directory.Delete(rollbackFolder, true);
+            }
+
+            Directory.Move(CurrentBinFolder, rollbackFolder);
+            UpdateStatus("Moved current version to rollback");
+
+            var copySuccess = true;
+            try
+            {
+                UpdateStatus("Copying new version files...");
+                PathHelper.CopyDirectory(UpdateBinFolder, CurrentBinFolder, true, false);
+                UpdateStatus("Finished copying new files");
+            }
+            catch (Exception ex)
+            {
+                copySuccess = false;
+                LogError("Copy new version failed", ex);
+            }
+
+            if (!copySuccess)
+            {
+                try
+                {
+                    UpdateStatus("Perfoming rollback...");
+                    Directory.Delete(CurrentBinFolder, true);
+                    Directory.Move(rollbackFolder, CurrentBinFolder);
+                    UpdateStatus("Rollback finished");
+                }
+                catch (Exception ex)
+                {
+                    LogError("Rollback failed", ex);
+                }
+            }
+
+            StartApp();
+        }
+
+        private void StartApp()
+        {
+            switch (AppType)
+            {
+                case UpdateAppTypes.Terminal:
+                    var exePath = Path.Combine(CurrentBinFolder, ExeFileName);
+                    Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true });
+                    break;
+                case UpdateAppTypes.Server:
+                    // Start service. ServiceId - ?
+                    break;
+            }
+        }
+
+        private void UpdateStatus(string msg)
+        {
+            Log.Information(msg);
+            StatusUpdated?.Invoke(msg);
+        }
+
+        private void LogError(string msg, Exception ex)
+        {
+            Log.Error(ex, msg);
+            StatusUpdated?.Invoke(msg);
+        }
+
+
+        private static List<Process> GetAllProcessesForFolder(string processNamePrefix, string folderPath)
+            => !string.IsNullOrEmpty(processNamePrefix)
+                ? Process.GetProcesses().Where(p => p.ProcessName.StartsWith(processNamePrefix) && IsProcessMainFileInFolder(p, folderPath)).ToList()
+                : Process.GetProcesses().Where(p => p.Id != 0 && p.Id != 4 && IsProcessMainFileInFolder(p, folderPath)).ToList();
+
+        private static bool IsProcessMainFileInFolder(Process p, string folderPath)
+            => p.MainModule?.FileName?.StartsWith(folderPath, StringComparison.OrdinalIgnoreCase) ?? false;
     }
 }
