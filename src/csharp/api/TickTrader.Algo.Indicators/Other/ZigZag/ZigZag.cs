@@ -85,14 +85,6 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
                 _prevLastHigh = _lastHigh;
                 _low.ApplyChanges();
                 _high.ApplyChanges();
-                // if we get more than 1 new bar count will be lower than before
-                while (_low.Count >= Bars.Count)
-                {
-                    _low.RemoveAt(0);
-                    _high.RemoveAt(0);
-                    _lastLowPos--; _prevLastLowPos--;
-                    _lastHighPos--; _prevLastHighPos--;
-                }
             }
             else
             {
@@ -100,6 +92,15 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
                 _lastHigh = _prevLastHigh;
                 _low.RevertChanges();
                 _high.RevertChanges();
+            }
+            // if we get more than 1 new bar count will be lower than before
+            // same thing happens when update to previous bar arrives together with new
+            while (_low.Count >= Bars.Count)
+            {
+                _low.RemoveAt(0);
+                _high.RemoveAt(0);
+                _lastLowPos--; _prevLastLowPos--;
+                _lastHighPos--; _prevLastHighPos--;
             }
             _low.Add(double.NaN);
             _high.Add(double.NaN);
