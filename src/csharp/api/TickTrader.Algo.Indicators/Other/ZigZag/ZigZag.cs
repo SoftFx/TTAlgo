@@ -6,7 +6,7 @@ using TickTrader.Algo.Indicators.Utility;
 namespace TickTrader.Algo.Indicators.Other.ZigZag
 {
 
-    [Indicator(Category = "Other", DisplayName = "ZigZag", Version = "1.0")]
+    [Indicator(Category = "Other", DisplayName = "ZigZag", Version = "1.1")]
     public class ZigZag : Indicator, IZigZag
     {
         private bool? _peakNext, _prevPeakNext;
