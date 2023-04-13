@@ -60,6 +60,9 @@ namespace TickTrader.Algo.BacktesterApi
                 if (!TryReadEntry<VersionInfo>(zip, "version.json", out var version, out var error))
                     return error;
 
+                if (version.ResultValue.ConfigVersion > VersionInfo.CurrentVersion)
+                    return new Result<BacktesterConfig>($"Config version is not supported {version.ResultValue.ConfigVersion} > {VersionInfo.CurrentVersion}");
+
                 if (!TryReadEntry<CoreConfig>(zip, "core.json", out var core, out error))
                     return error;
 
@@ -178,7 +181,9 @@ namespace TickTrader.Algo.BacktesterApi
 
         private class VersionInfo
         {
-            public int ConfigVersion { get; set; } = 1;
+            public const int CurrentVersion = 1;
+
+            public int ConfigVersion { get; set; } = CurrentVersion;
             public string PluginConfigUri { get; set; } = Algo.Core.Config.PluginConfig.XmlUri;
             public string PluginConfigSubPath { get; set; } = "plugin-cfg.apr";
         }

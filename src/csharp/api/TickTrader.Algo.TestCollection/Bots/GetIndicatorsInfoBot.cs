@@ -269,7 +269,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     Status.WriteLine($"HeikenAshi Close: {_ha.HaClose[0]:F9}\n");
 
                     Status.WriteLine($"ZigZag: {_zz.Zigzag[0]:F9}");
-                    Status.WriteLine($"ZigZag line: {_zz.ZigzagLine[0]:F9}\n");
+                    //Status.WriteLine($"ZigZag line: {_zz.ZigzagLine[0]:F9}\n");
 
                     break;
 
