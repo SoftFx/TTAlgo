@@ -1,4 +1,6 @@
-﻿namespace TickTrader.Algo.Api.Indicators
+﻿using System;
+
+namespace TickTrader.Algo.Api.Indicators
 {
     public interface IZigZag
     {
@@ -12,6 +14,7 @@
 
         DataSeries Zigzag { get; }
 
+        [Obsolete("Deprecated. No longer calculated")]
         DataSeries ZigzagLine { get; }
 
         int LastPositionChanged { get; }
