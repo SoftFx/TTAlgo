@@ -12,26 +12,39 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Updater
 {
+    public interface IUpdateObserver
+    {
+        void OnStatusUpdated(string msg);
+
+        bool KillQuestionCallback(string msg);
+
+        void OnCompleted();
+    }
+
+
     public class UpdateContext
     {
-        public UpdateErrorCodes ErrorCode { get; set; }
+        private const int KillQuestionDelayCnt = 100;
+        private const int SuccessStartTimeout = 10000;
+
+
+        public UpdateErrorCodes ErrorCode { get; private set; }
 
         public bool HasError => ErrorCode != UpdateErrorCodes.NoError;
 
-        public Exception ErrorDetails { get; set; }
+        public Exception ErrorDetails { get; private set; }
 
-        public UpdateAppTypes AppType { get; set; }
+        public UpdateAppTypes AppType { get; private set; }
 
-        public string ExeFileName { get; set; }
+        public string ExeFileName { get; private set; }
 
-        public string InstallPath { get; set; }
+        public string InstallPath { get; private set; }
 
-        public string CurrentBinFolder { get; set; }
+        public string CurrentBinFolder { get; private set; }
 
-        public string UpdateBinFolder { get; set; }
+        public string UpdateBinFolder { get; private set; }
 
-
-        public event Action<string> StatusUpdated;
+        public IUpdateObserver UpdateObserver { get; set; }
 
 
         public UpdateContext()
@@ -97,29 +110,39 @@ namespace TickTrader.Algo.Updater
             var processesToStop = GetAllProcessesForFolder("TickTrader.Algo", CurrentBinFolder);
 
             UpdateStatus("Waiting for app to stop...");
-            switch (AppType)
+            if (processesToStop.Count != 0)
             {
-                case UpdateAppTypes.Terminal:
-                    if (processesToStop.Count != 0)
+                var cnt = 0;
+                while (processesToStop.Any(p => !p.HasExited))
+                {
+                    cnt++;
+                    await Task.Delay(100);
+                    if (cnt % KillQuestionDelayCnt == 0 && UpdateObserver != null)
                     {
-                        var cnt = 0;
-                        while (processesToStop.Any(p => !p.HasExited))
+                        var msgBuilder = new StringBuilder();
+                        msgBuilder.AppendLine("Waiting for stop of process: ");
+                        foreach (var p in processesToStop.Where(p => !p.HasExited)) msgBuilder.AppendLine($"{p.ProcessName} ({p.Id})");
+                        msgBuilder.AppendLine("Kill now?");
+
+                        var killNowFlag = UpdateObserver.KillQuestionCallback(msgBuilder.ToString());
+                        if (killNowFlag)
                         {
-                            if (cnt % 50 == 0)
+                            switch (AppType)
                             {
-                                var msgBuilder = new StringBuilder();
-                                msgBuilder.AppendLine("Waiting for stop of process: ");
-                                foreach (var p in processesToStop.Where(p => !p.HasExited)) msgBuilder.AppendLine($"{p.ProcessName} ({p.Id})");
-                                UpdateStatus(msgBuilder.ToString());
+                                case UpdateAppTypes.Terminal:
+                                    foreach (var p in processesToStop)
+                                    {
+                                        if (!p.HasExited)
+                                            p.Kill();
+                                    }
+                                    break;
+                                case UpdateAppTypes.Server:
+                                    // Wait for StopService. ServiceId - ?
+                                    break;
                             }
-                            cnt++;
-                            await Task.Delay(100);
                         }
                     }
-                    break;
-                case UpdateAppTypes.Server:
-                    // Wait for StopService. ServiceId - ?
-                    break;
+                }
             }
             UpdateStatus("App stopped");
 
@@ -146,14 +169,25 @@ namespace TickTrader.Algo.Updater
                 LogError("Copy new version failed", ex);
             }
 
-            if (!copySuccess)
+            var startSuccess = true;
+            if (copySuccess)
+            {
+                UpdateStatus("Starting new version...");
+                startSuccess = await StartApp();
+            }
+
+            if (!copySuccess || !startSuccess)
             {
                 try
                 {
                     UpdateStatus("Perfoming rollback...");
+                    await Task.Delay(1000); // wait for files to release
                     Directory.Delete(CurrentBinFolder, true);
                     Directory.Move(rollbackFolder, CurrentBinFolder);
                     UpdateStatus("Rollback finished");
+
+                    UpdateStatus("Starting rollback version...");
+                    _ = await StartApp();
                 }
                 catch (Exception ex)
                 {
@@ -161,33 +195,49 @@ namespace TickTrader.Algo.Updater
                 }
             }
 
-            StartApp();
+            UpdateObserver?.OnCompleted();
         }
 
-        private void StartApp()
+        private async Task<bool> StartApp()
         {
-            switch (AppType)
+            try
             {
-                case UpdateAppTypes.Terminal:
-                    var exePath = Path.Combine(CurrentBinFolder, ExeFileName);
-                    Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true });
-                    break;
-                case UpdateAppTypes.Server:
-                    // Start service. ServiceId - ?
-                    break;
+                switch (AppType)
+                {
+                    case UpdateAppTypes.Terminal:
+                        var exePath = Path.Combine(CurrentBinFolder, ExeFileName);
+                        var p = Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true });
+                        await Task.WhenAny(p.WaitForExitAsync(), Task.Delay(SuccessStartTimeout));
+                        if (p.HasExited && p.ExitCode != 0)
+                        {
+                            UpdateStatus($"Start failed. Exit code: {p.ExitCode}");
+                            return false;
+                        }
+                        break;
+                    case UpdateAppTypes.Server:
+                        // Start service. ServiceId - ?
+                        break;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogError("StartApp failed", ex);
+                return false;
             }
         }
 
         private void UpdateStatus(string msg)
         {
             Log.Information(msg);
-            StatusUpdated?.Invoke(msg);
+            UpdateObserver?.OnStatusUpdated(msg);
         }
 
         private void LogError(string msg, Exception ex)
         {
             Log.Error(ex, msg);
-            StatusUpdated?.Invoke(msg);
+            UpdateObserver?.OnStatusUpdated(msg);
         }
 
 

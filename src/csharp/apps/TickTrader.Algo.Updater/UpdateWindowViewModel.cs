@@ -1,8 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Windows;
 
 namespace TickTrader.Algo.Updater
 {
-    internal partial class UpdateWindowViewModel : ObservableObject
+    internal partial class UpdateWindowViewModel : ObservableObject, IUpdateObserver
     {
         private static UpdateContext _ctx;
 
@@ -20,10 +21,21 @@ namespace TickTrader.Algo.Updater
 
             if (_ctx != null) // Remove design-time error
             {
-                _ctx.StatusUpdated += msg => Status = msg;
+                _ctx.UpdateObserver = this;
 
                 _ = _ctx.RunUpdateAsync();
             }
         }
+
+
+        public void OnStatusUpdated(string msg) => Status = msg;
+
+        public bool KillQuestionCallback(string msg)
+        {
+            var msgRes = MessageBox.Show(msg, "", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            return msgRes == MessageBoxResult.Yes;
+        }
+
+        public void OnCompleted() => App.Current.Dispatcher.BeginInvoke(() => App.Current.Shutdown());
     }
 }
