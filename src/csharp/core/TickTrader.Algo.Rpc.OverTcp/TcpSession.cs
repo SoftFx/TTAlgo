@@ -237,7 +237,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
             {
                 while (!cancelToken.IsCancellationRequested)
                 {
-                    var read = await _socket.ReceiveAsync(new ArraySegment<byte>(_recieveBuffer, 0, _socket.ReceiveBufferSize), SocketFlags.None).ConfigureAwait(false);
+                    var read = await _socket.ReceiveAsync(new ArraySegment<byte>(_recieveBuffer, 0, _recieveBuffer.Length), SocketFlags.None).ConfigureAwait(false);
                     //var read = await Task.Factory.FromAsync(socketBeginReceive, socketEndReceive, _recieveBuffer, null).ConfigureAwait(false);
                     if (read == 0)
                         break;

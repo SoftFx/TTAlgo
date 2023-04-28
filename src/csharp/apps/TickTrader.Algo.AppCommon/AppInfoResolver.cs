@@ -83,7 +83,7 @@ namespace TickTrader.Algo.AppCommon
                         InitDevDir(appInfoPath);
 
                     if (!File.Exists(appInfoPath))
-                        throw new Exception($"Invalid install: Can't find '{DataFileName}'");
+                        throw new Exception($"Invalid install: Can't find '{DataFileName}' in '{_appInfoFolder}'");
 
                     _info = AppInfo.LoadFromJson(appInfoPath);
                     _dataPath = (IgnorePortableFlag || _info.IsPortable)
