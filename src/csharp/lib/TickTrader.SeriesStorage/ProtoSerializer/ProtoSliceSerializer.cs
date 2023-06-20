@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace TickTrader.SeriesStorage.ProtoSerializer
 {
@@ -7,17 +6,14 @@ namespace TickTrader.SeriesStorage.ProtoSerializer
     {
         public TValue[] Deserialize(ArraySegment<byte> bytes)
         {
-            using (var stream = new MemoryStream(bytes.Array, bytes.Offset, bytes.Count))
-                return ProtoBuf.Serializer.Deserialize<TValue[]>(stream);
+            return ProtoBuf.Serializer.Deserialize<TValue[]>(bytes.AsSpan());
         }
 
         public ArraySegment<byte> Serialize(TValue[] val)
         {
-            using (var stream = new MemoryStream())
-            {
-                ProtoBuf.Serializer.Serialize(stream, val);
-                return new ArraySegment<byte>(stream.GetBuffer(), 0, (int)stream.Length);
-            }
+            var buffer = new Lib.ArrayBufferWriter2<byte>(4096);
+            ProtoBuf.Serializer.Serialize(buffer, val);
+            return new ArraySegment<byte>(buffer.Buffer, 0, buffer.WrittenCount);
         }
     }
 }
