@@ -49,10 +49,10 @@ namespace TickTrader.BotAgent
             PkgLoader.InitDefaults();
 
             var logger = LogManager.GetLogger(nameof(Program));
-
-            SetupGlobalExceptionLogging(logger);
-
             LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
+            SetupGlobalExceptionLogging(logger);
+            logger.Info(AppInfoProvider.GetStatus());
+
             try
             {
                 CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());

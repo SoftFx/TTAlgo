@@ -12,6 +12,8 @@ namespace TickTrader.Algo.AppCommon
         public string DataFileName { get; init; } = "appinfo.json";
 
         public string AppShortName { get; init; } = "Terminal";
+
+        public int LookupPathLevels { get; init; } = 3;
     }
 
     public class AppInfoResolved
@@ -28,7 +30,11 @@ namespace TickTrader.Algo.AppCommon
 
         public string AppInfoFolder { get; private set; }
 
+        public bool IsInstallDir { get; private set; }
+
         public bool IsDevDir { get; private set; }
+
+        public bool IsDataPathPortable { get; private set; }
 
 
         private AppInfoResolved() { }
@@ -36,27 +42,33 @@ namespace TickTrader.Algo.AppCommon
 
         public static AppInfoResolved Create(ResolveAppInfoRequest request)
         {
-            var res = new AppInfoResolved { Request = request };
+            var res = new AppInfoResolved
+            {
+                Request = request,
+                DataPath = request.BinFolder, // fallback
+            };
             try
             {
                 res.ResolveAppInfoFolder();
                 var appInfoPath = Path.Combine(res.AppInfoFolder, request.DataFileName);
 
-                if (res.IsDevDir)
-                    InitDevDir(appInfoPath);
-
                 if (!File.Exists(appInfoPath))
-                    throw new Exception($"Invalid install: Can't find '{request.DataFileName}' in '{res.AppInfoFolder}'");
-
-                res.Info = AppInfo.LoadFromJson(appInfoPath);
-                res.DataPath = (request.IgnorePortableFlag || res.Info.IsPortable)
-                    ? res.ResolvePortablePath()
-                    : res.ResolveLocalAppDataPath();
+                {
+                    if (res.IsInstallDir)
+                        throw new Exception($"Invalid install: Can't find '{request.DataFileName}' in '{res.AppInfoFolder}'");
+                }
+                else
+                {
+                    res.Info = AppInfo.LoadFromJson(appInfoPath);
+                    res.IsDataPathPortable = request.IgnorePortableFlag || res.Info.IsPortable;
+                    res.DataPath = res.IsDataPathPortable
+                        ? res.ResolvePortablePath()
+                        : res.ResolveLocalAppDataPath();
+                }
             }
             catch (Exception ex)
             {
                 res.Error = ex;
-                res.DataPath = null;
             }
 
             return res;
@@ -70,8 +82,9 @@ namespace TickTrader.Algo.AppCommon
             var n = pathParts.Length;
 
             // Expected install dir pattern: {some_path}/app/bin/current
-            if (n <= 3)
-                throw new Exception("Invalid install path. Can't find app directory");
+            IsInstallDir = n > 3
+                && string.Equals(pathParts[n - 2], "bin", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(pathParts[n - 1], "current", StringComparison.OrdinalIgnoreCase);
 
             // Expected build dir pattern: {some_path}/project/bin/[debug|release]/{tfm}
             IsDevDir = n > 4
@@ -79,16 +92,25 @@ namespace TickTrader.Algo.AppCommon
                 && (string.Equals(pathParts[n - 2], "release", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(pathParts[n - 2], "debug", StringComparison.OrdinalIgnoreCase));
 
-            AppInfoFolder = Path.GetFullPath(Path.Combine(binFolder, "..", "..")); // simplify path
-        }
-
-        private static void InitDevDir(string appInfoPath)
-        {
-            if (File.Exists(appInfoPath))
-                return;
-
-            var appInfo = new AppInfo { IsPortable = true, InstallId = "dev", DataPath = "data" };
-            appInfo.SaveAsJson(appInfoPath);
+            if (IsInstallDir)
+            {
+                AppInfoFolder = Path.GetFullPath(Path.Combine(binFolder, "..", "..")); // simplify path
+            }
+            else
+            {
+                var tmpPath = binFolder;
+                var cnt = 0;
+                while (cnt <= Request.LookupPathLevels)
+                {
+                    if (File.Exists(Path.Combine(tmpPath, Request.DataFileName)))
+                        break;
+                    tmpPath = Path.Combine(tmpPath, "..");
+                    cnt++;
+                }
+                AppInfoFolder = cnt > Request.LookupPathLevels
+                    ? binFolder // fallback
+                    : Path.GetFullPath(tmpPath); // simplify path
+            }
         }
 
         private string ResolveLocalAppDataPath()

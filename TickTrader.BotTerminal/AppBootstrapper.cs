@@ -54,6 +54,7 @@ namespace TickTrader.BotTerminal
                 ConfigureCaliburn();
                 ConfigurateLogger();
                 ConfigureGlobalExceptionHandling();
+                logger.Info(AppInfoProvider.GetStatus());
 
                 PkgLoader.InitDefaults();
                 BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
