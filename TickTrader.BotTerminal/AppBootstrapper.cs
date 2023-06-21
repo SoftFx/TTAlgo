@@ -44,17 +44,22 @@ namespace TickTrader.BotTerminal
             LocaleSelector.Instance.ActivateDefault();
             Initialize();
 
-            ValidateAppInfo();
-            Directory.SetCurrentDirectory(AppInfoProvider.DataPath);
+            ResolveAppInfo();
 
             _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
             _hasWriteAccess = HasWriteAccess();
             if (_hasWriteAccess)
             {
                 ConfigureCaliburn();
+                if (Execute.InDesignMode)
+                    return;
+
                 ConfigurateLogger();
                 ConfigureGlobalExceptionHandling();
                 logger.Info(AppInfoProvider.GetStatus());
+                var err = AppAccessInfo.AddAccessRecord(AppInfoProvider.DataPath);
+                if (err != null)
+                    logger.Error(err, "Failed to add access record");
 
                 PkgLoader.InitDefaults();
                 BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
@@ -63,9 +68,13 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private static void ValidateAppInfo()
+        private static void ResolveAppInfo()
         {
             AppInfoProvider.Init();
+
+            if (Execute.InDesignMode)
+                return;
+
             if (AppInfoProvider.HasError)
             {
                 MessageBox.Show($"Failed to resolve app folder. Check windows logs for details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -77,8 +86,9 @@ namespace TickTrader.BotTerminal
                 MessageBox.Show(err, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.FailFast(err);
             }
+            Directory.SetCurrentDirectory(AppInfoProvider.DataPath);
         }
-        
+
         private static void ConfigureCaliburn()
         {
             ViewLocator.AddDefaultTypeMapping("Page");

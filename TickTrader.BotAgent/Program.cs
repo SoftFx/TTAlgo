@@ -38,8 +38,7 @@ namespace TickTrader.BotAgent
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
-            ValidateAppInfo();
-            Directory.SetCurrentDirectory(AppInfoProvider.DataPath); // used in nlog.config
+            ResolveAppInfo();
 
             NonBlockingFileCompressor.Setup();
 
@@ -52,6 +51,9 @@ namespace TickTrader.BotAgent
             LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
             SetupGlobalExceptionLogging(logger);
             logger.Info(AppInfoProvider.GetStatus());
+            var err = AppAccessInfo.AddAccessRecord(AppInfoProvider.DataPath);
+            if (err != null)
+                logger.Error(err, "Failed to add access record");
 
             try
             {
@@ -178,7 +180,7 @@ namespace TickTrader.BotAgent
             ActorSystem.ActorFailed.Subscribe(ex => log.Fatal(ex));
         }
 
-        private static void ValidateAppInfo()
+        private static void ResolveAppInfo()
         {
             AppInfoProvider.Init(new ResolveAppInfoRequest { IgnorePortableFlag = true });
             if (AppInfoProvider.HasError)
@@ -190,6 +192,8 @@ namespace TickTrader.BotAgent
                 const string err = "Unexpected error: app folder resolved to empty string";
                 Environment.FailFast(err);
             }
+
+            Directory.SetCurrentDirectory(AppInfoProvider.DataPath); // used in nlog.config
         }
     }
 }
