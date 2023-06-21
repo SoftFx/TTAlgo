@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
             {
                 if (_instance == null)
                 {
-                    var appFolder = AppInfoResolver.DataPath;
+                    var appFolder = AppInfoProvider.DataPath;
                     if (string.IsNullOrEmpty(appFolder))
                         // Before first caller MUST validate AppFolderResolver.Result manually and inpect Errors 
                         throw new ArgumentException("Invalid app folder");

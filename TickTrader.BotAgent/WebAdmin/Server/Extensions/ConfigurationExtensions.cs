@@ -105,7 +105,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             if (protocolConfig.InsecurePort > 65535)
                 throw new ArgumentException("Invalid InsecurePort number");
 
-            var logDirectory = Path.Combine(AppInfoResolver.DataPath, protocolConfig.LogDirectoryName);
+            var logDirectory = Path.Combine(AppInfoProvider.DataPath, protocolConfig.LogDirectoryName);
 
             var serverSettings = new ServerSettings(logDirectory, protocolConfig.LogMessages);
 

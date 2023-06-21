@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
             Initialize();
 
             ValidateAppInfo();
-            Directory.SetCurrentDirectory(AppInfoResolver.DataPath);
+            Directory.SetCurrentDirectory(AppInfoProvider.DataPath);
 
             _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
             _hasWriteAccess = HasWriteAccess();
@@ -64,13 +64,13 @@ namespace TickTrader.BotTerminal
 
         private static void ValidateAppInfo()
         {
-            AppInfoResolver.Init();
-            if (AppInfoResolver.HasError)
+            AppInfoProvider.Init();
+            if (AppInfoProvider.HasError)
             {
                 MessageBox.Show($"Failed to resolve app folder. Check windows logs for details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                Environment.FailFast("Failed to resolve app folder", AppInfoResolver.Error);
+                Environment.FailFast("Failed to resolve app folder", AppInfoProvider.Error);
             }
-            else if (string.IsNullOrEmpty(AppInfoResolver.DataPath))
+            else if (string.IsNullOrEmpty(AppInfoProvider.DataPath))
             {
                 const string err = "Unexpected error: app folder resolved to empty string";
                 MessageBox.Show(err, "Error", MessageBoxButton.OK, MessageBoxImage.Error);

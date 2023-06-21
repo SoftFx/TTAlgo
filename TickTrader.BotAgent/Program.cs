@@ -39,7 +39,7 @@ namespace TickTrader.BotAgent
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
             ValidateAppInfo();
-            Directory.SetCurrentDirectory(AppInfoResolver.DataPath); // used in nlog.config
+            Directory.SetCurrentDirectory(AppInfoProvider.DataPath); // used in nlog.config
 
             NonBlockingFileCompressor.Setup();
 
@@ -83,13 +83,13 @@ namespace TickTrader.BotAgent
         {
             Console.WriteLine(launchSettings);
 
-            var pathToContentRoot = AppInfoResolver.DataPath;
+            var pathToContentRoot = AppInfoProvider.DataPath;
             var pathToWebAdmin = Path.Combine(pathToContentRoot, "WebAdmin");
             PathHelper.EnsureDirectoryCreated(pathToWebAdmin);
             var pathToAppSettings = Path.Combine(pathToWebAdmin, "appsettings.json");
 
             var binDir = AppDomain.CurrentDomain.BaseDirectory;
-            var pathToWebRoot = AppInfoResolver.IsDevDir
+            var pathToWebRoot = AppInfoProvider.Data.IsDevDir
                 ? Path.Combine(binDir, "..", "..", "..", "WebAdmin", "wwwroot")
                 : Path.Combine(binDir, "WebAdmin", "wwwroot");
 
@@ -180,13 +180,12 @@ namespace TickTrader.BotAgent
 
         private static void ValidateAppInfo()
         {
-            AppInfoResolver.IgnorePortableFlag = true;
-            AppInfoResolver.Init();
-            if (AppInfoResolver.HasError)
+            AppInfoProvider.Init(new ResolveAppInfoRequest { IgnorePortableFlag = true });
+            if (AppInfoProvider.HasError)
             {
-                Environment.FailFast("Failed to resolve app folder", AppInfoResolver.Error);
+                Environment.FailFast("Failed to resolve app folder", AppInfoProvider.Error);
             }
-            else if (string.IsNullOrEmpty(AppInfoResolver.DataPath))
+            else if (string.IsNullOrEmpty(AppInfoProvider.DataPath))
             {
                 const string err = "Unexpected error: app folder resolved to empty string";
                 Environment.FailFast(err);

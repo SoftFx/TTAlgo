@@ -19,7 +19,7 @@ namespace TickTrader.BotAgent.BA.Models
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<ServerModel>();
 
-        private static readonly EnvService envService = new(AppInfoResolver.DataPath);
+        private static readonly EnvService envService = new(AppInfoProvider.DataPath);
         private static readonly string cfgFilePath = Path.Combine(envService.AppFolder, "server.config.xml");
 
         [DataMember(Name = "accounts")]
@@ -41,7 +41,7 @@ namespace TickTrader.BotAgent.BA.Models
             var settings = new AlgoServerSettings();
             var monitoringSettings = config.GetMonitoringSettings();
 
-            settings.DataFolder = AppInfoResolver.DataPath;
+            settings.DataFolder = AppInfoProvider.DataPath;
             settings.EnableAccountLogs = config.GetFdkSettings().EnableLogs;
 
             settings.HostSettings.RuntimeSettings.RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
