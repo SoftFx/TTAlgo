@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Updater
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
-                .WriteTo.File($"Logs/{DateTime.UtcNow:yyyy-MM-dd-hh-mm-ss}-update.log")
+                .WriteTo.File(UpdateHelper.LogFileName)
                 .CreateLogger();
 
 

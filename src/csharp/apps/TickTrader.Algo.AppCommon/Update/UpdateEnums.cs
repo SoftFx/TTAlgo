@@ -17,4 +17,12 @@
         Terminal = 0,
         Server = 1,
     }
+
+    public enum UpdateStatusCodes
+    {
+        Completed = 0,
+        InitError = 1,
+        UpdateError = 2,
+        Rollback = 3,
+    }
 }
