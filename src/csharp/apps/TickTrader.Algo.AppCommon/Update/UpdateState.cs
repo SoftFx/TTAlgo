@@ -20,6 +20,8 @@ namespace TickTrader.Algo.AppCommon.Update
 
     public class UpdateState
     {
+        public int Version { get; set; } = 1;
+
         public UpdateParams Params { get; set; } = new UpdateParams();
 
         public int StatusCode { get; set; }
@@ -34,5 +36,10 @@ namespace TickTrader.Algo.AppCommon.Update
         public UpdateErrorCodes InitError => (UpdateErrorCodes)InitErrorCode;
 
         public bool HasErrors => InitErrorCode != 0 || UpdateErrors.Count > 0;
+
+
+        // Adding property setter will cause serialization to json
+        // Don't want JsonIgnore attribute as it adds a dependency
+        public void SetStatus(UpdateStatusCodes status) => StatusCode = (int)status;
     }
 }

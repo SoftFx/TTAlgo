@@ -14,11 +14,9 @@ namespace TickTrader.Algo.Updater
                 .WriteTo.File(UpdateHelper.LogFileName)
                 .CreateLogger();
 
-
             var ctx = new UpdateContext();
             if (ctx.HasError)
             {
-                Log.Error(ctx.ErrorDetails, $"Init failed with error code = {ctx.ErrorCode}");
                 Environment.Exit((int)ctx.ErrorCode);
                 return;
             }

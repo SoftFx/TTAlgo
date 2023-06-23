@@ -1,6 +1,7 @@
 ﻿using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -27,12 +28,14 @@ namespace TickTrader.Algo.Updater
         private const int KillQuestionDelayCnt = 100;
         private const int SuccessStartTimeout = 10000;
 
+        private readonly string _workDir = Directory.GetCurrentDirectory();
+
 
         public UpdateErrorCodes ErrorCode { get; private set; }
 
         public bool HasError => ErrorCode != UpdateErrorCodes.NoError;
 
-        public Exception ErrorDetails { get; private set; }
+        public UpdateState State { get; private set; }
 
         public UpdateAppTypes AppType { get; private set; }
 
@@ -51,12 +54,34 @@ namespace TickTrader.Algo.Updater
         {
             try
             {
-                ErrorCode = InitInternal();
+                State = UpdateHelper.LoadUpdateState(_workDir);
             }
             catch (Exception ex)
             {
-                ErrorDetails = ex;
                 ErrorCode = UpdateErrorCodes.InitError;
+                Log.Error(ex, "Failed to load UpdateState");
+            }
+
+            if (!HasError && State != null)
+            {
+                try
+                {
+                    ErrorCode = InitInternal();
+                    if (HasError)
+                        LogError($"Init failed with error code = {ErrorCode}");
+                }
+                catch (Exception ex)
+                {
+                    ErrorCode = UpdateErrorCodes.InitError;
+                    LogError("Init failed with generic error", ex);
+                }
+
+                if (HasError)
+                {
+                    State.InitErrorCode = (int)ErrorCode;
+                    State.SetStatus(UpdateStatusCodes.InitFailed);
+                    TrySaveState();
+                }
             }
         }
 
@@ -66,23 +91,14 @@ namespace TickTrader.Algo.Updater
 
         private UpdateErrorCodes InitInternal()
         {
-            UpdaterParams updParams;
-            try
-            {
-                updParams = UpdaterParams.ParseFromEnvVars(Environment.GetEnvironmentVariables());
-            }
-            catch (Exception ex)
-            {
-                ErrorDetails = ex;
-                return UpdateErrorCodes.InitError;
-            }
+            var updParams = State.Params;
             if (updParams == null)
-                return UpdateErrorCodes.InitError;
+                return UpdateErrorCodes.MissingParams;
 
-            if (!updParams.AppType.HasValue)
-                return UpdateErrorCodes.InvalidAppType;
-            AppType = updParams.AppType.Value;
+            if (State.Status != UpdateStatusCodes.Pending)
+                return UpdateErrorCodes.IncorrectStatus;
 
+            AppType = updParams.AppType;
             ExeFileName = UpdateHelper.GetAppExeFileName(AppType);
             if (string.IsNullOrEmpty(ExeFileName))
                 return UpdateErrorCodes.UnexpectedAppType;
@@ -105,6 +121,18 @@ namespace TickTrader.Algo.Updater
             return UpdateErrorCodes.NoError;
         }
 
+        private void TrySaveState()
+        {
+            try
+            {
+                UpdateHelper.SaveUpdateState(_workDir, State);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to save UpdateState");
+            }
+        }
+
         private async Task RunUpdate()
         {
             try
@@ -114,8 +142,10 @@ namespace TickTrader.Algo.Updater
             catch (Exception ex)
             {
                 LogError("Unexpected update error", ex);
+                State.SetStatus(UpdateStatusCodes.UpdateError);
             }
 
+            TrySaveState();
             UpdateObserver?.OnCompleted();
         }
 
@@ -125,6 +155,7 @@ namespace TickTrader.Algo.Updater
             var stopSuccess = await StopApp();
             if (!stopSuccess)
             {
+                State.SetStatus(UpdateStatusCodes.UpdateError);
                 UpdateStatus("Starting old version...");
                 _ = await StartApp();
                 return;
@@ -135,48 +166,52 @@ namespace TickTrader.Algo.Updater
             if (Directory.Exists(rollbackFolder))
             {
                 UpdateStatus("Removing old rollback version...");
-                Directory.Delete(rollbackFolder, true);
+                await SafeFSAction("Remove rollback version", () => Directory.Delete(rollbackFolder, true));
             }
 
-            Directory.Move(CurrentBinFolder, rollbackFolder);
+            await SafeFSAction("Move version current->rollback", () => Directory.Move(CurrentBinFolder, rollbackFolder));
             UpdateStatus("Moved current version to rollback");
 
-            var copySuccess = true;
+            var copySuccess = false;
             try
             {
                 UpdateStatus("Copying new version files...");
                 PathHelper.CopyDirectory(UpdateBinFolder, CurrentBinFolder, true, false);
                 UpdateStatus("Finished copying new files");
+                copySuccess = true;
             }
             catch (Exception ex)
             {
-                copySuccess = false;
                 LogError("Copy new version failed", ex);
             }
 
-            var startSuccess = true;
+            var startSuccess = false;
             if (copySuccess)
             {
                 UpdateStatus("Starting new version...");
                 startSuccess = await StartApp();
             }
 
+            if (startSuccess)
+                State.SetStatus(UpdateStatusCodes.Completed);
+
             if (!copySuccess || !startSuccess)
             {
                 try
                 {
                     UpdateStatus("Perfoming rollback...");
-                    await Task.Delay(1000); // wait for files to release
-                    Directory.Delete(CurrentBinFolder, true);
-                    Directory.Move(rollbackFolder, CurrentBinFolder);
+                    await SafeFSAction("Delete new version", () => Directory.Delete(CurrentBinFolder, true));
+                    await SafeFSAction("Restore version from rollback", () => Directory.Move(rollbackFolder, CurrentBinFolder));
                     UpdateStatus("Rollback finished");
 
                     UpdateStatus("Starting rollback version...");
-                    _ = await StartApp();
+                    var rollbackStarted = await StartApp();
+                    State.SetStatus(rollbackStarted ? UpdateStatusCodes.RollbackCompleted : UpdateStatusCodes.RollbackFailed);
                 }
                 catch (Exception ex)
                 {
                     LogError("Rollback failed", ex);
+                    State.SetStatus(UpdateStatusCodes.RollbackFailed);
                 }
             }
         }
@@ -282,10 +317,34 @@ namespace TickTrader.Algo.Updater
             UpdateObserver?.OnStatusUpdated(msg);
         }
 
-        private void LogError(string msg, Exception ex)
+        private void LogError(string msg, Exception ex = null)
         {
             Log.Error(ex, msg);
+            State?.UpdateErrors?.Add(msg);
             UpdateObserver?.OnStatusUpdated(msg);
+        }
+
+        private async Task SafeFSAction(string actionName, Action action)
+        {
+            // Windows doesn't always releases files immediately after process is killed
+            await Task.Delay(1000); // Initial delay
+            Exception error = null;
+            for (var i = 0; i < 3; i++)
+            {
+                try
+                {
+                    action();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    error = ex;
+                    Log.Error(ex, actionName);
+                }
+
+                await Task.Delay(7000); // delay between attempts
+            }
+            throw error;
         }
 
 

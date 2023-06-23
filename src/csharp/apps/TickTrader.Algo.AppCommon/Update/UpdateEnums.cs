@@ -4,12 +4,13 @@
     {
         NoError = 0,
         InitError = 1,
-        InvalidAppType = 2,
-        UnexpectedAppType = 3,
-        AppPathNotFound = 4,
-        CurrentVersionNotFound = 5,
-        UpdateVersionNotFound = 6,
-        UpdateVersionMissingExe = 7,
+        MissingParams = 2,
+        IncorrectStatus = 3,
+        UnexpectedAppType = 4,
+        AppPathNotFound = 5,
+        CurrentVersionNotFound = 6,
+        UpdateVersionNotFound = 7,
+        UpdateVersionMissingExe = 8,
     }
 
     public enum UpdateAppTypes
@@ -20,9 +21,11 @@
 
     public enum UpdateStatusCodes
     {
-        Completed = 0,
-        InitError = 1,
-        UpdateError = 2,
-        Rollback = 3,
+        Pending = 0,
+        Completed = 1,
+        InitFailed = 2,
+        UpdateError = 3,
+        RollbackCompleted = 4,
+        RollbackFailed = 5,
     }
 }

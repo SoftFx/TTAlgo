@@ -19,6 +19,8 @@ namespace TickTrader.Algo.AppCommon.Update
         public const int ShutdownTimeout = 30_000;
         public const int UpdateHistoryMaxRecords = 5;
 
+        private static readonly JsonSerializerOptions _stateSerializerOptions = new JsonSerializerOptions { IgnoreReadOnlyProperties = true, WriteIndented = true };
+
 
         public static string GetAppExeFileName(UpdateAppTypes appType)
         {
@@ -55,13 +57,15 @@ namespace TickTrader.Algo.AppCommon.Update
         public static UpdateState LoadUpdateState(string workDir)
         {
             var statePath = Path.Combine(workDir, StateFileName);
-            return JsonSerializer.Deserialize<UpdateState>(statePath);
+            using var file = File.Open(statePath, FileMode.Open, FileAccess.Read);
+            return JsonSerializer.Deserialize<UpdateState>(file, _stateSerializerOptions);
         }
 
         public static void SaveUpdateState(string workDir, UpdateState state)
         {
             var statePath = Path.Combine(workDir, StateFileName);
-            File.WriteAllText(statePath, JsonSerializer.Serialize(state));
+            using var file = File.Open(statePath, FileMode.Create);
+            JsonSerializer.Serialize(file, state, _stateSerializerOptions);
         }
 
 
