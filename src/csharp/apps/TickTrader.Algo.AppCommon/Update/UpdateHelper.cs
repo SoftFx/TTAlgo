@@ -15,6 +15,7 @@ namespace TickTrader.Algo.AppCommon.Update
         public const string ServerFileName = "TickTrader.AlgoServer.exe";
         public const string StateFileName = "update-state.json";
         public const string LogFileName = "update.log";
+        public const string InfoFileName = "update-info.json";
         public const int UpdateFailTimeout = 1_000;
         public const int ShutdownTimeout = 30_000;
         public const int UpdateHistoryMaxRecords = 5;
@@ -66,6 +67,33 @@ namespace TickTrader.Algo.AppCommon.Update
             var statePath = Path.Combine(workDir, StateFileName);
             using var file = File.Open(statePath, FileMode.Create);
             JsonSerializer.Serialize(file, state, _stateSerializerOptions);
+        }
+
+        public static UpdateInfo LoadUpdateInfo(string dirPath)
+        {
+            var filePath = Path.Combine(dirPath, InfoFileName);
+            using var file = File.Open(filePath, FileMode.Open, FileAccess.Read);
+            return JsonSerializer.Deserialize<UpdateInfo>(file);
+        }
+
+        public static bool TryLoadUpdateInfoFromZip(string zipPath, out UpdateInfo updateInfo)
+        {
+            updateInfo = default;
+            using var zipFile = File.Open(zipPath, FileMode.Open, FileAccess.Read);
+            using var zip = new ZipArchive(zipFile);
+            var entry = zip.GetEntry(InfoFileName);
+            if (entry == null)
+                return false;
+            using var entryStream = entry.Open();
+            updateInfo = JsonSerializer.Deserialize<UpdateInfo>(entryStream);
+            return true;
+        }
+
+        public static void SaveUpdateInfo(string dirPath, UpdateInfo info)
+        {
+            var filePath = Path.Combine(dirPath, InfoFileName);
+            using var file = File.Open(filePath, FileMode.Create);
+            JsonSerializer.Serialize(file, info);
         }
 
 

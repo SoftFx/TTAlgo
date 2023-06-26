@@ -245,6 +245,11 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+
+# Cake cache
+tools/vswhere*
+tools/Addins
+
 algo.metadata
 /Repository.Public/API
 /TickTrader.BotTerminal/Redist
@@ -255,7 +260,6 @@ algo.metadata
 package-lock.json
 *Uninstall.nsi
 
-tools/vswhere*
 FDK2.Build.props
 
 src/csharp/apps/TickTrader.Algo.BacktesterV1Host/Properties/*

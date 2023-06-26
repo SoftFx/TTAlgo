@@ -1,4 +1,6 @@
 #tool nuget:?package=vswhere&version=2.8.4
+#addin nuget:?package=Cake.Json&version=7.0.1
+#addin nuget:?package=Newtonsoft.Json&version=13.0.1
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -52,6 +54,7 @@ var updaterProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/apps/Tic
 var updaterBinPath = outputPath.Combine("updater");
 var terminalUpdateBinPath = outputPath.Combine("terminal-update");
 var serverUpdateBinPath = outputPath.Combine("server-update");
+var updateInfoOutputPath = outputPath.CombineWithFilePath("update-info.json");
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
@@ -510,12 +513,17 @@ Task("CreateUpdate")
 
    try
    {
+      CreateUpdateInfo();
+      CopyFileToDirectory(updateInfoOutputPath, artifactsPath);
+
       CopyDirectory(updaterBinPath, terminalUpdateBinPath);
       CopyDirectory(terminalBinPath, terminalUpdateBinPath.Combine("update"));
+      CopyFileToDirectory(updateInfoOutputPath, terminalUpdateBinPath);
       Zip(terminalUpdateBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.Update.zip"));
 
       CopyDirectory(updaterBinPath, serverUpdateBinPath);
       CopyDirectory(serverBinPath, serverUpdateBinPath.Combine("update"));
+      CopyFileToDirectory(updateInfoOutputPath, serverUpdateBinPath);
       Zip(serverUpdateBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.Update.zip"));
    }
    finally
@@ -650,3 +658,29 @@ private DotNetMSBuildSettings GetMSBuildSettingsWithVersionProps()
    => new DotNetMSBuildSettings()
       .WithProperty("BuildVersion", version.ToString())
       .WithProperty("BuildNumber", buildNumber.ToString());
+
+private void CreateUpdateInfo()
+{
+   var changelogText = System.IO.File.ReadAllText(sourcesDirPath.CombineWithFilePath("ReleaseNote.md").ToString());
+   var updateInfo = new UpdateInfo {
+      ReleaseVersion = buildId,
+      ReleaseDate = System.DateTime.UtcNow.ToString("yyyy.MM.dd"),
+      MinVersion = "1.24.0.0",
+      Executable = "TickTrader.Algo.Updater.exe",
+      Changelog = changelogText,
+   };
+   SerializeJsonToPrettyFile(updateInfoOutputPath, updateInfo);
+}
+
+private class UpdateInfo
+{
+   public string ReleaseVersion { get; set; }
+
+   public string ReleaseDate { get; set; }
+
+   public string MinVersion { get; set; }
+
+   public string Executable { get; set; }
+
+   public string Changelog { get; set; }
+}
