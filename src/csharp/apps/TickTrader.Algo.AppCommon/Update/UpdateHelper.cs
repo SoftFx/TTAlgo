@@ -76,19 +76,6 @@ namespace TickTrader.Algo.AppCommon.Update
             return JsonSerializer.Deserialize<UpdateInfo>(file);
         }
 
-        public static bool TryLoadUpdateInfoFromZip(string zipPath, out UpdateInfo updateInfo)
-        {
-            updateInfo = default;
-            using var zipFile = File.Open(zipPath, FileMode.Open, FileAccess.Read);
-            using var zip = new ZipArchive(zipFile);
-            var entry = zip.GetEntry(InfoFileName);
-            if (entry == null)
-                return false;
-            using var entryStream = entry.Open();
-            updateInfo = JsonSerializer.Deserialize<UpdateInfo>(entryStream);
-            return true;
-        }
-
         public static void SaveUpdateInfo(string dirPath, UpdateInfo info)
         {
             var filePath = Path.Combine(dirPath, InfoFileName);

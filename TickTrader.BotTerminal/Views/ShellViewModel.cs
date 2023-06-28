@@ -11,6 +11,7 @@ using System.Windows.Threading;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
+using TickTrader.BotTerminal.Model.AutoUpdate;
 using TickTrader.BotTerminal.SymbolManager;
 using TickTrader.BotTerminal.Views.BotsRepository;
 using TickTrader.FeedStorage.Api;
@@ -30,6 +31,7 @@ namespace TickTrader.BotTerminal
         private readonly WindowManager _wndManager;
         private readonly AlgoEnvironment _algoEnv;
         private readonly PersistModel _storage;
+        private readonly AutoUpdateService _autoUpdateSvc;
 
         private BotsRepositoryViewModel _botsRepository;
         private SymbolManagerViewModel _smbManager;
@@ -40,6 +42,9 @@ namespace TickTrader.BotTerminal
         public ShellViewModel(ClientModel.Data commonClient)
         {
             DisplayName = EnvService.Instance.ApplicationName;
+
+            _autoUpdateSvc = new AutoUpdateService();
+            _autoUpdateSvc.AddSource(new UpdateDownloadSource { Name = "local", Uri = "d:/workspace/upd-tmp" });
 
             _eventJournal = new EventJournal(1000);
             _storage = new PersistModel();
@@ -252,6 +257,12 @@ namespace TickTrader.BotTerminal
         public void Exit()
         {
             TryCloseAsync();
+        }
+
+        public void Update()
+        {
+            AutoUpdateViewModel vm = new AutoUpdateViewModel(_autoUpdateSvc);
+            _ = _wndManager.ShowDialog(vm, this);
         }
 
         public void OpenChart(string smb)

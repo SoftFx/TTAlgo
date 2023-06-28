@@ -11,12 +11,12 @@
         Background="{DynamicResource Dialog_Background}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Label Grid.Row="0" Content="TickTrader BotTerminal" VerticalAlignment="Center" Margin="10" FontSize="30"/>
+        <Label Grid.Row="0" Content="TickTrader AlgoTerminal" VerticalAlignment="Center" Margin="10" FontSize="30"/>
         <Label Grid.Row="1" Content="{Binding Version}" VerticalAlignment="Center" Margin="10" HorizontalAlignment="Center"/>
         <l:FlatButton Grid.Row="2" Grid.Column="0" Margin="5"
                       x:Name="Ok" Content="OK" IsDefault="True"
