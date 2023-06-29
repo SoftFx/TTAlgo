@@ -261,7 +261,7 @@ namespace TickTrader.BotTerminal
 
         public void Update()
         {
-            AutoUpdateViewModel vm = new AutoUpdateViewModel(_autoUpdateSvc);
+            AutoUpdateViewModel vm = new AutoUpdateViewModel(_autoUpdateSvc, () => Exit());
             _ = _wndManager.ShowDialog(vm, this);
         }
 

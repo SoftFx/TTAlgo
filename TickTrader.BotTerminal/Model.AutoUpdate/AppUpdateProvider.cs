@@ -13,6 +13,8 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
         public string SubLink { get; set; }
 
         public UpdateInfo Info { get; set; }
+
+        public UpdateAppTypes AppType { get; set; }
     }
 
     internal interface IAppUpdateProvider

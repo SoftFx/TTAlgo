@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -44,7 +43,7 @@ namespace TickTrader.Algo.AppCommon.Update
             SaveUpdateState(updateWorkDir, updateState);
 
             var updaterExe = Path.Combine(updateParams.UpdatePath, UpdaterFileName);
-            var startInfo = new ProcessStartInfo(updaterExe) { UseShellExecute = false, WorkingDirectory = updateWorkDir };
+            var startInfo = new ProcessStartInfo(updaterExe) { UseShellExecute = true, WorkingDirectory = updateWorkDir };
 
             var proc = Process.Start(startInfo);
             await Task.WhenAny(Task.Delay(UpdateFailTimeout), proc.WaitForExitAsync()); // wait in case of any issues with update
@@ -95,8 +94,8 @@ namespace TickTrader.Algo.AppCommon.Update
                 if (files.Length >= UpdateHistoryMaxRecords)
                 {
                     // Cleanup old files
-                    files = files.OrderBy(f => File.GetCreationTimeUtc(f)).ToArray();
-                    for (var i = 0; files.Length + i >= UpdateHistoryMaxRecords; i++)
+                    Array.Sort(files, static (x, y) => File.GetCreationTimeUtc(x).CompareTo(File.GetCreationTimeUtc(y)));
+                    for (var i = 0; files.Length - i >= UpdateHistoryMaxRecords; i++)
                     {
                         try
                         {

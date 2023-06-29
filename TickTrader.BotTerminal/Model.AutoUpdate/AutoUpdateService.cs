@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
             return _updatesCache;
         }
 
-        public async Task DownloadUpdate(AppUpdateEntry entry, string dstPath)
+        public async Task<string> DownloadUpdate(AppUpdateEntry entry)
         {
             IAppUpdateProvider provider = default;
             lock(_syncObj)
@@ -66,7 +67,18 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
             if (provider == null)
                 throw new ArgumentException("Invalid source id");
 
-            await provider.Download(entry.SubLink, dstPath);
+            var cachePath = Path.Combine(EnvService.Instance.UpdatesCacheFolder, $"{entry.AppType} {entry.Info.ReleaseVersion}.zip");
+            if (File.Exists(cachePath))
+            {
+                // TODO: validate checksum
+            }
+            else
+            {
+                // TODO: cleanup cache
+                await provider.Download(entry.SubLink, cachePath);
+            }
+
+            return cachePath;
         }
 
         public void EnableAutoCheck()

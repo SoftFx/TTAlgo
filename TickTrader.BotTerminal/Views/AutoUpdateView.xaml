@@ -11,6 +11,15 @@
         <Setter Property="fa:Awesome.Spin" Value="True"/>
     </Style>
 
+    <Style x:Key="StatusLineStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding StatusHasError.Value}">
+                <Setter Property="Foreground" Value="{DynamicResource Dialog_ErrorForeground}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <DataTemplate x:Key="AppUpdateItemTemplate">
         <Grid>
             <Grid.RowDefinitions>
@@ -21,6 +30,7 @@
 
             <TextBlock Grid.Row="0" Text="{Binding Source}" />
             <TextBlock Grid.Row="1" Text="{Binding Version}" />
+            <TextBlock Grid.Row="2" Text="{Binding AppType}" />
         </Grid>
     </DataTemplate>
 
@@ -33,15 +43,31 @@
 
             <fa:IconBlock Grid.Row="1" Style="{StaticResource SpinnerStyle}" Visibility="{l:InvBoolToVisBind UpdatesLoaded.Value}"/>
             <Grid Name="Refreshable" Grid.Row="1" Visibility="{l:BoolToVisBind UpdatesLoaded.Value}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="3*" />
                 </Grid.ColumnDefinitions>
 
-                <ListView Grid.Row="0" Grid.Column="0"
+                <ListView Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
                           ItemsSource="{Binding AvailableUpdates}" ItemTemplate="{StaticResource AppUpdateItemTemplate}"
                           SelectedItem="{Binding SelectedUpdate.Value}" />
-                <Grid Grid.Row="0" Grid.Column="1">
+                <Grid Grid.Row="0" Grid.Column="1" Margin="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ProgressBar Grid.Row="1" IsIndeterminate="True" Visibility="{l:BoolToVisBind UpdateInProgress.Value}" />
+                    <TextBlock Grid.Row="2" Text="{Binding Status.Value}" Style="{StaticResource StatusLineStyle}" />
+                </Grid>
+                <Grid Grid.Row="1" Grid.Column="1" Visibility="{l:BoolToVisBind HasSelectedUpdate.Value}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -54,9 +80,9 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <l:FlatButton Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                    <l:FlatButton Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" MaxWidth="200"
                                   Content="Install" cal:Message.Attach="InstallSelectedUpdate"
-                                  IsEnabled="{l:UpdateBind CanInstallSelectedUpdate.Value}"/>
+                                  IsEnabled="{l:UpdateBind HasSelectedUpdate.Value}"/>
 
                     <Label Grid.Row="1" Grid.Column="0" Content="Version:" />
                     <Label Grid.Row="1" Grid.Column="1" Content="{Binding SelectedUpdate.Value.Version}" />
@@ -64,8 +90,13 @@
                     <Label Grid.Row="2" Grid.Column="1" Content="{Binding SelectedUpdate.Value.ReleaseDate}" />
                     <Label Grid.Row="3" Grid.Column="0" Content="Min Version:" />
                     <Label Grid.Row="3" Grid.Column="1" Content="{Binding SelectedUpdate.Value.MinVersion}" />
-                    <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="5"
-                               Text="{Binding SelectedUpdate.Value.Changelog, Mode=OneWay}" TextWrapping="Wrap" />
+                    <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="5"
+                            BorderThickness="1" CornerRadius="2" BorderBrush="{DynamicResource Shell_SecondaryForeground}">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                            <TextBlock Margin="5"
+                                       Text="{Binding SelectedUpdate.Value.Changelog, Mode=OneWay}" TextWrapping="Wrap" />
+                        </ScrollViewer>
+                    </Border>
                 </Grid>
             </Grid>
         </Grid>

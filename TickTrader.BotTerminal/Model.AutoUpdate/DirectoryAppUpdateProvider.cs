@@ -41,15 +41,26 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
             {
                 foreach (var updPath in updateCandidates)
                 {
-                    if (TryLoadUpdateInfoFromZip(updPath, out var updInfo))
+                    var filename = Path.GetFileName(updPath);
+                    UpdateAppTypes? appType = null;
+                    if (filename.StartsWith("AlgoTerminal"))
+                        appType = UpdateAppTypes.Terminal;
+                    if (filename.StartsWith("AlgoServer"))
+                        appType = UpdateAppTypes.Server;
+
+                    if (appType.HasValue)
                     {
-                        var fileName = Path.GetFileName(updPath);
-                        res.Add(new AppUpdateEntry
+                        if (TryLoadUpdateInfoFromZip(updPath, out var updInfo))
                         {
-                            SrcId = srcId,
-                            SubLink = updPath,
-                            Info = updInfo,
-                        });
+                            var fileName = Path.GetFileName(updPath);
+                            res.Add(new AppUpdateEntry
+                            {
+                                SrcId = srcId,
+                                SubLink = updPath,
+                                Info = updInfo,
+                                AppType = appType.Value,
+                            });
+                        }
                     }
                 }
             }
