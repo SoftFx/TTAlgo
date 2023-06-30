@@ -116,7 +116,7 @@ namespace TickTrader.BotTerminal
                     UpdatePath = updateDir,
                     ToVersion = update.Version,
                 };
-                var startSuccess = await UpdateHelper.StartUpdate(EnvService.Instance.UpdatesFolder, updateParams);
+                var startSuccess = await UpdateHelper.StartUpdate(EnvService.Instance.UpdatesFolder, updateParams, true);
                 if (!startSuccess)
                 {
                     var state = UpdateHelper.LoadUpdateState(EnvService.Instance.UpdatesFolder);
@@ -132,14 +132,14 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to install update");
-                Status.Value = "Install failed unexpectedly. See logs...";
+                Status.Value = "Update failed unexpectedly. See logs...";
                 StatusHasError.Value = true;
             }
 
             UpdateInProgress.Value = false;
         }
 
-        private string FormatStateError(UpdateState state)
+        private static string FormatStateError(UpdateState state)
         {
             var sb = new StringBuilder();
 

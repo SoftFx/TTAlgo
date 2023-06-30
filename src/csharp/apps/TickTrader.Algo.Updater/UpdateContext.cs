@@ -110,9 +110,8 @@ namespace TickTrader.Algo.Updater
             CurrentBinFolder = InstallPathHelper.GetCurrentVersionFolder(InstallPath);
             if (!Directory.Exists(CurrentBinFolder))
                 return UpdateErrorCodes.CurrentVersionNotFound;
-            UpdateBinFolder = !string.IsNullOrEmpty(updParams.UpdatePath)
-                ? updParams.UpdatePath
-                : UpdateHelper.GetUpdateBinFolder(AppDomain.CurrentDomain.BaseDirectory);
+            var updatePath = !string.IsNullOrEmpty(updParams.UpdatePath) ? updParams.UpdatePath : AppDomain.CurrentDomain.BaseDirectory;
+            UpdateBinFolder = UpdateHelper.GetUpdateBinFolder(updatePath);
             if (!Directory.Exists(UpdateBinFolder))
                 return UpdateErrorCodes.UpdateVersionNotFound;
             if (!File.Exists(Path.Combine(UpdateBinFolder, ExeFileName)))

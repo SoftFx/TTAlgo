@@ -9,7 +9,6 @@ namespace TickTrader.Algo.AppCommon.Update
 {
     public static class UpdateHelper
     {
-        public const string UpdaterFileName = "TickTrader.Algo.Updater.exe";
         public const string TerminalFileName = "TickTrader.AlgoTerminal.exe";
         public const string ServerFileName = "TickTrader.AlgoServer.exe";
         public const string StateFileName = "update-state.json";
@@ -35,15 +34,16 @@ namespace TickTrader.Algo.AppCommon.Update
         public static string GetUpdateBinFolder(string updatePath) => Path.Combine(updatePath, "update");
 
 
-        public static async Task<bool> StartUpdate(string updateWorkDir, UpdateParams updateParams)
+        public static async Task<bool> StartUpdate(string updateWorkDir, UpdateParams updateParams, bool useShellExecute)
         {
             CreateUpdateHistoryRecord(updateWorkDir);
 
             var updateState = new UpdateState { Params = updateParams };
             SaveUpdateState(updateWorkDir, updateState);
 
-            var updaterExe = Path.Combine(updateParams.UpdatePath, UpdaterFileName);
-            var startInfo = new ProcessStartInfo(updaterExe) { UseShellExecute = true, WorkingDirectory = updateWorkDir };
+            var updInfo = LoadUpdateInfo(updateParams.UpdatePath);
+            var updateEntryPoint = Path.Combine(updateParams.UpdatePath, updInfo.Executable);
+            var startInfo = new ProcessStartInfo(updateEntryPoint) { UseShellExecute = useShellExecute, WorkingDirectory = updateWorkDir };
 
             var proc = Process.Start(startInfo);
             await Task.WhenAny(Task.Delay(UpdateFailTimeout), proc.WaitForExitAsync()); // wait in case of any issues with update
