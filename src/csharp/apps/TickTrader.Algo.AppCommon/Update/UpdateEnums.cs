@@ -11,6 +11,9 @@
         CurrentVersionNotFound = 6,
         UpdateVersionNotFound = 7,
         UpdateVersionMissingExe = 8,
+        RegistryIdNotFound = 9,
+        ServiceIdNotFound = 10,
+        PlatformNotSupported = 11,
     }
 
     public enum UpdateAppTypes

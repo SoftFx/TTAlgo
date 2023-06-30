@@ -10,6 +10,8 @@ namespace TickTrader.Algo.AppCommon
     {
         public const string DataFileName = "access-info.json";
 
+        private static readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
+
 
         public Dictionary<string, string> AccessByPath { get; set; } = new Dictionary<string, string>();
 
@@ -34,13 +36,13 @@ namespace TickTrader.Algo.AppCommon
         public static AppAccessInfo LoadFromJson(string path)
         {
             using var file = File.Open(path, FileMode.Open, FileAccess.Read);
-            return JsonSerializer.Deserialize<AppAccessInfo>(file);
+            return JsonSerializer.Deserialize<AppAccessInfo>(file, _serializerOptions);
         }
 
         public void SaveAsJson(string path)
         {
             using var file = File.Open(path, FileMode.Create);
-            JsonSerializer.Serialize(file, this);
+            JsonSerializer.Serialize(file, this, _serializerOptions);
         }
     }
 }

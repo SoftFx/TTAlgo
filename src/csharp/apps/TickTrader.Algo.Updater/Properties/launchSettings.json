@@ -2,11 +2,11 @@
   "profiles": {
     "TerminalUpdate": {
       "commandName": "Project",
-      "workingDirectory": "D:\\workspace\\AlgoTerminal_upd\\UpdateCache"
+      "workingDirectory": "D:\\workspace\\AlgoTerminal_upd\\Updates"
     },
     "ServerUpdate": {
       "commandName": "Project",
-      "workingDirectory": "D:\\workspace\\AlgoServer_upd\\UpdateCache"
+      "workingDirectory": "D:\\workspace\\AlgoServer_upd\\Updates"
     }
   }
 }

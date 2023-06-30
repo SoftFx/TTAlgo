@@ -1,10 +1,12 @@
-﻿using Serilog;
+﻿using Microsoft.Win32;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.AppCommon;
@@ -27,6 +29,7 @@ namespace TickTrader.Algo.Updater
     {
         private const int KillQuestionDelayCnt = 100;
         private const int SuccessStartTimeout = 10000;
+        private const int ServiceStopTimeout = 90000;
 
         private readonly string _workDir = Directory.GetCurrentDirectory();
 
@@ -46,6 +49,10 @@ namespace TickTrader.Algo.Updater
         public string CurrentBinFolder { get; private set; }
 
         public string UpdateBinFolder { get; private set; }
+
+        public string RegistryId { get; private set; }
+
+        public string ServiceId { get; private set; }
 
         public IUpdateObserver UpdateObserver { get; set; }
 
@@ -91,6 +98,9 @@ namespace TickTrader.Algo.Updater
 
         private UpdateErrorCodes InitInternal()
         {
+            if (!OperatingSystem.IsWindows())
+                return UpdateErrorCodes.PlatformNotSupported;
+
             var updParams = State.Params;
             if (updParams == null)
                 return UpdateErrorCodes.MissingParams;
@@ -116,6 +126,16 @@ namespace TickTrader.Algo.Updater
                 return UpdateErrorCodes.UpdateVersionNotFound;
             if (!File.Exists(Path.Combine(UpdateBinFolder, ExeFileName)))
                 return UpdateErrorCodes.UpdateVersionMissingExe;
+
+            RegistryId = ResolveRegistryId(AppType, InstallPath);
+            if (string.IsNullOrEmpty(RegistryId))
+                return UpdateErrorCodes.RegistryIdNotFound;
+            if (AppType == UpdateAppTypes.Server)
+            {
+                ServiceId = GetServiceIdFromRegisty(RegistryId);
+                if (string.IsNullOrEmpty(ServiceId))
+                    return UpdateErrorCodes.ServiceIdNotFound;
+            }
 
             return UpdateErrorCodes.NoError;
         }
@@ -267,9 +287,35 @@ namespace TickTrader.Algo.Updater
             }
         }
 
-        private async Task StopServer(List<Process> processesToStop)
+        private Task StopServer(List<Process> processesToStop)
         {
-            // Wait for StopService. ServiceId - ?
+            var serviceStopped = true;
+            var svcControl = new ServiceController(ServiceId);
+            if (svcControl.Status != ServiceControllerStatus.Stopped)
+            {
+                serviceStopped = false;
+                try
+                {
+                    svcControl.Stop();
+                    svcControl.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromMilliseconds(ServiceStopTimeout));
+                    serviceStopped = true;
+                }
+                catch (System.ServiceProcess.TimeoutException)
+                {
+                    LogError("Service failed to stop within timeout");
+                }
+            }
+
+            foreach (var p in processesToStop)
+            {
+                if (!p.HasExited)
+                    p.Kill();
+            }
+
+            if (!serviceStopped)
+                throw new Exception("Abort update");
+
+            return Task.CompletedTask;
         }
 
         private async Task<bool> StartApp()
@@ -306,7 +352,22 @@ namespace TickTrader.Algo.Updater
 
         private async Task<bool> StartServer()
         {
-            // Start service. ServiceId - ?
+            var svcControl = new ServiceController(ServiceId);
+            if (svcControl.Status != ServiceControllerStatus.Stopped)
+            {
+                LogError($"Unexpected service state: {svcControl.Status}");
+                return false;
+            }
+
+            svcControl.Start();
+            svcControl.WaitForStatus(ServiceControllerStatus.Running);
+
+            await Task.Delay(SuccessStartTimeout);
+            if (svcControl.Status != ServiceControllerStatus.Running)
+            {
+                LogError($"Start failed: Service status: {svcControl.Status}");
+            }
+
             return true;
         }
 
@@ -354,5 +415,51 @@ namespace TickTrader.Algo.Updater
 
         private static bool IsProcessMainFileInFolder(Process p, string folderPath)
             => p.MainModule?.FileName?.StartsWith(folderPath, StringComparison.OrdinalIgnoreCase) ?? false;
+
+        private static string GetAppRegistryKeyName(UpdateAppTypes appType)
+        {
+            return appType switch
+            {
+                UpdateAppTypes.Terminal => "AlgoTerminal",
+                UpdateAppTypes.Server => "AlgoServer",
+                _ => string.Empty,
+            };
+        }
+
+        private static string ResolveRegistryId(UpdateAppTypes appType, string installPath)
+        {
+            var appSubKeyName = GetAppRegistryKeyName(appType);
+            if (string.IsNullOrEmpty(appSubKeyName))
+                return null;
+
+            var registry64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            var allServersKey = registry64.OpenSubKey(Path.Combine("SOFTWARE", "TickTrader", appSubKeyName));
+            if (allServersKey == null)
+                return null;
+
+            foreach (var serverId in allServersKey.GetSubKeyNames())
+            {
+                var serverKey = allServersKey.OpenSubKey(serverId);
+                if (serverKey != null)
+                {
+                    var serverInstallPath = serverKey.GetValue("Path")?.ToString();
+                    if (serverInstallPath == installPath)
+                        return serverId;
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetServiceIdFromRegisty(string registyId)
+        {
+            var appSubKeyName = GetAppRegistryKeyName(UpdateAppTypes.Server);
+            if (string.IsNullOrEmpty(appSubKeyName))
+                return null;
+
+            var registry64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            var serverKey = registry64.OpenSubKey(Path.Combine("SOFTWARE", "TickTrader", appSubKeyName, registyId));
+            return serverKey?.GetValue("ServiceId")?.ToString();
+        }
     }
 }

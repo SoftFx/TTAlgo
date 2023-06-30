@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Updater
                     App.Main();
                     break;
                 case UpdateAppTypes.Server:
-                    // start with no GUI
+                    ctx.RunUpdateAsync().Wait();
                     break;
             }
         }
