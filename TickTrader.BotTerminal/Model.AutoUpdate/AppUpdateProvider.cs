@@ -31,8 +31,8 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
         {
             var uri = updateSrc.Uri;
 
-            //if (uri.StartsWith("https://github.com"))
-            //    return new GithubAppUpdateProvider(uri);
+            if (uri.StartsWith("https://github.com"))
+                return new GithubAppUpdateProvider(updateSrc);
 
             if (Directory.Exists(uri))
                 return new DirectoryAppUpdateProvider(updateSrc);

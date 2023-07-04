@@ -36,9 +36,9 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
         private static List<AppUpdateEntry> GetUpdatesInternal(string srcId, string path)
         {
             var res = new List<AppUpdateEntry>();
-            var updateCandidates = Directory.GetFiles(path, "Algo*.Update.zip");
             try
             {
+                var updateCandidates = Directory.GetFiles(path, "Algo*.Update.zip");
                 foreach (var updPath in updateCandidates)
                 {
                     var filename = Path.GetFileName(updPath);
@@ -66,7 +66,7 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to get updates from local folder");
+                _logger.Error(ex, $"Failed to get updates from local folder '{path}'");
             }
             return res;
         }
