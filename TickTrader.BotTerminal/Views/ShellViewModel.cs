@@ -43,12 +43,12 @@ namespace TickTrader.BotTerminal
         {
             DisplayName = EnvService.Instance.ApplicationName;
 
-            _autoUpdateSvc = new AutoUpdateService();
-            _autoUpdateSvc.AddSource(new UpdateDownloadSource { Name = "local", Uri = "d:/workspace/upd-tmp" });
-
             _eventJournal = new EventJournal(1000);
             _storage = new PersistModel();
             ThemeSelector.Instance.InitializeSettings(_storage);
+
+            _autoUpdateSvc = new AutoUpdateService();
+            InitAutoUpdateSources();
 
             ConnectionLock = new UiLock();
             _wndManager = new WindowManager(this);
@@ -452,6 +452,27 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 logger.Error(ex, "Failed to save profile snapshot");
+            }
+        }
+
+        private void InitAutoUpdateSources()
+        {
+            AddUpdateSourceSafe(new UpdateDownloadSource { Name = "main", Uri = "https://github.com/SoftFx/TTAlgo/releases" });
+            foreach (var src in _storage.PreferencesStorage.StorageModel.AppUpdateSources)
+            {
+                AddUpdateSourceSafe(new UpdateDownloadSource { Name = src.Name, Uri = src.Uri });
+            }
+
+            void AddUpdateSourceSafe(UpdateDownloadSource src)
+            {
+                try
+                {
+                    _autoUpdateSvc.AddSource(src);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, $"Failed to add app update source '{src.Name}'");
+                }
             }
         }
 

@@ -90,7 +90,7 @@ namespace TickTrader.BotTerminal
             _updatesFolder = new Lazy<string>(() => InitSubFolder(AppFolder, "Updates"), true);
             _updatesCacheFolder = new Lazy<string>(() => InitSubFolder(localAppDataFolder, "UpdatesCache"), true);
 
-            _userStorage = new Lazy<IObjectStorage>(() => new XmlObjectStorage(new FolderBinStorage(AppDataFolder)), true);
+            _userStorage = new Lazy<IObjectStorage>(() => new JsonObjectStorage(new FolderBinStorage(AppDataFolder)), true);
             _protectedUserStorage = new Lazy<IObjectStorage>(() => new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(AppDataFolder))), true);
             _profileStorage = new Lazy<IObjectStorage>(() => new XmlObjectStorage(new FolderBinStorage(ProfilesCacheFolder)), true);
 

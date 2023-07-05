@@ -70,8 +70,6 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                await Task.Delay(1000); // dummy
-
                 var updates = await _updateSvc.GetUpdates();
 
                 AvailableUpdates.Clear();

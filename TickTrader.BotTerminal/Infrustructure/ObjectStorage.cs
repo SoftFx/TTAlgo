@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
@@ -59,6 +60,47 @@ namespace TickTrader.BotTerminal
 #else
                 serializer.WriteObject(stream, obj);
 #endif
+                _binaryStorage.Save(fileName, stream);
+            }
+        }
+    }
+
+
+    internal class JsonObjectStorage : IObjectStorage
+    {
+        private static readonly JsonSerializer _serializer =
+            JsonSerializer.Create(new JsonSerializerSettings { Formatting = Newtonsoft.Json.Formatting.Indented });
+
+        private IBinStorage _binaryStorage;
+
+
+        public JsonObjectStorage(IBinStorage binaryStorage)
+        {
+            _binaryStorage = binaryStorage;
+        }
+
+
+        public T Load<T>(string fileName)
+        {
+            using (var stream = _binaryStorage.LoadData(fileName))
+            {
+                if (stream.Length == 0)
+                    return default;
+
+                using var reader = new StreamReader(stream);
+                return (T)_serializer.Deserialize(reader, typeof(T));
+            }
+        }
+
+        public void Save<T>(string fileName, T obj)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                using (var writer = new StreamWriter(stream, leaveOpen: true))
+                {
+                    _serializer.Serialize(writer, obj);
+                }
+
                 _binaryStorage.Save(fileName, stream);
             }
         }
