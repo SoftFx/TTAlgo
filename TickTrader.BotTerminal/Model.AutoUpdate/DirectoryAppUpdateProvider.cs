@@ -25,9 +25,9 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
 
         public Task<List<AppUpdateEntry>> GetUpdates() => Task.Run(() => GetUpdatesInternal(_srcId, _path));
 
-        public Task Download(string subLink, string dstPath)
+        public Task Download(string versionId, UpdateAssetTypes assetType, string dstPath)
         {
-            var srcPath = Path.Combine(_path, subLink);
+            var srcPath = Path.Combine(_path, versionId);
             File.Copy(srcPath, dstPath, true);
             return Task.CompletedTask;
         }
@@ -42,13 +42,13 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
                 foreach (var updPath in updateCandidates)
                 {
                     var filename = Path.GetFileName(updPath);
-                    UpdateAppTypes? appType = null;
+                    var availableAssets = new List<UpdateAssetTypes>(4);
                     if (filename.StartsWith("AlgoTerminal"))
-                        appType = UpdateAppTypes.Terminal;
-                    if (filename.StartsWith("AlgoServer"))
-                        appType = UpdateAppTypes.Server;
+                        availableAssets.Add(UpdateAssetTypes.TerminalUpdate);
+                    else if (filename.StartsWith("AlgoServer"))
+                        availableAssets.Add(UpdateAssetTypes.ServerUpdate);
 
-                    if (appType.HasValue)
+                    if (availableAssets.Count > 0)
                     {
                         if (TryLoadUpdateInfoFromZip(updPath, out var updInfo))
                         {
@@ -56,9 +56,9 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
                             res.Add(new AppUpdateEntry
                             {
                                 SrcId = srcId,
-                                SubLink = updPath,
+                                VersionId = updPath,
                                 Info = updInfo,
-                                AppType = appType.Value,
+                                AvailableAssets = availableAssets,
                             });
                         }
                     }

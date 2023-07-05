@@ -40,9 +40,15 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
 
         public Task<List<AppUpdateEntry>> GetUpdates() => Task.Run(() => GetUpdatesInternal());
 
-        public async Task Download(string subLink, string dstPath)
+        public async Task Download(string versionId, UpdateAssetTypes assetType, string dstPath)
         {
-            var asset = await _client.Repository.Release.GetAsset(_repoOwner, _repoName, int.Parse(subLink));
+            if (!_releaseCache.TryGetValue(versionId, out var releaseInfo))
+                throw new ArgumentException("Invalid version id");
+
+            if (!releaseInfo.AssetsByType.TryGetValue(assetType, out var assetId))
+                throw new ArgumentException("Invalid asset type");
+
+            var asset = await _client.Repository.Release.GetAsset(_repoOwner, _repoName, assetId);
             if (asset.Size > 1 << 30) // 1GiB
                 throw new Exception("Update size too large");
             var response = await LoadFileBytes(asset);
@@ -59,26 +65,7 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
 
                 foreach (var release in _releaseCache.Values)
                 {
-                    var assets = release.RepoData.Assets;
-                    foreach (var asset in assets)
-                    {
-                        UpdateAppTypes? appType = null;
-                        if (asset.Name.StartsWith("AlgoTerminal") && asset.Name.EndsWith(".Update.zip"))
-                            appType = UpdateAppTypes.Terminal;
-                        if (asset.Name.StartsWith("AlgoServer") && asset.Name.EndsWith(".Update.zip"))
-                            appType = UpdateAppTypes.Server;
-
-                        if (appType.HasValue)
-                        {
-                            res.Add(new AppUpdateEntry
-                            {
-                                SrcId = _srcId,
-                                SubLink = asset.Id.ToString(),
-                                Info = release.UpdateData,
-                                AppType = appType.Value,
-                            });
-                        }
-                    }
+                    res.Add(release.UpdateData);
                 }
             }
             catch (Exception ex)
@@ -102,12 +89,12 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
                 var releases = await _client.Repository.Release.GetAll(_repoOwner, _repoName, new ApiOptions { StartPage = page, PageSize = DefaultPageSize });
                 foreach (var release in releases)
                 {
-                    if (_releaseCache.ContainsKey(release.Url))
+                    if (_releaseCache.ContainsKey(release.Id.ToString()))
                         return; // load only new releases. Rely on endpoint sort order
 
-                    var updateInfo = await TryLoadUpdateInfo(release);
-                    if (updateInfo != null)
-                        _releaseCache.Add(release.Url, new ReleaseInfo { RepoData = release, UpdateData = updateInfo });
+                    var releaseInfo = await TryReadReleaseInfo(release);
+                    if (releaseInfo != null)
+                        _releaseCache.Add(release.Id.ToString(), releaseInfo);
                 }
                 page++;
                 if (releases.Count != DefaultPageSize)
@@ -115,21 +102,49 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
             }
         }
 
-        private async Task<UpdateInfo> TryLoadUpdateInfo(Release release)
+        private async Task<ReleaseInfo> TryReadReleaseInfo(Release release)
         {
             try
             {
+                UpdateInfo updateInfo = null;
                 var updateInfoAsset = release.Assets.FirstOrDefault(a => a.Name == UpdateHelper.InfoFileName);
                 if (updateInfoAsset != null)
                 {
                     var updateInfoBytes = await LoadFileBytes(updateInfoAsset);
                     using var memStream = new MemoryStream(updateInfoBytes.Body);
-                    return JsonSerializer.Deserialize<UpdateInfo>(memStream);
+                    updateInfo = JsonSerializer.Deserialize<UpdateInfo>(memStream);
+                }
+
+                if (updateInfo != null)
+                {
+                    var assetsByType = new Dictionary<UpdateAssetTypes, int>();
+                    foreach (var asset in release.Assets)
+                    {
+                        if (asset.Name.StartsWith("Algo") && asset.Name.EndsWith(".Setup.exe"))
+                            assetsByType.Add(UpdateAssetTypes.Setup, asset.Id);
+                        else if (asset.Name.StartsWith("AlgoTerminal") && asset.Name.EndsWith(".Update.zip"))
+                            assetsByType.Add(UpdateAssetTypes.TerminalUpdate, asset.Id);
+                        else if (asset.Name.StartsWith("AlgoServer") && asset.Name.EndsWith(".Update.zip"))
+                            assetsByType.Add(UpdateAssetTypes.ServerUpdate, asset.Id);
+                    }
+
+                    return new ReleaseInfo
+                    {
+                        RepoData = release,
+                        AssetsByType = assetsByType,
+                        UpdateData = new AppUpdateEntry
+                        {
+                            SrcId = _srcId,
+                            VersionId = release.Id.ToString(),
+                            Info = updateInfo,
+                            AvailableAssets = assetsByType.Keys.ToList(),
+                        },
+                    };
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to load update info for release '{release.Url}'");
+                _logger.Error(ex, $"Failed to read release '{release.Url}'");
             }
             return null;
         }
@@ -144,7 +159,9 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
         {
             public Release RepoData { get; set; }
 
-            public UpdateInfo UpdateData { get; set; }
+            public AppUpdateEntry UpdateData { get; set; }
+
+            public Dictionary<UpdateAssetTypes, int> AssetsByType { get; set; }
         }
     }
 }

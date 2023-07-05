@@ -2,6 +2,7 @@
 using Machinarium.Var;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -10,6 +11,7 @@ using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.AppCommon.Update;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.BotTerminal.Model.AutoUpdate;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,6 +23,8 @@ namespace TickTrader.BotTerminal
         private readonly AutoUpdateService _updateSvc;
         private readonly System.Action _exitCallback;
 
+
+        public BoolProperty GuiEnabled { get; }
 
         public BoolProperty UpdatesLoaded { get; }
 
@@ -42,9 +46,11 @@ namespace TickTrader.BotTerminal
             _updateSvc = updateSvc;
             _exitCallback = exitCallback;
 
+            DisplayName = "Auto Update";
+            GuiEnabled = _context.AddBoolProperty();
             UpdatesLoaded = _context.AddBoolProperty();
             HasSelectedUpdate = _context.AddBoolProperty();
-            SelectedUpdate = _context.AddProperty<AppUpdateViewModel>().AddPostTrigger(item => HasSelectedUpdate.Value = item != null);
+            SelectedUpdate = _context.AddProperty<AppUpdateViewModel>().AddPostTrigger(_ => OnSelectedUpdateChanged());
             Status = _context.AddStrProperty();
             StatusHasError = _context.AddBoolProperty();
             UpdateInProgress = _context.AddBoolProperty();
@@ -55,22 +61,54 @@ namespace TickTrader.BotTerminal
 
         public void RefreshUpdates()
         {
-            _ = LoadUpdatesAsync();
+            _ = LoadUpdatesAsync(true);
         }
 
-        public void InstallSelectedUpdate()
+        public void OpenGithubRepo()
+        {
+            try
+            {
+                var sInfo = new ProcessStartInfo(AutoUpdateService.MainGithubRepo)
+                {
+                    UseShellExecute = true,
+                };
+
+                Process.Start(sInfo);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open github link");
+                MessageBoxManager.OkError(ex.Message);
+            }
+        }
+
+        public void InstallUpdate()
         {
             _ = InstallUpdateAsync(SelectedUpdate.Value);
         }
 
-
-        private async Task LoadUpdatesAsync()
+        public void InstallManual()
         {
+            _ = DownloadAndRunSetupAsync(SelectedUpdate.Value);
+        }
+
+
+        private void OnSelectedUpdateChanged()
+        {
+            if (SelectedUpdate == null)
+                return;
+
+            HasSelectedUpdate.Value = SelectedUpdate.Value != null;
+        }
+
+        private async Task LoadUpdatesAsync(bool forced = false)
+        {
+            GuiEnabled.Value = false;
             UpdatesLoaded.Value = false;
 
             try
             {
-                var updates = await _updateSvc.GetUpdates();
+                var updates = await _updateSvc.GetUpdates(forced);
 
                 AvailableUpdates.Clear();
                 foreach (var update in updates)
@@ -82,10 +120,12 @@ namespace TickTrader.BotTerminal
             }
 
             UpdatesLoaded.Value = true;
+            GuiEnabled.Value = true;
         }
 
         private async Task InstallUpdateAsync(AppUpdateViewModel update)
         {
+            GuiEnabled.Value = false;
             UpdateInProgress.Value = true;
             Status.Value = string.Empty;
             StatusHasError.Value = false;
@@ -93,7 +133,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 Status.Value = "Downloading update...";
-                var updatePath = await _updateSvc.DownloadUpdate(update.Entry);
+                var updatePath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.TerminalUpdate);
 
                 Status.Value = "Extracting update...";
                 var updateDir = Path.Combine(EnvService.Instance.UpdatesFolder, update.Version);
@@ -125,6 +165,7 @@ namespace TickTrader.BotTerminal
                 else
                 {
                     _exitCallback?.Invoke();
+                    Status.Value = null;
                 }
             }
             catch (Exception ex)
@@ -135,6 +176,35 @@ namespace TickTrader.BotTerminal
             }
 
             UpdateInProgress.Value = false;
+            GuiEnabled.Value = true;
+        }
+
+        private async Task DownloadAndRunSetupAsync(AppUpdateViewModel update)
+        {
+            GuiEnabled.Value = false;
+            UpdateInProgress.Value = true;
+            Status.Value = string.Empty;
+            StatusHasError.Value = false;
+
+            try
+            {
+                Status.Value = "Downloading setup...";
+                var setupPath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.Setup);
+
+                Status.Value = "Starting setup...";
+                Process.Start(new ProcessStartInfo(setupPath) { UseShellExecute = true });
+
+                Status.Value = null;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to download/run setup");
+                Status.Value = "Install failed unexpectedly. See logs...";
+                StatusHasError.Value = true;
+            }
+
+            UpdateInProgress.Value = false;
+            GuiEnabled.Value = true;
         }
 
         private static string FormatStateError(UpdateState state)
@@ -166,7 +236,7 @@ namespace TickTrader.BotTerminal
 
             public string Changelog => Entry.Info.Changelog;
 
-            public string AppType => Entry.AppType.ToString();
+            public string AppType => string.Join(", ", Entry.AvailableAssets);
         }
     }
 }

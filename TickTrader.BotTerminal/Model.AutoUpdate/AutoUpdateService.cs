@@ -18,6 +18,9 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
 
     internal class AutoUpdateService
     {
+        public const string MainGithubRepo = "https://github.com/SoftFx/TTAlgo";
+        public const string MainSourceName = "main";
+
         private static readonly TimeSpan CheckUpdatesTimeout = TimeSpan.FromMinutes(15);
         private static readonly TimeSpan UpdatesCacheLifespan = TimeSpan.FromMinutes(1);
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AutoUpdateService>();
@@ -57,8 +60,11 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
             return _updatesCache;
         }
 
-        public async Task<string> DownloadUpdate(AppUpdateEntry entry)
+        public async Task<string> DownloadUpdate(AppUpdateEntry entry, UpdateAssetTypes assetType)
         {
+            if (!entry.AvailableAssets.Contains(assetType))
+                throw new ArgumentException("Invalid asset type");
+
             IAppUpdateProvider provider = default;
             lock(_syncObj)
             {
@@ -67,15 +73,24 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
             if (provider == null)
                 throw new ArgumentException("Invalid source id");
 
-            var cachePath = Path.Combine(EnvService.Instance.UpdatesCacheFolder, $"{entry.AppType} {entry.Info.ReleaseVersion}.zip");
+            var filename = assetType switch
+            {
+                UpdateAssetTypes.TerminalUpdate => $"AlgoTerminal {entry.Info.ReleaseVersion}.Update.zip",
+                UpdateAssetTypes.ServerUpdate => $"AlgoServer {entry.Info.ReleaseVersion}.Update.zip",
+                UpdateAssetTypes.Setup => $"Algo Studio {entry.Info.ReleaseVersion}.exe",
+                _ => throw new NotSupportedException()
+            };
+            var cachePath = Path.Combine(EnvService.Instance.UpdatesCacheFolder, filename);
+            var loadFile = true;
             if (File.Exists(cachePath))
             {
                 // TODO: validate checksum
+                loadFile = false;
             }
-            else
+            if (loadFile)
             {
                 // TODO: cleanup cache
-                await provider.Download(entry.SubLink, cachePath);
+                await provider.Download(entry.VersionId, assetType, cachePath);
             }
 
             return cachePath;

@@ -457,7 +457,7 @@ namespace TickTrader.BotTerminal
 
         private void InitAutoUpdateSources()
         {
-            AddUpdateSourceSafe(new UpdateDownloadSource { Name = "main", Uri = "https://github.com/SoftFx/TTAlgo/releases" });
+            AddUpdateSourceSafe(new UpdateDownloadSource { Name = AutoUpdateService.MainSourceName, Uri = AutoUpdateService.MainGithubRepo });
             foreach (var src in _storage.PreferencesStorage.StorageModel.AppUpdateSources)
             {
                 AddUpdateSourceSafe(new UpdateDownloadSource { Name = src.Name, Uri = src.Uri });

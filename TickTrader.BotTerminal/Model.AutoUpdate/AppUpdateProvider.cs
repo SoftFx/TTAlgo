@@ -6,22 +6,29 @@ using TickTrader.Algo.AppCommon.Update;
 
 namespace TickTrader.BotTerminal.Model.AutoUpdate
 {
+    internal enum UpdateAssetTypes
+    {
+        Setup = 0,
+        TerminalUpdate = 1,
+        ServerUpdate = 2,
+    }
+
     internal class AppUpdateEntry
     {
         public string SrcId { get; set; }
 
-        public string SubLink { get; set; }
+        public string VersionId { get; set; }
 
         public UpdateInfo Info { get; set; }
 
-        public UpdateAppTypes AppType { get; set; }
+        public List<UpdateAssetTypes> AvailableAssets { get; set; }
     }
 
     internal interface IAppUpdateProvider
     {
         Task<List<AppUpdateEntry>> GetUpdates();
 
-        Task Download(string subLink, string dstPath);
+        Task Download(string versionId, UpdateAssetTypes assetType, string dstPath);
     }
 
 
