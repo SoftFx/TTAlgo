@@ -11,6 +11,7 @@ import "management/package.management.proto";
 import "management/plugin.management.proto";
 import "management/plugin.files.management.proto";
 import "management/subscriptions.management.proto";
+import "management/autoupdate.management.proto";
 
 import "updates/base.update.proto";
 import "info/file.transfer.info.proto";
@@ -57,4 +58,8 @@ service AlgoServerPublic
 
     rpc UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest) returns (PluginStatusUnsubscribeResponse);
     rpc UnsubscribeToPluginLogs(PluginLogsUnsubscribeRequest) returns (PluginLogsUnsubscribeResponse);
+
+    rpc GetServerVersion(ServerVersionRequest) returns (ServerVersionResponse);
+    rpc GetServerUpdateList(ServerUpdateListRequest) returns (ServerUpdateListResponse);
+    rpc StartServerUpdate(StartServerUpdateRequest) returns (StartServerUpdateResponse);
 }

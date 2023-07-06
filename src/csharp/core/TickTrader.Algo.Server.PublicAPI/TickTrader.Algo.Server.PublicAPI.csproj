@@ -20,6 +20,7 @@
     <None Remove="Info\property.descriptor.info.proto" />
     <None Remove="Info\server.metadata.info.proto" />
     <None Remove="Management\account.management.proto" />
+    <None Remove="Management\autoupdate.management.proto" />
     <None Remove="Management\base.request.proto" />
     <None Remove="Management\connection.management.proto" />
     <None Remove="Management\package.management.proto" />
@@ -63,6 +64,7 @@
     <Protobuf Include="Info\Mappings\reduction.info.proto" GrpcServices="None" />
     <Protobuf Include="Info\plugin.folder.info.proto" GrpcServices="None" />
     <Protobuf Include="Info\server.metadata.info.proto" GrpcServices="None" />
+    <Protobuf Include="Management\autoupdate.management.proto" GrpcServices="None" />
     <Protobuf Include="Management\base.request.proto" GrpcServices="None" />
     <Protobuf Include="Management\account.management.proto" GrpcServices="None" />
     <Protobuf Include="Management\connection.management.proto" GrpcServices="None" />

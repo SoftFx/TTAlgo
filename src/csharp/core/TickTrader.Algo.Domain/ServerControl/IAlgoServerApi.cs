@@ -41,6 +41,9 @@ namespace TickTrader.Algo.Domain.ServerControl
         Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
         Task SubscribeToAlerts(ChannelWriter<AlertRecordInfo> channel);
 
+        Task<string> GetServerVersion();
+        Task<StartServerUpdateResponse> StartUpdate(StartServerUpdateRequest request);
+
 
         Task SubscribeToUpdates(ChannelWriter<IMessage> channel);
     }

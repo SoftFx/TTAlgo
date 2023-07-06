@@ -24,6 +24,7 @@ namespace TickTrader.Algo.Server
         private AccountManager _accounts;
         private PluginManager _plugins;
         private PluginFileManager _pluginFiles;
+        private AutoUpdateManager _updateSvc;
 
 
         private AlgoServerActor(IActorRef algoHost, AlgoServerSettings settings)
@@ -78,6 +79,9 @@ namespace TickTrader.Algo.Server
             Receive<PluginAlertsRequest, AlertRecordInfo[]>(r => _alerts.GetAlerts(r));
             Receive<LocalAlgoServer.SubscribeToAlertsCmd>(cmd => _alerts.AttachAlertChannel(cmd.AlertSink));
             Receive<PluginOwner.ExecPluginCmd>(cmd => _plugins.ExecCmd(cmd.PluginId, cmd.Command));
+
+            Receive<ServerVersionRequest, string>(r => _updateSvc.GetCurrentVersion());
+            Receive<StartServerUpdateRequest, StartServerUpdateResponse>(r => _updateSvc.StartUpdate(r));
         }
 
 
@@ -103,6 +107,7 @@ namespace TickTrader.Algo.Server
             _accounts = new AccountManager(_serverPrivate);
             _plugins = new PluginManager(_serverPrivate);
             _pluginFiles = new PluginFileManager(_serverPrivate);
+            _updateSvc = new AutoUpdateManager(_serverPrivate);
         }
 
 

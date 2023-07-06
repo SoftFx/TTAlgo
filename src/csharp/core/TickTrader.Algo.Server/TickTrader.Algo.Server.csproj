@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
+    <ProjectReference Include="..\..\apps\TickTrader.Algo.AppCommon\TickTrader.Algo.AppCommon.csproj" />
     <ProjectReference Include="..\..\lib\TickTrader.Algo.Async\TickTrader.Algo.Async.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />

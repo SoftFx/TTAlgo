@@ -172,5 +172,10 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         {
             return _algoServer.GetPluginFileWritePath(request);
         }
+
+        public Task<string> GetServerVersion()
+        {
+            return _algoServer.GetServerVersion();
+        }
     }
 }

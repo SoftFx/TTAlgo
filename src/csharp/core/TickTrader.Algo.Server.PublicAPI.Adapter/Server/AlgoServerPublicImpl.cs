@@ -233,6 +233,21 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             return ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, requestStream, context);
         }
 
+        public override Task<ServerVersionResponse> GetServerVersion(ServerVersionRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(GetServerVersionInternal, request, context);
+        }
+
+        public override Task<ServerUpdateListResponse> GetServerUpdateList(ServerUpdateListRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(GetServerUpdateListInternal, request, context);
+        }
+
+        public override Task<StartServerUpdateResponse> StartServerUpdate(StartServerUpdateRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(StartServerUpdateInternal, request, context);
+        }
+
         #endregion Grpc request handlers overrides
 
 
@@ -1188,6 +1203,75 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to upload bot file");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return res;
+        }
+
+        private async Task<ServerVersionResponse> GetServerVersionInternal(ServerVersionRequest request, ServerCallContext context, SessionInfo session, RequestResult execResult)
+        {
+            var res = new ServerVersionResponse { ExecResult = execResult };
+            if (session == null)
+                return res;
+            if (!session.AccessManager.CanGetServerVersion())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return res;
+            }
+
+            try
+            {
+                res.Version = await _algoServer.GetServerVersion();
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to get server version");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return res;
+        }
+
+        private async Task<ServerUpdateListResponse> GetServerUpdateListInternal(ServerUpdateListRequest request, ServerCallContext context, SessionInfo session, RequestResult execResult)
+        {
+            var res = new ServerUpdateListResponse { ExecResult = execResult };
+            if (session == null)
+                return res;
+            if (!session.AccessManager.CanGetServerUpdates())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return res;
+            }
+
+            try
+            {
+                //res.Updates.AddRange(await _algoServer.GetServerUpdates());
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to get server updates list");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return res;
+        }
+
+        private async Task<StartServerUpdateResponse> StartServerUpdateInternal(StartServerUpdateRequest request, ServerCallContext context, SessionInfo session, RequestResult execResult)
+        {
+            var res = new StartServerUpdateResponse { ExecResult = execResult };
+            if (session == null)
+                return res;
+            if (!session.AccessManager.CanStartServerUpdate())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return res;
+            }
+
+            try
+            {
+                //await _algoServer.StartServerUpdate(request);
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to get server version");
                 res.ExecResult = CreateErrorResult(ex);
             }
             return res;

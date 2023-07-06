@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -80,6 +81,20 @@ namespace TickTrader.Algo.AppCommon.Update
             var filePath = Path.Combine(dirPath, InfoFileName);
             using var file = File.Open(filePath, FileMode.Create);
             JsonSerializer.Serialize(file, info);
+        }
+
+        public static string FormatStateError(UpdateState state)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(state.Status.ToString());
+            if (state.InitError != UpdateErrorCodes.NoError)
+                sb.Append(" - ").Append(state.InitError.ToString());
+            sb.AppendLine();
+            foreach (var err in state.UpdateErrors)
+                sb.AppendLine(err);
+
+            return sb.ToString();
         }
 
 

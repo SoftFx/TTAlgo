@@ -386,3 +386,53 @@ message UploadPluginFileRequest {
 message UploadPluginFileResponse {
     RequestResult exec_result = 101;
 }
+
+message AutoUpdate {
+    enum ServiceStatus {
+        IDLE = 0;
+        LOADING = 1;
+        UPDATING = 2;
+        UPDATE_SUCCESS = 3;
+        UPDATE_FAILED = 4;
+    }
+}
+
+message ServerVersionRequest { }
+
+message ServerVersionResponse {
+    google.protobuf.StringValue version = 1;
+    google.protobuf.StringValue release_date = 2;
+    RequestResult exec_result = 101;
+}
+
+message ServerUpdateInfo {
+    string release_id = 1;
+    google.protobuf.StringValue version = 2;
+    google.protobuf.StringValue release_date = 3;
+    google.protobuf.StringValue changelog = 4;
+    google.protobuf.StringValue min_version = 5;
+}
+
+message ServerUpdateListRequest { }
+
+message ServerUpdateListResponse {
+    repeated ServerUpdateInfo updates = 1;
+    RequestResult exec_result = 101;
+}
+
+message StartServerUpdateRequest {
+    string release_id = 1;
+    string download_url = 2;
+}
+
+message StartServerUpdateResponse {
+    AutoUpdate.ServiceStatus status = 1;
+    RequestResult exec_result = 101;
+}
+
+message ServerUpdateStatusRequest { }
+
+message ServerUpdateStatusResponse {
+    AutoUpdate.ServiceStatus status = 1;
+    RequestResult exec_result = 101;
+}

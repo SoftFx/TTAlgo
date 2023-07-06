@@ -158,7 +158,7 @@ namespace TickTrader.BotTerminal
                 if (!startSuccess)
                 {
                     var state = UpdateHelper.LoadUpdateState(EnvService.Instance.UpdatesFolder);
-                    var error = state.HasErrors ? FormatStateError(state) : "Unexpected update error";
+                    var error = state.HasErrors ? UpdateHelper.FormatStateError(state) : "Unexpected update error";
                     Status.Value = error;
                     StatusHasError.Value = true;
                 }
@@ -205,20 +205,6 @@ namespace TickTrader.BotTerminal
 
             UpdateInProgress.Value = false;
             GuiEnabled.Value = true;
-        }
-
-        private static string FormatStateError(UpdateState state)
-        {
-            var sb = new StringBuilder();
-
-            sb.Append(state.Status.ToString());
-            if (state.InitError != UpdateErrorCodes.NoError)
-                sb.Append(" - ").Append(state.InitError.ToString());
-            sb.AppendLine();
-            foreach (var err in state.UpdateErrors)
-                sb.AppendLine(err);
-
-            return sb.ToString();
         }
 
 

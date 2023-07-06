@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
@@ -115,6 +116,10 @@ namespace TickTrader.Algo.Server
         public Task SubscribeToUpdates(ChannelWriter<IMessage> channel) => EventBus.SubscribeToUpdates(channel, true);
 
         public PluginListenerProxy GetPluginListenerProxy(string pluginId) => new PluginListenerProxy(_server, pluginId);
+
+        public Task<string> GetServerVersion() => _server.Ask<string>(ServerVersionRequest.Instance);
+        public Task<List<ServerUpdateInfo>> GetServerUpdates() => _server.Ask<List<ServerUpdateInfo>>(ServerUpdateListRequest.Instance);
+        public Task<StartServerUpdateResponse> StartUpdate(StartServerUpdateRequest request) => _server.Ask<StartServerUpdateResponse>(request);
 
 
         internal class PluginExistsRequest
