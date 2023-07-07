@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public string GetCurrentVersion() => string.Empty;
+        public string GetCurrentVersion() => AppVersionInfo.Current.Version;
 
         public async Task<StartServerUpdateResponse> StartUpdate(StartServerUpdateRequest request)
         {
@@ -49,6 +49,7 @@ namespace TickTrader.Algo.Server
                         AppTypeCode = (int)UpdateAppTypes.Terminal,
                         InstallPath = AppInfoProvider.Data.AppInfoFolder,
                         UpdatePath = updateDir,
+                        FromVersion = AppVersionInfo.Current.Version,
                         //ToVersion = update.Version,
                     };
                     var startSuccess = await UpdateHelper.StartUpdate(_server.Env.UpdatesFolder, updateParams, true);

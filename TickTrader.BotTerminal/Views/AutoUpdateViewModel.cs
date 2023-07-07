@@ -24,6 +24,8 @@ namespace TickTrader.BotTerminal
         private readonly System.Action _exitCallback;
 
 
+        public string CurrentVersion { get; }
+
         public BoolProperty GuiEnabled { get; }
 
         public BoolProperty UpdatesLoaded { get; }
@@ -47,6 +49,8 @@ namespace TickTrader.BotTerminal
             _exitCallback = exitCallback;
 
             DisplayName = "Auto Update";
+            var appVersion = AppVersionInfo.Current;
+            CurrentVersion = $"{appVersion.Version} ({appVersion.BuildDate})";
             GuiEnabled = _context.AddBoolProperty();
             UpdatesLoaded = _context.AddBoolProperty();
             HasSelectedUpdate = _context.AddBoolProperty();
@@ -152,6 +156,7 @@ namespace TickTrader.BotTerminal
                     AppTypeCode = (int)UpdateAppTypes.Terminal,
                     InstallPath = AppInfoProvider.Data.AppInfoFolder,
                     UpdatePath = updateDir,
+                    FromVersion = AppVersionInfo.Current.Version,
                     ToVersion = update.Version,
                 };
                 var startSuccess = await UpdateHelper.StartUpdate(EnvService.Instance.UpdatesFolder, updateParams, true);
