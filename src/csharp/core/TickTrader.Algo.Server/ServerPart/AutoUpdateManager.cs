@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Server
                     _status = AutoUpdate.Types.ServiceStatus.Updating;
                     var updateParams = new UpdateParams
                     {
-                        AppTypeCode = (int)UpdateAppTypes.Terminal,
+                        AppTypeCode = (int)UpdateAppTypes.Server,
                         InstallPath = AppInfoProvider.Data.AppInfoFolder,
                         UpdatePath = updateDir,
                         FromVersion = AppVersionInfo.Current.Version,
