@@ -121,6 +121,8 @@ namespace TickTrader.Algo.Server
 
             _plugins.Restore(stateSnapshot);
 
+            _updateSvc.Start();
+
             _logger.Debug("Started");
         }
 
@@ -133,6 +135,8 @@ namespace TickTrader.Algo.Server
             await _plugins.Shutdown();
 
             await _accounts.Shutdown();
+
+            _updateSvc.Stop();
 
             _logger.Debug("Stopped");
         }

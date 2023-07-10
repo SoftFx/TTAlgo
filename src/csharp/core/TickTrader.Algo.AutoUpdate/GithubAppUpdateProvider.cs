@@ -27,6 +27,9 @@ namespace TickTrader.Algo.AutoUpdate
         private DateTime _releaseCacheLastReset;
 
 
+        public IEnumerable<AppUpdateEntry> Updates => _releaseCache.Values.Select(r => r.UpdateData);
+
+
         public GithubAppUpdateProvider(UpdateDownloadSource updateSrc)
         {
             _srcId = updateSrc.Name;
@@ -38,7 +41,9 @@ namespace TickTrader.Algo.AutoUpdate
         }
 
 
-        public Task<List<AppUpdateEntry>> GetUpdates() => Task.Run(() => GetUpdatesInternal());
+        public Task LoadUpdates() => Task.Run(() => LoadUpdatesInternal());
+
+        public AppUpdateEntry GetUpdate(string versionId) => _releaseCache.TryGetValue(versionId, out var entry) ? entry.UpdateData : null;
 
         public async Task Download(string versionId, UpdateAssetTypes assetType, string dstPath)
         {
@@ -56,23 +61,16 @@ namespace TickTrader.Algo.AutoUpdate
         }
 
 
-        private async Task<List<AppUpdateEntry>> GetUpdatesInternal()
+        private async Task LoadUpdatesInternal()
         {
-            var res = new List<AppUpdateEntry>();
             try
             {
                 await LoadReleases();
-
-                foreach (var release in _releaseCache.Values)
-                {
-                    res.Add(release.UpdateData);
-                }
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to get updates from github repo '{_url}'");
             }
-            return res;
         }
 
         private async Task LoadReleases()

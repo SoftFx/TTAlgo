@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Compression;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TickTrader.Algo.AppCommon.Update;
 using TickTrader.Algo.Core.Lib;
-using System.Text.Json;
 
 namespace TickTrader.Algo.AutoUpdate
 {
@@ -15,6 +16,11 @@ namespace TickTrader.Algo.AutoUpdate
 
         private readonly string _srcId, _path;
 
+        private List<AppUpdateEntry> _lastUpdates = new();
+
+
+        public IEnumerable<AppUpdateEntry> Updates => _lastUpdates;
+
 
         public DirectoryAppUpdateProvider(UpdateDownloadSource updateSrc)
         {
@@ -23,7 +29,9 @@ namespace TickTrader.Algo.AutoUpdate
         }
 
 
-        public Task<List<AppUpdateEntry>> GetUpdates() => Task.Run(() => GetUpdatesInternal(_srcId, _path));
+        public Task LoadUpdates() => Task.Run(() => LoadUpdatesInternal());
+
+        public AppUpdateEntry GetUpdate(string versionId) => _lastUpdates.FirstOrDefault(e => e.VersionId == versionId);
 
         public Task Download(string versionId, UpdateAssetTypes assetType, string dstPath)
         {
@@ -33,12 +41,12 @@ namespace TickTrader.Algo.AutoUpdate
         }
 
 
-        private static List<AppUpdateEntry> GetUpdatesInternal(string srcId, string path)
+        private void LoadUpdatesInternal()
         {
-            var res = new List<AppUpdateEntry>();
+            var res = new List<AppUpdateEntry>(2 * _lastUpdates.Count);
             try
             {
-                var updateCandidates = Directory.GetFiles(path, "Algo*.Update.zip");
+                var updateCandidates = Directory.GetFiles(_path, "Algo*.Update.zip");
                 foreach (var updPath in updateCandidates)
                 {
                     var filename = Path.GetFileName(updPath);
@@ -55,7 +63,7 @@ namespace TickTrader.Algo.AutoUpdate
                             var fileName = Path.GetFileName(updPath);
                             res.Add(new AppUpdateEntry
                             {
-                                SrcId = srcId,
+                                SrcId = _srcId,
                                 VersionId = updPath,
                                 Info = updInfo,
                                 AvailableAssets = availableAssets,
@@ -66,9 +74,9 @@ namespace TickTrader.Algo.AutoUpdate
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to get updates from local folder '{path}'");
+                _logger.Error(ex, $"Failed to get updates from local folder '{_path}'");
             }
-            return res;
+            _lastUpdates = res;
         }
 
         private static bool TryLoadUpdateInfoFromZip(string zipPath, out UpdateInfo updateInfo)

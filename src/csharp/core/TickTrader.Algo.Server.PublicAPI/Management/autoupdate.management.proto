@@ -34,7 +34,9 @@ message ServerUpdateInfo {
     google.protobuf.StringValue min_version = 5;
 }
 
-message ServerUpdateListRequest { }
+message ServerUpdateListRequest {
+    bool forced = 1;
+}
 
 message ServerUpdateListResponse {
     repeated ServerUpdateInfo updates = 1;

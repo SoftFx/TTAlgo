@@ -64,16 +64,23 @@ namespace TickTrader.Algo.AutoUpdate
 
         public async Task<string> DownloadUpdate(AppUpdateEntry entry, UpdateAssetTypes assetType)
         {
-            if (!entry.AvailableAssets.Contains(assetType))
-                throw new ArgumentException("Invalid asset type");
+            return await DownloadUpdate(entry.SrcId, entry.VersionId, assetType);
+        }
 
+        public async Task<string> DownloadUpdate(string srcId, string versionId, UpdateAssetTypes assetType)
+        {
             IAppUpdateProvider provider = default;
             lock(_syncObj)
             {
-                _ = _providers.TryGetValue(entry.SrcId, out provider);
+                _ = _providers.TryGetValue(srcId, out provider);
             }
             if (provider == null)
                 throw new ArgumentException("Invalid source id");
+            var entry = provider.GetUpdate(versionId);
+            if (entry == null)
+                throw new ArgumentException("Invalid version id");
+            if (!entry.AvailableAssets.Contains(assetType))
+                throw new ArgumentException("Invalid asset type");
 
             var filename = assetType switch
             {
@@ -92,7 +99,7 @@ namespace TickTrader.Algo.AutoUpdate
             if (loadFile)
             {
                 // TODO: cleanup cache
-                await provider.Download(entry.VersionId, assetType, cachePath);
+                await provider.Download(versionId, assetType, cachePath);
             }
 
             return cachePath;
@@ -127,17 +134,16 @@ namespace TickTrader.Algo.AutoUpdate
         {
             try
             {
-                var tasks = new List<Task<List<AppUpdateEntry>>>(_providers.Count * 2);
+                var tasks = new List<Task>(_providers.Count * 2);
                 lock (_syncObj)
                 {
                     foreach (var provider in _providers.Values)
-                        tasks.Add(provider.GetUpdates());
+                        tasks.Add(provider.LoadUpdates());
                 }
                 await Task.WhenAll(tasks);
-                var updates = tasks.Where(t => t.IsCompletedSuccessfully).SelectMany(t => t.Result).ToList();
                 lock (_syncObj)
                 {
-                    _updatesCache = updates;
+                    _updatesCache = _providers.Values.SelectMany(p => p.Updates).ToList();
                     _updatesCacheTimeUtc = DateTime.UtcNow;
                 }
             }

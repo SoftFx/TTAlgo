@@ -26,7 +26,12 @@ namespace TickTrader.Algo.AutoUpdate
 
     public interface IAppUpdateProvider
     {
-        Task<List<AppUpdateEntry>> GetUpdates();
+        IEnumerable<AppUpdateEntry> Updates { get; }
+
+
+        Task LoadUpdates();
+
+        AppUpdateEntry GetUpdate(string versionId);
 
         Task Download(string versionId, UpdateAssetTypes assetType, string dstPath);
     }
