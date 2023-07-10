@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 using TickTrader.Algo.AppCommon.Update;
 using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.BotTerminal.Model.AutoUpdate
+namespace TickTrader.Algo.AutoUpdate
 {
-    internal class GithubAppUpdateProvider : IAppUpdateProvider
+    public class GithubAppUpdateProvider : IAppUpdateProvider
     {
         private const int DefaultPageSize = 5;
         private const string DefaultClientName = "AlgoTerminal";

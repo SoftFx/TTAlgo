@@ -9,9 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.AutoUpdate;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
-using TickTrader.BotTerminal.Model.AutoUpdate;
 using TickTrader.BotTerminal.SymbolManager;
 using TickTrader.BotTerminal.Views.BotsRepository;
 using TickTrader.FeedStorage.Api;
@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
             _storage = new PersistModel();
             ThemeSelector.Instance.InitializeSettings(_storage);
 
-            _autoUpdateSvc = new AutoUpdateService();
+            _autoUpdateSvc = new AutoUpdateService(EnvService.Instance.UpdatesCacheFolder);
             InitAutoUpdateSources();
 
             ConnectionLock = new UiLock();

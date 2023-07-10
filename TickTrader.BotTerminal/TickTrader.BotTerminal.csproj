@@ -32,6 +32,7 @@
     <ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
     <ProjectReference Include="..\src\csharp\apps\TickTrader.Algo.AppCommon\TickTrader.Algo.AppCommon.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.AutoUpdate\TickTrader.Algo.AutoUpdate.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.IndicatorHost\TickTrader.Algo.IndicatorHost.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.PkgLoader\TickTrader.Algo.PkgLoader.csproj" />
@@ -153,10 +154,8 @@
       <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host\bin\$(Configuration)\net6.0\**\*.*" />
       <BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net6.0\**\*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)bin\runtime\%(RecursiveDir)"
-          SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
-    <Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\%(RecursiveDir)"
-          SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)bin\runtime\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
+    <Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
   </Target>
 
   <Target Name="RemoveUnusedNativeLibs" AfterTargets="Build">

@@ -5,12 +5,11 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.AppCommon.Update;
+using TickTrader.Algo.AutoUpdate;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.BotTerminal.Model.AutoUpdate;
 using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal

@@ -8,7 +8,7 @@ import "google/protobuf/wrappers.proto";
 import "management/base.request.proto";
 
 
-message AutoUpdate {
+message AutoUpdateEnums {
     enum ServiceStatus {
         IDLE = 0;
         LOADING = 1;
@@ -47,13 +47,13 @@ message StartServerUpdateRequest {
 }
 
 message StartServerUpdateResponse {
-    AutoUpdate.ServiceStatus status = 1;
+    AutoUpdateEnums.ServiceStatus status = 1;
     RequestResult exec_result = 101;
 }
 
 message ServerUpdateStatusRequest { }
 
 message ServerUpdateStatusResponse {
-    AutoUpdate.ServiceStatus status = 1;
+    AutoUpdateEnums.ServiceStatus status = 1;
     RequestResult exec_result = 101;
 }

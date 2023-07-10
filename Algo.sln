@@ -140,7 +140,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.PkgLoader",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.AppCommon", "src\csharp\apps\TickTrader.Algo.AppCommon\TickTrader.Algo.AppCommon.csproj", "{836A8741-51EA-4E3B-8DEC-153325568F2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Updater", "src\csharp\apps\TickTrader.Algo.Updater\TickTrader.Algo.Updater.csproj", "{B195AA49-B1EA-44F0-BF9F-09681B6F4F72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Updater", "src\csharp\apps\TickTrader.Algo.Updater\TickTrader.Algo.Updater.csproj", "{B195AA49-B1EA-44F0-BF9F-09681B6F4F72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.AutoUpdate", "src\csharp\core\TickTrader.Algo.AutoUpdate\TickTrader.Algo.AutoUpdate.csproj", "{B0B48D29-B026-49EC-90CC-6F84685F8A48}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -812,6 +814,18 @@ Global
 		{B195AA49-B1EA-44F0-BF9F-09681B6F4F72}.Release|x64.Build.0 = Release|Any CPU
 		{B195AA49-B1EA-44F0-BF9F-09681B6F4F72}.Release|x86.ActiveCfg = Release|Any CPU
 		{B195AA49-B1EA-44F0-BF9F-09681B6F4F72}.Release|x86.Build.0 = Release|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Debug|x64.Build.0 = Debug|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Debug|x86.Build.0 = Debug|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Release|x64.ActiveCfg = Release|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Release|x64.Build.0 = Release|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Release|x86.ActiveCfg = Release|Any CPU
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -872,6 +886,7 @@ Global
 		{D0AA1583-D526-4B64-96B9-83AEF50891F1} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{836A8741-51EA-4E3B-8DEC-153325568F2B} = {D4DDCC9E-81DB-4294-9060-A8C1AB363672}
 		{B195AA49-B1EA-44F0-BF9F-09681B6F4F72} = {D4DDCC9E-81DB-4294-9060-A8C1AB363672}
+		{B0B48D29-B026-49EC-90CC-6F84685F8A48} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}

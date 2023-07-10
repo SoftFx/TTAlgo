@@ -7,9 +7,9 @@ using TickTrader.Algo.AppCommon.Update;
 using TickTrader.Algo.Core.Lib;
 using System.Text.Json;
 
-namespace TickTrader.BotTerminal.Model.AutoUpdate
+namespace TickTrader.Algo.AutoUpdate
 {
-    internal class DirectoryAppUpdateProvider : IAppUpdateProvider
+    public class DirectoryAppUpdateProvider : IAppUpdateProvider
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<DirectoryAppUpdateProvider>();
 

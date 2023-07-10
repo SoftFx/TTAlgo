@@ -16,14 +16,14 @@ namespace TickTrader.Algo.Server
 
         private readonly AlgoServerPrivate _server;
 
-        private AutoUpdate.Types.ServiceStatus _status;
+        private AutoUpdateEnums.Types.ServiceStatus _status;
 
 
         public AutoUpdateManager(AlgoServerPrivate server)
         {
             _server = server;
 
-            _status = AutoUpdate.Types.ServiceStatus.Idle;
+            _status = AutoUpdateEnums.Types.ServiceStatus.Idle;
         }
 
 
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Server
         {
             try
             {
-                _status = AutoUpdate.Types.ServiceStatus.Loading;
+                _status = AutoUpdateEnums.Types.ServiceStatus.Loading;
                 
                 var updatePath = Path.Combine(_server.Env.UpdatesFolder, "update.zip");
                 var updateDir = Path.Combine(_server.Env.UpdatesFolder, "update");
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Server
 
                 if (downloadSuccess)
                 {
-                    _status = AutoUpdate.Types.ServiceStatus.Updating;
+                    _status = AutoUpdateEnums.Types.ServiceStatus.Updating;
                     var updateParams = new UpdateParams
                     {
                         AppTypeCode = (int)UpdateAppTypes.Server,
@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Server
                     {
                         var state = UpdateHelper.LoadUpdateState(_server.Env.UpdatesFolder);
                         var error = state.HasErrors ? UpdateHelper.FormatStateError(state) : "Unexpected update error";
-                        _status = AutoUpdate.Types.ServiceStatus.UpdateFailed;
+                        _status = AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
 
                     }
                 }
@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Server
             catch (Exception ex)
             {
                 _logger.Error(ex, "Update failed unexpectedly");
-                _status = AutoUpdate.Types.ServiceStatus.UpdateFailed;
+                _status = AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
             }
             return new StartServerUpdateResponse { Status = _status };
         }
@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Server
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                _status = AutoUpdate.Types.ServiceStatus.UpdateFailed;
+                _status = AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
                 _logger.Error($"Download failed. Status code {response.StatusCode}");
                 return false;
             }

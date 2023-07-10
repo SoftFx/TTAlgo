@@ -12,7 +12,7 @@
 
     public partial class ServerUpdateStatusResponse
     {
-        public ServerUpdateStatusResponse(AutoUpdate.Types.ServiceStatus status)
+        public ServerUpdateStatusResponse(AutoUpdateEnums.Types.ServiceStatus status)
         {
             Status = status;
         }
@@ -28,7 +28,7 @@
 
     public partial class StartServerUpdateResponse
     {
-        public StartServerUpdateResponse(AutoUpdate.Types.ServiceStatus status)
+        public StartServerUpdateResponse(AutoUpdateEnums.Types.ServiceStatus status)
         {
             Status = status;
         }

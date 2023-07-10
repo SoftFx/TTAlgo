@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.BotTerminal.Model.AutoUpdate
+namespace TickTrader.Algo.AutoUpdate
 {
-    internal class UpdateDownloadSource
+    public class UpdateDownloadSource
     {
         public string Name { get; set; }
 
@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
     }
 
 
-    internal class AutoUpdateService
+    public class AutoUpdateService
     {
         public const string MainGithubRepo = "https://github.com/SoftFx/TTAlgo";
         public const string MainSourceName = "main";
@@ -27,14 +27,16 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
 
         private readonly object _syncObj = new();
         private readonly Dictionary<string, IAppUpdateProvider> _providers = new();
+        private readonly string _cacheFolder;
 
         private CancellationTokenSource _cancelTokenSrc;
         private List<AppUpdateEntry> _updatesCache = new();
         private DateTime _updatesCacheTimeUtc;
 
 
-        public AutoUpdateService()
+        public AutoUpdateService(string cacheFolder)
         {
+            _cacheFolder = cacheFolder;
         }
 
 
@@ -80,7 +82,7 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
                 UpdateAssetTypes.Setup => $"Algo Studio {entry.Info.ReleaseVersion}.exe",
                 _ => throw new NotSupportedException()
             };
-            var cachePath = Path.Combine(EnvService.Instance.UpdatesCacheFolder, filename);
+            var cachePath = Path.Combine(_cacheFolder, filename);
             var loadFile = true;
             if (File.Exists(cachePath))
             {

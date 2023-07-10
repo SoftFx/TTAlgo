@@ -4,16 +4,16 @@ using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.AppCommon.Update;
 
-namespace TickTrader.BotTerminal.Model.AutoUpdate
+namespace TickTrader.Algo.AutoUpdate
 {
-    internal enum UpdateAssetTypes
+    public enum UpdateAssetTypes
     {
         Setup = 0,
         TerminalUpdate = 1,
         ServerUpdate = 2,
     }
 
-    internal class AppUpdateEntry
+    public class AppUpdateEntry
     {
         public string SrcId { get; set; }
 
@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
         public List<UpdateAssetTypes> AvailableAssets { get; set; }
     }
 
-    internal interface IAppUpdateProvider
+    public interface IAppUpdateProvider
     {
         Task<List<AppUpdateEntry>> GetUpdates();
 
@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal.Model.AutoUpdate
     }
 
 
-    internal static class AppUpdateProvider
+    public static class AppUpdateProvider
     {
         public static IAppUpdateProvider Create(UpdateDownloadSource updateSrc)
         {
