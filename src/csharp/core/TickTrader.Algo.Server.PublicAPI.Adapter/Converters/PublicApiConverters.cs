@@ -1030,5 +1030,30 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                     throw new ArgumentException($"Unsupported alert type {type}");
             }
         }
+
+        public static ServerUpdateInfo ToApi(this ServerApi.ServerUpdateInfo info)
+        {
+            return new ServerUpdateInfo
+            {
+                ReleaseId = info.ReleaseId,
+                Version = info.Version,
+                ReleaseDate = info.ReleaseDate,
+                MinVersion = info.MinVersion,
+                Changelog = info.Changelog,
+            };
+        }
+
+        public static AutoUpdateEnums.Types.ServiceStatus ToApi(this ServerApi.AutoUpdateEnums.Types.ServiceStatus status)
+        {
+            return status switch
+            {
+                ServerApi.AutoUpdateEnums.Types.ServiceStatus.Idle => AutoUpdateEnums.Types.ServiceStatus.Idle,
+                ServerApi.AutoUpdateEnums.Types.ServiceStatus.Loading => AutoUpdateEnums.Types.ServiceStatus.Loading,
+                ServerApi.AutoUpdateEnums.Types.ServiceStatus.Updating => AutoUpdateEnums.Types.ServiceStatus.Updating,
+                ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess => AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess,
+                ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateFailed => AutoUpdateEnums.Types.ServiceStatus.UpdateFailed,
+                _ => throw new ArgumentException($"Unsupported service status {status}"),
+            };
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
@@ -81,6 +82,7 @@ namespace TickTrader.Algo.Server
             Receive<PluginOwner.ExecPluginCmd>(cmd => _plugins.ExecCmd(cmd.PluginId, cmd.Command));
 
             Receive<ServerVersionRequest, string>(r => _updateSvc.GetCurrentVersion());
+            Receive<ServerUpdateListRequest, ServerUpdateListResponse>(r => _updateSvc.GetUpdateList(r));
             Receive<StartServerUpdateRequest, StartServerUpdateResponse>(r => _updateSvc.StartUpdate(r));
         }
 

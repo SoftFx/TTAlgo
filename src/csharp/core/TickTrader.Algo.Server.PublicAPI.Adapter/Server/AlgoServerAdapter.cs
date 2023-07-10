@@ -177,5 +177,15 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         {
             return _algoServer.GetServerVersion();
         }
+
+        public Task<ServerApi.ServerUpdateListResponse> GetServerUpdates(ServerApi.ServerUpdateListRequest request)
+        {
+            return _algoServer.GetServerUpdates(request);
+        }
+
+        public Task<ServerApi.StartServerUpdateResponse> StartServerUpdate(ServerApi.StartServerUpdateRequest request)
+        {
+            return _algoServer.StartUpdate(request);
+        }
     }
 }

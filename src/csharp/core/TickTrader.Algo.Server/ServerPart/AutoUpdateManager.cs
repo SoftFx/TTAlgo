@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -73,7 +74,7 @@ namespace TickTrader.Algo.Server
             if (!_started)
                 throw new NotSupportedException("Update service not started");
 
-            var response = new ServerUpdateListResponse();
+            var res = new ServerUpdateListResponse();
             try
             {
                 var updates = await _updateSvc.GetUpdates(request.Forced);
@@ -89,6 +90,7 @@ namespace TickTrader.Algo.Server
                             MinVersion = update.Info.MinVersion,
                             Changelog = update.Info.Changelog,
                         };
+                        res.Updates.Add(updInfo);
                     }
                 }
             }
@@ -96,7 +98,7 @@ namespace TickTrader.Algo.Server
             {
                 _logger.Error(ex, $"Failed to fetch updates. Request: {request}");
             }
-            return response;
+            return res;
         }
 
         public async Task<StartServerUpdateResponse> StartUpdate(StartServerUpdateRequest request)
@@ -107,14 +109,29 @@ namespace TickTrader.Algo.Server
             try
             {
                 _status = AutoUpdateEnums.Types.ServiceStatus.Loading;
-                
+
                 var updatePath = Path.Combine(_server.Env.UpdatesFolder, "update.zip");
                 var updateDir = Path.Combine(_server.Env.UpdatesFolder, "update");
                 var downloadSuccess = false;
                 if (!string.IsNullOrEmpty(request.ReleaseId))
                     downloadSuccess = await DownloadReleaseById(request.ReleaseId, updateDir);
-                if (!string.IsNullOrEmpty(request.DownloadUrl))
+                else if (!string.IsNullOrEmpty(request.DownloadUrl))
                     downloadSuccess = await DownloadUpdateFromUrl(request.DownloadUrl, updatePath, updateDir);
+                else if (!string.IsNullOrEmpty(request.LocalPath))
+                {
+                    downloadSuccess = await DownloadReleaseFromLocalPath(request.LocalPath, updateDir);
+                    if (request.OwnsLocalFile)
+                    {
+                        try
+                        {
+                            File.Delete(request.LocalPath);
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.Error(ex, "Failed to delete temp update file");
+                        }
+                    }
+                }
 
                 if (downloadSuccess)
                 {

@@ -423,8 +423,10 @@ message ServerUpdateListResponse {
 }
 
 message StartServerUpdateRequest {
-    string release_id = 1;
-    string download_url = 2;
+    google.protobuf.StringValue release_id = 1;
+    google.protobuf.StringValue download_url = 2;
+    google.protobuf.StringValue local_path = 3;
+    bool owns_local_file = 4;
 }
 
 message StartServerUpdateResponse {

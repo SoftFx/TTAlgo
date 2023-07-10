@@ -1090,5 +1090,31 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                     throw new ArgumentException($"Unsupported alert type {type}");
             }
         }
+
+        public static ServerApi.ServerUpdateInfo ToServer(this ServerUpdateInfo info)
+        {
+            return new ServerApi.ServerUpdateInfo
+            {
+                ReleaseId = info.ReleaseId,
+                Version = info.Version,
+                ReleaseDate = info.ReleaseDate,
+                MinVersion = info.MinVersion,
+                Changelog = info.Changelog,
+            };
+        }
+
+        public static ServerApi.ServerUpdateListRequest ToServer(this ServerUpdateListRequest request)
+        {
+            return ServerApi.ServerUpdateListRequest.Get(request.Forced);
+        }
+
+        public static ServerApi.StartServerUpdateRequest ToServer(this StartServerUpdateRequest request)
+        {
+            return new ServerApi.StartServerUpdateRequest
+            {
+                ReleaseId = request.ReleaseId,
+                DownloadUrl = request.DownloadUrl,
+            };
+        }
     }
 }

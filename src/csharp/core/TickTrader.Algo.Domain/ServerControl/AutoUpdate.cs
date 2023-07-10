@@ -20,9 +20,15 @@
 
     public partial class StartServerUpdateRequest
     {
-        public StartServerUpdateRequest(string downloadUrl)
+        public StartServerUpdateRequest(string releaseId)
         {
-            DownloadUrl = downloadUrl;
+            ReleaseId = releaseId;
+        }
+
+        public StartServerUpdateRequest(string localPath, bool ownsFile)
+        {
+            LocalPath = localPath;
+            OwnsLocalFile = ownsFile;
         }
     }
 
@@ -36,6 +42,10 @@
 
     public partial class ServerUpdateListRequest
     {
-        public static ServerUpdateListRequest Instance { get; } = new ServerUpdateListRequest();
+        private static readonly ServerUpdateListRequest _cached = new ServerUpdateListRequest { Forced = false };
+        private static readonly ServerUpdateListRequest _forced = new ServerUpdateListRequest { Forced = true };
+
+
+        public static ServerUpdateListRequest Get(bool forced) => forced ? _forced : _cached;
     }
 }

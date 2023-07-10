@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
@@ -42,6 +43,7 @@ namespace TickTrader.Algo.Domain.ServerControl
         Task SubscribeToAlerts(ChannelWriter<AlertRecordInfo> channel);
 
         Task<string> GetServerVersion();
+        Task<ServerUpdateListResponse> GetServerUpdates(ServerUpdateListRequest request);
         Task<StartServerUpdateResponse> StartUpdate(StartServerUpdateRequest request);
 
 

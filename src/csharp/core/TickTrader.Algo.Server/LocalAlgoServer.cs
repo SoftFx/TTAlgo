@@ -118,7 +118,7 @@ namespace TickTrader.Algo.Server
         public PluginListenerProxy GetPluginListenerProxy(string pluginId) => new PluginListenerProxy(_server, pluginId);
 
         public Task<string> GetServerVersion() => _server.Ask<string>(ServerVersionRequest.Instance);
-        public Task<List<ServerUpdateInfo>> GetServerUpdates() => _server.Ask<List<ServerUpdateInfo>>(ServerUpdateListRequest.Instance);
+        public Task<ServerUpdateListResponse> GetServerUpdates(ServerUpdateListRequest request) => _server.Ask<ServerUpdateListResponse>(request);
         public Task<StartServerUpdateResponse> StartUpdate(StartServerUpdateRequest request) => _server.Ask<StartServerUpdateResponse>(request);
 
 
