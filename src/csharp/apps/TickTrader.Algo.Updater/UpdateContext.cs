@@ -198,7 +198,7 @@ namespace TickTrader.Algo.Updater
 #if DEBUG
                 PathHelper.CopyDirectory(UpdateBinFolder, CurrentBinFolder, true, false);
 #else
-                Directory.Move(UpdateBinFolder, CurrentBinFolder)
+                Directory.Move(UpdateBinFolder, CurrentBinFolder);
 #endif
                 UpdateStatus("Finished moving new files");
                 copySuccess = true;
