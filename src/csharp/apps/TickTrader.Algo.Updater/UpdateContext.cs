@@ -194,9 +194,13 @@ namespace TickTrader.Algo.Updater
             var copySuccess = false;
             try
             {
-                UpdateStatus("Copying new version files...");
+                UpdateStatus("Moving new version files...");
+#if DEBUG
                 PathHelper.CopyDirectory(UpdateBinFolder, CurrentBinFolder, true, false);
-                UpdateStatus("Finished copying new files");
+#else
+                Directory.Move(UpdateBinFolder, CurrentBinFolder)
+#endif
+                UpdateStatus("Finished moving new files");
                 copySuccess = true;
             }
             catch (Exception ex)
@@ -287,8 +291,11 @@ namespace TickTrader.Algo.Updater
             }
         }
 
-        private Task StopServer(List<Process> processesToStop)
+        private async Task StopServer(List<Process> processesToStop)
         {
+            // Give server some time to return response
+            await Task.Delay(UpdateHelper.UpdateFailTimeout + 2_000);
+
             var serviceStopped = true;
             var svcControl = new ServiceController(ServiceId);
             if (svcControl.Status != ServiceControllerStatus.Stopped)
@@ -314,8 +321,6 @@ namespace TickTrader.Algo.Updater
 
             if (!serviceStopped)
                 throw new Exception("Abort update");
-
-            return Task.CompletedTask;
         }
 
         private async Task<bool> StartApp()
