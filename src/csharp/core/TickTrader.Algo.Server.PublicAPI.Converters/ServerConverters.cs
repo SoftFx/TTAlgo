@@ -1074,5 +1074,17 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 TimeUtc = info.TimeUtc,
             };
         }
+
+        public static ServerApi.ServerUpdateInfo ToServer(this ServerUpdateInfo info)
+        {
+            return new ServerApi.ServerUpdateInfo
+            {
+                ReleaseId = info.ReleaseId,
+                Version = info.Version,
+                ReleaseDate = info.ReleaseDate,
+                MinVersion = info.MinVersion,
+                Changelog = info.Changelog,
+            };
+        }
     }
 }

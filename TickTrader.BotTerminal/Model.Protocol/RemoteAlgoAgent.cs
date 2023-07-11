@@ -51,6 +51,8 @@ namespace TickTrader.BotTerminal
 
         public AlgoServerApi.IAccessManager AccessManager => _protocolClient.AccessManager;
 
+        public AlgoServerApi.IVersionSpec VersionSpec => _protocolClient.VersionSpec;
+
         public AlertManagerModel AlertModel { get; }
 
 
@@ -222,6 +224,21 @@ namespace TickTrader.BotTerminal
         public async Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerApi.IFileProgressListener progressListener)
         {
             await Task.Run(() => _protocolClient.UploadPluginFile(new AlgoServerApi.UploadPluginFileRequest(botId, folderId.ToApi(), fileName), srcPath, progressListener));
+        }
+
+        public Task<string> GetServerVersion()
+        {
+            return _protocolClient.GetServerVersion(ServerVersionRequest.Instance.ToApi());
+        }
+
+        public async Task<List<ServerUpdateInfo>> GetServerUpdateList(bool forced)
+        {
+            return (await _protocolClient.GetServerUpdateList(ServerUpdateListRequest.Get(forced).ToApi())).Select(i => i.ToServer()).ToList();
+        }
+
+        public Task StartServerUpdate(string releaseId)
+        {
+            return _protocolClient.StartServerUpdate(new AlgoServerApi.StartServerUpdateRequest { ReleaseId = releaseId });
         }
 
         #endregion

@@ -101,9 +101,7 @@
             }
         }
 
-        public bool CanGetServerVersion() => HasViewerAccess;
-
-        public bool CanGetServerUpdates() => HasViewerAccess;
+        public bool CanGetServerUpdateInfo() => HasViewerAccess;
 
         public bool CanStartServerUpdate() => HasAdminAccess;
     }

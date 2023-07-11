@@ -1,15 +1,19 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Var;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.AppCommon.Update;
 using TickTrader.Algo.AutoUpdate;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
@@ -17,13 +21,16 @@ namespace TickTrader.BotTerminal
     internal sealed class AutoUpdateViewModel : Screen, IWindowModel
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AutoUpdateViewModel>();
+        private static UpdateAssetTypes[] _terminalAssets = new[] { UpdateAssetTypes.TerminalUpdate, UpdateAssetTypes.Setup };
+        private static UpdateAssetTypes[] _serverAssets = new[] { UpdateAssetTypes.ServerUpdate, UpdateAssetTypes.Setup };
 
         private readonly VarContext _context = new();
         private readonly AutoUpdateService _updateSvc;
         private readonly System.Action _exitCallback;
+        private readonly AlgoAgentViewModel _remoteAgent;
 
 
-        public string CurrentVersion { get; }
+        public StrProperty CurrentVersion { get; }
 
         public BoolProperty GuiEnabled { get; }
 
@@ -42,14 +49,9 @@ namespace TickTrader.BotTerminal
         public BoolProperty UpdateInProgress { get; }
 
 
-        public AutoUpdateViewModel(AutoUpdateService updateSvc, System.Action exitCallback)
+        private AutoUpdateViewModel()
         {
-            _updateSvc = updateSvc;
-            _exitCallback = exitCallback;
-
-            DisplayName = "Auto Update";
-            var appVersion = AppVersionInfo.Current;
-            CurrentVersion = $"{appVersion.Version} ({appVersion.BuildDate})";
+            CurrentVersion = _context.AddStrProperty();
             GuiEnabled = _context.AddBoolProperty();
             UpdatesLoaded = _context.AddBoolProperty();
             HasSelectedUpdate = _context.AddBoolProperty();
@@ -57,14 +59,54 @@ namespace TickTrader.BotTerminal
             Status = _context.AddStrProperty();
             StatusHasError = _context.AddBoolProperty();
             UpdateInProgress = _context.AddBoolProperty();
+        }
+
+        public AutoUpdateViewModel(AutoUpdateService updateSvc, System.Action exitCallback) : this()
+        {
+            _updateSvc = updateSvc;
+            _exitCallback = exitCallback;
+
+            DisplayName = $"Auto Update - {EnvService.Instance.ApplicationName}";
+            var appVersion = AppVersionInfo.Current;
+            CurrentVersion.Value = $"{appVersion.Version} ({appVersion.BuildDate})";
 
             _ = LoadUpdatesAsync();
+        }
+
+        public AutoUpdateViewModel(AutoUpdateService updateSvc, BotAgentViewModel remoteAgent) : this()
+        {
+            _updateSvc = updateSvc;
+            _remoteAgent = remoteAgent.Agent;
+
+            DisplayName = $"Auto Update - {remoteAgent.Agent.Name}";
+            _remoteAgent.Model.AccessLevelChanged += OnAgentAccessLevelChanged;
+
+            _ = LoadRemoteUpdatesAsync();
+        }
+
+
+        protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
+        {
+            if (close)
+            {
+                if (_remoteAgent != null)
+                    _remoteAgent.Model.AccessLevelChanged -= OnAgentAccessLevelChanged;
+            }
+
+            return Task.CompletedTask;
         }
 
 
         public void RefreshUpdates()
         {
-            _ = LoadUpdatesAsync(true);
+            if (_remoteAgent == null)
+            {
+                _ = LoadUpdatesAsync(true);
+            }
+            else
+            {
+                _ = LoadRemoteUpdatesAsync(true);
+            }
         }
 
         public void OpenGithubRepo()
@@ -104,6 +146,11 @@ namespace TickTrader.BotTerminal
             HasSelectedUpdate.Value = SelectedUpdate.Value != null;
         }
 
+        private void OnAgentAccessLevelChanged()
+        {
+            _ = LoadRemoteUpdatesAsync();
+        }
+
         private async Task LoadUpdatesAsync(bool forced = false)
         {
             GuiEnabled.Value = false;
@@ -115,11 +162,53 @@ namespace TickTrader.BotTerminal
 
                 AvailableUpdates.Clear();
                 foreach (var update in updates)
-                    AvailableUpdates.Add(new AppUpdateViewModel { Entry = update });
+                    if (update.AvailableAssets.Any(a => _terminalAssets.Contains(a)))
+                        AvailableUpdates.Add(new AppUpdateViewModel(update));
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to load updates");
+            }
+
+            UpdatesLoaded.Value = true;
+            GuiEnabled.Value = true;
+        }
+
+        private async Task LoadRemoteUpdatesAsync(bool forced = false)
+        {
+            GuiEnabled.Value = false;
+            UpdatesLoaded.Value = false;
+
+            var agent = _remoteAgent;
+            try
+            {
+                List<ServerUpdateInfo> serverUpdates = null;
+                if (!_remoteAgent.Model.VersionSpec.SupportsAutoUpdate)
+                {
+                    CurrentVersion.Value = "AutoUpdate not supported";
+                }
+                else
+                {
+                    CurrentVersion.Value = await _remoteAgent.Model.GetServerVersion();
+                    serverUpdates = await _remoteAgent.Model.GetServerUpdateList(forced);
+                }
+
+                var updates = await _updateSvc.GetUpdates(forced);
+                AvailableUpdates.Clear();
+                foreach (var update in updates)
+                    if (update.AvailableAssets.Any(a => _serverAssets.Contains(a)))
+                    {
+                        ServerUpdateInfo serverUpd = null;
+                        // Match releases from main repo to use server-side download
+                        if (update.SrcId == AutoUpdateService.MainSourceName && serverUpdates != null)
+                            serverUpd = serverUpdates.FirstOrDefault(u => u.ReleaseId == update.VersionId);
+
+                        AvailableUpdates.Add(new AppUpdateViewModel(update, serverUpd));
+                    }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Failed to load updates for server {agent?.Name}");
             }
 
             UpdatesLoaded.Value = true;
@@ -214,19 +303,57 @@ namespace TickTrader.BotTerminal
 
         internal class AppUpdateViewModel
         {
-            public AppUpdateEntry Entry { get; init; }
+            public AppUpdateEntry Entry { get; }
 
-            public string Source => Entry.SrcId;
+            public ServerUpdateInfo ServerUpdate { get; }
 
-            public string Version => Entry.Info.ReleaseVersion;
+            public string Source { get; }
 
-            public string ReleaseDate => Entry.Info.ReleaseDate;
+            public string Version { get; }
 
-            public string MinVersion => Entry.Info.MinVersion;
+            public string ReleaseDate { get; }
 
-            public string Changelog => Entry.Info.Changelog;
+            public string MinVersion { get; }
 
-            public string AppType => string.Join(", ", Entry.AvailableAssets);
+            public string Changelog { get; }
+
+            public string AppType { get; }
+
+
+            public AppUpdateViewModel(AppUpdateEntry entry)
+            {
+                Entry = entry;
+
+                Source = entry.SrcId;
+                AppType = string.Join(", ", Entry.AvailableAssets);
+                Version = entry.Info.ReleaseVersion;
+                ReleaseDate = entry.Info.ReleaseDate;
+                MinVersion = entry.Info.MinVersion;
+                Changelog = entry.Info.Changelog;
+            }
+
+            public AppUpdateViewModel(AppUpdateEntry entry, ServerUpdateInfo serverUpdate)
+            {
+                Entry = entry;
+                ServerUpdate = serverUpdate;
+
+                Source = entry.SrcId;
+                AppType = string.Join(", ", Entry.AvailableAssets);
+                if (serverUpdate != null)
+                {
+                    Version = serverUpdate.Version;
+                    ReleaseDate = serverUpdate.ReleaseDate;
+                    MinVersion = serverUpdate.MinVersion;
+                    Changelog = serverUpdate.Changelog;
+                }
+                else
+                {
+                    Version = entry.Info.ReleaseVersion;
+                    ReleaseDate = entry.Info.ReleaseDate;
+                    MinVersion = entry.Info.MinVersion;
+                    Changelog = entry.Info.Changelog;
+                }
+            }
         }
     }
 }

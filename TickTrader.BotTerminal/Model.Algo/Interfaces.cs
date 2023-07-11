@@ -1,5 +1,6 @@
 ﻿using Machinarium.Qnil;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
@@ -68,6 +69,8 @@ namespace TickTrader.BotTerminal
 
         AlgoServerPublicApi.IAccessManager AccessManager { get; }
 
+        AlgoServerPublicApi.IVersionSpec VersionSpec { get; }
+
         AlertManagerModel AlertModel { get; }
 
 
@@ -115,5 +118,11 @@ namespace TickTrader.BotTerminal
         Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, AlgoServerPublicApi.IFileProgressListener progressListener);
 
         Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerPublicApi.IFileProgressListener progressListener);
+
+        Task<string> GetServerVersion();
+
+        Task<List<ServerUpdateInfo>> GetServerUpdateList(bool forced);
+
+        Task StartServerUpdate(string releaseId);
     }
 }

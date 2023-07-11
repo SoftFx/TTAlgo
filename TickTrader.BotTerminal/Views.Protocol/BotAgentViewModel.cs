@@ -14,6 +14,7 @@ namespace TickTrader.BotTerminal
         bool CanUploadPackage { get; }
         bool CanDownloadPackage { get; }
         bool CanManageFiles { get; }
+        bool CanOpenUpdate { get; }
 
         void ChangeBotAgent();
         void RemoveBotAgent();
@@ -24,6 +25,7 @@ namespace TickTrader.BotTerminal
         void UploadPackage();
         void DownloadPackage();
         void ManageFiles();
+        void OpenUpdate();
     }
 
 
@@ -61,6 +63,8 @@ namespace TickTrader.BotTerminal
 
         public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(Algo.Server.PublicAPI.PluginFolderInfo.Types.PluginFolderId.AlgoData)
                 || Agent.Model.AccessManager.CanGetBotFolderInfo(Algo.Server.PublicAPI.PluginFolderInfo.Types.PluginFolderId.BotLogs);
+
+        public bool CanOpenUpdate => Connection.State == BotAgentConnectionManager.States.Online;
 
 
         public BotAgentViewModel(BotAgentConnectionManager connection, AlgoEnvironment algoEnv)
@@ -153,6 +157,11 @@ namespace TickTrader.BotTerminal
             Agent.OpenManageBotFilesDialog();
         }
 
+        public void OpenUpdate()
+        {
+            _algoEnv.Shell.OpenUpdate(this);
+        }
+
 
         private void ConnectionOnStateChanged()
         {
@@ -164,6 +173,7 @@ namespace TickTrader.BotTerminal
                 || Connection.State == BotAgentConnectionManager.States.Connecting)
                 NotifyOfPropertyChange(nameof(DisplayName));
             NotifyOfPropertyChange(nameof(ToolTipInformation));
+            NotifyOfPropertyChange(nameof(CanOpenUpdate));
         }
 
         private void OnAccessLevelChanged()

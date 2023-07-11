@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -59,6 +60,8 @@ namespace TickTrader.BotTerminal
 
         public AlgoServerPublicApi.IAccessManager AccessManager { get; }
 
+        public AlgoServerPublicApi.IVersionSpec VersionSpec { get; }
+
         public AlertManagerModel AlertModel { get; }
 
         public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !b.State.IsStopped());
@@ -100,6 +103,7 @@ namespace TickTrader.BotTerminal
             Catalog = new PluginCatalog(this);
             AlertModel = new AlertManagerModel(Name);
             AccessManager = new AlgoServerPublicApi.ApiAccessManager(AlgoServerPublicApi.ClientClaims.Types.AccessLevel.Admin);
+            VersionSpec = new AlgoServerPublicApi.ApiVersionSpec();
 
             _ = Init(storage);
         }
@@ -298,6 +302,21 @@ namespace TickTrader.BotTerminal
             var writePath = await _server.GetPluginFileWritePath(new UploadPluginFileRequest(botId, folderId, fileName));
             File.Copy(srcPath, writePath, true);
             progressListener.IncrementProgress(1);
+        }
+
+        public Task<string> GetServerVersion()
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<List<ServerUpdateInfo>> GetServerUpdateList(bool forced)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task StartServerUpdate(string releaseId)
+        {
+            throw new NotSupportedException();
         }
 
         #endregion

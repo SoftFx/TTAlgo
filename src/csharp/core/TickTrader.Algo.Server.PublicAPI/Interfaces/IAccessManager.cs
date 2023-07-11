@@ -67,5 +67,13 @@
         bool CanUploadBotFile();
 
         #endregion
+
+        #region Auto update management permissions
+
+        bool CanGetServerUpdateInfo();
+
+        bool CanStartServerUpdate();
+
+        #endregion
     }
 }

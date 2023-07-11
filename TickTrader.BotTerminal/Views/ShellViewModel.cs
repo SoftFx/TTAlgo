@@ -265,6 +265,12 @@ namespace TickTrader.BotTerminal
             _ = _wndManager.ShowDialog(vm, this);
         }
 
+        public void OpenUpdate(BotAgentViewModel agent)
+        {
+            AutoUpdateViewModel vm = new AutoUpdateViewModel(_autoUpdateSvc, agent);
+            _ = _wndManager.ShowDialog(vm, this);
+        }
+
         public void OpenChart(string smb)
         {
             Charts.Open(smb);

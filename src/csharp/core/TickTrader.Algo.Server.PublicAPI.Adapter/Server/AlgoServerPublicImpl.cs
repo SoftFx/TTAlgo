@@ -1213,7 +1213,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             var res = new ServerVersionResponse { ExecResult = execResult };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanGetServerVersion())
+            if (!session.AccessManager.CanGetServerUpdateInfo())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;
@@ -1236,7 +1236,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             var res = new ServerUpdateListResponse { ExecResult = execResult };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanGetServerUpdates())
+            if (!session.AccessManager.CanGetServerUpdateInfo())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;

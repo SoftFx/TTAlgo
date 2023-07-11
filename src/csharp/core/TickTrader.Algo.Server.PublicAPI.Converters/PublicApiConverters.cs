@@ -1014,5 +1014,15 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 TimeUtc = info.TimeUtc,
             };
         }
+
+        public static ServerVersionRequest ToApi(this ServerApi.ServerVersionRequest request)
+        {
+            return new ServerVersionRequest();
+        }
+
+        public static ServerUpdateListRequest ToApi(this ServerApi.ServerUpdateListRequest request)
+        {
+            return new ServerUpdateListRequest { Forced = request.Forced };
+        }
     }
 }

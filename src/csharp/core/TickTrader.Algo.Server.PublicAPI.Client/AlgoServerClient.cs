@@ -3,6 +3,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -708,6 +709,26 @@ namespace TickTrader.Algo.Server.PublicAPI
                 var response = await call.ResponseAsync;
                 FailForNonSuccess(response.ExecResult);
             }
+        }
+
+        public async Task<string> GetServerVersion(ServerVersionRequest request)
+        {
+            var response = await _client.GetServerVersionAsync(request);
+            FailForNonSuccess(response.ExecResult);
+            return response.Version;
+        }
+
+        public async Task<IEnumerable<ServerUpdateInfo>> GetServerUpdateList(ServerUpdateListRequest request)
+        {
+            var response = await _client.GetServerUpdateListAsync(request);
+            FailForNonSuccess(response.ExecResult);
+            return response.Updates;
+        }
+
+        public async Task StartServerUpdate(StartServerUpdateRequest request)
+        {
+            var response = await _client.StartServerUpdateAsync(request);
+            FailForNonSuccess(response.ExecResult);
         }
 
         #endregion Requests

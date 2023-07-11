@@ -100,7 +100,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Row="0" Grid.Column="0" Content="Current Version:" />
-                        <Label Grid.Row="0" Grid.Column="1" Content="{Binding CurrentVersion}" />
+                        <Label Grid.Row="0" Grid.Column="1" Content="{Binding CurrentVersion.Value}" />
                         <Label Grid.Row="1" Grid.Column="0" Content="Update Version:" />
                         <Label Grid.Row="1" Grid.Column="1" Content="{Binding SelectedUpdate.Value.Version}" />
                         <Label Grid.Row="2" Grid.Column="0" Content="Release Date:" />
