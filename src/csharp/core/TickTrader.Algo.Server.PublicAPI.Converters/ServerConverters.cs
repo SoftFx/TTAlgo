@@ -1072,7 +1072,23 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 Message = info.Message,
                 PluginId = info.PluginId,
                 TimeUtc = info.TimeUtc,
+                Type = info.Type.ToServer(),
             };
+        }
+
+        public static Domain.AlertRecordInfo.Types.AlertType ToServer(this AlertRecordInfo.Types.AlertType type)
+        {
+            switch (type)
+            {
+                case AlertRecordInfo.Types.AlertType.Plugin:
+                    return Domain.AlertRecordInfo.Types.AlertType.Plugin;
+                case AlertRecordInfo.Types.AlertType.Server:
+                    return Domain.AlertRecordInfo.Types.AlertType.Server;
+                case AlertRecordInfo.Types.AlertType.Monitoring:
+                    return Domain.AlertRecordInfo.Types.AlertType.Monitoring;
+                default:
+                    throw new ArgumentException($"Unsupported alert type {type}");
+            }
         }
 
         public static ServerApi.ServerUpdateInfo ToServer(this ServerUpdateInfo info)
@@ -1084,6 +1100,20 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 ReleaseDate = info.ReleaseDate,
                 MinVersion = info.MinVersion,
                 Changelog = info.Changelog,
+            };
+        }
+
+        public static ServerApi.ServerUpdateListRequest ToServer(this ServerUpdateListRequest request)
+        {
+            return ServerApi.ServerUpdateListRequest.Get(request.Forced);
+        }
+
+        public static ServerApi.StartServerUpdateRequest ToServer(this StartServerUpdateRequest request)
+        {
+            return new ServerApi.StartServerUpdateRequest
+            {
+                ReleaseId = request.ReleaseId,
+                DownloadUrl = request.DownloadUrl,
             };
         }
     }

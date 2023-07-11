@@ -1012,7 +1012,23 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 Message = info.Message,
                 PluginId = info.PluginId,
                 TimeUtc = info.TimeUtc,
+                Type = info.Type.ToApi(),
             };
+        }
+
+        public static AlertRecordInfo.Types.AlertType ToApi(this Domain.AlertRecordInfo.Types.AlertType type)
+        {
+            switch (type)
+            {
+                case Domain.AlertRecordInfo.Types.AlertType.Plugin:
+                    return AlertRecordInfo.Types.AlertType.Plugin;
+                case Domain.AlertRecordInfo.Types.AlertType.Server:
+                    return AlertRecordInfo.Types.AlertType.Server;
+                case Domain.AlertRecordInfo.Types.AlertType.Monitoring:
+                    return AlertRecordInfo.Types.AlertType.Monitoring;
+                default:
+                    throw new ArgumentException($"Unsupported alert type {type}");
+            }
         }
 
         public static ServerVersionRequest ToApi(this ServerApi.ServerVersionRequest request)
@@ -1023,6 +1039,37 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
         public static ServerUpdateListRequest ToApi(this ServerApi.ServerUpdateListRequest request)
         {
             return new ServerUpdateListRequest { Forced = request.Forced };
+        }
+
+        public static ServerUpdateInfo ToApi(this ServerApi.ServerUpdateInfo info)
+        {
+            return new ServerUpdateInfo
+            {
+                ReleaseId = info.ReleaseId,
+                Version = info.Version,
+                ReleaseDate = info.ReleaseDate,
+                MinVersion = info.MinVersion,
+                Changelog = info.Changelog,
+            };
+        }
+
+        public static AutoUpdateEnums.Types.ServiceStatus ToApi(this ServerApi.AutoUpdateEnums.Types.ServiceStatus status)
+        {
+            switch (status)
+            {
+                case ServerApi.AutoUpdateEnums.Types.ServiceStatus.Idle:
+                    return AutoUpdateEnums.Types.ServiceStatus.Idle;
+                case ServerApi.AutoUpdateEnums.Types.ServiceStatus.Loading:
+                    return AutoUpdateEnums.Types.ServiceStatus.Loading;
+                case ServerApi.AutoUpdateEnums.Types.ServiceStatus.Updating:
+                    return AutoUpdateEnums.Types.ServiceStatus.Updating;
+                case ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess:
+                    return AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess;
+                case ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateFailed:
+                    return AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
+                default:
+                    throw new ArgumentException($"Unsupported service status {status}");
+            }
         }
     }
 }

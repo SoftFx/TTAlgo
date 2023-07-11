@@ -9,6 +9,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 
 namespace TickTrader.Algo.Server.PublicAPI.Adapter
 {

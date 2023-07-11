@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 
 namespace TickTrader.Algo.Server.PublicAPI.Adapter
 {
