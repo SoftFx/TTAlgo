@@ -438,18 +438,20 @@ namespace TickTrader.Algo.Updater
                 return null;
 
             var registry64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            var allServersKey = registry64.OpenSubKey(Path.Combine("SOFTWARE", "TickTrader", appSubKeyName));
-            if (allServersKey == null)
+            var allInstallsKey = registry64.OpenSubKey(Path.Combine("SOFTWARE", "TickTrader", appSubKeyName));
+            if (allInstallsKey == null)
                 return null;
 
-            foreach (var serverId in allServersKey.GetSubKeyNames())
+            foreach (var installId in allInstallsKey.GetSubKeyNames())
             {
-                var serverKey = allServersKey.OpenSubKey(serverId);
-                if (serverKey != null)
+                var installKey = allInstallsKey.OpenSubKey(installId);
+                if (installKey != null)
                 {
-                    var serverInstallPath = serverKey.GetValue("Path")?.ToString();
-                    if (serverInstallPath == installPath)
-                        return serverId;
+                    var registryInstallPath = installKey.GetValue("Path")?.ToString();
+                    Path.GetFullPath(registryInstallPath);
+                    // Windows paths are not case-sensitive
+                    if (string.Equals(registryInstallPath, installPath, StringComparison.OrdinalIgnoreCase))
+                        return installId;
                 }
             }
 
