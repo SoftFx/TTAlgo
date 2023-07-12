@@ -142,7 +142,6 @@ namespace TickTrader.Algo.Server
                         InstallPath = AppInfoProvider.Data.AppInfoFolder,
                         UpdatePath = updateDir,
                         FromVersion = AppVersionInfo.Current.Version,
-                        //ToVersion = update.Version,
                     };
                     var startSuccess = await UpdateHelper.StartUpdate(_server.Env.UpdatesFolder, updateParams, true);
                     if (!startSuccess)
@@ -166,14 +165,14 @@ namespace TickTrader.Algo.Server
         {
             var cachePath = await _updateSvc.DownloadUpdate(AutoUpdateService.MainSourceName, releaseId, UpdateAssetTypes.ServerUpdate);
 
-            ExtractUpdateToDir(cachePath, updateDir);
+            UpdateHelper.ExtractUpdate(cachePath, updateDir);
 
             return true;
         }
 
         private Task<bool> DownloadReleaseFromLocalPath(string path, string updateDir)
         {
-            ExtractUpdateToDir(path, updateDir);
+            UpdateHelper.ExtractUpdate(path, updateDir);
 
             return Task.FromResult(true);
         }
@@ -194,20 +193,9 @@ namespace TickTrader.Algo.Server
                 await response.Content.CopyToAsync(file);
             }
 
-            ExtractUpdateToDir(updatePath, updateDir);
+            UpdateHelper.ExtractUpdate(updatePath, updateDir);
 
             return true;
-        }
-
-        private void ExtractUpdateToDir(string updatePath, string dstDir)
-        {
-            if (Directory.Exists(dstDir))
-                Directory.Delete(dstDir, true);
-            using (var file = File.Open(updatePath, FileMode.Open, FileAccess.Read))
-            using (var zip = new ZipArchive(file))
-            {
-                zip.ExtractToDirectory(dstDir);
-            }
         }
     }
 }

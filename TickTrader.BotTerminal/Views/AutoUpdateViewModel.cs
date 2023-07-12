@@ -1,11 +1,11 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Var;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,6 +48,8 @@ namespace TickTrader.BotTerminal
 
         public BoolProperty UpdateInProgress { get; }
 
+        public bool IsRemoteUpdate { get; }
+
 
         private AutoUpdateViewModel()
         {
@@ -67,6 +69,7 @@ namespace TickTrader.BotTerminal
             _exitCallback = exitCallback;
 
             DisplayName = $"Auto Update - {EnvService.Instance.ApplicationName}";
+            IsRemoteUpdate = false;
             var appVersion = AppVersionInfo.Current;
             CurrentVersion.Value = $"{appVersion.Version} ({appVersion.BuildDate})";
 
@@ -79,9 +82,10 @@ namespace TickTrader.BotTerminal
             _remoteAgent = remoteAgent.Agent;
 
             DisplayName = $"Auto Update - {remoteAgent.Agent.Name}";
+            IsRemoteUpdate = true;
             _remoteAgent.Model.AccessLevelChanged += OnAgentAccessLevelChanged;
 
-            _ = LoadRemoteUpdatesAsync();
+            _ = LoadUpdatesAsync();
         }
 
 
@@ -99,14 +103,7 @@ namespace TickTrader.BotTerminal
 
         public void RefreshUpdates()
         {
-            if (_remoteAgent == null)
-            {
-                _ = LoadUpdatesAsync(true);
-            }
-            else
-            {
-                _ = LoadRemoteUpdatesAsync(true);
-            }
+            _ = LoadUpdatesAsync(true);
         }
 
         public void OpenGithubRepo()
@@ -129,7 +126,7 @@ namespace TickTrader.BotTerminal
 
         public void InstallUpdate()
         {
-            _ = InstallUpdateAsync(SelectedUpdate.Value);
+            _ = InstallUpdateAsync();
         }
 
         public void InstallManual()
@@ -148,7 +145,7 @@ namespace TickTrader.BotTerminal
 
         private void OnAgentAccessLevelChanged()
         {
-            _ = LoadRemoteUpdatesAsync();
+            _ = LoadUpdatesAsync();
         }
 
         private async Task LoadUpdatesAsync(bool forced = false)
@@ -158,64 +155,62 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                var updates = await _updateSvc.GetUpdates(forced);
-
-                AvailableUpdates.Clear();
-                foreach (var update in updates)
-                    if (update.AvailableAssets.Any(a => _terminalAssets.Contains(a)))
-                        AvailableUpdates.Add(new AppUpdateViewModel(update));
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to load updates");
-            }
-
-            UpdatesLoaded.Value = true;
-            GuiEnabled.Value = true;
-        }
-
-        private async Task LoadRemoteUpdatesAsync(bool forced = false)
-        {
-            GuiEnabled.Value = false;
-            UpdatesLoaded.Value = false;
-
-            var agent = _remoteAgent;
-            try
-            {
-                List<ServerUpdateInfo> serverUpdates = null;
-                if (!_remoteAgent.Model.VersionSpec.SupportsAutoUpdate)
-                {
-                    CurrentVersion.Value = "AutoUpdate not supported";
-                }
+                if (IsRemoteUpdate)
+                    await LoadRemoteUpdatesInternal(forced);
                 else
-                {
-                    CurrentVersion.Value = await _remoteAgent.Model.GetServerVersion();
-                    serverUpdates = await _remoteAgent.Model.GetServerUpdateList(forced);
-                }
-
-                var updates = await _updateSvc.GetUpdates(forced);
-                AvailableUpdates.Clear();
-                foreach (var update in updates)
-                    if (update.AvailableAssets.Any(a => _serverAssets.Contains(a)))
-                    {
-                        ServerUpdateInfo serverUpd = null;
-                        // Match releases from main repo to use server-side download
-                        if (update.SrcId == AutoUpdateService.MainSourceName && serverUpdates != null)
-                            serverUpd = serverUpdates.FirstOrDefault(u => u.ReleaseId == update.VersionId);
-
-                        AvailableUpdates.Add(new AppUpdateViewModel(update, serverUpd));
-                    }
+                    await LoadLocalUpdatesInternal(forced);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to load updates for server {agent?.Name}");
+                var errMsg = IsRemoteUpdate
+                    ? $"Failed to load updates for server {_remoteAgent?.Name}"
+                    : "Failed to load updates";
+                _logger.Error(ex, errMsg);
             }
 
             UpdatesLoaded.Value = true;
             GuiEnabled.Value = true;
         }
 
-        private async Task InstallUpdateAsync(AppUpdateViewModel update)
+        private async Task LoadLocalUpdatesInternal(bool forced)
+        {
+            var updates = await _updateSvc.GetUpdates(forced);
+
+            AvailableUpdates.Clear();
+            foreach (var update in updates)
+                if (update.AvailableAssets.Any(a => _terminalAssets.Contains(a)))
+                    AvailableUpdates.Add(new AppUpdateViewModel(update));
+        }
+
+        private async Task LoadRemoteUpdatesInternal(bool forced)
+        {
+            var agent = _remoteAgent;
+            List<ServerUpdateInfo> serverUpdates = null;
+            if (!agent.Model.VersionSpec.SupportsAutoUpdate)
+            {
+                CurrentVersion.Value = "AutoUpdate not supported";
+            }
+            else
+            {
+                CurrentVersion.Value = await agent.Model.GetServerVersion();
+                serverUpdates = await agent.Model.GetServerUpdateList(forced);
+            }
+
+            var updates = await _updateSvc.GetUpdates(forced);
+            AvailableUpdates.Clear();
+            foreach (var update in updates)
+                if (update.AvailableAssets.Any(a => _serverAssets.Contains(a)))
+                {
+                    ServerUpdateInfo serverUpd = null;
+                    // Match releases from main repo to use server-side download
+                    if (update.SrcId == AutoUpdateService.MainSourceName && serverUpdates != null)
+                        serverUpd = serverUpdates.FirstOrDefault(u => u.ReleaseId == update.VersionId);
+
+                    AvailableUpdates.Add(new AppUpdateViewModel(update, serverUpd));
+                }
+        }
+
+        private async Task InstallUpdateAsync()
         {
             GuiEnabled.Value = false;
             UpdateInProgress.Value = true;
@@ -224,52 +219,70 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                Status.Value = "Downloading update...";
-                var updatePath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.TerminalUpdate);
-
-                Status.Value = "Extracting update...";
-                var updateDir = Path.Combine(EnvService.Instance.UpdatesFolder, update.Version);
-                if (Directory.Exists(updateDir))
-                    Directory.Delete(updateDir, true);
-                PathHelper.EnsureDirectoryCreated(updateDir);
-                using (var file = File.Open(updatePath, FileMode.Open, FileAccess.Read))
-                using (var zip = new ZipArchive(file))
-                {
-                    zip.ExtractToDirectory(updateDir);
-                }
-
-                Status.Value = "Starting update...";
-                var updateParams = new UpdateParams
-                {
-                    AppTypeCode = (int)UpdateAppTypes.Terminal,
-                    InstallPath = AppInfoProvider.Data.AppInfoFolder,
-                    UpdatePath = updateDir,
-                    FromVersion = AppVersionInfo.Current.Version,
-                    ToVersion = update.Version,
-                };
-                var startSuccess = await UpdateHelper.StartUpdate(EnvService.Instance.UpdatesFolder, updateParams, true);
-                if (!startSuccess)
-                {
-                    var state = UpdateHelper.LoadUpdateState(EnvService.Instance.UpdatesFolder);
-                    var error = state.HasErrors ? UpdateHelper.FormatStateError(state) : "Unexpected update error";
-                    Status.Value = error;
-                    StatusHasError.Value = true;
-                }
+                var update = SelectedUpdate.Value;
+                if (IsRemoteUpdate)
+                    await InstallRemoteUpdateInternal(update);
                 else
-                {
-                    _exitCallback?.Invoke();
-                    Status.Value = null;
-                }
+                    await InstallLocalUpdateInternal(update);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to install update");
+                var errMsg = IsRemoteUpdate
+                    ? $"Failed to install update for server {_remoteAgent?.Name}"
+                    : "Failed to install update";
+                _logger.Error(ex, errMsg);
                 Status.Value = "Update failed unexpectedly. See logs...";
                 StatusHasError.Value = true;
             }
 
             UpdateInProgress.Value = false;
             GuiEnabled.Value = true;
+        }
+
+        private async Task InstallLocalUpdateInternal(AppUpdateViewModel update)
+        {
+            Status.Value = "Downloading update...";
+            var updatePath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.TerminalUpdate);
+
+            Status.Value = "Extracting update...";
+            var updateDir = Path.Combine(EnvService.Instance.UpdatesFolder, update.Version);
+            UpdateHelper.ExtractUpdate(updatePath, updateDir);
+
+            Status.Value = "Starting update...";
+            var updateParams = new UpdateParams
+            {
+                AppTypeCode = (int)UpdateAppTypes.Terminal,
+                InstallPath = AppInfoProvider.Data.AppInfoFolder,
+                UpdatePath = updateDir,
+                FromVersion = AppVersionInfo.Current.Version,
+            };
+            var startSuccess = await UpdateHelper.StartUpdate(EnvService.Instance.UpdatesFolder, updateParams, true);
+            if (!startSuccess)
+            {
+                var state = UpdateHelper.LoadUpdateState(EnvService.Instance.UpdatesFolder);
+                var error = state.HasErrors ? UpdateHelper.FormatStateError(state) : "Unexpected update error";
+                Status.Value = error;
+                StatusHasError.Value = true;
+            }
+            else
+            {
+                _exitCallback?.Invoke();
+                Status.Value = null;
+            }
+        }
+
+        private async Task InstallRemoteUpdateInternal(AppUpdateViewModel update)
+        {
+            var agent = _remoteAgent;
+            if (update.ServerUpdate != null)
+            {
+                await agent.Model.StartServerUpdate(update.ServerUpdate.ReleaseId);
+            }
+            else
+            {
+                Status.Value = "Server-side download not available";
+                StatusHasError.Value = true;
+            }
         }
 
         private async Task DownloadAndRunSetupAsync(AppUpdateViewModel update)
@@ -284,15 +297,33 @@ namespace TickTrader.BotTerminal
                 Status.Value = "Downloading setup...";
                 var setupPath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.Setup);
 
-                Status.Value = "Starting setup...";
-                Process.Start(new ProcessStartInfo(setupPath) { UseShellExecute = true });
+                if (IsRemoteUpdate)
+                {
+                    Status.Value = "Saving setup...";
+                    var dlg = new SaveFileDialog
+                    {
+                        FileName = Path.GetFileName(setupPath),
+                        InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"),
+                        Filter = "Executable files (*.exe)|*.exe"
+                    };
+                    var res = dlg.ShowDialog();
+                    var filePath = dlg.FileName;
+                    var folderPath = Path.GetDirectoryName(dlg.FileName);
+                    File.Copy(setupPath, filePath, true);
+                    WinExplorerHelper.ShowFolder(folderPath);
+                }
+                else
+                {
+                    Status.Value = "Starting setup...";
+                    Process.Start(new ProcessStartInfo(setupPath) { UseShellExecute = true });
+                }
 
                 Status.Value = null;
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to download/run setup");
-                Status.Value = "Install failed unexpectedly. See logs...";
+                Status.Value = "Download/run failed unexpectedly. See logs...";
                 StatusHasError.Value = true;
             }
 

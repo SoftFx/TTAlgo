@@ -35,6 +35,17 @@ namespace TickTrader.Algo.AppCommon.Update
         public static string GetUpdateBinFolder(string updatePath) => Path.Combine(updatePath, "update");
 
 
+        public static void ExtractUpdate(string zipPath, string dstDir)
+        {
+            if (Directory.Exists(dstDir))
+                Directory.Delete(dstDir, true);
+            using (var file = File.Open(zipPath, FileMode.Open, FileAccess.Read))
+            using (var zip = new ZipArchive(file))
+            {
+                zip.ExtractToDirectory(dstDir);
+            }
+        }
+
         public static async Task<bool> StartUpdate(string updateWorkDir, UpdateParams updateParams, bool useShellExecute)
         {
             CreateUpdateHistoryRecord(updateWorkDir);
@@ -43,6 +54,7 @@ namespace TickTrader.Algo.AppCommon.Update
             SaveUpdateState(updateWorkDir, updateState);
 
             var updInfo = LoadUpdateInfo(updateParams.UpdatePath);
+            updateParams.ToVersion = updInfo.ReleaseVersion;
             var updateEntryPoint = Path.Combine(updateParams.UpdatePath, updInfo.Executable);
             var startInfo = new ProcessStartInfo(updateEntryPoint) { UseShellExecute = useShellExecute, WorkingDirectory = updateWorkDir };
 

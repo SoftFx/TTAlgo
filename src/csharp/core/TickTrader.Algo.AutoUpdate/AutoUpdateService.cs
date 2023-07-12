@@ -86,7 +86,7 @@ namespace TickTrader.Algo.AutoUpdate
             {
                 UpdateAssetTypes.TerminalUpdate => $"AlgoTerminal {entry.Info.ReleaseVersion}.Update.zip",
                 UpdateAssetTypes.ServerUpdate => $"AlgoServer {entry.Info.ReleaseVersion}.Update.zip",
-                UpdateAssetTypes.Setup => $"Algo Studio {entry.Info.ReleaseVersion}.exe",
+                UpdateAssetTypes.Setup => $"Algo Studio {entry.Info.ReleaseVersion}.Setup.exe",
                 _ => throw new NotSupportedException()
             };
             var cachePath = Path.Combine(_cacheFolder, filename);
