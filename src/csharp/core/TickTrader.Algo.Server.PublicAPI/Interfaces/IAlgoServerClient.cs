@@ -107,11 +107,13 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         #region AutoUpdate management
 
-        Task<string> GetServerVersion(ServerVersionRequest request);
+        Task<ServerVersionInfo> GetServerVersion(ServerVersionRequest request);
 
-        Task<IEnumerable<ServerUpdateInfo>> GetServerUpdateList(ServerUpdateListRequest request);
+        Task<ServerUpdateList> GetServerUpdateList(ServerUpdateListRequest request);
 
-        Task StartServerUpdate(StartServerUpdateRequest request);
+        Task<UpdateServiceStatusInfo> StartServerUpdate(StartServerUpdateRequest request);
+
+        Task<UpdateServiceStatusInfo> StartCustomUpdate(StartCustomServerUpdateRequest request, string srcPath);
 
         #endregion AutoUpdate management
     }

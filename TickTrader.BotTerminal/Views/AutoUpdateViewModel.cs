@@ -185,14 +185,15 @@ namespace TickTrader.BotTerminal
         private async Task LoadRemoteUpdatesInternal(bool forced)
         {
             var agent = _remoteAgent;
-            List<ServerUpdateInfo> serverUpdates = null;
+            ServerUpdateList serverUpdates = null;
             if (!agent.Model.VersionSpec.SupportsAutoUpdate)
             {
                 CurrentVersion.Value = "AutoUpdate not supported";
             }
             else
             {
-                CurrentVersion.Value = await agent.Model.GetServerVersion();
+                var versionInfo = await agent.Model.GetServerVersion();
+                CurrentVersion.Value = $"{versionInfo.Version} ({versionInfo.ReleaseDate})";
                 serverUpdates = await agent.Model.GetServerUpdateList(forced);
             }
 
@@ -204,7 +205,7 @@ namespace TickTrader.BotTerminal
                     ServerUpdateInfo serverUpd = null;
                     // Match releases from main repo to use server-side download
                     if (update.SrcId == AutoUpdateService.MainSourceName && serverUpdates != null)
-                        serverUpd = serverUpdates.FirstOrDefault(u => u.ReleaseId == update.VersionId);
+                        serverUpd = serverUpdates.Updates.FirstOrDefault(u => u.ReleaseId == update.VersionId);
 
                     AvailableUpdates.Add(new AppUpdateViewModel(update, serverUpd));
                 }
@@ -280,8 +281,13 @@ namespace TickTrader.BotTerminal
             }
             else
             {
-                Status.Value = "Server-side download not available";
-                StatusHasError.Value = true;
+                Status.Value = "Downloading update...";
+                var updatePath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.ServerUpdate);
+
+                Status.Value = "Uploading update to target server...";
+                await agent.Model.StartServerUpdateFromFile(update.Version, updatePath);
+
+                Status.Value = null;
             }
         }
 

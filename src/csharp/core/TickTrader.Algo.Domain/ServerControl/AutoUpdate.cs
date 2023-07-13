@@ -5,16 +5,12 @@
         public static ServerVersionRequest Instance { get; } = new ServerVersionRequest();
     }
 
-    public partial class ServerUpdateStatusRequest
+    public partial class ServerVersionInfo
     {
-        public static ServerUpdateStatusRequest Instance { get; } = new ServerUpdateStatusRequest();
-    }
-
-    public partial class ServerUpdateStatusResponse
-    {
-        public ServerUpdateStatusResponse(AutoUpdateEnums.Types.ServiceStatus status)
+        public ServerVersionInfo(string version, string releaseDate)
         {
-            Status = status;
+            Version = version;
+            ReleaseDate = releaseDate;
         }
     }
 
@@ -34,7 +30,7 @@
 
     public partial class StartServerUpdateResponse
     {
-        public StartServerUpdateResponse(AutoUpdateEnums.Types.ServiceStatus status)
+        public StartServerUpdateResponse(UpdateServiceStatusInfo status)
         {
             Status = status;
         }
@@ -47,5 +43,15 @@
 
 
         public static ServerUpdateListRequest Get(bool forced) => forced ? _forced : _cached;
+    }
+
+    public partial class UpdateServiceStatusInfo
+    {
+        public UpdateServiceStatusInfo(AutoUpdateEnums.Types.ServiceStatus status, string errorDetails, string targetVersion)
+        {
+            Status = status;
+            ErrorDetails = errorDetails;
+            TargetVersion = targetVersion;
+        }
     }
 }

@@ -711,24 +711,66 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
         }
 
-        public async Task<string> GetServerVersion(ServerVersionRequest request)
+        public async Task<ServerVersionInfo> GetServerVersion(ServerVersionRequest request)
         {
             var response = await _client.GetServerVersionAsync(request);
             FailForNonSuccess(response.ExecResult);
-            return response.Version;
+            return response.Info;
         }
 
-        public async Task<IEnumerable<ServerUpdateInfo>> GetServerUpdateList(ServerUpdateListRequest request)
+        public async Task<ServerUpdateList> GetServerUpdateList(ServerUpdateListRequest request)
         {
             var response = await _client.GetServerUpdateListAsync(request);
             FailForNonSuccess(response.ExecResult);
-            return response.Updates;
+            return response.List;
         }
 
-        public async Task StartServerUpdate(StartServerUpdateRequest request)
+        public async Task<UpdateServiceStatusInfo> StartServerUpdate(StartServerUpdateRequest request)
         {
             var response = await _client.StartServerUpdateAsync(request);
             FailForNonSuccess(response.ExecResult);
+            return response.Status;
+        }
+
+        public async Task<UpdateServiceStatusInfo> StartCustomUpdate(StartCustomServerUpdateRequest request, string srcPath)
+        {
+            var chunkOffset = request.TransferSettings.ChunkOffset;
+            var chunkSize = request.TransferSettings.ChunkSize;
+
+            //progressListener.Init((long)chunkOffset * chunkSize);
+
+            var transferMsg = new FileTransferMsg { Header = Any.Pack(request) };
+            using (var call = _client.StartCustomServerUpdate())
+            {
+                await call.RequestStream.WriteAsync(transferMsg);
+
+                transferMsg.Header = null;
+                transferMsg.Data = new FileChunk(chunkOffset);
+                var buffer = new byte[chunkSize];
+                try
+                {
+                    using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
+                        for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
+                        {
+                            transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
+                            await call.RequestStream.WriteAsync(transferMsg);
+                            //progressListener.IncrementProgress(cnt);
+                            transferMsg.Data.Id++;
+                        }
+                    }
+                }
+                finally
+                {
+                    transferMsg.Data = FileChunk.FinalChunk;
+                    await call.RequestStream.WriteAsync(transferMsg);
+                }
+
+                var response = await call.ResponseAsync;
+                FailForNonSuccess(response.ExecResult);
+                return response.Status;
+            }
         }
 
         #endregion Requests

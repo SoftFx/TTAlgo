@@ -226,19 +226,25 @@ namespace TickTrader.BotTerminal
             await Task.Run(() => _protocolClient.UploadPluginFile(new AlgoServerApi.UploadPluginFileRequest(botId, folderId.ToApi(), fileName), srcPath, progressListener));
         }
 
-        public Task<string> GetServerVersion()
+        public async Task<ServerVersionInfo> GetServerVersion()
         {
-            return _protocolClient.GetServerVersion(ServerVersionRequest.Instance.ToApi());
+            return (await _protocolClient.GetServerVersion(ServerVersionRequest.Instance.ToApi())).ToServer();
         }
 
-        public async Task<List<ServerUpdateInfo>> GetServerUpdateList(bool forced)
+        public async Task<ServerUpdateList> GetServerUpdateList(bool forced)
         {
-            return (await _protocolClient.GetServerUpdateList(ServerUpdateListRequest.Get(forced).ToApi())).Select(i => i.ToServer()).ToList();
+            return (await _protocolClient.GetServerUpdateList(ServerUpdateListRequest.Get(forced).ToApi())).ToServer();
         }
 
-        public Task StartServerUpdate(string releaseId)
+        public async Task<UpdateServiceStatusInfo> StartServerUpdate(string releaseId)
         {
-            return _protocolClient.StartServerUpdate(new AlgoServerApi.StartServerUpdateRequest { ReleaseId = releaseId });
+            return (await _protocolClient.StartServerUpdate(new AlgoServerApi.StartServerUpdateRequest { ReleaseId = releaseId })).ToServer();
+        }
+
+        public async Task<UpdateServiceStatusInfo> StartServerUpdateFromFile(string version, string srcPath)
+        {
+            return (await Task.Run(() => _protocolClient.StartCustomUpdate(
+                new AlgoServerApi.StartCustomServerUpdateRequest { Version = version, TransferSettings = AlgoServerApi.FileTransferSettings.Default }, srcPath))).ToServer();
         }
 
         #endregion

@@ -81,8 +81,8 @@ namespace TickTrader.Algo.Server
             Receive<LocalAlgoServer.SubscribeToAlertsCmd>(cmd => _alerts.AttachAlertChannel(cmd.AlertSink));
             Receive<PluginOwner.ExecPluginCmd>(cmd => _plugins.ExecCmd(cmd.PluginId, cmd.Command));
 
-            Receive<ServerVersionRequest, string>(r => _updateSvc.GetCurrentVersion());
-            Receive<ServerUpdateListRequest, ServerUpdateListResponse>(r => _updateSvc.GetUpdateList(r));
+            Receive<ServerVersionRequest, ServerVersionInfo>(r => _updateSvc.GetCurrentVersion());
+            Receive<ServerUpdateListRequest, ServerUpdateList>(r => _updateSvc.GetUpdateList(r));
             Receive<StartServerUpdateRequest, StartServerUpdateResponse>(r => _updateSvc.StartUpdate(r));
         }
 

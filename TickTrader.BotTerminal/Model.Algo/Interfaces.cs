@@ -119,10 +119,12 @@ namespace TickTrader.BotTerminal
 
         Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerPublicApi.IFileProgressListener progressListener);
 
-        Task<string> GetServerVersion();
+        Task<ServerVersionInfo> GetServerVersion();
 
-        Task<List<ServerUpdateInfo>> GetServerUpdateList(bool forced);
+        Task<ServerUpdateList> GetServerUpdateList(bool forced);
 
-        Task StartServerUpdate(string releaseId);
+        Task<UpdateServiceStatusInfo> StartServerUpdate(string releaseId);
+
+        Task<UpdateServiceStatusInfo> StartServerUpdateFromFile(string version, string srcPath);
     }
 }

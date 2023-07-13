@@ -304,20 +304,13 @@ namespace TickTrader.BotTerminal
             progressListener.IncrementProgress(1);
         }
 
-        public Task<string> GetServerVersion()
-        {
-            throw new NotSupportedException();
-        }
+        public Task<ServerVersionInfo> GetServerVersion() => throw new NotSupportedException();
 
-        public Task<List<ServerUpdateInfo>> GetServerUpdateList(bool forced)
-        {
-            throw new NotSupportedException();
-        }
+        public Task<ServerUpdateList> GetServerUpdateList(bool forced) => throw new NotSupportedException();
 
-        public Task StartServerUpdate(string releaseId)
-        {
-            throw new NotSupportedException();
-        }
+        public Task<UpdateServiceStatusInfo> StartServerUpdate(string releaseId) => throw new NotSupportedException();
+
+        public Task<UpdateServiceStatusInfo> StartServerUpdateFromFile(string version, string srcPath) => throw new NotSupportedException();
 
         #endregion
 

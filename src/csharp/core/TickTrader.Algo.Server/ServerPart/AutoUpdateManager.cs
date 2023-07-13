@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
-using System.Net.Http;
 using System.Threading.Tasks;
 using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.AppCommon.Update;
@@ -19,6 +16,7 @@ namespace TickTrader.Algo.Server
         private readonly AlgoServerPrivate _server;
 
         private AutoUpdateEnums.Types.ServiceStatus _status;
+        private string _errorDetails, _targetVersion;
         private AutoUpdateService _updateSvc;
         private bool _started;
 
@@ -67,14 +65,14 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        public string GetCurrentVersion() => AppVersionInfo.Current.Version;
+        public ServerVersionInfo GetCurrentVersion() => new(AppVersionInfo.Current.Version, AppVersionInfo.Current.BuildDate);
 
-        public async Task<ServerUpdateListResponse> GetUpdateList(ServerUpdateListRequest request)
+        public async Task<ServerUpdateList> GetUpdateList(ServerUpdateListRequest request)
         {
             if (!_started)
                 throw new NotSupportedException("Update service not started");
 
-            var res = new ServerUpdateListResponse();
+            var res = new ServerUpdateList();
             try
             {
                 var updates = await _updateSvc.GetUpdates(request.Forced);
@@ -108,34 +106,19 @@ namespace TickTrader.Algo.Server
 
             try
             {
-                _status = AutoUpdateEnums.Types.ServiceStatus.Loading;
+                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Loading);
 
                 var updatePath = Path.Combine(_server.Env.UpdatesFolder, "update.zip");
                 var updateDir = Path.Combine(_server.Env.UpdatesFolder, "update");
                 var downloadSuccess = false;
                 if (!string.IsNullOrEmpty(request.ReleaseId))
                     downloadSuccess = await DownloadReleaseById(request.ReleaseId, updateDir);
-                else if (!string.IsNullOrEmpty(request.DownloadUrl))
-                    downloadSuccess = await DownloadUpdateFromUrl(request.DownloadUrl, updatePath, updateDir);
                 else if (!string.IsNullOrEmpty(request.LocalPath))
-                {
-                    downloadSuccess = await DownloadReleaseFromLocalPath(request.LocalPath, updateDir);
-                    if (request.OwnsLocalFile)
-                    {
-                        try
-                        {
-                            File.Delete(request.LocalPath);
-                        }
-                        catch(Exception ex)
-                        {
-                            _logger.Error(ex, "Failed to delete temp update file");
-                        }
-                    }
-                }
+                    downloadSuccess = await DownloadReleaseFromLocalPath(request.LocalPath, updateDir, request.OwnsLocalFile);
 
                 if (downloadSuccess)
                 {
-                    _status = AutoUpdateEnums.Types.ServiceStatus.Updating;
+                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating);
                     var updateParams = new UpdateParams
                     {
                         AppTypeCode = (int)UpdateAppTypes.Server,
@@ -148,17 +131,26 @@ namespace TickTrader.Algo.Server
                     {
                         var state = UpdateHelper.LoadUpdateState(_server.Env.UpdatesFolder);
                         var error = state.HasErrors ? UpdateHelper.FormatStateError(state) : "Unexpected update error";
-                        _status = AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
+                        UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed, error);
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Update failed unexpectedly");
-                _status = AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
+                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed);
             }
-            return new StartServerUpdateResponse { Status = _status };
+            return new StartServerUpdateResponse { Status = GetStatus() };
         }
+
+
+        private void UpdateStatus(AutoUpdateEnums.Types.ServiceStatus status, string errorDetails = null)
+        {
+            _status = status;
+            _errorDetails = errorDetails;
+        }
+
+        private UpdateServiceStatusInfo GetStatus() => new(_status, _errorDetails, _targetVersion);
 
 
         private async Task<bool> DownloadReleaseById(string releaseId, string updateDir)
@@ -170,32 +162,23 @@ namespace TickTrader.Algo.Server
             return true;
         }
 
-        private Task<bool> DownloadReleaseFromLocalPath(string path, string updateDir)
+        private Task<bool> DownloadReleaseFromLocalPath(string path, string updateDir, bool deleteFile = false)
         {
             UpdateHelper.ExtractUpdate(path, updateDir);
 
+            if (deleteFile)
+            {
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to delete temp update file");
+                }
+            }
+
             return Task.FromResult(true);
-        }
-
-        private async Task<bool> DownloadUpdateFromUrl(string url, string updatePath, string updateDir)
-        {
-            var client = new HttpClient();
-            var response = await client.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
-            {
-                _status = AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
-                _logger.Error($"Download failed. Status code {response.StatusCode}");
-                return false;
-            }
-
-            using (var file = File.Open(updatePath, FileMode.Create, FileAccess.Write))
-            {
-                await response.Content.CopyToAsync(file);
-            }
-
-            UpdateHelper.ExtractUpdate(updatePath, updateDir);
-
-            return true;
         }
     }
 }

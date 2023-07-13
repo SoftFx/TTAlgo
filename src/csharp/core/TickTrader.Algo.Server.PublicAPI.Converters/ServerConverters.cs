@@ -1113,8 +1113,52 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
             return new ServerApi.StartServerUpdateRequest
             {
                 ReleaseId = request.ReleaseId,
-                DownloadUrl = request.DownloadUrl,
             };
+        }
+
+        public static ServerApi.ServerVersionInfo ToServer(this ServerVersionInfo info)
+        {
+            return new ServerApi.ServerVersionInfo
+            {
+                Version = info.Version,
+                ReleaseDate = info.ReleaseDate,
+            };
+        }
+
+        public static ServerApi.ServerUpdateList ToServer(this ServerUpdateList list)
+        {
+            var res = new ServerApi.ServerUpdateList();
+            res.Updates.AddRange(list.Updates.Select(u => u.ToServer()));
+            return res;
+        }
+
+        public static ServerApi.UpdateServiceStatusInfo ToServer(this UpdateServiceStatusInfo info)
+        {
+            return new ServerApi.UpdateServiceStatusInfo
+            {
+                Status = info.Status.ToServer(),
+                ErrorDetails = info.ErrorDetails,
+                TargetVersion = info.TargetVersion,
+            };
+        }
+
+        public static ServerApi.AutoUpdateEnums.Types.ServiceStatus ToServer(this AutoUpdateEnums.Types.ServiceStatus status)
+        {
+            switch (status)
+            {
+                case AutoUpdateEnums.Types.ServiceStatus.Idle:
+                    return ServerApi.AutoUpdateEnums.Types.ServiceStatus.Idle;
+                case AutoUpdateEnums.Types.ServiceStatus.Loading:
+                    return ServerApi.AutoUpdateEnums.Types.ServiceStatus.Loading;
+                case AutoUpdateEnums.Types.ServiceStatus.Updating:
+                    return ServerApi.AutoUpdateEnums.Types.ServiceStatus.Updating;
+                case AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess:
+                    return ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess;
+                case AutoUpdateEnums.Types.ServiceStatus.UpdateFailed:
+                    return ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
+                default:
+                    throw new ArgumentException($"Unsupported update service status {status}");
+            }
         }
     }
 }

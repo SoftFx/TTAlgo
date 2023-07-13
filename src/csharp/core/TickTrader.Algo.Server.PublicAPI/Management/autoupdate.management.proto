@@ -6,32 +6,15 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
 import "management/base.request.proto";
+import "info/autoupdate.info.proto";
+import "info/file.transfer.info.proto";
 
-
-message AutoUpdateEnums {
-    enum ServiceStatus {
-        IDLE = 0;
-        LOADING = 1;
-        UPDATING = 2;
-        UPDATE_SUCCESS = 3;
-        UPDATE_FAILED = 4;
-    }
-}
 
 message ServerVersionRequest { }
 
 message ServerVersionResponse {
-    google.protobuf.StringValue version = 1;
-    google.protobuf.StringValue release_date = 2;
+    ServerVersionInfo info = 1;
     RequestResult exec_result = 101;
-}
-
-message ServerUpdateInfo {
-    string release_id = 1;
-    google.protobuf.StringValue version = 2;
-    google.protobuf.StringValue release_date = 3;
-    google.protobuf.StringValue changelog = 4;
-    google.protobuf.StringValue min_version = 5;
 }
 
 message ServerUpdateListRequest {
@@ -39,23 +22,25 @@ message ServerUpdateListRequest {
 }
 
 message ServerUpdateListResponse {
-    repeated ServerUpdateInfo updates = 1;
+    ServerUpdateList list = 1;
     RequestResult exec_result = 101;
 }
 
 message StartServerUpdateRequest {
     string release_id = 1;
-    string download_url = 2;
 }
 
 message StartServerUpdateResponse {
-    AutoUpdateEnums.ServiceStatus status = 1;
+    UpdateServiceStatusInfo status = 1;
     RequestResult exec_result = 101;
 }
 
-message ServerUpdateStatusRequest { }
+message StartCustomServerUpdateRequest {
+    google.protobuf.StringValue version = 1;
+    FileTransferSettings transfer_settings = 2;
+}
 
-message ServerUpdateStatusResponse {
-    AutoUpdateEnums.ServiceStatus status = 1;
+message StartCustomServerUpdateResponse {
+    UpdateServiceStatusInfo status = 1;
     RequestResult exec_result = 101;
 }

@@ -1036,9 +1036,25 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
             return new ServerVersionRequest();
         }
 
+        public static ServerVersionInfo ToApi(this ServerApi.ServerVersionInfo info)
+        {
+            return new ServerVersionInfo
+            {
+                Version = info.Version,
+                ReleaseDate = info.ReleaseDate,
+            };
+        }
+
         public static ServerUpdateListRequest ToApi(this ServerApi.ServerUpdateListRequest request)
         {
             return new ServerUpdateListRequest { Forced = request.Forced };
+        }
+
+        public static ServerUpdateList ToApi(this ServerApi.ServerUpdateList request)
+        {
+            var res = new ServerUpdateList();
+            res.Updates.AddRange(request.Updates.Select(u => u.ToApi()));
+            return res;
         }
 
         public static ServerUpdateInfo ToApi(this ServerApi.ServerUpdateInfo info)
@@ -1070,6 +1086,16 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 default:
                     throw new ArgumentException($"Unsupported service status {status}");
             }
+        }
+
+        public static UpdateServiceStatusInfo ToApi(this ServerApi.UpdateServiceStatusInfo info)
+        {
+            return new UpdateServiceStatusInfo
+            {
+                Status = info.Status.ToApi(),
+                ErrorDetails = info.ErrorDetails,
+                TargetVersion = info.TargetVersion,
+            };
         }
     }
 }
