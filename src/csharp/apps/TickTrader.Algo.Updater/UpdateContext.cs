@@ -28,7 +28,8 @@ namespace TickTrader.Algo.Updater
     public class UpdateContext
     {
         private const int KillQuestionDelayCnt = 100;
-        private const int SuccessStartTimeout = 10000;
+        private const int SuccessTerminalStartTimeout = 5000;
+        private const int SuccessServerStartTimeout = 10000;
         private const int ServiceStopTimeout = 90000;
 
         private readonly string _workDir = Directory.GetCurrentDirectory();
@@ -170,6 +171,26 @@ namespace TickTrader.Algo.Updater
 
         private async Task RunUpdateInternal()
         {
+            var newVersionFolder = InstallPathHelper.GetNewVersionFolder(InstallPath);
+            if (Directory.Exists(newVersionFolder))
+            {
+                UpdateStatus("Cleaning new version folder...");
+                await SafeFSAction("Clean new version folder", () => Directory.Delete(newVersionFolder, true));
+            }
+
+            try
+            {
+                UpdateStatus("Copying new version files...");
+                PathHelper.CopyDirectory(UpdateBinFolder, newVersionFolder, true, false);
+                UpdateStatus("Finished copying new version files");
+            }
+            catch (Exception ex)
+            {
+                LogError("Copy new version failed", ex);
+                State.SetStatus(UpdateStatusCodes.UpdateError);
+                return;
+            }
+
             UpdateStatus("Waiting for app to stop...");
             var stopSuccess = await StopApp();
             if (!stopSuccess)
@@ -195,17 +216,12 @@ namespace TickTrader.Algo.Updater
             try
             {
                 UpdateStatus("Moving new version files...");
-#if DEBUG
-                PathHelper.CopyDirectory(UpdateBinFolder, CurrentBinFolder, true, false);
-#else
-                Directory.Move(UpdateBinFolder, CurrentBinFolder);
-#endif
-                UpdateStatus("Finished moving new files");
+                Directory.Move(newVersionFolder, CurrentBinFolder);
                 copySuccess = true;
             }
             catch (Exception ex)
             {
-                LogError("Copy new version failed", ex);
+                LogError("Move new version failed", ex);
             }
 
             var startSuccess = false;
@@ -216,7 +232,22 @@ namespace TickTrader.Algo.Updater
             }
 
             if (startSuccess)
+            {
                 State.SetStatus(UpdateStatusCodes.Completed);
+                try
+                {
+                    if (Directory.Exists(rollbackFolder))
+                    {
+                        UpdateStatus("Cleaning rollback version...");
+                        Directory.Delete(rollbackFolder, true);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogError("Failed to cleanup rollback version", ex);
+                    // Non fatal
+                }
+            }
 
             if (!copySuccess || !startSuccess)
             {
@@ -346,7 +377,7 @@ namespace TickTrader.Algo.Updater
         {
             var exePath = Path.Combine(CurrentBinFolder, ExeFileName);
             var p = Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true });
-            await Task.WhenAny(p.WaitForExitAsync(), Task.Delay(SuccessStartTimeout));
+            await Task.WhenAny(p.WaitForExitAsync(), Task.Delay(SuccessTerminalStartTimeout));
             if (p.HasExited && p.ExitCode != 0)
             {
                 UpdateStatus($"Start failed. Exit code: {p.ExitCode}");
@@ -367,7 +398,7 @@ namespace TickTrader.Algo.Updater
             svcControl.Start();
             svcControl.WaitForStatus(ServiceControllerStatus.Running);
 
-            await Task.Delay(SuccessStartTimeout);
+            await Task.Delay(SuccessServerStartTimeout);
             if (svcControl.Status != ServiceControllerStatus.Running)
             {
                 LogError($"Start failed: Service status: {svcControl.Status}");
