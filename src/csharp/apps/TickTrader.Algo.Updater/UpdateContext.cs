@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.AppCommon.Update;
@@ -395,13 +396,21 @@ namespace TickTrader.Algo.Updater
                 return false;
             }
 
-            svcControl.Start();
-            svcControl.WaitForStatus(ServiceControllerStatus.Running);
+            try
+            {
+                svcControl.Start();
+                await WaitForFiniteStatusAsync(svcControl, TimeSpan.FromMilliseconds(SuccessServerStartTimeout));
+            }
+            catch (System.ServiceProcess.TimeoutException)
+            {
+                LogError($"Service failed to start within timeout. Service status: {svcControl.Status}");
+                return false;
+            }
 
-            await Task.Delay(SuccessServerStartTimeout);
             if (svcControl.Status != ServiceControllerStatus.Running)
             {
-                LogError($"Start failed: Service status: {svcControl.Status}");
+                LogError($"Start failed. Service status: {svcControl.Status}");
+                return false;
             }
 
             return true;
@@ -473,13 +482,14 @@ namespace TickTrader.Algo.Updater
             if (allInstallsKey == null)
                 return null;
 
+            installPath = Path.TrimEndingDirectorySeparator(installPath);
             foreach (var installId in allInstallsKey.GetSubKeyNames())
             {
                 var installKey = allInstallsKey.OpenSubKey(installId);
                 if (installKey != null)
                 {
                     var registryInstallPath = installKey.GetValue("Path")?.ToString();
-                    Path.GetFullPath(registryInstallPath);
+                    registryInstallPath = Path.TrimEndingDirectorySeparator(registryInstallPath);
                     // Windows paths are not case-sensitive
                     if (string.Equals(registryInstallPath, installPath, StringComparison.OrdinalIgnoreCase))
                         return installId;
@@ -498,6 +508,33 @@ namespace TickTrader.Algo.Updater
             var registry64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
             var serverKey = registry64.OpenSubKey(Path.Combine("SOFTWARE", "TickTrader", appSubKeyName, registyId));
             return serverKey?.GetValue("ServiceId")?.ToString();
+        }
+
+        private static bool IsFiniteServiceStatus(ServiceControllerStatus status)
+        {
+            return status switch
+            {
+                ServiceControllerStatus.Running => true,
+                ServiceControllerStatus.Stopped => true,
+                ServiceControllerStatus.Paused => true,
+                _ => false,
+            };
+        }
+
+        private static async Task WaitForFiniteStatusAsync(ServiceController svcControl, TimeSpan timeout)
+        {
+            var startTime = DateTime.UtcNow;
+            while (true)
+            {
+                if (IsFiniteServiceStatus(svcControl.Status))
+                    return;
+
+                var timePassed = DateTime.UtcNow - startTime;
+                if (timePassed > timeout)
+                    throw new System.ServiceProcess.TimeoutException();
+
+                await Task.Delay(100, CancellationToken.None);
+            }
         }
     }
 }
