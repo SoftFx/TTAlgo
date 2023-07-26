@@ -73,12 +73,15 @@ namespace TickTrader.BotTerminal
 
         AlertManagerModel AlertModel { get; }
 
+        UpdateServiceInfo UpdateSvcInfo { get; }
+
 
         event Action<PackageInfo> PackageStateChanged;
         event Action<AccountModelInfo> AccountStateChanged;
         event Action<ITradeBot> BotStateChanged;
         event Action<ITradeBot> BotUpdated;
         event Action AccessLevelChanged;
+        event Action UpdateServiceStateChanged;
 
 
         Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext);
@@ -123,8 +126,8 @@ namespace TickTrader.BotTerminal
 
         Task<ServerUpdateList> GetServerUpdateList(bool forced);
 
-        Task<UpdateServiceStatusInfo> StartServerUpdate(string releaseId);
+        Task<StartServerUpdateResponse> StartServerUpdate(string releaseId);
 
-        Task<UpdateServiceStatusInfo> StartServerUpdateFromFile(string version, string srcPath);
+        Task<StartServerUpdateResponse> StartServerUpdateFromFile(string version, string srcPath);
     }
 }

@@ -1088,13 +1088,30 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
             }
         }
 
-        public static UpdateServiceStatusInfo ToApi(this ServerApi.UpdateServiceStatusInfo info)
+        public static UpdateServiceInfo ToApi(this ServerApi.UpdateServiceInfo info)
         {
-            return new UpdateServiceStatusInfo
+            return new UpdateServiceInfo
             {
+                CurrentVersion = info.CurrentVersion.ToApi(),
                 Status = info.Status.ToApi(),
-                ErrorDetails = info.ErrorDetails,
-                TargetVersion = info.TargetVersion,
+                StatusDetails = info.StatusDetails,
+            };
+        }
+
+        public static StartUpdateResult ToApi(this ServerApi.StartServerUpdateResponse response)
+        {
+            return new StartUpdateResult
+            {
+                Started = response.Started,
+                ErrorMsg = response.ErrorMsg,
+            };
+        }
+
+        public static UpdateServiceStateUpdate ToApi(this ServerApi.UpdateServiceStateUpdate update)
+        {
+            return new UpdateServiceStateUpdate
+            {
+                Snapshot = update.Snapshot.ToApi(),
             };
         }
     }

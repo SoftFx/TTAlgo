@@ -29,6 +29,7 @@ namespace TickTrader.BotTerminal
         private ApiMetadataInfo _apiMetadata;
         private MappingCollectionInfo _mappings;
         private SetupContextInfo _setupContext;
+        private UpdateServiceInfo _updateSvcInfo;
 
 
         public string Name { get; }
@@ -55,6 +56,8 @@ namespace TickTrader.BotTerminal
 
         public AlertManagerModel AlertModel { get; }
 
+        public UpdateServiceInfo UpdateSvcInfo => _updateSvcInfo;
+
 
         public event Action<PackageInfo> PackageStateChanged = delegate { };
 
@@ -65,6 +68,8 @@ namespace TickTrader.BotTerminal
         public event Action<ITradeBot> BotUpdated = delegate { };
 
         public event Action AccessLevelChanged = delegate { };
+
+        public event Action UpdateServiceStateChanged = delegate { };
 
 
         public RemoteAlgoAgent(BotAgentStorageEntry creds, Func<string, Task<string>> get2FAHandler)
@@ -99,6 +104,7 @@ namespace TickTrader.BotTerminal
                 _apiMetadata = null;
                 _mappings = null;
                 _setupContext = null;
+                _updateSvcInfo = null;
             });
         }
 
@@ -236,12 +242,12 @@ namespace TickTrader.BotTerminal
             return (await _protocolClient.GetServerUpdateList(ServerUpdateListRequest.Get(forced).ToApi())).ToServer();
         }
 
-        public async Task<UpdateServiceStatusInfo> StartServerUpdate(string releaseId)
+        public async Task<StartServerUpdateResponse> StartServerUpdate(string releaseId)
         {
             return (await _protocolClient.StartServerUpdate(new AlgoServerApi.StartServerUpdateRequest { ReleaseId = releaseId })).ToServer();
         }
 
-        public async Task<UpdateServiceStatusInfo> StartServerUpdateFromFile(string version, string srcPath)
+        public async Task<StartServerUpdateResponse> StartServerUpdateFromFile(string version, string srcPath)
         {
             return (await Task.Run(() => _protocolClient.StartCustomUpdate(
                 new AlgoServerApi.StartCustomServerUpdateRequest { Version = version, TransferSettings = AlgoServerApi.FileTransferSettings.Default }, srcPath))).ToServer();
@@ -321,6 +327,11 @@ namespace TickTrader.BotTerminal
         void AlgoServerApi.IAlgoServerEventHandler.SetSetupContext(AlgoServerApi.SetupContextInfo setupContext)
         {
             _setupContext = setupContext.ToServer();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.InitUpdateSvcInfo(AlgoServerApi.UpdateServiceInfo updateSvcInfo)
+        {
+            _updateSvcInfo = updateSvcInfo.ToServer();
         }
 
         void AlgoServerApi.IAlgoServerEventHandler.OnPackageUpdate(AlgoServerApi.PackageUpdate update)
@@ -454,6 +465,15 @@ namespace TickTrader.BotTerminal
             _syncContext.Invoke(() =>
             {
                 AlertModel.UpdateRemoteAlert(update.Alerts.Select(u => u.ToServer()).ToList());
+            });
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnUpdateSvcStateUpdate(AlgoServerApi.UpdateServiceStateUpdate update)
+        {
+            _syncContext.Invoke(() =>
+            {
+                _updateSvcInfo = update.Snapshot.ToServer();
+                UpdateServiceStateChanged();
             });
         }
 

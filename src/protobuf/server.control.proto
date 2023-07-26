@@ -414,12 +414,6 @@ message ServerUpdateList {
     repeated ServerUpdateInfo updates = 1;
 }
 
-message UpdateServiceStatusInfo {
-    AutoUpdateEnums.ServiceStatus status = 1;
-    google.protobuf.StringValue error_details = 2;
-    google.protobuf.StringValue target_version = 3;
-}
-
 message ServerVersionRequest { }
 
 message ServerVersionResponse {
@@ -443,6 +437,17 @@ message StartServerUpdateRequest {
 }
 
 message StartServerUpdateResponse {
-    UpdateServiceStatusInfo status = 1;
+    bool started = 1;
+    google.protobuf.StringValue error_msg = 2;
     RequestResult exec_result = 101;
+}
+
+message UpdateServiceInfo {
+    ServerVersionInfo current_version = 1;
+    AutoUpdateEnums.ServiceStatus status = 2;
+    google.protobuf.StringValue status_details = 3;
+}
+
+message UpdateServiceStateUpdate {
+    UpdateServiceInfo snapshot = 1;
 }

@@ -30,9 +30,10 @@
 
     public partial class StartServerUpdateResponse
     {
-        public StartServerUpdateResponse(UpdateServiceStatusInfo status)
+        public StartServerUpdateResponse(bool started, string errorMsg)
         {
-            Status = status;
+            Started = started;
+            ErrorMsg = errorMsg;
         }
     }
 
@@ -45,13 +46,13 @@
         public static ServerUpdateListRequest Get(bool forced) => forced ? _forced : _cached;
     }
 
-    public partial class UpdateServiceStatusInfo
+    public partial class UpdateServiceInfo
     {
-        public UpdateServiceStatusInfo(AutoUpdateEnums.Types.ServiceStatus status, string errorDetails, string targetVersion)
+        public UpdateServiceInfo(ServerVersionInfo currentVersion, AutoUpdateEnums.Types.ServiceStatus status, string statusDetails)
         {
+            CurrentVersion = currentVersion;
             Status = status;
-            ErrorDetails = errorDetails;
-            TargetVersion = targetVersion;
+            StatusDetails = statusDetails;
         }
     }
 }

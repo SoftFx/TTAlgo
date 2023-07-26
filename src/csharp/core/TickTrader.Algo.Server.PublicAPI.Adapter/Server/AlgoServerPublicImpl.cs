@@ -1274,7 +1274,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             try
             {
                 var serverRes = await _algoServer.StartServerUpdate(request.ToServer());
-                res.Status = serverRes.Status.ToApi();
+                res.Result = serverRes.ToApi();
             }
             catch (Exception ex)
             {
@@ -1340,7 +1340,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 }
 
                 var serverRes = await _algoServer.StartServerUpdate(new Domain.ServerControl.StartServerUpdateRequest(filePath, true));
-                res.Status = serverRes.Status.ToApi();
+                res.Result = serverRes.ToApi();
             }
             catch (Exception ex)
             {

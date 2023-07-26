@@ -84,6 +84,7 @@ namespace TickTrader.BotTerminal
             DisplayName = $"Auto Update - {remoteAgent.Agent.Name}";
             IsRemoteUpdate = true;
             _remoteAgent.Model.AccessLevelChanged += OnAgentAccessLevelChanged;
+            _remoteAgent.Model.UpdateServiceStateChanged += OnAgentUpdateServiceStateChanged;
 
             _ = LoadUpdatesAsync();
         }
@@ -94,7 +95,10 @@ namespace TickTrader.BotTerminal
             if (close)
             {
                 if (_remoteAgent != null)
+                {
                     _remoteAgent.Model.AccessLevelChanged -= OnAgentAccessLevelChanged;
+                    _remoteAgent.Model.UpdateServiceStateChanged += OnAgentUpdateServiceStateChanged;
+                }
             }
 
             return Task.CompletedTask;
@@ -146,6 +150,17 @@ namespace TickTrader.BotTerminal
         private void OnAgentAccessLevelChanged()
         {
             _ = LoadUpdatesAsync();
+        }
+
+        private void OnAgentUpdateServiceStateChanged()
+        {
+            var updateSvcInfo = _remoteAgent?.Model?.UpdateSvcInfo;
+            _logger.Debug(string.Join(Environment.NewLine, new[]
+            {
+                $"Status={updateSvcInfo?.Status}",
+                $"StatusDetails={updateSvcInfo?.StatusDetails}",
+                $"CurrentVersion={updateSvcInfo?.CurrentVersion?.Version} ({updateSvcInfo?.CurrentVersion?.ReleaseDate})",
+            }));
         }
 
         private async Task LoadUpdatesAsync(bool forced = false)

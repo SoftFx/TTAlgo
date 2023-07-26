@@ -237,6 +237,8 @@ namespace TickTrader.Algo.Server.PublicAPI
                 _serverHandler.InitPackageList(snapshot.Packages.ToList());
                 _serverHandler.InitAccountModelList(snapshot.Accounts.ToList());
                 _serverHandler.InitPluginModelList(snapshot.Plugins.ToList());
+
+                _serverHandler.InitUpdateSvcInfo(snapshot.UpdateSvc);
             }
             catch (UnauthorizedException uex)
             {
@@ -317,6 +319,8 @@ namespace TickTrader.Algo.Server.PublicAPI
                     case PackageStateUpdate packageStateUpdate: _serverHandler.OnPackageStateUpdate(packageStateUpdate); break;
                     case AccountStateUpdate accountStateUpdate: _serverHandler.OnAccountStateUpdate(accountStateUpdate); break;
                     case PluginStateUpdate pluginStateUpdate: _serverHandler.OnPluginStateUpdate(pluginStateUpdate); break;
+
+                    case UpdateServiceStateUpdate updateSvcStateUpdate: _serverHandler.OnUpdateSvcStateUpdate(updateSvcStateUpdate); break;
 
                     case AlgoServerMetadataUpdate serverMetadata: ApplyAlgoServerMetadata(serverMetadata); break;
 
@@ -725,14 +729,14 @@ namespace TickTrader.Algo.Server.PublicAPI
             return response.List;
         }
 
-        public async Task<UpdateServiceStatusInfo> StartServerUpdate(StartServerUpdateRequest request)
+        public async Task<StartUpdateResult> StartServerUpdate(StartServerUpdateRequest request)
         {
             var response = await _client.StartServerUpdateAsync(request);
             FailForNonSuccess(response.ExecResult);
-            return response.Status;
+            return response.Result;
         }
 
-        public async Task<UpdateServiceStatusInfo> StartCustomUpdate(StartCustomServerUpdateRequest request, string srcPath)
+        public async Task<StartUpdateResult> StartCustomUpdate(StartCustomServerUpdateRequest request, string srcPath)
         {
             var chunkOffset = request.TransferSettings.ChunkOffset;
             var chunkSize = request.TransferSettings.ChunkSize;
@@ -769,7 +773,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
                 var response = await call.ResponseAsync;
                 FailForNonSuccess(response.ExecResult);
-                return response.Status;
+                return response.Result;
             }
         }
 

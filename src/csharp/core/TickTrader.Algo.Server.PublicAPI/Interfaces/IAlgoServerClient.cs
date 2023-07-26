@@ -111,9 +111,9 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         Task<ServerUpdateList> GetServerUpdateList(ServerUpdateListRequest request);
 
-        Task<UpdateServiceStatusInfo> StartServerUpdate(StartServerUpdateRequest request);
+        Task<StartUpdateResult> StartServerUpdate(StartServerUpdateRequest request);
 
-        Task<UpdateServiceStatusInfo> StartCustomUpdate(StartCustomServerUpdateRequest request, string srcPath);
+        Task<StartUpdateResult> StartCustomUpdate(StartCustomServerUpdateRequest request, string srcPath);
 
         #endregion AutoUpdate management
     }

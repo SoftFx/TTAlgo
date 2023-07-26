@@ -30,8 +30,13 @@ message StartServerUpdateRequest {
     string release_id = 1;
 }
 
+message StartUpdateResult {
+    bool started = 1;
+    google.protobuf.StringValue error_msg = 2;
+}
+
 message StartServerUpdateResponse {
-    UpdateServiceStatusInfo status = 1;
+    StartUpdateResult result = 1;
     RequestResult exec_result = 101;
 }
 
@@ -41,6 +46,6 @@ message StartCustomServerUpdateRequest {
 }
 
 message StartCustomServerUpdateResponse {
-    UpdateServiceStatusInfo status = 1;
+    StartUpdateResult result = 1;
     RequestResult exec_result = 101;
 }

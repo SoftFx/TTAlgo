@@ -12,13 +12,14 @@ namespace TickTrader.Algo.Server
     internal class AutoUpdateManager
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AutoUpdateManager>();
+        private static readonly ServerVersionInfo _currentVersion = new(AppVersionInfo.Current.Version, AppVersionInfo.Current.BuildDate);
 
         private readonly AlgoServerPrivate _server;
 
         private AutoUpdateEnums.Types.ServiceStatus _status;
-        private string _errorDetails, _targetVersion;
+        private string _statusDetails;
         private AutoUpdateService _updateSvc;
-        private bool _started;
+        private bool _started, _hasPendingUpdate;
 
 
         public AutoUpdateManager(AlgoServerPrivate server)
@@ -40,6 +41,8 @@ namespace TickTrader.Algo.Server
                 _updateSvc = new AutoUpdateService(_server.Env.UpdatesFolder);
                 _updateSvc.AddSource(new UpdateDownloadSource { Name = AutoUpdateService.MainSourceName, Uri = AutoUpdateService.MainGithubRepo });
                 _updateSvc.EnableAutoCheck();
+
+                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Idle);
 
                 _started = true;
             }
@@ -65,7 +68,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        public ServerVersionInfo GetCurrentVersion() => new(AppVersionInfo.Current.Version, AppVersionInfo.Current.BuildDate);
+        public ServerVersionInfo GetCurrentVersion() => _currentVersion;
 
         public async Task<ServerUpdateList> GetUpdateList(ServerUpdateListRequest request)
         {
@@ -99,10 +102,23 @@ namespace TickTrader.Algo.Server
             return res;
         }
 
-        public async Task<StartServerUpdateResponse> StartUpdate(StartServerUpdateRequest request)
+        public StartServerUpdateResponse StartUpdate(StartServerUpdateRequest request)
         {
             if (!_started)
                 throw new NotSupportedException("Update service not started");
+            if (_hasPendingUpdate)
+                return new StartServerUpdateResponse { Started = false, ErrorMsg = "Another update already executing" };
+
+            _hasPendingUpdate = true;
+            _ = ExecUpdate(request);
+            return new StartServerUpdateResponse { Started = true };
+        }
+
+
+        private async Task ExecUpdate(StartServerUpdateRequest request)
+        {
+            // Reschedule method to current SynchronizationContext
+            await Task.Yield();
 
             try
             {
@@ -140,18 +156,17 @@ namespace TickTrader.Algo.Server
                 _logger.Error(ex, "Update failed unexpectedly");
                 UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed);
             }
-            return new StartServerUpdateResponse { Status = GetStatus() };
+
+            _hasPendingUpdate = false;
         }
 
-
-        private void UpdateStatus(AutoUpdateEnums.Types.ServiceStatus status, string errorDetails = null)
+        private void UpdateStatus(AutoUpdateEnums.Types.ServiceStatus status, string statusDetails = null)
         {
             _status = status;
-            _errorDetails = errorDetails;
+            _statusDetails = statusDetails;
+            var snapshot = new UpdateServiceInfo(_currentVersion, _status, _statusDetails);
+            _server.SendUpdate(new UpdateServiceStateUpdate { Snapshot = snapshot });
         }
-
-        private UpdateServiceStatusInfo GetStatus() => new(_status, _errorDetails, _targetVersion);
-
 
         private async Task<bool> DownloadReleaseById(string releaseId, string updateDir)
         {

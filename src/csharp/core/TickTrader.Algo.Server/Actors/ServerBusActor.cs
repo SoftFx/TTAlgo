@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.Server
 {
@@ -22,6 +23,7 @@ namespace TickTrader.Algo.Server
             Receive<AccountStateUpdate>(OnAccountStateUpdate);
             Receive<PluginModelUpdate>(OnPluginUpdate);
             Receive<PluginStateUpdate>(OnPluginStateUpdate);
+            Receive<UpdateServiceStateUpdate>(OnUpdateServiceStatusChanged);
 
             Receive<PackageSnapshotRequest, PackageListSnapshot>(_ => _snapshotBuilder.GetPackageSnapshot());
             Receive<AccountSnapshotRequest, AccountListSnapshot>(_ => _snapshotBuilder.GetAccountSnapshot());
@@ -73,6 +75,12 @@ namespace TickTrader.Algo.Server
                 _updateEventSrc.DispatchEvent(update);
         }
 
+        private void OnUpdateServiceStatusChanged(UpdateServiceStateUpdate update)
+        {
+            if (_snapshotBuilder.OnUpdateServiceStateChanged(update))
+                _updateEventSrc.DispatchEvent(update);
+        }
+
         private void SubcribeToUpdates(SubscribeToUpdatesRequest request)
         {
             var sink = request.UpdateSink;
@@ -83,6 +91,7 @@ namespace TickTrader.Algo.Server
                     sink.TryWrite(_snapshotBuilder.GetPackageSnapshot());
                     sink.TryWrite(_snapshotBuilder.GetAccountSnapshot());
                     sink.TryWrite(_snapshotBuilder.GetPluginSnapshot());
+                    sink.TryWrite(_snapshotBuilder.GetUpdateServiceSnapshot());
                 }
                 _updateEventSrc.Subscribe(sink);
             }

@@ -1132,13 +1132,13 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
             return res;
         }
 
-        public static ServerApi.UpdateServiceStatusInfo ToServer(this UpdateServiceStatusInfo info)
+        public static ServerApi.UpdateServiceInfo ToServer(this UpdateServiceInfo info)
         {
-            return new ServerApi.UpdateServiceStatusInfo
+            return new ServerApi.UpdateServiceInfo
             {
+                CurrentVersion = info.CurrentVersion.ToServer(),
                 Status = info.Status.ToServer(),
-                ErrorDetails = info.ErrorDetails,
-                TargetVersion = info.TargetVersion,
+                StatusDetails = info.StatusDetails,
             };
         }
 
@@ -1159,6 +1159,15 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 default:
                     throw new ArgumentException($"Unsupported update service status {status}");
             }
+        }
+
+        public static ServerApi.StartServerUpdateResponse ToServer(this StartUpdateResult result)
+        {
+            return new ServerApi.StartServerUpdateResponse
+            {
+                Started = result.Started,
+                ErrorMsg = result.ErrorMsg,
+            };
         }
     }
 }

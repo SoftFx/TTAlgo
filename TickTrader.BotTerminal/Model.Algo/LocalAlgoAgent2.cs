@@ -64,6 +64,8 @@ namespace TickTrader.BotTerminal
 
         public AlertManagerModel AlertModel { get; }
 
+        public UpdateServiceInfo UpdateSvcInfo { get; }
+
         public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !b.State.IsStopped());
 
         public bool HasRunningBots => _bots.Snapshot.Values.Any(b => !b.State.IsStopped());
@@ -84,6 +86,8 @@ namespace TickTrader.BotTerminal
         public event Action<ITradeBot> BotUpdated = delegate { };
 
         public event Action AccessLevelChanged = delegate { };
+
+        public event Action UpdateServiceStateChanged = delegate { };
 
 
         public LocalAlgoAgent2(PersistModel storage, EventJournal journal)
@@ -308,9 +312,9 @@ namespace TickTrader.BotTerminal
 
         public Task<ServerUpdateList> GetServerUpdateList(bool forced) => throw new NotSupportedException();
 
-        public Task<UpdateServiceStatusInfo> StartServerUpdate(string releaseId) => throw new NotSupportedException();
+        public Task<StartServerUpdateResponse> StartServerUpdate(string releaseId) => throw new NotSupportedException();
 
-        public Task<UpdateServiceStatusInfo> StartServerUpdateFromFile(string version, string srcPath) => throw new NotSupportedException();
+        public Task<StartServerUpdateResponse> StartServerUpdateFromFile(string version, string srcPath) => throw new NotSupportedException();
 
         #endregion
 
@@ -361,6 +365,8 @@ namespace TickTrader.BotTerminal
                     case PackageStateUpdate pkgStateUpdate: OnPackageStateUpdate(pkgStateUpdate); break;
                     case AccountStateUpdate accStateUpdate: OnAccountStateUpdate(accStateUpdate); break;
                     case PluginStateUpdate pluginStateUpdate: OnPluginStateUpdate(pluginStateUpdate); break;
+                    case UpdateServiceInfo updateSvcInfo: break; // ignore
+                    case UpdateServiceStateUpdate updateSvcStateUpdate: break; // ignore
                     default: _logger.Error($"Failed to proccess update of type '{update.GetType().FullName}'"); break;
                 }
             }
