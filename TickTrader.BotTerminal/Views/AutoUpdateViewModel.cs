@@ -29,6 +29,8 @@ namespace TickTrader.BotTerminal
         private readonly System.Action _exitCallback;
         private readonly AlgoAgentViewModel _remoteAgent;
 
+        private TaskCompletionSource _remoteUpdateTaskSrc;
+
 
         public StrProperty CurrentVersion { get; }
 
@@ -154,13 +156,25 @@ namespace TickTrader.BotTerminal
 
         private void OnAgentUpdateServiceStateChanged()
         {
-            var updateSvcInfo = _remoteAgent?.Model?.UpdateSvcInfo;
-            _logger.Debug(string.Join(Environment.NewLine, new[]
+            var updateSvcInfo = _remoteAgent.Model.UpdateSvcInfo;
+            var status = updateSvcInfo.Status;
+            switch (status)
             {
-                $"Status={updateSvcInfo?.Status}",
-                $"StatusDetails={updateSvcInfo?.StatusDetails}",
-                $"CurrentVersion={updateSvcInfo?.CurrentVersion?.Version} ({updateSvcInfo?.CurrentVersion?.ReleaseDate})",
-            }));
+                case AutoUpdateEnums.Types.ServiceStatus.Loading:
+                case AutoUpdateEnums.Types.ServiceStatus.Updating:
+                    GuiEnabled.Value = false;
+                    UpdateInProgress.Value = true;
+                    break;
+                case AutoUpdateEnums.Types.ServiceStatus.Idle:
+                case AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess:
+                case AutoUpdateEnums.Types.ServiceStatus.UpdateFailed:
+                    _remoteUpdateTaskSrc?.TrySetResult();
+                    GuiEnabled.Value = true;
+                    UpdateInProgress.Value = false;
+                    break;
+            }
+            Status.Value = updateSvcInfo.StatusDetails;
+            StatusHasError.Value = status == AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
         }
 
         private async Task LoadUpdatesAsync(bool forced = false)
@@ -232,6 +246,7 @@ namespace TickTrader.BotTerminal
             UpdateInProgress.Value = true;
             Status.Value = string.Empty;
             StatusHasError.Value = false;
+            var failed = false;
 
             try
             {
@@ -249,10 +264,14 @@ namespace TickTrader.BotTerminal
                 _logger.Error(ex, errMsg);
                 Status.Value = "Update failed unexpectedly. See logs...";
                 StatusHasError.Value = true;
+                failed = true;
             }
 
-            UpdateInProgress.Value = false;
-            GuiEnabled.Value = true;
+            if (failed || !IsRemoteUpdate)
+            {
+                UpdateInProgress.Value = false;
+                GuiEnabled.Value = true;
+            }
         }
 
         private async Task InstallLocalUpdateInternal(AppUpdateViewModel update)
@@ -272,11 +291,11 @@ namespace TickTrader.BotTerminal
                 UpdatePath = updateDir,
                 FromVersion = AppVersionInfo.Current.Version,
             };
-            var startSuccess = await UpdateHelper.StartUpdate(EnvService.Instance.UpdatesFolder, updateParams, true);
+            var (startSuccess, startError) = await UpdateHelper.StartUpdate(EnvService.Instance.UpdatesFolder, updateParams, true);
             if (!startSuccess)
             {
                 var state = UpdateHelper.LoadUpdateState(EnvService.Instance.UpdatesFolder);
-                var error = state.HasErrors ? UpdateHelper.FormatStateError(state) : "Unexpected update error";
+                var error = state.HasErrors ? UpdateHelper.FormatStateError(state) : (startError ?? "Unexpected update error");
                 Status.Value = error;
                 StatusHasError.Value = true;
             }
@@ -292,7 +311,16 @@ namespace TickTrader.BotTerminal
             var agent = _remoteAgent;
             if (update.ServerUpdate != null)
             {
-                await agent.Model.StartServerUpdate(update.ServerUpdate.ReleaseId);
+                var res = await agent.Model.StartServerUpdate(update.ServerUpdate.ReleaseId);
+                if (!res.Started)
+                {
+                    MessageBoxManager.OkError($"Can't start server update: {res.ErrorMsg}");
+                }
+                else
+                {
+                    _remoteUpdateTaskSrc = new TaskCompletionSource();
+                    await _remoteUpdateTaskSrc.Task;
+                }
             }
             else
             {
@@ -300,9 +328,16 @@ namespace TickTrader.BotTerminal
                 var updatePath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.ServerUpdate);
 
                 Status.Value = "Uploading update to target server...";
-                await agent.Model.StartServerUpdateFromFile(update.Version, updatePath);
-
-                Status.Value = null;
+                var res = await agent.Model.StartServerUpdateFromFile(update.Version, updatePath);
+                if (!res.Started)
+                {
+                    MessageBoxManager.OkError($"Can't start server update: {res.ErrorMsg}");
+                }
+                else
+                {
+                    _remoteUpdateTaskSrc = new TaskCompletionSource();
+                    await _remoteUpdateTaskSrc.Task;
+                }
             }
         }
 

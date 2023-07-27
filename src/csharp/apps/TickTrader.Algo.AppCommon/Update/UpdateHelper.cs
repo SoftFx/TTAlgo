@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -46,7 +47,7 @@ namespace TickTrader.Algo.AppCommon.Update
             }
         }
 
-        public static async Task<bool> StartUpdate(string updateWorkDir, UpdateParams updateParams, bool useShellExecute)
+        public static async Task<(bool Success, string Error)> StartUpdate(string updateWorkDir, UpdateParams updateParams, bool useShellExecute)
         {
             CreateUpdateHistoryRecord(updateWorkDir);
 
@@ -58,13 +59,23 @@ namespace TickTrader.Algo.AppCommon.Update
             var updateEntryPoint = Path.Combine(updateParams.UpdatePath, updInfo.Executable);
             var startInfo = new ProcessStartInfo(updateEntryPoint) { UseShellExecute = useShellExecute, WorkingDirectory = updateWorkDir };
 
-            var proc = Process.Start(startInfo);
-            await Task.WhenAny(Task.Delay(UpdateFailTimeout), proc.WaitForExitAsync()); // wait in case of any issues with update
+            try
+            {
+                var proc = Process.Start(startInfo);
+                await Task.WhenAny(Task.Delay(UpdateFailTimeout), proc.WaitForExitAsync()); // wait in case of any issues with update
 
-            if (proc.HasExited)
-                return false;
+                if (proc.HasExited)
+                    return (false, $"Process exited with exit code {proc.ExitCode}");
+            }
+            catch (Win32Exception ex)
+            {
+                if (ex.NativeErrorCode == 1223 && ex.Source == typeof(Process).FullName)
+                    return (false, "Admin access not granted");
 
-            return true;
+                throw;
+            }
+
+            return (true, null);
         }
 
         public static UpdateState LoadUpdateState(string workDir)

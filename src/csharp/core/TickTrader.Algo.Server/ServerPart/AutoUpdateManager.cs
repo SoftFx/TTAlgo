@@ -134,7 +134,7 @@ namespace TickTrader.Algo.Server
 
                 if (downloadSuccess)
                 {
-                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating);
+                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Running update...");
                     var updateParams = new UpdateParams
                     {
                         AppTypeCode = (int)UpdateAppTypes.Server,
@@ -142,19 +142,24 @@ namespace TickTrader.Algo.Server
                         UpdatePath = updateDir,
                         FromVersion = AppVersionInfo.Current.Version,
                     };
-                    var startSuccess = await UpdateHelper.StartUpdate(_server.Env.UpdatesFolder, updateParams, true);
+                    var (startSuccess, startError) = await UpdateHelper.StartUpdate(_server.Env.UpdatesFolder, updateParams, true);
                     if (!startSuccess)
                     {
                         var state = UpdateHelper.LoadUpdateState(_server.Env.UpdatesFolder);
-                        var error = state.HasErrors ? UpdateHelper.FormatStateError(state) : "Unexpected update error";
+                        var error = state.HasErrors ? UpdateHelper.FormatStateError(state) : (startError ?? "Unexpected update error");
                         UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed, error);
+                    }
+                    else
+                    {
+                        UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Installing...");
+                        return; // _hasPendingUpdate == true
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Update failed unexpectedly");
-                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed);
+                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed, "Update failed unexpectedly");
             }
 
             _hasPendingUpdate = false;
@@ -170,8 +175,9 @@ namespace TickTrader.Algo.Server
 
         private async Task<bool> DownloadReleaseById(string releaseId, string updateDir)
         {
+            UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Loading, "Loading update file...");
             var cachePath = await _updateSvc.DownloadUpdate(AutoUpdateService.MainSourceName, releaseId, UpdateAssetTypes.ServerUpdate);
-
+            UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Extracting files...");
             UpdateHelper.ExtractUpdate(cachePath, updateDir);
 
             return true;
@@ -179,6 +185,7 @@ namespace TickTrader.Algo.Server
 
         private Task<bool> DownloadReleaseFromLocalPath(string path, string updateDir, bool deleteFile = false)
         {
+            UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Extracting files...");
             UpdateHelper.ExtractUpdate(path, updateDir);
 
             if (deleteFile)
