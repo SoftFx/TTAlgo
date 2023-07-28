@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Updater
         private const int SuccessTerminalStartTimeout = 5000;
         private const int SuccessServerStartTimeout = 10000;
         private const int ServiceStopTimeout = 90000;
+        private const int ServiceStartTimeout = 60000;
 
         private readonly string _workDir = Directory.GetCurrentDirectory();
 
@@ -235,6 +236,7 @@ namespace TickTrader.Algo.Updater
             if (startSuccess)
             {
                 State.SetStatus(UpdateStatusCodes.Completed);
+                UpdateStatus("New version installed successfully");
                 try
                 {
                     if (Directory.Exists(rollbackFolder))
@@ -249,12 +251,12 @@ namespace TickTrader.Algo.Updater
                     // Non fatal
                 }
             }
-
-            if (!copySuccess || !startSuccess)
+            else if (!copySuccess || !startSuccess)
             {
                 try
                 {
                     UpdateStatus("Perfoming rollback...");
+                    KillApp(); // kill everything that is working at 'bin/current' for some reason
                     await SafeFSAction("Delete new version", () => Directory.Delete(CurrentBinFolder, true));
                     await SafeFSAction("Restore version from rollback", () => Directory.Move(rollbackFolder, CurrentBinFolder));
                     UpdateStatus("Rollback finished");
@@ -275,12 +277,10 @@ namespace TickTrader.Algo.Updater
         {
             try
             {
-                var processesToStop = GetAllProcessesForFolder("TickTrader.Algo", CurrentBinFolder);
-
                 var stopTask = AppType switch
                 {
-                    UpdateAppTypes.Terminal => StopTerminal(processesToStop),
-                    UpdateAppTypes.Server => StopServer(processesToStop),
+                    UpdateAppTypes.Terminal => StopTerminal(),
+                    UpdateAppTypes.Server => StopServer(),
                     _ => throw new ArgumentException($"Invalid AppType: {AppType}"),
                 };
                 await stopTask;
@@ -293,8 +293,21 @@ namespace TickTrader.Algo.Updater
             }
         }
 
-        private async Task StopTerminal(List<Process> processesToStop)
+        private void KillApp(List<Process> processesToStop = null)
         {
+            if (processesToStop == null)
+                processesToStop = GetAllProcessesForFolder("TickTrader.Algo", CurrentBinFolder);
+
+            foreach (var p in processesToStop)
+            {
+                if (!p.HasExited)
+                    p.Kill();
+            }
+        }
+
+        private async Task StopTerminal()
+        {
+            var processesToStop = GetAllProcessesForFolder("TickTrader.Algo", CurrentBinFolder);
             if (processesToStop.Count != 0)
             {
                 var cnt = 0;
@@ -311,19 +324,13 @@ namespace TickTrader.Algo.Updater
 
                         var killNowFlag = UpdateObserver.KillQuestionCallback(msgBuilder.ToString());
                         if (killNowFlag)
-                        {
-                            foreach (var p in processesToStop)
-                            {
-                                if (!p.HasExited)
-                                    p.Kill();
-                            }
-                        }
+                            KillApp(processesToStop);
                     }
                 }
             }
         }
 
-        private async Task StopServer(List<Process> processesToStop)
+        private async Task StopServer()
         {
             // Give server some time to return response
             await Task.Delay(UpdateHelper.UpdateFailTimeout + 2_000);
@@ -345,11 +352,7 @@ namespace TickTrader.Algo.Updater
                 }
             }
 
-            foreach (var p in processesToStop)
-            {
-                if (!p.HasExited)
-                    p.Kill();
-            }
+            KillApp();
 
             if (!serviceStopped)
                 throw new Exception("Abort update");
@@ -378,10 +381,16 @@ namespace TickTrader.Algo.Updater
         {
             var exePath = Path.Combine(CurrentBinFolder, ExeFileName);
             var p = Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true });
-            await Task.WhenAny(p.WaitForExitAsync(), Task.Delay(SuccessTerminalStartTimeout));
             if (p.HasExited && p.ExitCode != 0)
             {
                 UpdateStatus($"Start failed. Exit code: {p.ExitCode}");
+                return false;
+            }
+            UpdateStatus("New version started. Waiting for unexpected stop...");
+            await Task.WhenAny(p.WaitForExitAsync(), Task.Delay(SuccessTerminalStartTimeout));
+            if (p.HasExited && p.ExitCode != 0)
+            {
+                UpdateStatus($"New version stopped unexpectedly. Exit code: {p.ExitCode}");
                 return false;
             }
             return true;
@@ -398,8 +407,7 @@ namespace TickTrader.Algo.Updater
 
             try
             {
-                svcControl.Start();
-                await WaitForFiniteStatusAsync(svcControl, TimeSpan.FromMilliseconds(SuccessServerStartTimeout));
+                TryStartService(svcControl, TimeSpan.FromMilliseconds(ServiceStartTimeout));
             }
             catch (System.ServiceProcess.TimeoutException)
             {
@@ -411,6 +419,16 @@ namespace TickTrader.Algo.Updater
             {
                 LogError($"Start failed. Service status: {svcControl.Status}");
                 return false;
+            }
+            else
+            {
+                UpdateStatus("New version started. Waiting for unexpected stop...");
+                await Task.Delay(SuccessServerStartTimeout);
+                if (svcControl.Status != ServiceControllerStatus.Running)
+                {
+                    LogError($"New version stopped unexpectedly. Service status: {svcControl.Status}");
+                    return false;
+                }
             }
 
             return true;
@@ -521,19 +539,27 @@ namespace TickTrader.Algo.Updater
             };
         }
 
-        private static async Task WaitForFiniteStatusAsync(ServiceController svcControl, TimeSpan timeout)
+        private static bool TryStartService(ServiceController svcControl, TimeSpan timeout)
         {
+            // Service status changes seem to be delayed.
+            // Checking ServiceController.Status right after calling Start() returns Stopped.
+            // Liooks like ServiceController.WaitForStatus() handles this problem some way, but we need oneof (Running, Stopped)
+            svcControl.Start();
             var startTime = DateTime.UtcNow;
             while (true)
             {
+                try
+                {
+                    svcControl.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(3));
+                }
+                catch (System.ServiceProcess.TimeoutException) { }
+
                 if (IsFiniteServiceStatus(svcControl.Status))
-                    return;
+                    return svcControl.Status == ServiceControllerStatus.Running;
 
                 var timePassed = DateTime.UtcNow - startTime;
                 if (timePassed > timeout)
                     throw new System.ServiceProcess.TimeoutException();
-
-                await Task.Delay(100, CancellationToken.None);
             }
         }
     }
