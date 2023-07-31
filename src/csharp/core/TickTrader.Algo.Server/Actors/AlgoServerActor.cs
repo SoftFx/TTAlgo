@@ -123,7 +123,8 @@ namespace TickTrader.Algo.Server
 
             _plugins.Restore(stateSnapshot);
 
-            _updateSvc.Start();
+            if (_settings.EnableAutoUpdate)
+                _updateSvc.Start();
 
             _logger.Debug("Started");
         }

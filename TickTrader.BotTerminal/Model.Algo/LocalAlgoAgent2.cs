@@ -167,6 +167,7 @@ namespace TickTrader.BotTerminal
             {
                 DataFolder = dataFolder,
                 EnableAccountLogs = Properties.Settings.Default.EnableConnectionLogs,
+                EnableAutoUpdate = false,
                 HostSettings = hostSettings,
             };
 

@@ -43,6 +43,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             settings.DataFolder = AppInfoProvider.DataPath;
             settings.EnableAccountLogs = config.GetFdkSettings().EnableLogs;
+            settings.EnableAutoUpdate = true;
 
             settings.HostSettings.RuntimeSettings.RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
             settings.HostSettings.RuntimeSettings.EnableDevMode = config.GetAlgoSettings().EnableDevMode;
