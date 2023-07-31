@@ -59,7 +59,6 @@ service AlgoServerPublic
     rpc UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest) returns (PluginStatusUnsubscribeResponse);
     rpc UnsubscribeToPluginLogs(PluginLogsUnsubscribeRequest) returns (PluginLogsUnsubscribeResponse);
 
-    rpc GetServerVersion(ServerVersionRequest) returns (ServerVersionResponse);
     rpc GetServerUpdateList(ServerUpdateListRequest) returns (ServerUpdateListResponse);
     rpc StartServerUpdate(StartServerUpdateRequest) returns (StartServerUpdateResponse);
     rpc StartCustomServerUpdate(stream FileTransferMsg) returns (StartCustomServerUpdateResponse);

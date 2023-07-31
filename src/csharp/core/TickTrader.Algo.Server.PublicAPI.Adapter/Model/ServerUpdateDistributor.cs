@@ -39,6 +39,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         private Dictionary<string, PackageInfo> _packages;
         private Dictionary<string, AccountModelInfo> _accounts;
         private Dictionary<string, PluginModelInfo> _plugins;
+        private ServerVersionInfo _currentVersion;
         private UpdateServiceInfo _updateSvcInfo;
 
 
@@ -85,6 +86,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 _apiMetadata = (await server.GetApiMetadata()).ToApi();
                 _setupContext = (await server.GetSetupContext()).ToApi();
                 _mappings = (await server.GetMappingsInfo()).ToApi();
+                _currentVersion = (await server.GetServerVersion()).ToApi();
 
                 if (_stopTokenSrc.IsCancellationRequested)
                     return false;
@@ -143,6 +145,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 ApiMetadata = _apiMetadata,
                 SetupContext = _setupContext,
                 MappingsCollection = _mappings,
+                CurrentVersion = _currentVersion,
                 UpdateSvc = _updateSvcInfo,
             };
 

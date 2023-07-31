@@ -390,10 +390,9 @@ message UploadPluginFileResponse {
 message AutoUpdateEnums {
     enum ServiceStatus {
         IDLE = 0;
-        LOADING = 1;
-        UPDATING = 2;
-        UPDATE_SUCCESS = 3;
-        UPDATE_FAILED = 4;
+        UPDATING = 1;
+        UPDATE_SUCCESS = 2;
+        UPDATE_FAILED = 3;
     }
 }
 
@@ -443,9 +442,10 @@ message StartServerUpdateResponse {
 }
 
 message UpdateServiceInfo {
-    ServerVersionInfo current_version = 1;
-    AutoUpdateEnums.ServiceStatus status = 2;
-    google.protobuf.StringValue status_details = 3;
+    AutoUpdateEnums.ServiceStatus status = 1;
+    google.protobuf.StringValue status_details = 2;
+    ServerVersionInfo update_version = 3;
+    google.protobuf.StringValue update_log = 4;
 }
 
 message UpdateServiceStateUpdate {

@@ -91,7 +91,7 @@
                   cal:Message.Attach="ManageFiles"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
         <Separator/>
-        <MenuItem Header="Update..."
+        <MenuItem Header="Update Server..."
                   cal:Message.Attach="OpenUpdate"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
         <Separator/>

@@ -66,7 +66,7 @@
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Help}">
             <MenuItem Header="{l:Resx Menu_About}" cal:Message.Attach="About"/>
-            <MenuItem Header="Update" cal:Message.Attach="Update"/>
+            <MenuItem Header="Update Terminal..." cal:Message.Attach="Update"/>
         </MenuItem>
     </Menu>
 

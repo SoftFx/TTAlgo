@@ -1075,8 +1075,6 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
             {
                 case ServerApi.AutoUpdateEnums.Types.ServiceStatus.Idle:
                     return AutoUpdateEnums.Types.ServiceStatus.Idle;
-                case ServerApi.AutoUpdateEnums.Types.ServiceStatus.Loading:
-                    return AutoUpdateEnums.Types.ServiceStatus.Loading;
                 case ServerApi.AutoUpdateEnums.Types.ServiceStatus.Updating:
                     return AutoUpdateEnums.Types.ServiceStatus.Updating;
                 case ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess:
@@ -1092,9 +1090,10 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
         {
             return new UpdateServiceInfo
             {
-                CurrentVersion = info.CurrentVersion.ToApi(),
                 Status = info.Status.ToApi(),
                 StatusDetails = info.StatusDetails,
+                UpdateVersion = info.UpdateVersion?.ToApi(),
+                UpdateLog = info.UpdateLog,
             };
         }
 

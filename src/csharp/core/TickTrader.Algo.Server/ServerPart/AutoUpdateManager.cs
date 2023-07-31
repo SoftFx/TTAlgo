@@ -122,7 +122,7 @@ namespace TickTrader.Algo.Server
 
             try
             {
-                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Loading);
+                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating);
 
                 var updatePath = Path.Combine(_server.Env.UpdatesFolder, "update.zip");
                 var updateDir = Path.Combine(_server.Env.UpdatesFolder, "update");
@@ -169,13 +169,13 @@ namespace TickTrader.Algo.Server
         {
             _status = status;
             _statusDetails = statusDetails;
-            var snapshot = new UpdateServiceInfo(_currentVersion, _status, _statusDetails);
+            var snapshot = new UpdateServiceInfo(_status, _statusDetails, null, null);
             _server.SendUpdate(new UpdateServiceStateUpdate { Snapshot = snapshot });
         }
 
         private async Task<bool> DownloadReleaseById(string releaseId, string updateDir)
         {
-            UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Loading, "Loading update file...");
+            UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Loading update file...");
             var cachePath = await _updateSvc.DownloadUpdate(AutoUpdateService.MainSourceName, releaseId, UpdateAssetTypes.ServerUpdate);
             UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Extracting files...");
             UpdateHelper.ExtractUpdate(cachePath, updateDir);

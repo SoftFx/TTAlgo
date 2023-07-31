@@ -234,11 +234,6 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             return ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, requestStream, context);
         }
 
-        public override Task<ServerVersionResponse> GetServerVersion(ServerVersionRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetServerVersionInternal, request, context);
-        }
-
         public override Task<ServerUpdateListResponse> GetServerUpdateList(ServerUpdateListRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequestAuthorized(GetServerUpdateListInternal, request, context);
@@ -1209,29 +1204,6 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to upload bot file");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
-
-        private async Task<ServerVersionResponse> GetServerVersionInternal(ServerVersionRequest request, ServerCallContext context, SessionInfo session, RequestResult execResult)
-        {
-            var res = new ServerVersionResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetServerUpdateInfo())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
-
-            try
-            {
-                res.Info = (await _algoServer.GetServerVersion()).ToApi();
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get server version");
                 res.ExecResult = CreateErrorResult(ex);
             }
             return res;

@@ -29,6 +29,7 @@ namespace TickTrader.BotTerminal
         private ApiMetadataInfo _apiMetadata;
         private MappingCollectionInfo _mappings;
         private SetupContextInfo _setupContext;
+        private ServerVersionInfo _currentVersion;
         private UpdateServiceInfo _updateSvcInfo;
 
 
@@ -55,6 +56,8 @@ namespace TickTrader.BotTerminal
         public AlgoServerApi.IVersionSpec VersionSpec => _protocolClient.VersionSpec;
 
         public AlertManagerModel AlertModel { get; }
+
+        public ServerVersionInfo CurrentVersion => _currentVersion;
 
         public UpdateServiceInfo UpdateSvcInfo => _updateSvcInfo;
 
@@ -104,6 +107,7 @@ namespace TickTrader.BotTerminal
                 _apiMetadata = null;
                 _mappings = null;
                 _setupContext = null;
+                _currentVersion = null;
                 _updateSvcInfo = null;
             });
         }
@@ -232,11 +236,6 @@ namespace TickTrader.BotTerminal
             await Task.Run(() => _protocolClient.UploadPluginFile(new AlgoServerApi.UploadPluginFileRequest(botId, folderId.ToApi(), fileName), srcPath, progressListener));
         }
 
-        public async Task<ServerVersionInfo> GetServerVersion()
-        {
-            return (await _protocolClient.GetServerVersion(ServerVersionRequest.Instance.ToApi())).ToServer();
-        }
-
         public async Task<ServerUpdateList> GetServerUpdateList(bool forced)
         {
             return (await _protocolClient.GetServerUpdateList(ServerUpdateListRequest.Get(forced).ToApi())).ToServer();
@@ -327,6 +326,11 @@ namespace TickTrader.BotTerminal
         void AlgoServerApi.IAlgoServerEventHandler.SetSetupContext(AlgoServerApi.SetupContextInfo setupContext)
         {
             _setupContext = setupContext.ToServer();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.InitCurrentVersion(AlgoServerApi.ServerVersionInfo currentVersion)
+        {
+            _currentVersion = currentVersion.ToServer();
         }
 
         void AlgoServerApi.IAlgoServerEventHandler.InitUpdateSvcInfo(AlgoServerApi.UpdateServiceInfo updateSvcInfo)

@@ -238,6 +238,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                 _serverHandler.InitAccountModelList(snapshot.Accounts.ToList());
                 _serverHandler.InitPluginModelList(snapshot.Plugins.ToList());
 
+                _serverHandler.InitCurrentVersion(snapshot.CurrentVersion);
                 _serverHandler.InitUpdateSvcInfo(snapshot.UpdateSvc);
             }
             catch (UnauthorizedException uex)
@@ -713,13 +714,6 @@ namespace TickTrader.Algo.Server.PublicAPI
                 var response = await call.ResponseAsync;
                 FailForNonSuccess(response.ExecResult);
             }
-        }
-
-        public async Task<ServerVersionInfo> GetServerVersion(ServerVersionRequest request)
-        {
-            var response = await _client.GetServerVersionAsync(request);
-            FailForNonSuccess(response.ExecResult);
-            return response.Info;
         }
 
         public async Task<ServerUpdateList> GetServerUpdateList(ServerUpdateListRequest request)

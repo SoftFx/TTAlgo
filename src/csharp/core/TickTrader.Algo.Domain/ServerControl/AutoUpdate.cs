@@ -48,11 +48,12 @@
 
     public partial class UpdateServiceInfo
     {
-        public UpdateServiceInfo(ServerVersionInfo currentVersion, AutoUpdateEnums.Types.ServiceStatus status, string statusDetails)
+        public UpdateServiceInfo(AutoUpdateEnums.Types.ServiceStatus status, string statusDetails, ServerVersionInfo updateVersion, string updateLog)
         {
-            CurrentVersion = currentVersion;
             Status = status;
             StatusDetails = statusDetails;
+            UpdateVersion = updateVersion;
+            UpdateLog = updateLog;
         }
     }
 }

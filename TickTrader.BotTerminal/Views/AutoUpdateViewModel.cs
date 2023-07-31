@@ -83,10 +83,20 @@ namespace TickTrader.BotTerminal
             _updateSvc = updateSvc;
             _remoteAgent = remoteAgent.Agent;
 
-            DisplayName = $"Auto Update - {remoteAgent.Agent.Name}";
+            DisplayName = $"Auto Update - AlgoServer '{remoteAgent.Agent.Name}'";
             IsRemoteUpdate = true;
             _remoteAgent.Model.AccessLevelChanged += OnAgentAccessLevelChanged;
             _remoteAgent.Model.UpdateServiceStateChanged += OnAgentUpdateServiceStateChanged;
+
+            if (!_remoteAgent.Model.VersionSpec.SupportsAutoUpdate)
+            {
+                CurrentVersion.Value = "AutoUpdate not supported";
+            }
+            else
+            {
+                var versionInfo = _remoteAgent.Model.CurrentVersion;
+                CurrentVersion.Value = $"{versionInfo.Version} ({versionInfo.ReleaseDate})";
+            }
 
             _ = LoadUpdatesAsync();
         }
@@ -99,7 +109,7 @@ namespace TickTrader.BotTerminal
                 if (_remoteAgent != null)
                 {
                     _remoteAgent.Model.AccessLevelChanged -= OnAgentAccessLevelChanged;
-                    _remoteAgent.Model.UpdateServiceStateChanged += OnAgentUpdateServiceStateChanged;
+                    _remoteAgent.Model.UpdateServiceStateChanged -= OnAgentUpdateServiceStateChanged;
                 }
             }
 
@@ -160,7 +170,6 @@ namespace TickTrader.BotTerminal
             var status = updateSvcInfo.Status;
             switch (status)
             {
-                case AutoUpdateEnums.Types.ServiceStatus.Loading:
                 case AutoUpdateEnums.Types.ServiceStatus.Updating:
                     GuiEnabled.Value = false;
                     UpdateInProgress.Value = true;
@@ -215,16 +224,8 @@ namespace TickTrader.BotTerminal
         {
             var agent = _remoteAgent;
             ServerUpdateList serverUpdates = null;
-            if (!agent.Model.VersionSpec.SupportsAutoUpdate)
-            {
-                CurrentVersion.Value = "AutoUpdate not supported";
-            }
-            else
-            {
-                var versionInfo = await agent.Model.GetServerVersion();
-                CurrentVersion.Value = $"{versionInfo.Version} ({versionInfo.ReleaseDate})";
+            if (agent.Model.VersionSpec.SupportsAutoUpdate)
                 serverUpdates = await agent.Model.GetServerUpdateList(forced);
-            }
 
             var updates = await _updateSvc.GetUpdates(forced);
             AvailableUpdates.Clear();

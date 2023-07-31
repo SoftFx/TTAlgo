@@ -73,6 +73,8 @@ namespace TickTrader.BotTerminal
 
         AlertManagerModel AlertModel { get; }
 
+        ServerVersionInfo CurrentVersion { get; }
+
         UpdateServiceInfo UpdateSvcInfo { get; }
 
 
@@ -121,8 +123,6 @@ namespace TickTrader.BotTerminal
         Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, AlgoServerPublicApi.IFileProgressListener progressListener);
 
         Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerPublicApi.IFileProgressListener progressListener);
-
-        Task<ServerVersionInfo> GetServerVersion();
 
         Task<ServerUpdateList> GetServerUpdateList(bool forced);
 

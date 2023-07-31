@@ -24,6 +24,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         void SetSetupContext(SetupContextInfo setupContext);
 
+        void InitCurrentVersion(ServerVersionInfo currentVersion);
+
         void InitUpdateSvcInfo(UpdateServiceInfo updateSvc);
 
         #endregion Connection init

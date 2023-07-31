@@ -22,7 +22,8 @@ message AlgoServerMetadataUpdate {
     repeated AccountModelInfo accounts = 5;
     repeated PluginModelInfo plugins = 6;
 
-    UpdateServiceInfo update_svc = 7;
+    ServerVersionInfo current_version = 7;
+    UpdateServiceInfo update_svc = 8;
 
     RequestResult exec_result = 101;
 }

@@ -2,7 +2,6 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -64,7 +63,9 @@ namespace TickTrader.BotTerminal
 
         public AlertManagerModel AlertModel { get; }
 
-        public UpdateServiceInfo UpdateSvcInfo { get; }
+        public ServerVersionInfo CurrentVersion => throw new NotSupportedException();
+
+        public UpdateServiceInfo UpdateSvcInfo => throw new NotSupportedException();
 
         public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !b.State.IsStopped());
 
@@ -307,8 +308,6 @@ namespace TickTrader.BotTerminal
             File.Copy(srcPath, writePath, true);
             progressListener.IncrementProgress(1);
         }
-
-        public Task<ServerVersionInfo> GetServerVersion() => throw new NotSupportedException();
 
         public Task<ServerUpdateList> GetServerUpdateList(bool forced) => throw new NotSupportedException();
 
