@@ -330,12 +330,12 @@ namespace TickTrader.BotTerminal
 
         void AlgoServerApi.IAlgoServerEventHandler.InitCurrentVersion(AlgoServerApi.ServerVersionInfo currentVersion)
         {
-            _currentVersion = currentVersion.ToServer();
+            _currentVersion = currentVersion?.ToServer();
         }
 
         void AlgoServerApi.IAlgoServerEventHandler.InitUpdateSvcInfo(AlgoServerApi.UpdateServiceInfo updateSvcInfo)
         {
-            _updateSvcInfo = updateSvcInfo.ToServer();
+            _updateSvcInfo = updateSvcInfo?.ToServer();
         }
 
         void AlgoServerApi.IAlgoServerEventHandler.OnPackageUpdate(AlgoServerApi.PackageUpdate update)

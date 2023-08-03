@@ -354,6 +354,12 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+                if (update == null)
+                {
+                    _logger.Error($"{nameof(ProcessServerUpdates)}: Null update recieved");
+                    return;
+                }
+
                 switch (update)
                 {
                     case PackageListSnapshot pkgSnapshot: InitPackageList(pkgSnapshot); break;

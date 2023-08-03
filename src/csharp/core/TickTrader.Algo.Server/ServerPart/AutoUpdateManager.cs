@@ -124,7 +124,6 @@ namespace TickTrader.Algo.Server
             {
                 UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating);
 
-                var updatePath = Path.Combine(_server.Env.UpdatesFolder, "update.zip");
                 var updateDir = Path.Combine(_server.Env.UpdatesFolder, "update");
                 var downloadSuccess = false;
                 if (!string.IsNullOrEmpty(request.ReleaseId))
