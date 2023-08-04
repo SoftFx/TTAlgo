@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Server
         private PackageListSnapshot _packageSnapshot = new PackageListSnapshot();
         private AccountListSnapshot _accountSnapshot = new AccountListSnapshot();
         private PluginListSnapshot _pluginSnapshot = new PluginListSnapshot();
-        private UpdateServiceInfo _updateServiceSnapshot;
+        private UpdateServiceInfo _updateServiceSnapshot = new UpdateServiceInfo(AutoUpdateEnums.Types.ServiceStatus.Idle, null, null, null);
 
 
         #region Snapshots
