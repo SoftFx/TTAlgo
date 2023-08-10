@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Schedulers;
 using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -65,8 +66,15 @@ namespace TickTrader.Algo.CoreV1
 
     public class PriorityInvokeStartegy : InvokeStartegy
     {
+        private static readonly LimitedConcurrencyLevelTaskScheduler _indicatorScheduler = new LimitedConcurrencyLevelTaskScheduler(2);
+
+        private static int _activeIndicatorCnt; // protected by lock(_indicatorScheduler)
+
         private readonly object _syncObj = new object();
         private readonly FeedUpdateSummary _feedUpdate = new FeedUpdateSummary();
+        private readonly TaskScheduler _scheduler;
+        private readonly Action _workerAction; // cache this obj delegate to avoid Action allocation
+        private readonly bool _isIndicator;
 
 
         private Task currentTask;
@@ -81,6 +89,14 @@ namespace TickTrader.Algo.CoreV1
         private Thread currentThread;
         private TaskCompletionSource<object> asyncStopDoneEvent;
         private TaskCompletionSource<bool> stopDoneEvent;
+
+
+        public PriorityInvokeStartegy(bool isIndicator)
+        {
+            _isIndicator = isIndicator;
+            _scheduler = _isIndicator ? _indicatorScheduler : TaskScheduler.Default;
+            _workerAction = ProcessLoop;
+        }
 
 
         protected override void OnInit()
@@ -211,7 +227,8 @@ namespace TickTrader.Algo.CoreV1
             if (currentTask != null)
                 return;
 
-            currentTask = Task.Factory.StartNew(ProcessLoop);
+            // _workerAction == ProcessLoop
+            currentTask = Task.Factory.StartNew(_workerAction, CancellationToken.None, TaskCreationOptions.None, _scheduler);
         }
 
         private void ProcessLoop()
@@ -281,6 +298,7 @@ namespace TickTrader.Algo.CoreV1
                 isStarted = true;
                 execStopFlag = false;
                 stopTask = null;
+                UpdateIndicatorScheduler(1);
                 WakeUpWorker();
             }
         }
@@ -387,6 +405,7 @@ namespace TickTrader.Algo.CoreV1
                 execStopFlag = false;
                 isStarted = false;
                 stopTask = null;
+                UpdateIndicatorScheduler(-1);
 
                 _logger.Debug("STRATEGY STOP COMPLETED!");
             }
@@ -415,6 +434,29 @@ namespace TickTrader.Algo.CoreV1
             }
             else
                 return null;
+        }
+
+
+        private static void UpdateIndicatorScheduler(int changeCnt)
+        {
+            const int minThreads = 2;
+            const int indicatorsPerThread = 100;
+
+            try
+            {
+                lock (_indicatorScheduler)
+                {
+                    _activeIndicatorCnt += changeCnt;
+                    var threadCnt = _activeIndicatorCnt / indicatorsPerThread;
+                    if (threadCnt < minThreads)
+                        threadCnt = minThreads;
+                    else if (threadCnt > Environment.ProcessorCount / 2)
+                        threadCnt = Environment.ProcessorCount / 2;
+
+                    _indicatorScheduler.SetMaxDegreeOfParallelism(threadCnt);
+                }
+            }
+            catch { }
         }
     }
 }
