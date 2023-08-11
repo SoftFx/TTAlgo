@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -19,8 +18,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 
     public class QuoteSubscription : IQuoteSub, IQuoteSubInternal
     {
-        private readonly object _syncObj = new object();
-        private readonly Dictionary<string, int> _bySymbol = new Dictionary<string, int>();
+        private readonly QuoteSubTracker _tracker = new QuoteSubTracker();
         private readonly IQuoteSubManager _manager;
 
         private ChannelConsumerWrapper<QuoteInfo> _quoteConsumer;
@@ -39,20 +37,13 @@ namespace TickTrader.Algo.Core.Subscriptions
         {
             _quoteConsumer?.Dispose();
             _manager.Remove(this);
-            _manager.Modify(this, _bySymbol.Select(p => QuoteSubUpdate.Remove(p.Key)).ToList());
+            _manager.Modify(this, _tracker.GetRemoveList());
         }
 
 
         public void Modify(QuoteSubUpdate update)
         {
-            var propagate = false;
-
-            lock (_syncObj)
-            {
-                propagate = ApplyUpdate(update);
-            }
-
-            if (propagate)
+            if (_tracker.ApplyUpdate(update))
                 _manager.Modify(this, update);
         }
 
@@ -60,11 +51,11 @@ namespace TickTrader.Algo.Core.Subscriptions
         {
             var validUpdates = new List<QuoteSubUpdate>(updates.Count);
 
-            lock (_syncObj)
+            lock (_tracker.SyncObj)
             {
                 foreach (var update in updates)
                 {
-                    if (ApplyUpdate(update))
+                    if (_tracker.ApplyUpdate(update))
                         validUpdates.Add(update);
                 }
             }
@@ -90,28 +81,6 @@ namespace TickTrader.Algo.Core.Subscriptions
         void IQuoteSubInternal.Dispatch(QuoteInfo quote) => _quoteConsumer?.Add(quote);
 
 
-        private bool ApplyUpdate(QuoteSubUpdate update)
-        {
-            var smb = update.Symbol;
-
-            if (update.IsUpsertAction)
-            {
-                var hasValue = _bySymbol.TryGetValue(smb, out var currentDepth);
-                if (!hasValue || (hasValue && currentDepth != update.Depth))
-                {
-                    _bySymbol[smb] = update.Depth;
-                    return true;
-                }
-            }
-            else if (update.IsRemoveAction)
-            {
-                if (_bySymbol.Remove(update.Symbol))
-                    return true;
-            }
-
-            return false;
-        }
-
         private void DispatchQuote(QuoteInfo quote)
         {
             quote = TruncateQuote(quote);
@@ -124,7 +93,7 @@ namespace TickTrader.Algo.Core.Subscriptions
 
         private QuoteInfo TruncateQuote(QuoteInfo quote)
         {
-            if (_bySymbol.TryGetValue(quote.Symbol, out var depth) && depth == SubscriptionDepth.MaxDepth)
+            if (_tracker.TryGetDepth(quote.Symbol, out var depth) && depth == SubscriptionDepth.MaxDepth)
             {
                 return quote;
             }
