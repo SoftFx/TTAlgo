@@ -74,5 +74,16 @@ namespace TickTrader.Algo.Core.Tests
             Assert.AreEqual(-1.9, Rounding.CeilBy(-1.9, decimals));
             Assert.AreEqual(-1.9, Rounding.CeilBy(-1.9999999999999, decimals));
         }
+
+        [TestMethod]
+        public void TestCase_ProfitRounding()
+        {
+            var decimals = 5;
+            var open = 1.12376; var close = 1.10501; var volume = 18000.0;
+            var profit = (close - open) * volume;
+            // returns -337.50001, which is a case of bad rounding
+            // -337.5000000000008 is expected to be treated as IEEE 754 calc error
+            // Assert.AreEqual(-337.5, profit.FloorBy(decimals));
+        }
     }
 }

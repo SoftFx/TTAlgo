@@ -84,10 +84,11 @@ namespace TickTrader.Algo.Backtester
 
             if (_acc.IsMarginType)
             {
-                _acc.Balance = _settings.CommonSettings.InitialBalance;
+                var balanceDigits = _acc.BalanceCurrencyInfo?.Digits ?? 2;
+                _acc.Balance = RoundMoney(_settings.CommonSettings.InitialBalance, balanceDigits);
                 _acc.Leverage = _settings.CommonSettings.Leverage;
                 _acc.UpdateCurrency(_settings.CommonSettings.Currencies.GetOrDefault(_settings.CommonSettings.BalanceCurrency));
-                _opSummary.BalanceCurrencyFormat = new System.Globalization.NumberFormatInfo { NumberDecimalDigits = _acc.BalanceCurrencyInfo?.Digits ?? 2 };
+                _opSummary.BalanceCurrencyFormat = new System.Globalization.NumberFormatInfo { NumberDecimalDigits = balanceDigits };
             }
             else if (_acc.IsCashType)
             {
@@ -1661,7 +1662,8 @@ namespace TickTrader.Algo.Backtester
             //SendExecutionReport(execReport, acc);
             //SendPositionReport(acc, CreatePositionReport(acc, PositionReportType.CreatePosition, position.SymbolRef, balanceMovement));
 
-            _acc.Balance += balanceMovement;
+            var newBalance = _acc.Balance + balanceMovement;
+            _acc.Balance = RoundMoney(newBalance, _calcFixture.RoundingDigits);
 
             _collector.OnCommisionCharged(commission);
 
@@ -1947,7 +1949,8 @@ namespace TickTrader.Algo.Backtester
 
             // change balance
             var totalProfit = charges.Total + profit;
-            _acc.Balance += totalProfit;
+            var newBalance = _acc.Balance + totalProfit;
+            _acc.Balance = RoundMoney(newBalance, _calcFixture.RoundingDigits);
 
             // Update modify timestamp.
             position.Info.Modified = _scheduler.UnsafeVirtualTimestamp;

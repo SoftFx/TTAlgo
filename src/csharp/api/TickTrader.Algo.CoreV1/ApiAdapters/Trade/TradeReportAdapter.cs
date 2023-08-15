@@ -436,7 +436,6 @@ namespace TickTrader.Algo.CoreV1
             Info.PositionLeavesQuantity = Info.PositionLeavesQuantity.Floor(_volumeStep);
             Info.RequestedOpenQuantity = Info.RequestedOpenQuantity.Floor(_volumeStep);
             Info.RequestedCloseQuantity = Info.RequestedCloseQuantity.Floor(_volumeStep);
-            Info.TransactionAmount = Info.TransactionAmount.Floor(_volumeStep);
 
             return this;
         }
