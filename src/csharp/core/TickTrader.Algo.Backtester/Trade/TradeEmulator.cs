@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
-using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -2656,7 +2655,7 @@ namespace TickTrader.Algo.Backtester
             var decVal = volumeInLots;
             var decStep = smbMetadata.TradeVolumeStep;
 
-            return decVal.Floor(decStep);
+            return decVal.FloorBy(decStep);
         }
 
         private double? RoundVolume(double? volumeInLots, SymbolInfo smbMetadata)
@@ -2669,12 +2668,12 @@ namespace TickTrader.Algo.Backtester
 
         private static double RoundPrice(double price, SymbolInfo smbMetadata, OrderInfo.Types.Side side)
         {
-            return side == OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+            return side == OrderInfo.Types.Side.Buy ? price.CeilBy(smbMetadata.Digits) : price.FloorBy(smbMetadata.Digits);
         }
 
         private static double? RoundPrice(double? price, SymbolInfo smbMetadata, OrderInfo.Types.Side side)
         {
-            return side == OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+            return side == OrderInfo.Types.Side.Buy ? price.CeilBy(smbMetadata.Digits) : price.FloorBy(smbMetadata.Digits);
         }
 
         private double? ToUnits(double? volumeInLots, SymbolInfo smbMetadata)

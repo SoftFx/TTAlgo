@@ -1,7 +1,7 @@
 ﻿using ActorSharp;
 using System;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Lib.Math;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.FeedStorage.Api;
 using TickTrader.FeedStorage.StorageBase;
 

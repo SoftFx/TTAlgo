@@ -2,8 +2,8 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
@@ -513,7 +513,7 @@ namespace TickTrader.Algo.CoreV1
             }
             else if (amountDigits > 0)
             {
-                res = res.Round(amountDigits);
+                res = res.RoundBy(amountDigits);
             }
             return res;
         }
@@ -521,25 +521,25 @@ namespace TickTrader.Algo.CoreV1
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double RoundVolume(double volumeInLots, SymbolInfo smbMetadata)
         {
-            return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
+            return volumeInLots.FloorBy(smbMetadata.TradeVolumeStep);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double? RoundVolume(double? volumeInLots, SymbolInfo smbMetadata)
         {
-            return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
+            return volumeInLots.FloorBy(smbMetadata.TradeVolumeStep);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double RoundPrice(double price, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Side side)
         {
-            return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+            return side == Domain.OrderInfo.Types.Side.Buy ? price.CeilBy(smbMetadata.Digits) : price.FloorBy(smbMetadata.Digits);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double? RoundPrice(double? price, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Side side)
         {
-            return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+            return side == Domain.OrderInfo.Types.Side.Buy ? price.CeilBy(smbMetadata.Digits) : price.FloorBy(smbMetadata.Digits);
         }
 
         #region Validation

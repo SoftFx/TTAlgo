@@ -1,6 +1,6 @@
 ﻿using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Calculator.Conversions;
-using TickTrader.Algo.Core.Lib.Math;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 

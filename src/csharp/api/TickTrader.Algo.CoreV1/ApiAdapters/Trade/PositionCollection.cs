@@ -1,6 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1

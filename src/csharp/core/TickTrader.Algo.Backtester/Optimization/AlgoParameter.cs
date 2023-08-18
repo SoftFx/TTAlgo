@@ -1,5 +1,5 @@
 ﻿using System;
-using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Backtester
 {

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.BacktesterApi;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Backtester
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib.Math;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Calculator

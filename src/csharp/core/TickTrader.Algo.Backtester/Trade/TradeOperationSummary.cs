@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;

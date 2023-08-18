@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TickTrader.Algo.Core.Lib.Math
+namespace TickTrader.Algo.Core.Lib
 {
     public static class RandomExtensions
     {
