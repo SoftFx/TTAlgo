@@ -1,5 +1,5 @@
-﻿using Serilog;
-using System;
+﻿using System;
+using System.IO;
 using TickTrader.Algo.AppCommon.Update;
 
 namespace TickTrader.Algo.Updater
@@ -9,12 +9,7 @@ namespace TickTrader.Algo.Updater
         [STAThread]
         static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.File(UpdateHelper.LogFileName)
-                .CreateLogger();
-
-            var ctx = new UpdateContext();
+            var ctx = new UpdateContext(Directory.GetCurrentDirectory());
             if (ctx.HasError)
             {
                 Environment.Exit((int)ctx.ErrorCode);

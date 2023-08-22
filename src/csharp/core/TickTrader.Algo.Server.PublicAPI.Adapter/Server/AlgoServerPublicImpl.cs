@@ -1311,7 +1311,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                     }
                 }
 
-                var serverRes = await _algoServer.StartServerUpdate(new Domain.ServerControl.StartServerUpdateRequest(filePath, true));
+                var serverRes = await _algoServer.StartServerUpdate(new Domain.ServerControl.StartServerUpdateRequest { LocalPath = filePath });
                 res.Result = serverRes.ToApi();
             }
             catch (Exception ex)

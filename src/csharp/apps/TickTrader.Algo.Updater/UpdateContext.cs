@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.ServiceProcess;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.AppCommon.Update;
@@ -34,7 +32,8 @@ namespace TickTrader.Algo.Updater
         private const int ServiceStopTimeout = 90000;
         private const int ServiceStartTimeout = 60000;
 
-        private readonly string _workDir = Directory.GetCurrentDirectory();
+        private readonly string _workDir;
+        private readonly UpdateLogIO _updateLogIO;
 
 
         public UpdateErrorCodes ErrorCode { get; private set; }
@@ -60,8 +59,11 @@ namespace TickTrader.Algo.Updater
         public IUpdateObserver UpdateObserver { get; set; }
 
 
-        public UpdateContext()
+        public UpdateContext(string workDir)
         {
+            _workDir = workDir;
+            _updateLogIO = new UpdateLogIO(_workDir);
+
             try
             {
                 State = UpdateHelper.LoadUpdateState(_workDir);
@@ -69,7 +71,7 @@ namespace TickTrader.Algo.Updater
             catch (Exception ex)
             {
                 ErrorCode = UpdateErrorCodes.InitError;
-                Log.Error(ex, "Failed to load UpdateState");
+                _updateLogIO.LogUpdateError("Failed to load UpdateState", ex);
             }
 
             if (!HasError && State != null)
@@ -151,7 +153,7 @@ namespace TickTrader.Algo.Updater
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Failed to save UpdateState");
+                _updateLogIO.LogUpdateError("Failed to save UpdateState", ex);
             }
         }
 
@@ -436,13 +438,13 @@ namespace TickTrader.Algo.Updater
 
         private void UpdateStatus(string msg)
         {
-            Log.Information(msg);
+            _updateLogIO.LogUpdateStatus(msg);
             UpdateObserver?.OnStatusUpdated(msg);
         }
 
         private void LogError(string msg, Exception ex = null)
         {
-            Log.Error(ex, msg);
+            _updateLogIO.LogUpdateError(msg, ex);
             State?.UpdateErrors?.Add(msg);
             UpdateObserver?.OnStatusUpdated(msg);
         }
@@ -462,7 +464,7 @@ namespace TickTrader.Algo.Updater
                 catch (Exception ex)
                 {
                     error = ex;
-                    Log.Error(ex, actionName);
+                    _updateLogIO.LogUpdateError(actionName, ex);
                 }
 
                 await Task.Delay(7000); // delay between attempts

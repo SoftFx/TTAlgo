@@ -13,18 +13,22 @@ namespace TickTrader.Algo.Server
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AutoUpdateManager>();
         private static readonly ServerVersionInfo _currentVersion = new(AppVersionInfo.Current.Version, AppVersionInfo.Current.BuildDate);
+        private static readonly TimeSpan _pendingUpdateTimeout = TimeSpan.FromMinutes(10);
 
         private readonly AlgoServerPrivate _server;
+        private readonly string _updateWorkDir;
 
         private AutoUpdateEnums.Types.ServiceStatus _status;
-        private string _statusDetails;
+        private string _statusDetails, _updateLog;
         private AutoUpdateService _updateSvc;
+        private UpdateLogIO _updateLogIO;
         private bool _started, _hasPendingUpdate;
 
 
         public AutoUpdateManager(AlgoServerPrivate server)
         {
             _server = server;
+            _updateWorkDir = _server.Env.UpdatesFolder;
 
             _status = AutoUpdateEnums.Types.ServiceStatus.Idle;
             _started = false;
@@ -38,11 +42,18 @@ namespace TickTrader.Algo.Server
 
             try
             {
-                _updateSvc = new AutoUpdateService(_server.Env.UpdatesFolder);
+                _updateSvc = new AutoUpdateService(_updateWorkDir);
                 _updateSvc.AddSource(new UpdateDownloadSource { Name = AutoUpdateService.MainSourceName, Uri = AutoUpdateService.MainGithubRepo });
                 _updateSvc.EnableAutoCheck();
 
-                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Idle);
+                if (TryLoadPendingUpdate())
+                {
+                    _ = WatchPendingUpdateLoop();
+                }
+                else
+                {
+                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Idle);
+                }
 
                 _started = true;
             }
@@ -110,6 +121,17 @@ namespace TickTrader.Algo.Server
                 return new StartServerUpdateResponse { Started = false, ErrorMsg = "Another update already executing" };
 
             _hasPendingUpdate = true;
+
+            if (!string.IsNullOrEmpty(request.LocalPath))
+            {
+                // update files loaded into TEMP are deleted after receiving response
+                var tmpUpdateFile = Path.Combine(_updateWorkDir, "update-tmp.zip");
+                if (File.Exists(tmpUpdateFile))
+                    File.Delete(tmpUpdateFile);
+                File.Copy(request.LocalPath, tmpUpdateFile);
+                request = new StartServerUpdateRequest { LocalPath = tmpUpdateFile };
+            }
+
             _ = ExecUpdate(request);
             return new StartServerUpdateResponse { Started = true };
         }
@@ -123,13 +145,14 @@ namespace TickTrader.Algo.Server
             try
             {
                 UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating);
+                _updateLogIO = new UpdateLogIO(_updateWorkDir) { ThrowOnWriteError = true };
 
-                var updateDir = Path.Combine(_server.Env.UpdatesFolder, "update");
+                var updateDir = Path.Combine(_updateWorkDir, "update");
                 var downloadSuccess = false;
                 if (!string.IsNullOrEmpty(request.ReleaseId))
                     downloadSuccess = await DownloadReleaseById(request.ReleaseId, updateDir);
                 else if (!string.IsNullOrEmpty(request.LocalPath))
-                    downloadSuccess = await DownloadReleaseFromLocalPath(request.LocalPath, updateDir, request.OwnsLocalFile);
+                    downloadSuccess = await DownloadReleaseFromLocalPath(request.LocalPath, updateDir);
 
                 if (downloadSuccess)
                 {
@@ -141,34 +164,36 @@ namespace TickTrader.Algo.Server
                         UpdatePath = updateDir,
                         FromVersion = AppVersionInfo.Current.Version,
                     };
-                    var (startSuccess, startError) = await UpdateHelper.StartUpdate(_server.Env.UpdatesFolder, updateParams, true);
+                    var (startSuccess, startError) = await UpdateHelper.StartUpdate(_updateWorkDir, updateParams, true);
                     if (!startSuccess)
                     {
-                        var state = UpdateHelper.LoadUpdateState(_server.Env.UpdatesFolder);
+                        var state = UpdateHelper.LoadUpdateState(_updateWorkDir);
                         var error = state.HasErrors ? UpdateHelper.FormatStateError(state) : (startError ?? "Unexpected update error");
                         UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed, error);
-                    }
-                    else
-                    {
-                        UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Installing...");
-                        return; // _hasPendingUpdate == true
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Update failed unexpectedly");
-                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed, "Update failed unexpectedly");
+                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed, "Update failed unexpectedly", ex);
             }
-
-            _hasPendingUpdate = false;
         }
 
-        private void UpdateStatus(AutoUpdateEnums.Types.ServiceStatus status, string statusDetails = null)
+        private void UpdateStatus(AutoUpdateEnums.Types.ServiceStatus status, string statusDetails = null, Exception error = null)
         {
             _status = status;
             _statusDetails = statusDetails;
-            var snapshot = new UpdateServiceInfo(_status, _statusDetails, null, null);
+            if (_updateLogIO != null)
+            {
+                if (error != null)
+                    _updateLogIO.LogUpdateError(statusDetails ?? "Unexpected error", error);
+                else
+                    _updateLogIO.LogUpdateStatus(statusDetails);
+
+                _updateLog = _updateLogIO.TryReadLogOnce();
+            }
+            var snapshot = new UpdateServiceInfo(_status, _statusDetails, null, _updateLog);
             _server.SendUpdate(new UpdateServiceStateUpdate { Snapshot = snapshot });
         }
 
@@ -182,24 +207,85 @@ namespace TickTrader.Algo.Server
             return true;
         }
 
-        private Task<bool> DownloadReleaseFromLocalPath(string path, string updateDir, bool deleteFile = false)
+        private Task<bool> DownloadReleaseFromLocalPath(string path, string updateDir)
         {
             UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Extracting files...");
             UpdateHelper.ExtractUpdate(path, updateDir);
 
-            if (deleteFile)
+            try
             {
-                try
-                {
-                    File.Delete(path);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, "Failed to delete temp update file");
-                }
+                File.Delete(path);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to delete temp update file");
             }
 
             return Task.FromResult(true);
+        }
+
+        private bool TryLoadPendingUpdate()
+        {
+            if (!UpdateHelper.IsUpdatePending(_updateWorkDir))
+                return false;
+
+            try
+            {
+                _updateLog = UpdateLogIO.TryReadLog(_updateWorkDir);
+
+                LoadPendingUpdateInfo();
+
+                _hasPendingUpdate = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to init pending update");
+            }
+
+            return false;
+        }
+
+        private void LoadPendingUpdateInfo()
+        {
+            try
+            {
+                var updState = UpdateHelper.LoadUpdateState(_updateWorkDir);
+                if (updState.Status == UpdateStatusCodes.Pending)
+                {
+                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating);
+                }
+                else if (updState.Status == UpdateStatusCodes.Completed)
+                {
+                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess, "Update success");
+                }
+                else
+                {
+                    var error = updState.HasErrors ? UpdateHelper.FormatStateError(updState) : "Unknown update error";
+                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed, error);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to load pending update info");
+            }
+        }
+
+        private async Task WatchPendingUpdateLoop()
+        {
+            var loopTimeout = TimeSpan.FromSeconds(10);
+
+            var startTime = DateTime.UtcNow;
+            while (_status == AutoUpdateEnums.Types.ServiceStatus.Updating)
+            {
+                await Task.Delay(loopTimeout);
+
+                if (_status == AutoUpdateEnums.Types.ServiceStatus.Updating)
+                    LoadPendingUpdateInfo();
+
+                if (DateTime.UtcNow - startTime > _pendingUpdateTimeout)
+                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed, "Update timeout reached");
+            }
         }
     }
 }

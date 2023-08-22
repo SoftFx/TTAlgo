@@ -120,6 +120,12 @@ namespace TickTrader.Algo.AppCommon.Update
             return sb.ToString();
         }
 
+        public static bool IsUpdatePending(string workDir)
+        {
+            var statePath = Path.Combine(workDir, StateFileName);
+            return File.Exists(statePath);
+        }
+
 
         private static void CreateUpdateHistoryRecord(string updateWorkDir)
         {

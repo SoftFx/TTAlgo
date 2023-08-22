@@ -432,7 +432,6 @@ message ServerUpdateListResponse {
 message StartServerUpdateRequest {
     google.protobuf.StringValue release_id = 1;
     google.protobuf.StringValue local_path = 2;
-    bool owns_local_file = 3;
 }
 
 message StartServerUpdateResponse {

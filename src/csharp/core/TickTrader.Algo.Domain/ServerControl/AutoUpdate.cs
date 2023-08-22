@@ -14,29 +14,6 @@
         }
     }
 
-    public partial class StartServerUpdateRequest
-    {
-        public StartServerUpdateRequest(string releaseId)
-        {
-            ReleaseId = releaseId;
-        }
-
-        public StartServerUpdateRequest(string localPath, bool ownsFile)
-        {
-            LocalPath = localPath;
-            OwnsLocalFile = ownsFile;
-        }
-    }
-
-    public partial class StartServerUpdateResponse
-    {
-        public StartServerUpdateResponse(bool started, string errorMsg)
-        {
-            Started = started;
-            ErrorMsg = errorMsg;
-        }
-    }
-
     public partial class ServerUpdateListRequest
     {
         private static readonly ServerUpdateListRequest _cached = new ServerUpdateListRequest { Forced = false };
