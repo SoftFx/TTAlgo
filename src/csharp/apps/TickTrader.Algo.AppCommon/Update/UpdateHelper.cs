@@ -113,9 +113,11 @@ namespace TickTrader.Algo.AppCommon.Update
             sb.Append(state.Status.ToString());
             if (state.InitError != UpdateErrorCodes.NoError)
                 sb.Append(" - ").Append(state.InitError.ToString());
-            sb.AppendLine();
             foreach (var err in state.UpdateErrors)
-                sb.AppendLine(err);
+            {
+                sb.AppendLine();
+                sb.Append(err);
+            }
 
             return sb.ToString();
         }

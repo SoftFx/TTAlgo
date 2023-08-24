@@ -2,7 +2,6 @@
 using Machinarium.Var;
 using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -20,21 +19,29 @@ namespace TickTrader.BotTerminal
 {
     internal sealed class AutoUpdateViewModel : Screen, IWindowModel
     {
+        private enum ViewPage { UpdateList, UpdateProcess };
+
+
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AutoUpdateViewModel>();
-        private static UpdateAssetTypes[] _terminalAssets = new[] { UpdateAssetTypes.TerminalUpdate, UpdateAssetTypes.Setup };
-        private static UpdateAssetTypes[] _serverAssets = new[] { UpdateAssetTypes.ServerUpdate, UpdateAssetTypes.Setup };
+        private static readonly UpdateAssetTypes[] _terminalAssets = new[] { UpdateAssetTypes.TerminalUpdate, UpdateAssetTypes.Setup };
+        private static readonly UpdateAssetTypes[] _serverAssets = new[] { UpdateAssetTypes.ServerUpdate, UpdateAssetTypes.Setup };
 
         private readonly VarContext _context = new();
         private readonly AutoUpdateService _updateSvc;
         private readonly System.Action _exitCallback;
         private readonly AlgoAgentViewModel _remoteAgent;
+        private readonly bool _isRemoteUpdate;
 
-        private TaskCompletionSource _remoteUpdateTaskSrc;
+        private ViewPage? _displayPage;
 
+
+        public BoolProperty ShowUpdateListPage { get; }
+
+        public BoolProperty ShowUpdateProcessPage { get; }
 
         public StrProperty CurrentVersion { get; }
 
-        public BoolProperty GuiEnabled { get; }
+        public BoolProperty UpdateListGuiEnabled { get; }
 
         public BoolProperty UpdatesLoaded { get; }
 
@@ -48,21 +55,30 @@ namespace TickTrader.BotTerminal
 
         public BoolProperty StatusHasError { get; }
 
-        public BoolProperty UpdateInProgress { get; }
+        public BoolProperty DownloadInProgress { get; }
 
-        public bool IsRemoteUpdate { get; }
+        public StrProperty UpdateStatus { get; }
+
+        public BoolProperty UpdateStatusHasError { get; }
+
+        public StrProperty UpdateLog { get; }
 
 
         private AutoUpdateViewModel()
         {
+            ShowUpdateListPage = _context.AddBoolProperty();
+            ShowUpdateProcessPage = _context.AddBoolProperty();
             CurrentVersion = _context.AddStrProperty();
-            GuiEnabled = _context.AddBoolProperty();
+            UpdateListGuiEnabled = _context.AddBoolProperty();
             UpdatesLoaded = _context.AddBoolProperty();
             HasSelectedUpdate = _context.AddBoolProperty();
             SelectedUpdate = _context.AddProperty<AppUpdateViewModel>().AddPostTrigger(_ => OnSelectedUpdateChanged());
             Status = _context.AddStrProperty();
             StatusHasError = _context.AddBoolProperty();
-            UpdateInProgress = _context.AddBoolProperty();
+            DownloadInProgress = _context.AddBoolProperty();
+            UpdateStatus = _context.AddStrProperty();
+            UpdateStatusHasError = _context.AddBoolProperty();
+            UpdateLog = _context.AddStrProperty();
         }
 
         public AutoUpdateViewModel(AutoUpdateService updateSvc, System.Action exitCallback) : this()
@@ -71,11 +87,10 @@ namespace TickTrader.BotTerminal
             _exitCallback = exitCallback;
 
             DisplayName = $"Auto Update - {EnvService.Instance.ApplicationName}";
-            IsRemoteUpdate = false;
+            _isRemoteUpdate = false;
             var appVersion = AppVersionInfo.Current;
             CurrentVersion.Value = $"{appVersion.Version} ({appVersion.BuildDate})";
-
-            _ = LoadUpdatesAsync();
+            SetDisplayPage(ViewPage.UpdateList);
         }
 
         public AutoUpdateViewModel(AutoUpdateService updateSvc, BotAgentViewModel remoteAgent) : this()
@@ -84,21 +99,11 @@ namespace TickTrader.BotTerminal
             _remoteAgent = remoteAgent.Agent;
 
             DisplayName = $"Auto Update - AlgoServer '{remoteAgent.Agent.Name}'";
-            IsRemoteUpdate = true;
+            _isRemoteUpdate = true;
             _remoteAgent.Model.AccessLevelChanged += OnAgentAccessLevelChanged;
             _remoteAgent.Model.UpdateServiceStateChanged += OnAgentUpdateServiceStateChanged;
 
-            if (!_remoteAgent.Model.VersionSpec.SupportsAutoUpdate)
-            {
-                CurrentVersion.Value = "AutoUpdate not supported";
-            }
-            else
-            {
-                var versionInfo = _remoteAgent.Model.CurrentVersion;
-                CurrentVersion.Value = $"{versionInfo.Version} ({versionInfo.ReleaseDate})";
-            }
-
-            _ = LoadUpdatesAsync();
+            InitRemoteAgentData();
         }
 
 
@@ -151,6 +156,27 @@ namespace TickTrader.BotTerminal
         }
 
 
+        private void SetDisplayPage(ViewPage newPage)
+        {
+            if (_displayPage == newPage)
+                return;
+
+            _displayPage = newPage;
+            ShowUpdateListPage.Value = newPage == ViewPage.UpdateList;
+            ShowUpdateProcessPage.Value = newPage == ViewPage.UpdateProcess;
+
+            InitDisplayPage();
+        }
+
+        private void InitDisplayPage()
+        {
+            var page = _displayPage;
+            if (page == ViewPage.UpdateList)
+            {
+                _ = LoadUpdatesAsync();
+            }
+        }
+
         private void OnSelectedUpdateChanged()
         {
             if (SelectedUpdate == null)
@@ -161,53 +187,71 @@ namespace TickTrader.BotTerminal
 
         private void OnAgentAccessLevelChanged()
         {
-            _ = LoadUpdatesAsync();
+            if (_remoteAgent.Model.AccessManager.CanGetServerUpdateInfo())
+            {
+                InitRemoteAgentData();
+                InitDisplayPage();
+            }
         }
 
-        private void OnAgentUpdateServiceStateChanged()
+        private void InitRemoteAgentData()
         {
-            var updateSvcInfo = _remoteAgent.Model.UpdateSvcInfo;
+            if (!_remoteAgent.Model.VersionSpec.SupportsAutoUpdate)
+            {
+                CurrentVersion.Value = "AutoUpdate not supported";
+                SetDisplayPage(ViewPage.UpdateList);
+            }
+            else
+            {
+                var versionInfo = _remoteAgent.Model.CurrentVersion;
+                CurrentVersion.Value = $"{versionInfo.Version} ({versionInfo.ReleaseDate})";
+                OnUpdateSvcInfoChanged(_remoteAgent.Model.UpdateSvcInfo);
+            }
+        }
+
+        private void OnAgentUpdateServiceStateChanged() => OnUpdateSvcInfoChanged(_remoteAgent.Model.UpdateSvcInfo);
+
+        private void OnUpdateSvcInfoChanged(UpdateServiceInfo updateSvcInfo)
+        {
             var status = updateSvcInfo.Status;
             switch (status)
             {
                 case AutoUpdateEnums.Types.ServiceStatus.Updating:
-                    GuiEnabled.Value = false;
-                    UpdateInProgress.Value = true;
-                    break;
-                case AutoUpdateEnums.Types.ServiceStatus.Idle:
                 case AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess:
                 case AutoUpdateEnums.Types.ServiceStatus.UpdateFailed:
-                    _remoteUpdateTaskSrc?.TrySetResult();
-                    GuiEnabled.Value = true;
-                    UpdateInProgress.Value = false;
+                    SetDisplayPage(ViewPage.UpdateProcess);
+                    break;
+                case AutoUpdateEnums.Types.ServiceStatus.Idle:
+                    SetDisplayPage(ViewPage.UpdateList);
                     break;
             }
-            Status.Value = updateSvcInfo.StatusDetails;
-            StatusHasError.Value = status == AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
+            UpdateStatus.Value = updateSvcInfo.StatusDetails;
+            UpdateStatusHasError.Value = status == AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
+            UpdateLog.Value = updateSvcInfo.UpdateLog;
         }
 
         private async Task LoadUpdatesAsync(bool forced = false)
         {
-            GuiEnabled.Value = false;
+            UpdateListGuiEnabled.Value = false;
             UpdatesLoaded.Value = false;
 
             try
             {
-                if (IsRemoteUpdate)
+                if (_isRemoteUpdate)
                     await LoadRemoteUpdatesInternal(forced);
                 else
                     await LoadLocalUpdatesInternal(forced);
             }
             catch (Exception ex)
             {
-                var errMsg = IsRemoteUpdate
+                var errMsg = _isRemoteUpdate
                     ? $"Failed to load updates for server {_remoteAgent?.Name}"
                     : "Failed to load updates";
                 _logger.Error(ex, errMsg);
             }
 
             UpdatesLoaded.Value = true;
-            GuiEnabled.Value = true;
+            UpdateListGuiEnabled.Value = true;
         }
 
         private async Task LoadLocalUpdatesInternal(bool forced)
@@ -243,8 +287,7 @@ namespace TickTrader.BotTerminal
 
         private async Task InstallUpdateAsync()
         {
-            GuiEnabled.Value = false;
-            UpdateInProgress.Value = true;
+            UpdateListGuiEnabled.Value = false;
             Status.Value = string.Empty;
             StatusHasError.Value = false;
             var failed = false;
@@ -252,14 +295,14 @@ namespace TickTrader.BotTerminal
             try
             {
                 var update = SelectedUpdate.Value;
-                if (IsRemoteUpdate)
+                if (_isRemoteUpdate)
                     await InstallRemoteUpdateInternal(update);
                 else
                     await InstallLocalUpdateInternal(update);
             }
             catch (Exception ex)
             {
-                var errMsg = IsRemoteUpdate
+                var errMsg = _isRemoteUpdate
                     ? $"Failed to install update for server {_remoteAgent?.Name}"
                     : "Failed to install update";
                 _logger.Error(ex, errMsg);
@@ -268,10 +311,9 @@ namespace TickTrader.BotTerminal
                 failed = true;
             }
 
-            if (failed || !IsRemoteUpdate)
+            if (failed || !_isRemoteUpdate)
             {
-                UpdateInProgress.Value = false;
-                GuiEnabled.Value = true;
+                UpdateListGuiEnabled.Value = true;
             }
         }
 
@@ -310,18 +352,10 @@ namespace TickTrader.BotTerminal
         private async Task InstallRemoteUpdateInternal(AppUpdateViewModel update)
         {
             var agent = _remoteAgent;
+            var res = default(StartServerUpdateResponse);
             if (update.ServerUpdate != null)
             {
-                var res = await agent.Model.StartServerUpdate(update.ServerUpdate.ReleaseId);
-                if (!res.Started)
-                {
-                    MessageBoxManager.OkError($"Can't start server update: {res.ErrorMsg}");
-                }
-                else
-                {
-                    _remoteUpdateTaskSrc = new TaskCompletionSource();
-                    await _remoteUpdateTaskSrc.Task;
-                }
+                res = await agent.Model.StartServerUpdate(update.ServerUpdate.ReleaseId);
             }
             else
             {
@@ -329,23 +363,30 @@ namespace TickTrader.BotTerminal
                 var updatePath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.ServerUpdate);
 
                 Status.Value = "Uploading update to target server...";
-                var res = await agent.Model.StartServerUpdateFromFile(update.Version, updatePath);
-                if (!res.Started)
-                {
-                    MessageBoxManager.OkError($"Can't start server update: {res.ErrorMsg}");
-                }
+                res = await agent.Model.StartServerUpdateFromFile(update.Version, updatePath);
+            }
+
+            if (res == null)
+            {
+                Status.Value = "Empty response";
+                StatusHasError.Value = true;
+            }
+            else
+            {
+                if (res.Started)
+                    Status.Value = "Update started";
                 else
                 {
-                    _remoteUpdateTaskSrc = new TaskCompletionSource();
-                    await _remoteUpdateTaskSrc.Task;
+                    Status.Value = $"Can't start server update: {res.ErrorMsg}";
+                    StatusHasError.Value = true; ;
                 }
             }
         }
 
         private async Task DownloadAndRunSetupAsync(AppUpdateViewModel update)
         {
-            GuiEnabled.Value = false;
-            UpdateInProgress.Value = true;
+            UpdateListGuiEnabled.Value = false;
+            DownloadInProgress.Value = true;
             Status.Value = string.Empty;
             StatusHasError.Value = false;
 
@@ -354,7 +395,7 @@ namespace TickTrader.BotTerminal
                 Status.Value = "Downloading setup...";
                 var setupPath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.Setup);
 
-                if (IsRemoteUpdate)
+                if (_isRemoteUpdate)
                 {
                     Status.Value = "Saving setup...";
                     var dlg = new SaveFileDialog
@@ -384,8 +425,8 @@ namespace TickTrader.BotTerminal
                 StatusHasError.Value = true;
             }
 
-            UpdateInProgress.Value = false;
-            GuiEnabled.Value = true;
+            DownloadInProgress.Value = false;
+            UpdateListGuiEnabled.Value = true;
         }
 
 

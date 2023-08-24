@@ -6,7 +6,7 @@ namespace TickTrader.Algo.AppCommon.Update
     public class UpdateLogIO
     {
         private const int MaxRetryCnt = 3;
-        private const string DateTimeFormat = "yyyy-MM-dd hh:mm:ss";
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
 
         private readonly string _path;
 
@@ -38,11 +38,12 @@ namespace TickTrader.Algo.AppCommon.Update
             AppendMsg(new LogMsg(text, error));
         }
 
-        public string TryReadLogOnce()
+        public static string TryReadLogOnce(string workDir)
         {
+            var path = Path.Combine(workDir, UpdateHelper.LogFileName);
             try
             {
-                return ReadLogInternal(_path);
+                return ReadLogInternal(path);
             }
             catch { }
 
@@ -98,7 +99,7 @@ namespace TickTrader.Algo.AppCommon.Update
             if (!File.Exists(path))
                 return string.Empty;
 
-            using (var file = File.Open(path, FileMode.Append, FileAccess.Read, FileShare.ReadWrite))
+            using (var file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var reader = new StreamReader(file))
             {
                 return reader.ReadToEnd();

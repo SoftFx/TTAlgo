@@ -190,9 +190,8 @@ namespace TickTrader.Algo.Server
                     _updateLogIO.LogUpdateError(statusDetails ?? "Unexpected error", error);
                 else
                     _updateLogIO.LogUpdateStatus(statusDetails);
-
-                _updateLog = _updateLogIO.TryReadLogOnce();
             }
+            _updateLog = UpdateLogIO.TryReadLogOnce(_updateWorkDir);
             var snapshot = new UpdateServiceInfo(_status, _statusDetails, null, _updateLog);
             _server.SendUpdate(new UpdateServiceStateUpdate { Snapshot = snapshot });
         }
