@@ -189,6 +189,7 @@ Task("Test")
          DotNetTest(testProj.ToString(), new DotNetTestSettings {
             Configuration = configuration,
             Verbosity = details,
+            NoBuild = true,
          });
       }
    }
