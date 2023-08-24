@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Indicators.Tests.TestCases
                 {
                     try
                     {
-                        while (true)
+                        while (file.Position < file.Length)
                         {
                             ReadAnswerUnit(reader, metaAnswer);
                         }
@@ -132,8 +132,8 @@ namespace TickTrader.Algo.Indicators.Tests.TestCases
                     : AnswerBuffer[k][index];
                 var metaVal = metaAnswer[k][index];
                 var answerVal = AnswerBuffer[k][index];
-                AssertX.Greater(Epsilon, Math.Abs(metaVal - answerVal),
-                    "Value " + answerVal + " at index " + index + " differs from Meta value " + metaVal);
+                if (Math.Abs(metaVal - answerVal) > Epsilon)
+                    Assert.IsTrue(false, "Value " + answerVal + " at index " + index + " differs from Meta value " + metaVal);
             }
         }
     }

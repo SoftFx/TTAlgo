@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Indicators.Tests.Utility
                 {
                     try
                     {
-                        while (true)
+                        while (file.Position < file.Length)
                         {
                             var time = new UtcTicks(UnixEpoch.AddSeconds(reader.ReadInt64()));
                             var bar = new BarData(time, time)
