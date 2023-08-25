@@ -103,6 +103,6 @@
 
         public bool CanGetServerUpdateInfo() => HasViewerAccess;
 
-        public bool CanStartServerUpdate() => HasAdminAccess;
+        public bool CanControlServerUpdate() => HasAdminAccess;
     }
 }

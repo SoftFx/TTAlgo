@@ -84,6 +84,7 @@ namespace TickTrader.Algo.Server
             Receive<ServerVersionRequest, ServerVersionInfo>(r => _updateSvc.GetCurrentVersion());
             Receive<ServerUpdateListRequest, ServerUpdateList>(r => _updateSvc.GetUpdateList(r));
             Receive<StartServerUpdateRequest, StartServerUpdateResponse>(r => _updateSvc.StartUpdate(r));
+            Receive<DiscardServerUpdateResultRequest>(r => _updateSvc.DiscardUpdateResult(r));
         }
 
 

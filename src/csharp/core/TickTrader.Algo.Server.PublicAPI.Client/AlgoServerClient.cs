@@ -771,6 +771,12 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
         }
 
+        public async Task DiscardServerUpdateResult()
+        {
+            var response = await _client.DiscardServerUpdateResultAsync(new DiscardServerUpdateResultRequest());
+            FailForNonSuccess(response.ExecResult);
+        }
+
         #endregion Requests
     }
 }

@@ -129,5 +129,7 @@ namespace TickTrader.BotTerminal
         Task<StartServerUpdateResponse> StartServerUpdate(string releaseId);
 
         Task<StartServerUpdateResponse> StartServerUpdateFromFile(string version, string srcPath);
+
+        Task DiscardServerUpdateResult();
     }
 }

@@ -165,6 +165,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -177,6 +178,8 @@
                             <TextBlock Margin="5" Text="{Binding UpdateLog.Value, Mode=OneWay}" TextWrapping="Wrap" />
                         </ScrollViewer>
                     </Border>
+                    <l:FlatButton Grid.Row="3" BorderThickness="1" Margin="0 5" MaxWidth="150"
+                                  Content="Close" cal:Message.Attach="DiscardUpdateResult" />
                 </Grid>
             </Grid>
         </Grid>

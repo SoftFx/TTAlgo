@@ -120,6 +120,7 @@ namespace TickTrader.Algo.Server
         public Task<ServerVersionInfo> GetServerVersion() => _server.Ask<ServerVersionInfo>(ServerVersionRequest.Instance);
         public Task<ServerUpdateList> GetServerUpdates(ServerUpdateListRequest request) => _server.Ask<ServerUpdateList>(request);
         public Task<StartServerUpdateResponse> StartUpdate(StartServerUpdateRequest request) => _server.Ask<StartServerUpdateResponse>(request);
+        public Task DiscardUpdateResult(DiscardServerUpdateResultRequest request) => _server.Ask<DiscardServerUpdateResultRequest>(request);
 
 
         internal class PluginExistsRequest

@@ -113,6 +113,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         Task<StartUpdateResult> StartCustomUpdate(StartCustomServerUpdateRequest request, string srcPath);
 
+        Task DiscardServerUpdateResult();
+
         #endregion AutoUpdate management
     }
 }

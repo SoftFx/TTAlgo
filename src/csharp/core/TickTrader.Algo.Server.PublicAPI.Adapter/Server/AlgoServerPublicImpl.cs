@@ -249,6 +249,11 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             return ExecuteClientStreamingRequestAuthorized(StartCustomServerUpdateInternal, requestStream, context);
         }
 
+        public override Task<DiscardServerUpdateResultResponse> DiscardServerUpdateResult(DiscardServerUpdateResultRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(DiscardServerUpdateResultInternal, request, context);
+        }
+
         #endregion Grpc request handlers overrides
 
 
@@ -1237,7 +1242,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             var res = new StartServerUpdateResponse { ExecResult = execResult };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanStartServerUpdate())
+            if (!session.AccessManager.CanControlServerUpdate())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;
@@ -1250,7 +1255,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             }
             catch (Exception ex)
             {
-                session.Logger.Error(ex, "Failed to get server version");
+                session.Logger.Error(ex, "Failed to start server update");
                 res.ExecResult = CreateErrorResult(ex);
             }
             return res;
@@ -1333,6 +1338,29 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                         _logger.Error(ex, $"Failed to delete temp server update file '{filePath}'");
                     }
                 }
+            }
+            return res;
+        }
+
+        private async Task<DiscardServerUpdateResultResponse> DiscardServerUpdateResultInternal(DiscardServerUpdateResultRequest request, ServerCallContext context, SessionInfo session, RequestResult execResult)
+        {
+            var res = new DiscardServerUpdateResultResponse { ExecResult = execResult };
+            if (session == null)
+                return res;
+            if (!session.AccessManager.CanControlServerUpdate())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return res;
+            }
+
+            try
+            {
+                await _algoServer.DiscardServerUpdateResult(Domain.ServerControl.DiscardServerUpdateResultRequest.Instance);
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to discard server update result");
+                res.ExecResult = CreateErrorResult(ex);
             }
             return res;
         }

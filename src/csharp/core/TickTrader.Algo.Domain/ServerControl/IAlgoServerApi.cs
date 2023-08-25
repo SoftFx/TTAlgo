@@ -45,6 +45,7 @@ namespace TickTrader.Algo.Domain.ServerControl
         Task<ServerVersionInfo> GetServerVersion();
         Task<ServerUpdateList> GetServerUpdates(ServerUpdateListRequest request);
         Task<StartServerUpdateResponse> StartUpdate(StartServerUpdateRequest request);
+        Task DiscardUpdateResult(DiscardServerUpdateResultRequest request);
 
 
         Task SubscribeToUpdates(ChannelWriter<IMessage> channel);

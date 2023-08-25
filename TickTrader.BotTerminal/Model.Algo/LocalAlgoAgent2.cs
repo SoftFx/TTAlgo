@@ -316,6 +316,8 @@ namespace TickTrader.BotTerminal
 
         public Task<StartServerUpdateResponse> StartServerUpdateFromFile(string version, string srcPath) => throw new NotSupportedException();
 
+        public Task DiscardServerUpdateResult() => throw new NotSupportedException();
+
         #endregion
 
 

@@ -155,6 +155,11 @@ namespace TickTrader.BotTerminal
             _ = DownloadAndRunSetupAsync(SelectedUpdate.Value);
         }
 
+        public void DiscardUpdateResult()
+        {
+            _ = DiscardUpdateResultAsync();
+        }
+
 
         private void SetDisplayPage(ViewPage newPage)
         {
@@ -378,8 +383,27 @@ namespace TickTrader.BotTerminal
                 else
                 {
                     Status.Value = $"Can't start server update: {res.ErrorMsg}";
-                    StatusHasError.Value = true; ;
+                    StatusHasError.Value = true;
                 }
+            }
+        }
+
+        private async Task DiscardUpdateResultAsync()
+        {
+            try
+            {
+                if (_isRemoteUpdate)
+                {
+                    if (_remoteAgent.Model.AccessManager.CanControlServerUpdate())
+                        await _remoteAgent.Model.DiscardServerUpdateResult();
+                }
+            }
+            catch (Exception ex)
+            {
+                var errMsg = _isRemoteUpdate
+                    ? $"Failed to discard update result for server '{_remoteAgent?.Name}'"
+                    : "Failed to discard update result";
+                _logger.Error(ex, errMsg);
             }
         }
 

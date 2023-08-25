@@ -62,4 +62,5 @@ service AlgoServerPublic
     rpc GetServerUpdateList(ServerUpdateListRequest) returns (ServerUpdateListResponse);
     rpc StartServerUpdate(StartServerUpdateRequest) returns (StartServerUpdateResponse);
     rpc StartCustomServerUpdate(stream FileTransferMsg) returns (StartCustomServerUpdateResponse);
+    rpc DiscardServerUpdateResult(DiscardServerUpdateResultRequest) returns (DiscardServerUpdateResultResponse);
 }

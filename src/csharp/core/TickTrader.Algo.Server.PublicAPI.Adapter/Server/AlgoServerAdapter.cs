@@ -187,5 +187,10 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         {
             return _algoServer.StartUpdate(request);
         }
+
+        public Task DiscardServerUpdateResult(ServerApi.DiscardServerUpdateResultRequest request)
+        {
+            return _algoServer.DiscardUpdateResult(request);
+        }
     }
 }

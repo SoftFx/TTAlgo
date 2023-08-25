@@ -170,6 +170,7 @@ namespace TickTrader.Algo.Updater
             }
 
             TrySaveState();
+            _updateLogIO.LogUpdateInfo("Updated completed. Exit status = " + State.Status);
             UpdateObserver?.OnCompleted();
         }
 

@@ -49,3 +49,9 @@ message StartCustomServerUpdateResponse {
     StartUpdateResult result = 1;
     RequestResult exec_result = 101;
 }
+
+message DiscardServerUpdateResultRequest { }
+
+message DiscardServerUpdateResultResponse {
+    RequestResult exec_result = 101;
+}

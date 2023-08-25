@@ -128,6 +128,11 @@ namespace TickTrader.Algo.AppCommon.Update
             return File.Exists(statePath);
         }
 
+        public static void DiscardUpdateResult(string workDir)
+        {
+            CreateUpdateHistoryRecord(workDir);
+        }
+
 
         private static void CreateUpdateHistoryRecord(string updateWorkDir)
         {

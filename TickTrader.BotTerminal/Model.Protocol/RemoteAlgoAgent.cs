@@ -252,6 +252,11 @@ namespace TickTrader.BotTerminal
                 new AlgoServerApi.StartCustomServerUpdateRequest { Version = version, TransferSettings = AlgoServerApi.FileTransferSettings.Default }, srcPath))).ToServer();
         }
 
+        public Task DiscardServerUpdateResult()
+        {
+            return _protocolClient.DiscardServerUpdateResult();
+        }
+
         #endregion
 
 

@@ -72,7 +72,7 @@
 
         bool CanGetServerUpdateInfo();
 
-        bool CanStartServerUpdate();
+        bool CanControlServerUpdate();
 
         #endregion
     }

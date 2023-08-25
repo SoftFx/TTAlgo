@@ -33,4 +33,9 @@
             UpdateLog = updateLog;
         }
     }
+
+    public partial class DiscardServerUpdateResultRequest
+    {
+        public static readonly DiscardServerUpdateResultRequest Instance = new DiscardServerUpdateResultRequest();
+    }
 }

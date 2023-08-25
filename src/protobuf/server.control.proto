@@ -450,3 +450,9 @@ message UpdateServiceInfo {
 message UpdateServiceStateUpdate {
     UpdateServiceInfo snapshot = 1;
 }
+
+message DiscardServerUpdateResultRequest { }
+
+message DiscardServerUpdateResultResponse {
+    RequestResult exec_result = 101;
+}

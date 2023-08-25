@@ -6,7 +6,7 @@ namespace TickTrader.Algo.AppCommon.Update
     public class UpdateLogIO
     {
         private const int MaxRetryCnt = 3;
-        private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss.fff";
 
         private readonly string _path;
 

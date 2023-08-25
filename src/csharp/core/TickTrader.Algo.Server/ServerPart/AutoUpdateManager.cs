@@ -136,6 +136,22 @@ namespace TickTrader.Algo.Server
             return new StartServerUpdateResponse { Started = true };
         }
 
+        public void DiscardUpdateResult(DiscardServerUpdateResultRequest request)
+        {
+            if (!_started)
+                throw new NotSupportedException("Update service not started");
+
+            if (_hasPendingUpdate)
+            {
+                if (_status == AutoUpdateEnums.Types.ServiceStatus.Updating)
+                    throw new Exception("Update is still executing");
+
+                _hasPendingUpdate = false;
+                UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Idle);
+                UpdateHelper.DiscardUpdateResult(_updateWorkDir);
+            }
+        }
+
 
         private async Task ExecUpdate(StartServerUpdateRequest request)
         {
@@ -232,7 +248,8 @@ namespace TickTrader.Algo.Server
             {
                 _updateLog = UpdateLogIO.TryReadLog(_updateWorkDir);
 
-                LoadPendingUpdateInfo();
+                var updState = UpdateHelper.LoadUpdateState(_updateWorkDir);
+                ProcessPendingUpdateState(updState);
 
                 _hasPendingUpdate = true;
                 return true;
@@ -245,14 +262,13 @@ namespace TickTrader.Algo.Server
             return false;
         }
 
-        private void LoadPendingUpdateInfo()
+        private void ProcessPendingUpdateState(UpdateState updState)
         {
             try
             {
-                var updState = UpdateHelper.LoadUpdateState(_updateWorkDir);
                 if (updState.Status == UpdateStatusCodes.Pending)
                 {
-                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating);
+                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Updating...");
                 }
                 else if (updState.Status == UpdateStatusCodes.Completed)
                 {
@@ -280,10 +296,28 @@ namespace TickTrader.Algo.Server
                 await Task.Delay(loopTimeout);
 
                 if (_status == AutoUpdateEnums.Types.ServiceStatus.Updating)
-                    LoadPendingUpdateInfo();
+                {
+                    var updState = UpdateHelper.LoadUpdateState(_updateWorkDir);
+                    ProcessPendingUpdateState(updState);
 
-                if (DateTime.UtcNow - startTime > _pendingUpdateTimeout)
-                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed, "Update timeout reached");
+                    if (updState.Status == UpdateStatusCodes.Pending && DateTime.UtcNow - startTime > _pendingUpdateTimeout)
+                    {
+                        try
+                        {
+                            updState.SetStatus(UpdateStatusCodes.UpdateError);
+                            updState.UpdateErrors.Add("Update timeout reached");
+                            UpdateHelper.SaveUpdateState(_updateWorkDir, updState);
+                            _updateLogIO ??= new UpdateLogIO(_updateWorkDir);
+                            _updateLogIO.LogUpdateInfo("Server watchdog timeout condition reached");
+
+                            ProcessPendingUpdateState(updState);
+                        }
+                        catch (Exception ex)
+                        {
+                            UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.UpdateFailed, "Update timeout failure", ex);
+                        }
+                    }
+                }
             }
         }
     }
