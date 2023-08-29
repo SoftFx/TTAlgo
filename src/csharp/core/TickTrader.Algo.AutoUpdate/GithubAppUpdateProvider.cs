@@ -134,6 +134,7 @@ namespace TickTrader.Algo.AutoUpdate
                         {
                             SrcId = _srcId,
                             VersionId = release.Id.ToString(),
+                            IsStable = !release.Prerelease,
                             Info = updateInfo,
                             AvailableAssets = assetsByType.Keys.ToList(),
                         },

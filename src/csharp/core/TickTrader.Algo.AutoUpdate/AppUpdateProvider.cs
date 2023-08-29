@@ -19,6 +19,8 @@ namespace TickTrader.Algo.AutoUpdate
 
         public string VersionId { get; set; }
 
+        public bool IsStable { get; set; }
+
         public UpdateInfo Info { get; set; }
 
         public List<UpdateAssetTypes> AvailableAssets { get; set; }

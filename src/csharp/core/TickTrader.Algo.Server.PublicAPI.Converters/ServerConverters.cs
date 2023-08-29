@@ -1100,6 +1100,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 ReleaseDate = info.ReleaseDate,
                 MinVersion = info.MinVersion,
                 Changelog = info.Changelog,
+                IsStable = info.IsStable,
             };
         }
 

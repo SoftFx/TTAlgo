@@ -495,8 +495,6 @@ namespace TickTrader.BotTerminal
 
             public string Version { get; }
 
-            public string VersionStr { get; }
-
             public string ReleaseDate { get; }
 
             public string MinVersion { get; }
@@ -505,19 +503,26 @@ namespace TickTrader.BotTerminal
 
             public string AppType { get; }
 
+            public bool IsStable { get; }
+
+            public string DisplayVersion { get; }
+
+            public string VersionDateStr { get; }
+
 
             public AppUpdateViewModel(AppUpdateEntry entry)
             {
                 Entry = entry;
 
-                Source = entry.SrcId;
+                Source = InitSource(entry.SrcId);
                 AppType = string.Join(", ", Entry.AvailableAssets);
                 Version = entry.Info.ReleaseVersion;
                 ReleaseDate = entry.Info.ReleaseDate;
                 MinVersion = entry.Info.MinVersion;
                 Changelog = entry.Info.Changelog;
-
-                VersionStr = $"{Version} ({ReleaseDate})";
+                IsStable = entry.IsStable;
+                DisplayVersion = InitDisplayVersion(Version, IsStable);
+                VersionDateStr = InitVersionDateStr(Version, ReleaseDate);
             }
 
             public AppUpdateViewModel(AppUpdateEntry entry, ServerUpdateInfo serverUpdate)
@@ -525,7 +530,7 @@ namespace TickTrader.BotTerminal
                 Entry = entry;
                 ServerUpdate = serverUpdate;
 
-                Source = entry.SrcId;
+                Source = InitSource(entry.SrcId);
                 AppType = string.Join(", ", Entry.AvailableAssets);
                 if (serverUpdate != null)
                 {
@@ -533,6 +538,7 @@ namespace TickTrader.BotTerminal
                     ReleaseDate = serverUpdate.ReleaseDate;
                     MinVersion = serverUpdate.MinVersion;
                     Changelog = serverUpdate.Changelog;
+                    IsStable = serverUpdate.IsStable;
                 }
                 else
                 {
@@ -540,10 +546,20 @@ namespace TickTrader.BotTerminal
                     ReleaseDate = entry.Info.ReleaseDate;
                     MinVersion = entry.Info.MinVersion;
                     Changelog = entry.Info.Changelog;
+                    IsStable = entry.IsStable;
                 }
-
-                VersionStr = $"{Version} ({ReleaseDate})";
+                DisplayVersion = InitDisplayVersion(Version, IsStable);
+                VersionDateStr = InitVersionDateStr(Version, ReleaseDate);
             }
+
+
+            private static string InitSource(string srcId) =>
+                // don't display main source on gui
+                srcId == AutoUpdateService.MainSourceName ? string.Empty : srcId;
+
+            private static string InitDisplayVersion(string version, bool isStable) => isStable ? version : $"{version} (beta)";
+
+            private static string InitVersionDateStr(string version, string releaseDate) => $"{version} ({releaseDate})";
         }
     }
 }

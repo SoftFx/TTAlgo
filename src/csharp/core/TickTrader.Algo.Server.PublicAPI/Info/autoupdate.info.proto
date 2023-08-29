@@ -27,6 +27,7 @@ message ServerUpdateInfo {
     google.protobuf.StringValue release_date = 3;
     google.protobuf.StringValue changelog = 4;
     google.protobuf.StringValue min_version = 5;
+    bool is_stable = 6;
 }
 
 message ServerUpdateList {

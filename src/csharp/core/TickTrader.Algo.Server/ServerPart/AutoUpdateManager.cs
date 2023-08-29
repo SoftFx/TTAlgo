@@ -101,6 +101,7 @@ namespace TickTrader.Algo.Server
                             ReleaseDate = update.Info.ReleaseDate,
                             MinVersion = update.Info.MinVersion,
                             Changelog = update.Info.Changelog,
+                            IsStable = update.IsStable,
                         };
                         res.Updates.Add(updInfo);
                     }

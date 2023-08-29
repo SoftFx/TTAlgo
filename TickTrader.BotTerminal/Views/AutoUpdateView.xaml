@@ -30,16 +30,29 @@
     </Style>
 
     <DataTemplate x:Key="AppUpdateItemTemplate">
+        <DataTemplate.Resources>
+            <Style x:Key="VersionTextStyle" TargetType="TextBlock">
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="Foreground" Value="DarkGreen" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsStable}" Value="False">
+                        <Setter Property="Foreground" Value="DarkOrange" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </DataTemplate.Resources>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="{Binding Source}" />
-            <TextBlock Grid.Row="1" Text="{Binding Version}" />
-            <TextBlock Grid.Row="2" Text="{Binding AppType}" />
+            <TextBlock Grid.Row="0" FontSize="15" Text="{Binding DisplayVersion}" Style="{StaticResource VersionTextStyle}" />
+            <TextBlock Grid.Row="1" Text="{Binding ReleaseDate}" />
+            <TextBlock Grid.Row="2" Text="{Binding Source}" Foreground="Blue" />
+            <!--<TextBlock Grid.Row="3" Text="{Binding AppType}" />-->
         </Grid>
     </DataTemplate>
 
@@ -87,7 +100,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Row="0" Grid.Column="0" Content="Update Version:" />
-                        <Label Grid.Row="0" Grid.Column="1" Content="{Binding SelectedUpdate.Value.VersionStr}" />
+                        <Label Grid.Row="0" Grid.Column="1" Content="{Binding SelectedUpdate.Value.VersionDateStr}" />
                         <Label Grid.Row="1" Grid.Column="0" Content="Min Version:" />
                         <Label Grid.Row="1" Grid.Column="1" Content="{Binding SelectedUpdate.Value.MinVersion}" />
                         <Label Grid.Row="2" Grid.Column="0" Content="Changelog:" />
