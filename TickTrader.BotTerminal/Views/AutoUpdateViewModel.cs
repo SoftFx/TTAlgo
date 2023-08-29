@@ -63,6 +63,33 @@ namespace TickTrader.BotTerminal
 
         public StrProperty UpdateLog { get; }
 
+        public BoolProperty UpdateInProgress { get; }
+
+        public bool CanRefreshUpdates => !_isRemoteUpdate || _remoteAgent.Model.AccessManager.CanGetServerUpdateInfo();
+
+        public bool CanControlUpdate => !_isRemoteUpdate || _remoteAgent.Model.AccessManager.CanControlServerUpdate();
+
+        public bool CanInstallUpdate
+        {
+            get
+            {
+                var availableAssets = SelectedUpdate.Value?.Entry.AvailableAssets;
+                var updateAssetType = _isRemoteUpdate ? UpdateAssetTypes.ServerUpdate : UpdateAssetTypes.TerminalUpdate;
+                return CanControlUpdate && (availableAssets?.Contains(updateAssetType) ?? false);
+            }
+        }
+
+        public bool CanDownloadSetup
+        {
+            get
+            {
+                var availableAssets = SelectedUpdate.Value?.Entry.AvailableAssets;
+                return CanControlUpdate && (availableAssets?.Contains(UpdateAssetTypes.Setup) ?? false);
+            }
+        }
+
+        public bool CanDiscardUpdateResult => CanControlUpdate && (_remoteAgent?.Model.UpdateSvcInfo.Status != AutoUpdateEnums.Types.ServiceStatus.Updating);
+
 
         private AutoUpdateViewModel()
         {
@@ -79,6 +106,7 @@ namespace TickTrader.BotTerminal
             UpdateStatus = _context.AddStrProperty();
             UpdateStatusHasError = _context.AddBoolProperty();
             UpdateLog = _context.AddStrProperty();
+            UpdateInProgress = _context.AddBoolProperty();
         }
 
         public AutoUpdateViewModel(AutoUpdateService updateSvc, System.Action exitCallback) : this()
@@ -101,6 +129,7 @@ namespace TickTrader.BotTerminal
             DisplayName = $"Auto Update - AlgoServer '{remoteAgent.Agent.Name}'";
             _isRemoteUpdate = true;
             _remoteAgent.Model.AccessLevelChanged += OnAgentAccessLevelChanged;
+            _remoteAgent.Model.SnapshotLoaded += OnAgentSnapshotLoaded;
             _remoteAgent.Model.UpdateServiceStateChanged += OnAgentUpdateServiceStateChanged;
 
             InitRemoteAgentData();
@@ -114,6 +143,7 @@ namespace TickTrader.BotTerminal
                 if (_remoteAgent != null)
                 {
                     _remoteAgent.Model.AccessLevelChanged -= OnAgentAccessLevelChanged;
+                    _remoteAgent.Model.SnapshotLoaded -= OnAgentSnapshotLoaded;
                     _remoteAgent.Model.UpdateServiceStateChanged -= OnAgentUpdateServiceStateChanged;
                 }
             }
@@ -150,9 +180,9 @@ namespace TickTrader.BotTerminal
             _ = InstallUpdateAsync();
         }
 
-        public void InstallManual()
+        public void DownloadSetup()
         {
-            _ = DownloadAndRunSetupAsync(SelectedUpdate.Value);
+            _ = DownloadSetupAsync(SelectedUpdate.Value);
         }
 
         public void DiscardUpdateResult()
@@ -188,15 +218,22 @@ namespace TickTrader.BotTerminal
                 return;
 
             HasSelectedUpdate.Value = SelectedUpdate.Value != null;
+            NotifyOfPropertyChange(nameof(CanInstallUpdate));
+            NotifyOfPropertyChange(nameof(CanDownloadSetup));
         }
 
         private void OnAgentAccessLevelChanged()
         {
-            if (_remoteAgent.Model.AccessManager.CanGetServerUpdateInfo())
-            {
-                InitRemoteAgentData();
-                InitDisplayPage();
-            }
+            NotifyOfPropertyChange(nameof(CanRefreshUpdates));
+            NotifyOfPropertyChange(nameof(CanInstallUpdate));
+            NotifyOfPropertyChange(nameof(CanDownloadSetup));
+            NotifyOfPropertyChange(nameof(CanDiscardUpdateResult));
+        }
+
+        private void OnAgentSnapshotLoaded()
+        {
+            InitRemoteAgentData();
+            InitDisplayPage();
         }
 
         private void InitRemoteAgentData()
@@ -233,6 +270,8 @@ namespace TickTrader.BotTerminal
             UpdateStatus.Value = updateSvcInfo.StatusDetails;
             UpdateStatusHasError.Value = status == AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
             UpdateLog.Value = updateSvcInfo.UpdateLog;
+            UpdateInProgress.Value = status == AutoUpdateEnums.Types.ServiceStatus.Updating;
+            NotifyOfPropertyChange(nameof(CanDiscardUpdateResult));
         }
 
         private async Task LoadUpdatesAsync(bool forced = false)
@@ -407,7 +446,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task DownloadAndRunSetupAsync(AppUpdateViewModel update)
+        private async Task DownloadSetupAsync(AppUpdateViewModel update)
         {
             UpdateListGuiEnabled.Value = false;
             DownloadInProgress.Value = true;
@@ -419,26 +458,18 @@ namespace TickTrader.BotTerminal
                 Status.Value = "Downloading setup...";
                 var setupPath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.Setup);
 
-                if (_isRemoteUpdate)
+                Status.Value = "Saving setup...";
+                var dlg = new SaveFileDialog
                 {
-                    Status.Value = "Saving setup...";
-                    var dlg = new SaveFileDialog
-                    {
-                        FileName = Path.GetFileName(setupPath),
-                        InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"),
-                        Filter = "Executable files (*.exe)|*.exe"
-                    };
-                    var res = dlg.ShowDialog();
-                    var filePath = dlg.FileName;
-                    var folderPath = Path.GetDirectoryName(dlg.FileName);
-                    File.Copy(setupPath, filePath, true);
-                    WinExplorerHelper.ShowFolder(folderPath);
-                }
-                else
-                {
-                    Status.Value = "Starting setup...";
-                    Process.Start(new ProcessStartInfo(setupPath) { UseShellExecute = true });
-                }
+                    FileName = Path.GetFileName(setupPath),
+                    InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"),
+                    Filter = "Executable files (*.exe)|*.exe"
+                };
+                var res = dlg.ShowDialog();
+                var filePath = dlg.FileName;
+                var folderPath = Path.GetDirectoryName(dlg.FileName);
+                File.Copy(setupPath, filePath, true);
+                WinExplorerHelper.ShowFolder(folderPath);
 
                 Status.Value = null;
             }
@@ -464,6 +495,8 @@ namespace TickTrader.BotTerminal
 
             public string Version { get; }
 
+            public string VersionStr { get; }
+
             public string ReleaseDate { get; }
 
             public string MinVersion { get; }
@@ -483,6 +516,8 @@ namespace TickTrader.BotTerminal
                 ReleaseDate = entry.Info.ReleaseDate;
                 MinVersion = entry.Info.MinVersion;
                 Changelog = entry.Info.Changelog;
+
+                VersionStr = $"{Version} ({ReleaseDate})";
             }
 
             public AppUpdateViewModel(AppUpdateEntry entry, ServerUpdateInfo serverUpdate)
@@ -506,6 +541,8 @@ namespace TickTrader.BotTerminal
                     MinVersion = entry.Info.MinVersion;
                     Changelog = entry.Info.Changelog;
                 }
+
+                VersionStr = $"{Version} ({ReleaseDate})";
             }
         }
     }

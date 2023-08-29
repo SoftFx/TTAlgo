@@ -240,6 +240,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
                 _serverHandler.InitCurrentVersion(snapshot.CurrentVersion);
                 _serverHandler.InitUpdateSvcInfo(snapshot.UpdateSvc);
+
+                _serverHandler.InitCompleted();
             }
             catch (UnauthorizedException uex)
             {

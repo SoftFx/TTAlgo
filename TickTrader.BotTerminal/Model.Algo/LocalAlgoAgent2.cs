@@ -90,6 +90,8 @@ namespace TickTrader.BotTerminal
 
         public event Action UpdateServiceStateChanged = delegate { };
 
+        public event Action SnapshotLoaded = delegate { };
+
 
         public LocalAlgoAgent2(PersistModel storage, EventJournal journal)
         {

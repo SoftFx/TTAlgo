@@ -74,6 +74,8 @@ namespace TickTrader.BotTerminal
 
         public event Action UpdateServiceStateChanged = delegate { };
 
+        public event Action SnapshotLoaded = delegate { };
+
 
         public RemoteAlgoAgent(BotAgentStorageEntry creds, Func<string, Task<string>> get2FAHandler)
         {
@@ -341,6 +343,14 @@ namespace TickTrader.BotTerminal
         void AlgoServerApi.IAlgoServerEventHandler.InitUpdateSvcInfo(AlgoServerApi.UpdateServiceInfo updateSvcInfo)
         {
             _updateSvcInfo = updateSvcInfo?.ToServer();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.InitCompleted()
+        {
+            _syncContext.Invoke(() =>
+            {
+                SnapshotLoaded();
+            });
         }
 
         void AlgoServerApi.IAlgoServerEventHandler.OnPackageUpdate(AlgoServerApi.PackageUpdate update)

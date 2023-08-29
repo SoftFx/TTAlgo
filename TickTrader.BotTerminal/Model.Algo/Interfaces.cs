@@ -84,6 +84,7 @@ namespace TickTrader.BotTerminal
         event Action<ITradeBot> BotUpdated;
         event Action AccessLevelChanged;
         event Action UpdateServiceStateChanged;
+        event Action SnapshotLoaded;
 
 
         Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext);

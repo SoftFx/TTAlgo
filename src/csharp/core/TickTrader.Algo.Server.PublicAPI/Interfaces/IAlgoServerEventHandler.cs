@@ -28,6 +28,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         void InitUpdateSvcInfo(UpdateServiceInfo updateSvc);
 
+        void InitCompleted();
+
         #endregion Connection init
 
 

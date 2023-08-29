@@ -172,7 +172,7 @@ namespace TickTrader.Algo.Server
 
                 if (downloadSuccess)
                 {
-                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Running update...");
+                    UpdateStatus(AutoUpdateEnums.Types.ServiceStatus.Updating, "Installing update...");
                     var updateParams = new UpdateParams
                     {
                         AppTypeCode = (int)UpdateAppTypes.Server,

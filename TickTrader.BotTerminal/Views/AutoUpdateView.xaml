@@ -43,6 +43,115 @@
         </Grid>
     </DataTemplate>
 
+    <ControlTemplate x:Key="UpdateListPageTemplate">
+        <Grid>
+
+            <StackPanel Name="Spinner" Orientation="Vertical" Visibility="{l:InvBoolToVisBind UpdatesLoaded.Value}"
+                        VerticalAlignment="Center" HorizontalAlignment="Center" >
+                <fa:IconBlock Style="{StaticResource SpinnerStyle}"/>
+                <TextBlock Margin="5" Text="Loading updates list..." />
+            </StackPanel>
+
+            <Grid Visibility="{l:BoolToVisBind UpdatesLoaded.Value}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="3*" />
+                </Grid.ColumnDefinitions>
+
+                <ListView Grid.Row="0" Grid.Column="0"
+                    ItemsSource="{Binding AvailableUpdates}" ItemTemplate="{StaticResource AppUpdateItemTemplate}"
+                    SelectedItem="{Binding SelectedUpdate.Value}" />
+                <Grid Grid.Row="0" Grid.Column="1" Margin="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Row="0" Grid.Column="0" Visibility="{l:BoolToVisBind HasSelectedUpdate.Value}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Content="Update Version:" />
+                        <Label Grid.Row="0" Grid.Column="1" Content="{Binding SelectedUpdate.Value.VersionStr}" />
+                        <Label Grid.Row="1" Grid.Column="0" Content="Min Version:" />
+                        <Label Grid.Row="1" Grid.Column="1" Content="{Binding SelectedUpdate.Value.MinVersion}" />
+                        <Label Grid.Row="2" Grid.Column="0" Content="Changelog:" />
+                        <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5"
+                                BorderThickness="1" CornerRadius="2" BorderBrush="{DynamicResource Shell_SecondaryForeground}">
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                <TextBlock Margin="5" Text="{Binding SelectedUpdate.Value.Changelog, Mode=OneWay}" TextWrapping="Wrap" />
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+
+                    <Grid Grid.Row="1" Grid.Column="0" Margin="0 5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <l:FlatButton Grid.Row="0" Grid.Column="0" MaxWidth="150"
+                            Content="Install Update" cal:Message.Attach="InstallUpdate" />
+
+                        <l:FlatButton Grid.Row="0" Grid.Column="1" MaxWidth="150"
+                            Content="Download Setup" cal:Message.Attach="DownloadSetup" />
+                    </Grid>
+
+                    <Grid Grid.Row="2" Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0" Text="{Binding Status.Value}" Style="{StaticResource StatusLineStyle}" />
+                        <ProgressBar Grid.Row="1" IsIndeterminate="True" Visibility="{l:BoolToVisBind DownloadInProgress.Value}" />
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="UpdateProcessPageTemplate">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Margin="0 0 0 5" FontSize="16" Text="{Binding UpdateStatus.Value}" Style="{StaticResource UpdateStatusStyle}" />
+            <ProgressBar Grid.Row="1" Margin="0 0 0 5" IsIndeterminate="True" Height="8" Visibility="{l:BoolToVisBind UpdateInProgress.Value}" />
+            <Border Grid.Row="2" BorderThickness="1" CornerRadius="2"
+                    BorderBrush="{DynamicResource Shell_SecondaryForeground}">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <TextBlock Margin="5" Text="{Binding UpdateLog.Value, Mode=OneWay}" TextWrapping="Wrap" />
+                </ScrollViewer>
+            </Border>
+            <l:FlatButton Grid.Row="3" BorderThickness="1" Margin="0 5" MaxWidth="150"
+                  Content="Close" cal:Message.Attach="DiscardUpdateResult" />
+        </Grid>
+    </ControlTemplate>
+
     <ControlTemplate x:Key="AutoUpdateView.Template.Classic">
         <Grid Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
@@ -70,117 +179,18 @@
                         <TextBlock Margin="4 0 0 0" Text="Sources" FontSize="14" VerticalAlignment="Center" />
                     </StackPanel>
                 </l:FlatButton>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Label FontSize="15" Content="Current Version:" />
+                    <Label FontSize="15" Content="{Binding CurrentVersion.Value}" />
+                </StackPanel>
             </Grid>
 
             <Grid Grid.Row="1">
-                <Grid Name="UpdateListPage" IsEnabled="{l:UpdateBind UpdateListGuiEnabled.Value}" Visibility="{l:BoolToVisBind ShowUpdateListPage.Value}">
+                <ContentControl IsEnabled="{l:UpdateBind UpdateListGuiEnabled.Value}" Visibility="{l:BoolToVisBind ShowUpdateListPage.Value}"
+                                Template="{StaticResource UpdateListPageTemplate}"/>
 
-                    <fa:IconBlock Name="Spinner" Style="{StaticResource SpinnerStyle}" Visibility="{l:InvBoolToVisBind UpdatesLoaded.Value}"/>
-
-                    <Grid Visibility="{l:BoolToVisBind UpdatesLoaded.Value}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="3*" />
-                        </Grid.ColumnDefinitions>
-
-                        <ListView Grid.Row="0" Grid.Column="0"
-                              ItemsSource="{Binding AvailableUpdates}" ItemTemplate="{StaticResource AppUpdateItemTemplate}"
-                              SelectedItem="{Binding SelectedUpdate.Value}" />
-                        <Grid Grid.Row="0" Grid.Column="1" Margin="5">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <Grid Grid.Row="0" Grid.Column="0" Visibility="{l:BoolToVisBind HasSelectedUpdate.Value}">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <Label Grid.Row="0" Grid.Column="0" Content="Current Version:" />
-                                <Label Grid.Row="0" Grid.Column="1" Content="{Binding CurrentVersion.Value}" />
-                                <Label Grid.Row="1" Grid.Column="0" Content="Update Version:" />
-                                <Label Grid.Row="1" Grid.Column="1" Content="{Binding SelectedUpdate.Value.Version}" />
-                                <Label Grid.Row="2" Grid.Column="0" Content="Release Date:" />
-                                <Label Grid.Row="2" Grid.Column="1" Content="{Binding SelectedUpdate.Value.ReleaseDate}" />
-                                <Label Grid.Row="3" Grid.Column="0" Content="Min Version:" />
-                                <Label Grid.Row="3" Grid.Column="1" Content="{Binding SelectedUpdate.Value.MinVersion}" />
-                                <Label Grid.Row="4" Grid.Column="0" Content="Changelog:" />
-                                <Border Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="5"
-                                        BorderThickness="1" CornerRadius="2" BorderBrush="{DynamicResource Shell_SecondaryForeground}">
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                                        <TextBlock Margin="5" Text="{Binding SelectedUpdate.Value.Changelog, Mode=OneWay}" TextWrapping="Wrap" />
-                                    </ScrollViewer>
-                                </Border>
-                            </Grid>
-
-                            <Grid Grid.Row="1" Grid.Column="0" Margin="0 5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <l:FlatButton Grid.Row="0" Grid.Column="0" MaxWidth="150"
-                                    Content="Update" cal:Message.Attach="InstallUpdate"
-                                    IsEnabled="{l:UpdateBind HasSelectedUpdate.Value}"/>
-
-                                <l:FlatButton Grid.Row="0" Grid.Column="1" MaxWidth="150"
-                                    Content="Manual Install" cal:Message.Attach="InstallManual"
-                                    IsEnabled="{l:UpdateBind HasSelectedUpdate.Value}"/>
-                            </Grid>
-
-                            <Grid Grid.Row="2" Grid.Column="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Text="{Binding Status.Value}" Style="{StaticResource StatusLineStyle}" />
-                                <ProgressBar Grid.Row="1" IsIndeterminate="True" Visibility="{l:BoolToVisBind DownloadInProgress.Value}" />
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                </Grid>
-
-                <Grid Name="UpdateProcessPage" Margin="5" Visibility="{l:BoolToVisBind ShowUpdateProcessPage.Value}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" FontSize="16" Text="{Binding UpdateStatus.Value}" Style="{StaticResource UpdateStatusStyle}" />
-                    <ProgressBar Grid.Row="1" Margin="0 5" IsIndeterminate="True" Height="8" />
-                    <Border Grid.Row="2" BorderThickness="1" CornerRadius="2"
-                            BorderBrush="{DynamicResource Shell_SecondaryForeground}">
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                            <TextBlock Margin="5" Text="{Binding UpdateLog.Value, Mode=OneWay}" TextWrapping="Wrap" />
-                        </ScrollViewer>
-                    </Border>
-                    <l:FlatButton Grid.Row="3" BorderThickness="1" Margin="0 5" MaxWidth="150"
-                                  Content="Close" cal:Message.Attach="DiscardUpdateResult" />
-                </Grid>
+                <ContentControl Margin="5" Visibility="{l:BoolToVisBind ShowUpdateProcessPage.Value}"
+                                Template="{StaticResource UpdateProcessPageTemplate}"/>
             </Grid>
         </Grid>
     </ControlTemplate>
