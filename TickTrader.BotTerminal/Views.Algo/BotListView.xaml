@@ -2,7 +2,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cal="http://www.caliburnproject.org"
-    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <Style x:Key="ExpandedTreeViewItem" TargetType="{x:Type TreeViewItem}">
@@ -186,6 +185,11 @@
     <ControlTemplate x:Key="BotListView.Classic">
         <Border BorderThickness="0">
             <TreeView BorderThickness="0" ItemContainerStyle="{StaticResource ExpandedTreeViewItem}">
+                <TreeView.Resources>
+                    <!-- Style the active selection -->
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="LightBlue" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
+                </TreeView.Resources>
 
                 <TreeViewItem Header="Algo Terminal" ItemsSource="{Binding Agent.AccountServerList}"
                               DataContext="{Binding LocalAgent}"
@@ -216,6 +220,9 @@
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Style="{DynamicResource BotAgentStatusEllipseStyle}" />
                                 <TextBlock Text="{Binding DisplayName}" ToolTip="{Binding ToolTipInformation}"/>
+                                <l:FlatButton Margin="5 0" Style="{DynamicResource UpdateAppButtonStyle}"
+                                    Visibility="{l:BoolToVisBind HasNewVersion, Mode=OneWay}" ToolTip="{Binding NewVersionInfo, Mode=OneWay}"
+                                    cal:Message.Attach="OpenUpdate" />
                             </StackPanel>
 
                         </HierarchicalDataTemplate>

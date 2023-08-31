@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.AutoUpdate
@@ -32,6 +33,15 @@ namespace TickTrader.Algo.AutoUpdate
         private CancellationTokenSource _cancelTokenSrc;
         private List<AppUpdateEntry> _updatesCache = new();
         private DateTime _updatesCacheTimeUtc;
+        private AppVersionInfo _maxVersion = AppVersionInfo.Current;
+        private string _newVersion;
+        private Action _newVersionCallback;
+        private SynchronizationContext _newVersionCallbackContext;
+
+
+        public bool HasNewVersion => _newVersion != null;
+
+        public string NewVersion => _newVersion;
 
 
         public AutoUpdateService(string cacheFolder)
@@ -52,13 +62,16 @@ namespace TickTrader.Algo.AutoUpdate
             }
         }
 
-        public async Task<List<AppUpdateEntry>> GetUpdates(bool forced = false)
+        public void SetNewVersionCallback(Action callback, bool captureContext)
         {
-            var cacheValid = _updatesCacheTimeUtc + UpdatesCacheLifespan > DateTime.UtcNow;
-            if (forced || !cacheValid)
-            {
-                await LoadUpdates();
-            }
+            _newVersionCallback = callback;
+            if (captureContext)
+                _newVersionCallbackContext = SynchronizationContext.Current;
+        }
+
+        public async Task<List<AppUpdateEntry>> GetUpdates(bool forced)
+        {
+            await CheckForUpdates(forced);
             return _updatesCache;
         }
 
@@ -70,7 +83,7 @@ namespace TickTrader.Algo.AutoUpdate
         public async Task<string> DownloadUpdate(string srcId, string versionId, UpdateAssetTypes assetType)
         {
             IAppUpdateProvider provider = default;
-            lock(_syncObj)
+            lock (_syncObj)
             {
                 _ = _providers.TryGetValue(srcId, out provider);
             }
@@ -130,6 +143,26 @@ namespace TickTrader.Algo.AutoUpdate
         }
 
 
+        private async Task CheckForUpdates(bool forced = false)
+        {
+            var cacheValid = _updatesCacheTimeUtc + UpdatesCacheLifespan > DateTime.UtcNow;
+            if (!forced && cacheValid)
+                return;
+
+            await LoadUpdates();
+            CheckForNewVersion();
+        }
+
+        private async Task CheckForUpdatesLoop(CancellationToken cancelToken)
+        {
+            while (!cancelToken.IsCancellationRequested)
+            {
+                await Task.Delay(CheckUpdatesTimeout, cancelToken);
+
+                await CheckForUpdates();
+            }
+        }
+
         private async Task LoadUpdates()
         {
             try
@@ -153,27 +186,44 @@ namespace TickTrader.Algo.AutoUpdate
             }
         }
 
-        private async Task CheckForUpdatesLoop(CancellationToken cancelToken)
-        {
-            while (!cancelToken.IsCancellationRequested)
-            {
-                await Task.Delay(CheckUpdatesTimeout, cancelToken);
-
-                await CheckForUpdates();
-            }
-        }
-
-        private async Task CheckForUpdates()
+        private void CheckForNewVersion()
         {
             try
             {
-                await LoadUpdates();
+                var notifyNewVersion = false;
+                lock (_syncObj)
+                {
+                    // we are looking for updates higher than current version
+                    var maxVersion = AppVersionInfo.Current;
+                    foreach (var update in _updatesCache)
+                    {
+                        var updateVersion = update.Info.GetAppVersion();
+                        if (maxVersion < updateVersion)
+                            maxVersion = updateVersion;
+                    }
 
-                // TODO: Add notification for new version
+                    if (maxVersion != _maxVersion)
+                    {
+                        // if max version changed we should rise notification
+                        // updates might get deleted from providers
+                        // in such cases 'null' is a reset value
+                        _maxVersion = maxVersion;
+                        notifyNewVersion = true;
+                        _newVersion = maxVersion > AppVersionInfo.Current ? maxVersion.Version : null;
+                    }
+                }
+
+                if (notifyNewVersion && _newVersionCallback != null)
+                {
+                    if (_newVersionCallbackContext == null)
+                        _newVersionCallback();
+                    else
+                        _newVersionCallbackContext.Post(_ => _newVersionCallback(), null);
+                }
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to check for updates");
+                _logger.Error(ex, "Failed to check for new version");
             }
         }
     }

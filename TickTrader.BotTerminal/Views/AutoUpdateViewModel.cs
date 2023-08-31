@@ -505,8 +505,6 @@ namespace TickTrader.BotTerminal
 
             public bool IsStable { get; }
 
-            public string DisplayVersion { get; }
-
             public string VersionDateStr { get; }
 
 
@@ -521,7 +519,6 @@ namespace TickTrader.BotTerminal
                 MinVersion = entry.Info.MinVersion;
                 Changelog = entry.Info.Changelog;
                 IsStable = entry.IsStable;
-                DisplayVersion = InitDisplayVersion(Version, IsStable);
                 VersionDateStr = InitVersionDateStr(Version, ReleaseDate);
             }
 
@@ -548,16 +545,13 @@ namespace TickTrader.BotTerminal
                     Changelog = entry.Info.Changelog;
                     IsStable = entry.IsStable;
                 }
-                DisplayVersion = InitDisplayVersion(Version, IsStable);
                 VersionDateStr = InitVersionDateStr(Version, ReleaseDate);
             }
 
 
             private static string InitSource(string srcId) =>
                 // don't display main source on gui
-                srcId == AutoUpdateService.MainSourceName ? string.Empty : srcId;
-
-            private static string InitDisplayVersion(string version, bool isStable) => isStable ? version : $"{version} (beta)";
+                srcId == AutoUpdateService.MainSourceName ? default(string) : srcId;
 
             private static string InitVersionDateStr(string version, string releaseDate) => $"{version} ({releaseDate})";
         }

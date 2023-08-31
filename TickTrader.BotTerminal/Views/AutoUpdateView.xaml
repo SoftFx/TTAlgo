@@ -30,17 +30,6 @@
     </Style>
 
     <DataTemplate x:Key="AppUpdateItemTemplate">
-        <DataTemplate.Resources>
-            <Style x:Key="VersionTextStyle" TargetType="TextBlock">
-                <Setter Property="FontWeight" Value="Bold" />
-                <Setter Property="Foreground" Value="DarkGreen" />
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding IsStable}" Value="False">
-                        <Setter Property="Foreground" Value="DarkOrange" />
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
-        </DataTemplate.Resources>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -49,7 +38,11 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" FontSize="15" Text="{Binding DisplayVersion}" Style="{StaticResource VersionTextStyle}" />
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                <TextBlock FontSize="15" FontWeight="Bold" Text="{Binding Version}" />
+                <TextBlock FontSize="15" FontWeight="Bold" Text=" (beta)"
+                    Foreground="DarkOrange" Visibility="{l:InvBoolToVisBind IsStable, Mode=OneWay}" />
+            </StackPanel>
             <TextBlock Grid.Row="1" Text="{Binding ReleaseDate}" />
             <TextBlock Grid.Row="2" Text="{Binding Source}" Foreground="Blue" />
             <!--<TextBlock Grid.Row="3" Text="{Binding AppType}" />-->

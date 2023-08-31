@@ -39,6 +39,8 @@ message UpdateServiceInfo {
     google.protobuf.StringValue status_details = 2;
     ServerVersionInfo update_version = 3;
     google.protobuf.StringValue update_log = 4;
+    bool has_new_version = 5;
+    google.protobuf.StringValue new_version = 6;
 }
 
 message UpdateServiceStateUpdate {

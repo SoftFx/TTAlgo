@@ -15,5 +15,8 @@
         public string Executable { get; set; }
 
         public string Changelog { get; set; }
+
+
+        public AppVersionInfo GetAppVersion() => new(ReleaseVersion, MinVersion);
     }
 }

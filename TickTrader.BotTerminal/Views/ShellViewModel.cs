@@ -49,6 +49,8 @@ namespace TickTrader.BotTerminal
 
             _autoUpdateSvc = new AutoUpdateService(EnvService.Instance.UpdatesCacheFolder);
             InitAutoUpdateSources();
+            _autoUpdateSvc.SetNewVersionCallback(OnNewVersionAvailable, false);
+            _autoUpdateSvc.EnableAutoCheck();
 
             ConnectionLock = new UiLock();
             _wndManager = new WindowManager(this);
@@ -316,6 +318,11 @@ namespace TickTrader.BotTerminal
 
         public AlertViewModel AlertsManager { get; }
 
+        public bool HasNewVersion => _autoUpdateSvc.HasNewVersion;
+
+        public string NewVersionInfo => HasNewVersion ? $"New version available '{_autoUpdateSvc.NewVersion}'" : null;
+
+
         public async Task Shutdown()
         {
             isClosed = true;
@@ -480,6 +487,12 @@ namespace TickTrader.BotTerminal
                     logger.Error(ex, $"Failed to add app update source '{src.Name}'");
                 }
             }
+        }
+
+        private void OnNewVersionAvailable()
+        {
+            NotifyOfPropertyChange(nameof(HasNewVersion));
+            NotifyOfPropertyChange(nameof(NewVersionInfo));
         }
 
         #region IProfileLoader implementation

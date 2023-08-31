@@ -44,6 +44,7 @@ namespace TickTrader.Algo.Server
             {
                 _updateSvc = new AutoUpdateService(_updateWorkDir);
                 _updateSvc.AddSource(new UpdateDownloadSource { Name = AutoUpdateService.MainSourceName, Uri = AutoUpdateService.MainGithubRepo });
+                _updateSvc.SetNewVersionCallback(OnNewVersionAvailable, true);
                 _updateSvc.EnableAutoCheck();
 
                 if (TryLoadPendingUpdate())
@@ -209,9 +210,21 @@ namespace TickTrader.Algo.Server
                     _updateLogIO.LogUpdateStatus(statusDetails);
             }
             _updateLog = UpdateLogIO.TryReadLogOnce(_updateWorkDir);
-            var snapshot = new UpdateServiceInfo(_status, _statusDetails, null, _updateLog);
+            SendStatusUpdate();
+        }
+
+        private void SendStatusUpdate()
+        {
+            var snapshot = new UpdateServiceInfo(_status, _statusDetails)
+            {
+                UpdateLog = _updateLog,
+                HasNewVersion = _updateSvc.HasNewVersion,
+                NewVersion = _updateSvc.NewVersion,
+            };
             _server.SendUpdate(new UpdateServiceStateUpdate { Snapshot = snapshot });
         }
+
+        private void OnNewVersionAvailable() => SendStatusUpdate();
 
         private async Task<bool> DownloadReleaseById(string releaseId, string updateDir)
         {
