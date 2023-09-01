@@ -44,7 +44,7 @@
                     Foreground="DarkOrange" Visibility="{l:InvBoolToVisBind IsStable, Mode=OneWay}" />
             </StackPanel>
             <TextBlock Grid.Row="1" Text="{Binding ReleaseDate}" />
-            <TextBlock Grid.Row="2" Text="{Binding Source}" Foreground="Blue" />
+            <TextBlock Grid.Row="2" Text="{Binding Source}" Foreground="Blue" Visibility="{l:BoolToVisBind ShowSource, Mode=OneWay}" />
             <!--<TextBlock Grid.Row="3" Text="{Binding AppType}" />-->
         </Grid>
     </DataTemplate>
@@ -91,11 +91,21 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
+                        <Grid.Resources>
+                            <Style x:Key="MinVersionLabelStyle" TargetType="Label">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedUpdate.Value.SupportedByMinVersion}" Value="False">
+                                        <Setter Property="Foreground" Value="Red" />
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Resources>
 
                         <Label Grid.Row="0" Grid.Column="0" Content="Update Version:" />
                         <Label Grid.Row="0" Grid.Column="1" Content="{Binding SelectedUpdate.Value.VersionDateStr}" />
-                        <Label Grid.Row="1" Grid.Column="0" Content="Min Version:" />
-                        <Label Grid.Row="1" Grid.Column="1" Content="{Binding SelectedUpdate.Value.MinVersion}" />
+                        <Label Grid.Row="1" Grid.Column="0" Content="Min Version:" Style="{StaticResource MinVersionLabelStyle}" />
+                        <Label Grid.Row="1" Grid.Column="1" Content="{Binding SelectedUpdate.Value.MinVersion}" Style="{StaticResource MinVersionLabelStyle}" />
                         <Label Grid.Row="2" Grid.Column="0" Content="Changelog:" />
                         <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5"
                                 BorderThickness="1" CornerRadius="2" BorderBrush="{DynamicResource Shell_SecondaryForeground}">

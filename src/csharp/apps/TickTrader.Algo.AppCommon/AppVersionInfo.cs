@@ -85,6 +85,13 @@ namespace TickTrader.Algo.AppCommon
 
         public static int CompareVersions(string v1, string v2)
         {
+            if (v1 == null && v2 == null)
+                return 0;
+            if (v1 == null)
+                return -1;
+            if (v2 == null)
+                return 1;
+
             var v1Parts = v1.Split(".");
             var v2Parts = v2.Split(".");
 

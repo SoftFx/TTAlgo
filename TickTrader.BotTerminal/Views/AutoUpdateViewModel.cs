@@ -2,6 +2,7 @@
 using Machinarium.Var;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -65,28 +66,13 @@ namespace TickTrader.BotTerminal
 
         public BoolProperty UpdateInProgress { get; }
 
-        public bool CanRefreshUpdates => !_isRemoteUpdate || _remoteAgent.Model.AccessManager.CanGetServerUpdateInfo();
+        public bool CanControlUpdate => !_isRemoteUpdate
+            || (_remoteAgent.Model.VersionSpec.SupportsAutoUpdate && _remoteAgent.Model.AccessManager.CanControlServerUpdate());
 
-        public bool CanControlUpdate => !_isRemoteUpdate || _remoteAgent.Model.AccessManager.CanControlServerUpdate();
+        public bool CanInstallUpdate => CanControlUpdate && (SelectedUpdate.Value?.HasUpdate ?? false)
+            && (SelectedUpdate.Value?.SupportedByMinVersion ?? false);
 
-        public bool CanInstallUpdate
-        {
-            get
-            {
-                var availableAssets = SelectedUpdate.Value?.Entry.AvailableAssets;
-                var updateAssetType = _isRemoteUpdate ? UpdateAssetTypes.ServerUpdate : UpdateAssetTypes.TerminalUpdate;
-                return CanControlUpdate && (availableAssets?.Contains(updateAssetType) ?? false);
-            }
-        }
-
-        public bool CanDownloadSetup
-        {
-            get
-            {
-                var availableAssets = SelectedUpdate.Value?.Entry.AvailableAssets;
-                return CanControlUpdate && (availableAssets?.Contains(UpdateAssetTypes.Setup) ?? false);
-            }
-        }
+        public bool CanDownloadSetup => SelectedUpdate.Value?.HasSetup ?? false;
 
         public bool CanDiscardUpdateResult => CanControlUpdate && (_remoteAgent?.Model.UpdateSvcInfo.Status != AutoUpdateEnums.Types.ServiceStatus.Updating);
 
@@ -224,7 +210,6 @@ namespace TickTrader.BotTerminal
 
         private void OnAgentAccessLevelChanged()
         {
-            NotifyOfPropertyChange(nameof(CanRefreshUpdates));
             NotifyOfPropertyChange(nameof(CanInstallUpdate));
             NotifyOfPropertyChange(nameof(CanDownloadSetup));
             NotifyOfPropertyChange(nameof(CanDiscardUpdateResult));
@@ -302,10 +287,11 @@ namespace TickTrader.BotTerminal
         {
             var updates = await _updateSvc.GetUpdates(forced);
 
+            var currentVersion = AppVersionInfo.Current.Version;
             AvailableUpdates.Clear();
             foreach (var update in updates)
                 if (update.AvailableAssets.Any(a => _terminalAssets.Contains(a)))
-                    AvailableUpdates.Add(new AppUpdateViewModel(update));
+                    AvailableUpdates.Add(new AppUpdateViewModel(update, currentVersion));
         }
 
         private async Task LoadRemoteUpdatesInternal(bool forced)
@@ -316,16 +302,29 @@ namespace TickTrader.BotTerminal
                 serverUpdates = await agent.Model.GetServerUpdateList(forced);
 
             var updates = await _updateSvc.GetUpdates(forced);
+            var currentVersion = _remoteAgent.Model.CurrentVersion.Version;
             AvailableUpdates.Clear();
+
+            if (serverUpdates != null)
+            {
+                // display updates available on server side
+                foreach (var serverUpd in serverUpdates.Updates)
+                {
+                    // Match releases from main repo to use server-side update download and allow downloading setup
+                    var update = updates.FirstOrDefault(u => u.SrcId == AutoUpdateService.MainSourceName && u.VersionId == serverUpd.ReleaseId);
+                    AvailableUpdates.Add(new AppUpdateViewModel(update, serverUpd, currentVersion));
+                }
+            }
+
             foreach (var update in updates)
                 if (update.AvailableAssets.Any(a => _serverAssets.Contains(a)))
                 {
-                    ServerUpdateInfo serverUpd = null;
-                    // Match releases from main repo to use server-side download
-                    if (update.SrcId == AutoUpdateService.MainSourceName && serverUpdates != null)
-                        serverUpd = serverUpdates.Updates.FirstOrDefault(u => u.ReleaseId == update.VersionId);
+                    var hasServerUpd = serverUpdates != null && update.SrcId == AutoUpdateService.MainSourceName
+                        && serverUpdates.Updates.Any(u => u.ReleaseId == update.VersionId);
 
-                    AvailableUpdates.Add(new AppUpdateViewModel(update, serverUpd));
+                    // Skip duplicate updates
+                    if (!hasServerUpd)
+                        AvailableUpdates.Add(new AppUpdateViewModel(update, null, currentVersion));
                 }
         }
 
@@ -364,7 +363,7 @@ namespace TickTrader.BotTerminal
         private async Task InstallLocalUpdateInternal(AppUpdateViewModel update)
         {
             Status.Value = "Downloading update...";
-            var updatePath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.TerminalUpdate);
+            var updatePath = await _updateSvc.DownloadUpdate(update.Source, update.VersionId, UpdateAssetTypes.TerminalUpdate);
 
             Status.Value = "Extracting update...";
             var updateDir = Path.Combine(EnvService.Instance.UpdatesFolder, update.Version);
@@ -397,14 +396,14 @@ namespace TickTrader.BotTerminal
         {
             var agent = _remoteAgent;
             var res = default(StartServerUpdateResponse);
-            if (update.ServerUpdate != null)
+            if (update.IsRemoteUpdate)
             {
-                res = await agent.Model.StartServerUpdate(update.ServerUpdate.ReleaseId);
+                res = await agent.Model.StartServerUpdate(update.VersionId);
             }
             else
             {
                 Status.Value = "Downloading update...";
-                var updatePath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.ServerUpdate);
+                var updatePath = await _updateSvc.DownloadUpdate(update.Source, update.VersionId, UpdateAssetTypes.ServerUpdate);
 
                 Status.Value = "Uploading update to target server...";
                 res = await agent.Model.StartServerUpdateFromFile(update.Version, updatePath);
@@ -456,7 +455,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 Status.Value = "Downloading setup...";
-                var setupPath = await _updateSvc.DownloadUpdate(update.Entry, UpdateAssetTypes.Setup);
+                var setupPath = await _updateSvc.DownloadUpdate(update.Source, update.VersionId, UpdateAssetTypes.Setup);
 
                 Status.Value = "Saving setup...";
                 var dlg = new SaveFileDialog
@@ -466,17 +465,20 @@ namespace TickTrader.BotTerminal
                     Filter = "Executable files (*.exe)|*.exe"
                 };
                 var res = dlg.ShowDialog();
-                var filePath = dlg.FileName;
-                var folderPath = Path.GetDirectoryName(dlg.FileName);
-                File.Copy(setupPath, filePath, true);
-                WinExplorerHelper.ShowFolder(folderPath);
+                if (res == true)
+                {
+                    var filePath = dlg.FileName;
+                    var folderPath = Path.GetDirectoryName(dlg.FileName);
+                    File.Copy(setupPath, filePath, true);
+                    WinExplorerHelper.ShowFolder(folderPath);
+                }
 
                 Status.Value = null;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to download/run setup");
-                Status.Value = "Download/run failed unexpectedly. See logs...";
+                _logger.Error(ex, "Failed to download setup");
+                Status.Value = "Download failed unexpectedly. See logs...";
                 StatusHasError.Value = true;
             }
 
@@ -487,11 +489,9 @@ namespace TickTrader.BotTerminal
 
         internal class AppUpdateViewModel
         {
-            public AppUpdateEntry Entry { get; }
-
-            public ServerUpdateInfo ServerUpdate { get; }
-
             public string Source { get; }
+
+            public string VersionId { get; }
 
             public string Version { get; }
 
@@ -501,36 +501,58 @@ namespace TickTrader.BotTerminal
 
             public string Changelog { get; }
 
-            public string AppType { get; }
-
             public bool IsStable { get; }
 
             public string VersionDateStr { get; }
 
+            public string AppType { get; private set; }
 
-            public AppUpdateViewModel(AppUpdateEntry entry)
+            public bool ShowSource { get; }
+
+            public bool HasUpdate { get; private set; }
+
+            public bool HasSetup { get; private set; }
+
+            public bool IsRemoteUpdate { get; }
+
+            public bool SupportedByMinVersion { get; }
+
+
+            public AppUpdateViewModel(AppUpdateEntry entry, string currentVersion)
             {
-                Entry = entry;
+                Source = entry.SrcId;
+                ShowSource = InitShowSource(entry.SrcId);
+                InitAssets(entry.AvailableAssets, UpdateAssetTypes.TerminalUpdate);
 
-                Source = InitSource(entry.SrcId);
-                AppType = string.Join(", ", Entry.AvailableAssets);
+                VersionId = entry.VersionId;
                 Version = entry.Info.ReleaseVersion;
                 ReleaseDate = entry.Info.ReleaseDate;
                 MinVersion = entry.Info.MinVersion;
                 Changelog = entry.Info.Changelog;
                 IsStable = entry.IsStable;
                 VersionDateStr = InitVersionDateStr(Version, ReleaseDate);
+                SupportedByMinVersion = AppVersionInfo.CompareVersions(currentVersion, MinVersion) >= 0;
             }
 
-            public AppUpdateViewModel(AppUpdateEntry entry, ServerUpdateInfo serverUpdate)
+            public AppUpdateViewModel(AppUpdateEntry entry, ServerUpdateInfo serverUpdate, string currentVersion)
             {
-                Entry = entry;
-                ServerUpdate = serverUpdate;
+                if (entry == null)
+                {
+                    Source = "From AlgoServer";
+                    ShowSource = true;
+                    InitAssets(new[] { UpdateAssetTypes.ServerUpdate }, UpdateAssetTypes.ServerUpdate);
+                }
+                else
+                {
+                    Source = entry.SrcId;
+                    ShowSource = InitShowSource(entry.SrcId);
+                    InitAssets(entry.AvailableAssets, UpdateAssetTypes.ServerUpdate);
+                }
 
-                Source = InitSource(entry.SrcId);
-                AppType = string.Join(", ", Entry.AvailableAssets);
                 if (serverUpdate != null)
                 {
+                    IsRemoteUpdate = true;
+                    VersionId = serverUpdate.ReleaseId;
                     Version = serverUpdate.Version;
                     ReleaseDate = serverUpdate.ReleaseDate;
                     MinVersion = serverUpdate.MinVersion;
@@ -539,6 +561,7 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
+                    VersionId = entry.VersionId;
                     Version = entry.Info.ReleaseVersion;
                     ReleaseDate = entry.Info.ReleaseDate;
                     MinVersion = entry.Info.MinVersion;
@@ -546,14 +569,23 @@ namespace TickTrader.BotTerminal
                     IsStable = entry.IsStable;
                 }
                 VersionDateStr = InitVersionDateStr(Version, ReleaseDate);
+                SupportedByMinVersion = AppVersionInfo.CompareVersions(currentVersion, MinVersion) >= 0;
             }
 
 
-            private static string InitSource(string srcId) =>
+            private static bool InitShowSource(string srcId)
                 // don't display main source on gui
-                srcId == AutoUpdateService.MainSourceName ? default(string) : srcId;
+                => srcId != AutoUpdateService.MainSourceName;
 
             private static string InitVersionDateStr(string version, string releaseDate) => $"{version} ({releaseDate})";
+
+
+            private void InitAssets(IEnumerable<UpdateAssetTypes> availableAssets, UpdateAssetTypes updateType)
+            {
+                HasUpdate = availableAssets.Contains(updateType);
+                HasSetup = availableAssets.Contains(UpdateAssetTypes.Setup);
+                AppType = string.Join(", ", availableAssets);
+            }
         }
     }
 }
