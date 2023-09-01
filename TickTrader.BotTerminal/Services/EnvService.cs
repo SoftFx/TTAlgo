@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
         private readonly Lazy<string> _botLogFolder, _logFolder, _journalFolder,
             _algoRepoFolder, _algoCommonRepoFolder, _algoDataFolder, _appSettingsFolder,
             _feedCacheFolder, _customFeedCacheFolder, _profilesFolder, _profilesCacheFolder,
-            _backtesterResFolder, _updatesFolder, _updatesCacheFolder;
+            _backtesterResFolder, _updatesFolder;
         private readonly Lazy<IObjectStorage> _userStorage, _protectedUserStorage, _profileStorage;
 
 
@@ -57,7 +57,6 @@ namespace TickTrader.BotTerminal
         public string ProfilesCacheFolder => _profilesCacheFolder.Value;
         public string BacktestResultsFolder => _backtesterResFolder.Value;
         public string UpdatesFolder => _updatesFolder.Value;
-        public string UpdatesCacheFolder => _updatesCacheFolder.Value;
 
         public IObjectStorage UserDataStorage => _userStorage.Value;
         public IObjectStorage ProtectedUserDataStorage => _protectedUserStorage.Value;
@@ -68,7 +67,6 @@ namespace TickTrader.BotTerminal
         {
             var myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var appDocumentsFolder = Path.Combine(myDocumentsFolder, ApplicationName);
-            var localAppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProductName);
 
             AppFolder = appFolder;
             AppLockFilePath = Path.Combine(AppFolder, "applock");
@@ -88,7 +86,6 @@ namespace TickTrader.BotTerminal
             _profilesCacheFolder = new Lazy<string>(() => InitSubFolder(UserProfilesFolder, "Cache"), true);
             _backtesterResFolder = new Lazy<string>(() => InitSubFolder(AppFolder, "BacktestResults"), true);
             _updatesFolder = new Lazy<string>(() => InitSubFolder(AppFolder, "Updates"), true);
-            _updatesCacheFolder = new Lazy<string>(() => InitSubFolder(localAppDataFolder, "UpdatesCache"), true);
 
             _userStorage = new Lazy<IObjectStorage>(() => new JsonObjectStorage(new FolderBinStorage(AppDataFolder)), true);
             _protectedUserStorage = new Lazy<IObjectStorage>(() => new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(AppDataFolder))), true);

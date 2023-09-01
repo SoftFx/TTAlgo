@@ -28,7 +28,7 @@ namespace TickTrader.Algo.AutoUpdate
 
         private readonly object _syncObj = new();
         private readonly Dictionary<string, IAppUpdateProvider> _providers = new();
-        private readonly string _cacheFolder;
+        private readonly string _workDir, _downloadFolder;
 
         private CancellationTokenSource _cancelTokenSrc;
         private List<AppUpdateEntry> _updatesCache = new();
@@ -44,9 +44,10 @@ namespace TickTrader.Algo.AutoUpdate
         public string NewVersion => _newVersion;
 
 
-        public AutoUpdateService(string cacheFolder)
+        public AutoUpdateService(string workDir)
         {
-            _cacheFolder = cacheFolder;
+            _workDir = workDir;
+            _downloadFolder = Path.Combine(workDir, "Downloads");
         }
 
 
@@ -75,11 +76,6 @@ namespace TickTrader.Algo.AutoUpdate
             return _updatesCache;
         }
 
-        public async Task<string> DownloadUpdate(AppUpdateEntry entry, UpdateAssetTypes assetType)
-        {
-            return await DownloadUpdate(entry.SrcId, entry.VersionId, assetType);
-        }
-
         public async Task<string> DownloadUpdate(string srcId, string versionId, UpdateAssetTypes assetType)
         {
             IAppUpdateProvider provider = default;
@@ -102,20 +98,14 @@ namespace TickTrader.Algo.AutoUpdate
                 UpdateAssetTypes.Setup => $"Algo Studio {entry.Info.ReleaseVersion}.Setup.exe",
                 _ => throw new NotSupportedException()
             };
-            var cachePath = Path.Combine(_cacheFolder, filename);
-            var loadFile = true;
-            if (File.Exists(cachePath))
-            {
-                // TODO: validate checksum
-                loadFile = false;
-            }
-            if (loadFile)
-            {
-                // TODO: cleanup cache
-                await provider.Download(versionId, assetType, cachePath);
-            }
+            var downloadPath = Path.Combine(_downloadFolder, filename);
+            PathHelper.EnsureDirectoryCreated(_downloadFolder);
+            if (File.Exists(downloadPath))
+                File.Delete(downloadPath);
 
-            return cachePath;
+            await provider.Download(versionId, assetType, downloadPath);
+
+            return downloadPath;
         }
 
         public void EnableAutoCheck()

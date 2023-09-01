@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
             _storage = new PersistModel();
             ThemeSelector.Instance.InitializeSettings(_storage);
 
-            _autoUpdateSvc = new AutoUpdateService(EnvService.Instance.UpdatesCacheFolder);
+            _autoUpdateSvc = new AutoUpdateService(EnvService.Instance.UpdatesFolder);
             InitAutoUpdateSources();
             _autoUpdateSvc.SetNewVersionCallback(OnNewVersionAvailable, false);
             _autoUpdateSvc.EnableAutoCheck();
