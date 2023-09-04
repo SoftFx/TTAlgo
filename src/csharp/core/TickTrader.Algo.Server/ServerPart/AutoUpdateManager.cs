@@ -13,15 +13,13 @@ namespace TickTrader.Algo.Server
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AutoUpdateManager>();
         private static readonly ServerVersionInfo _currentVersion = new(AppVersionInfo.Current.Version, AppVersionInfo.Current.BuildDate);
-        private static readonly TimeSpan _pendingUpdateTimeout = TimeSpan.FromMinutes(10);
 
         private readonly AlgoServerPrivate _server;
         private readonly string _updateWorkDir;
 
         private AutoUpdateEnums.Types.ServiceStatus _status;
-        private string _statusDetails, _updateLog;
+        private string _statusDetails;
         private AutoUpdateService _updateSvc;
-        private UpdateLogIO _updateLogIO;
         private bool _started, _hasPendingUpdate;
 
 
@@ -169,7 +167,7 @@ namespace TickTrader.Algo.Server
 
         private void SendStatusUpdate()
         {
-            var snapshot = new UpdateServiceInfo(_status, _updateSvc.UpdateStatusDetails)
+            var snapshot = new UpdateServiceInfo(_status, _statusDetails)
             {
                 UpdateLog = _updateSvc.UpdateLog,
                 HasNewVersion = _updateSvc.HasNewVersion,
@@ -197,12 +195,13 @@ namespace TickTrader.Algo.Server
                     UpdateStatusCodes.Completed => AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess,
                     _ => AutoUpdateEnums.Types.ServiceStatus.UpdateFailed,
                 };
-
+                _statusDetails = _updateSvc.UpdateStatusDetails;
             }
             else
             {
                 _hasPendingUpdate = false;
                 _status = AutoUpdateEnums.Types.ServiceStatus.Idle;
+                _statusDetails = null;
             }
         }
     }
