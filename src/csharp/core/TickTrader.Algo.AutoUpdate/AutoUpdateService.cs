@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.AppCommon;
+using TickTrader.Algo.AppCommon.Update;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.AutoUpdate
@@ -22,198 +21,112 @@ namespace TickTrader.Algo.AutoUpdate
         public const string MainGithubRepo = "https://github.com/SoftFx/TTAlgo";
         public const string MainSourceName = "main";
 
-        private static readonly TimeSpan CheckUpdatesTimeout = TimeSpan.FromMinutes(15);
-        private static readonly TimeSpan UpdatesCacheLifespan = TimeSpan.FromMinutes(1);
+        internal static readonly TimeSpan CheckUpdatesTimeout = TimeSpan.FromMinutes(15);
+        internal static readonly TimeSpan UpdatesCacheLifespan = TimeSpan.FromMinutes(1);
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AutoUpdateService>();
 
-        private readonly object _syncObj = new();
-        private readonly Dictionary<string, IAppUpdateProvider> _providers = new();
-        private readonly string _workDir, _downloadFolder;
+        private readonly UpdateRepository _repo;
+        private readonly UpdateChecker _checker;
+        private readonly UpdateInstaller _installer;
 
-        private CancellationTokenSource _cancelTokenSrc;
-        private List<AppUpdateEntry> _updatesCache = new();
-        private DateTime _updatesCacheTimeUtc;
-        private AppVersionInfo _maxVersion = AppVersionInfo.Current;
-        private string _newVersion;
-        private Action _newVersionCallback;
-        private SynchronizationContext _newVersionCallbackContext;
+        private Action _newVersionCallback, _stateChangedCallback;
+        private SynchronizationContext _newVersionCallbackContext, _stateChangedCallbackContext;
 
 
-        public bool HasNewVersion => _newVersion != null;
+        public bool HasNewVersion => _checker.HasNewVersion;
 
-        public string NewVersion => _newVersion;
+        public string NewVersion => _checker.NewVersion;
+
+        public bool HasPendingUpdate => _installer.HasPendingUpdate;
+
+        public UpdateStatusCodes? UpdateStatus => _installer.Status;
+
+        public string UpdateStatusDetails => _installer.StatusDetails;
+
+        public string UpdateLog => _installer.UpdateLog;
 
 
-        public AutoUpdateService(string workDir)
+        public event Action NewVersionAvailable;
+        public event Action UpdateStateChanged;
+
+
+        public AutoUpdateService(string workDir, UpdateAppTypes appType)
         {
-            _workDir = workDir;
-            _downloadFolder = Path.Combine(workDir, "Downloads");
+            _repo = new UpdateRepository(Path.Combine(workDir, "Downloads"));
+            _checker = new UpdateChecker(_repo) { NewVersionCallback = OnNewVersionAvailable };
+            _installer = new UpdateInstaller(appType, _repo, workDir) { StateChangedCallback = OnUpdateStateChanged };
         }
 
 
-        public void AddSource(UpdateDownloadSource src)
-        {
-            lock (_syncObj)
-            {
-                if (_providers.ContainsKey(src.Name))
-                    throw new ArgumentException("Duplicate source name");
+        public void AddSource(UpdateDownloadSource src) => _repo.AddSource(src);
 
-                _providers.Add(src.Name, AppUpdateProvider.Create(src));
-                _updatesCacheTimeUtc = DateTime.MinValue; // reset cache validity
-            }
+        public async Task<List<AppUpdateEntry>> GetUpdates(bool forced)
+        {
+            var cacheUpdated = await _repo.LoadUpdates(forced);
+            if (cacheUpdated)
+                _checker.CheckForNewVersion();
+            return _repo.UpdatesCache;
         }
+
+        public async Task<string> DownloadUpdate(string srcId, string versionId, UpdateAssetTypes assetType)
+            => await _repo.DownloadUpdate(srcId, versionId, assetType);
+
+        public void EnableAutoCheck() => _checker.EnableAutoCheck();
+
+        public void DisableAutoCheck() => _checker.DisableAutoCheck();
 
         public void SetNewVersionCallback(Action callback, bool captureContext)
         {
             _newVersionCallback = callback;
-            if (captureContext)
-                _newVersionCallbackContext = SynchronizationContext.Current;
+            _newVersionCallbackContext = (callback != null && captureContext) ? SynchronizationContext.Current : null;
         }
 
-        public async Task<List<AppUpdateEntry>> GetUpdates(bool forced)
+        public async Task InstallUpdate(string srcId, string versionId) => await _installer.InstallUpdate(srcId, versionId);
+
+        public async Task InstallUpdateFile(string updateFilePath) => await _installer.InstallUpdateFile(updateFilePath);
+
+        public void DiscardUpdateResult() => _installer.DiscardUpdateResult();
+
+        public void SetUpdateStateChangedCallback(Action callback, bool captureContext)
         {
-            await CheckForUpdates(forced);
-            return _updatesCache;
-        }
-
-        public async Task<string> DownloadUpdate(string srcId, string versionId, UpdateAssetTypes assetType)
-        {
-            IAppUpdateProvider provider = default;
-            lock (_syncObj)
-            {
-                _ = _providers.TryGetValue(srcId, out provider);
-            }
-            if (provider == null)
-                throw new ArgumentException("Invalid source id");
-            var entry = provider.GetUpdate(versionId);
-            if (entry == null)
-                throw new ArgumentException("Invalid version id");
-            if (!entry.AvailableAssets.Contains(assetType))
-                throw new ArgumentException("Invalid asset type");
-
-            var filename = assetType switch
-            {
-                UpdateAssetTypes.TerminalUpdate => $"AlgoTerminal {entry.Info.ReleaseVersion}.Update.zip",
-                UpdateAssetTypes.ServerUpdate => $"AlgoServer {entry.Info.ReleaseVersion}.Update.zip",
-                UpdateAssetTypes.Setup => $"Algo Studio {entry.Info.ReleaseVersion}.Setup.exe",
-                _ => throw new NotSupportedException()
-            };
-            var downloadPath = Path.Combine(_downloadFolder, filename);
-            PathHelper.EnsureDirectoryCreated(_downloadFolder);
-            if (File.Exists(downloadPath))
-                File.Delete(downloadPath);
-
-            await provider.Download(versionId, assetType, downloadPath);
-
-            return downloadPath;
-        }
-
-        public void EnableAutoCheck()
-        {
-            lock (_syncObj)
-            {
-                if (_cancelTokenSrc != null)
-                    return;
-
-                _cancelTokenSrc = new CancellationTokenSource();
-                _ = Task.Run(() => CheckForUpdatesLoop(_cancelTokenSrc.Token));
-            }
-        }
-
-        public void DisableAutoCheck()
-        {
-            lock (_syncObj)
-            {
-                if (_cancelTokenSrc == null)
-                    return;
-
-                _cancelTokenSrc.Cancel();
-                _cancelTokenSrc = null;
-            }
+            _stateChangedCallback = callback;
+            _stateChangedCallbackContext = (callback != null && captureContext) ? SynchronizationContext.Current : null;
         }
 
 
-        private async Task CheckForUpdates(bool forced = false)
-        {
-            var cacheValid = _updatesCacheTimeUtc + UpdatesCacheLifespan > DateTime.UtcNow;
-            if (!forced && cacheValid)
-                return;
-
-            await LoadUpdates();
-            CheckForNewVersion();
-        }
-
-        private async Task CheckForUpdatesLoop(CancellationToken cancelToken)
-        {
-            while (!cancelToken.IsCancellationRequested)
-            {
-                await Task.Delay(CheckUpdatesTimeout, cancelToken);
-
-                await CheckForUpdates();
-            }
-        }
-
-        private async Task LoadUpdates()
+        private void OnNewVersionAvailable()
         {
             try
             {
-                var tasks = new List<Task>(_providers.Count * 2);
-                lock (_syncObj)
-                {
-                    foreach (var provider in _providers.Values)
-                        tasks.Add(provider.LoadUpdates());
-                }
-                await Task.WhenAll(tasks);
-                lock (_syncObj)
-                {
-                    _updatesCache = _providers.Values.SelectMany(p => p.Updates).ToList();
-                    _updatesCacheTimeUtc = DateTime.UtcNow;
-                }
+                if (_newVersionCallback == null)
+                    return;
+
+                if (_newVersionCallbackContext == null)
+                    _newVersionCallback();
+                else
+                    _newVersionCallbackContext.Post(_ => _newVersionCallback(), null);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to load updates");
+                _logger.Error(ex, "Failed to execute new version callback");
             }
         }
 
-        private void CheckForNewVersion()
+        private void OnUpdateStateChanged()
         {
             try
             {
-                var notifyNewVersion = false;
-                lock (_syncObj)
-                {
-                    // we are looking for updates higher than current version
-                    var maxVersion = AppVersionInfo.Current;
-                    foreach (var update in _updatesCache)
-                    {
-                        var updateVersion = update.Info.GetAppVersion();
-                        if (maxVersion < updateVersion)
-                            maxVersion = updateVersion;
-                    }
+                if (_stateChangedCallback == null)
+                    return;
 
-                    if (maxVersion != _maxVersion)
-                    {
-                        // if max version changed we should rise notification
-                        // updates might get deleted from providers
-                        // in such cases 'null' is a reset value
-                        _maxVersion = maxVersion;
-                        notifyNewVersion = true;
-                        _newVersion = maxVersion > AppVersionInfo.Current ? maxVersion.Version : null;
-                    }
-                }
-
-                if (notifyNewVersion && _newVersionCallback != null)
-                {
-                    if (_newVersionCallbackContext == null)
-                        _newVersionCallback();
-                    else
-                        _newVersionCallbackContext.Post(_ => _newVersionCallback(), null);
-                }
+                if (_stateChangedCallbackContext == null)
+                    _stateChangedCallback();
+                else
+                    _stateChangedCallbackContext.Post(_ => _stateChangedCallback(), null);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to check for new version");
+                _logger.Error(ex, "Failed to execute state changed callback");
             }
         }
     }

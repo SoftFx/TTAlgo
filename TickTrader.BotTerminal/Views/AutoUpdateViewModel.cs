@@ -377,7 +377,7 @@ namespace TickTrader.BotTerminal
                 UpdatePath = updateDir,
                 FromVersion = AppVersionInfo.Current.Version,
             };
-            var (startSuccess, startError) = await UpdateHelper.StartUpdate(EnvService.Instance.UpdatesFolder, updateParams, true);
+            var (startSuccess, startError) = await UpdateHelper.StartUpdate(EnvService.Instance.UpdatesFolder, updateParams);
             if (!startSuccess)
             {
                 var state = UpdateHelper.LoadUpdateState(EnvService.Instance.UpdatesFolder);

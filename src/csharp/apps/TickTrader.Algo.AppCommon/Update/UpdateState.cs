@@ -41,5 +41,11 @@ namespace TickTrader.Algo.AppCommon.Update
         // Adding property setter will cause serialization to json
         // Don't want JsonIgnore attribute as it adds a dependency
         public void SetStatus(UpdateStatusCodes status) => StatusCode = (int)status;
+
+        public void SetError(string errMsg)
+        {
+            SetStatus(UpdateStatusCodes.UpdateError);
+            UpdateErrors.Add(errMsg);
+        }
     }
 }

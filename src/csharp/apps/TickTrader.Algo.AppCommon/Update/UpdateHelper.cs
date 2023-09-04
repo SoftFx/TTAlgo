@@ -47,17 +47,11 @@ namespace TickTrader.Algo.AppCommon.Update
             }
         }
 
-        public static async Task<(bool Success, string Error)> StartUpdate(string updateWorkDir, UpdateParams updateParams, bool useShellExecute)
+        public static async Task<(bool Success, string Error)> StartUpdate(string updateWorkDir, UpdateParams updateParams)
         {
-            CreateUpdateHistoryRecord(updateWorkDir);
-
-            var updateState = new UpdateState { Params = updateParams };
-            SaveUpdateState(updateWorkDir, updateState);
-
             var updInfo = LoadUpdateInfo(updateParams.UpdatePath);
-            updateParams.ToVersion = updInfo.ReleaseVersion;
             var updateEntryPoint = Path.Combine(updateParams.UpdatePath, updInfo.Executable);
-            var startInfo = new ProcessStartInfo(updateEntryPoint) { UseShellExecute = useShellExecute, WorkingDirectory = updateWorkDir };
+            var startInfo = new ProcessStartInfo(updateEntryPoint) { UseShellExecute = true, WorkingDirectory = updateWorkDir };
 
             try
             {

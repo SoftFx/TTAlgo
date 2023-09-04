@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.AppCommon.Update;
 using TickTrader.Algo.AutoUpdate;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
@@ -47,7 +48,7 @@ namespace TickTrader.BotTerminal
             _storage = new PersistModel();
             ThemeSelector.Instance.InitializeSettings(_storage);
 
-            _autoUpdateSvc = new AutoUpdateService(EnvService.Instance.UpdatesFolder);
+            _autoUpdateSvc = new AutoUpdateService(EnvService.Instance.UpdatesFolder, UpdateAppTypes.Terminal);
             InitAutoUpdateSources();
             _autoUpdateSvc.SetNewVersionCallback(OnNewVersionAvailable, false);
             _autoUpdateSvc.EnableAutoCheck();
