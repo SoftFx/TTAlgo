@@ -41,7 +41,6 @@ namespace TickTrader.Algo.Server
             try
             {
                 _updateSvc = new AutoUpdateService(_updateWorkDir, UpdateAppTypes.Server);
-                _updateSvc.AddSource(new UpdateDownloadSource { Name = AutoUpdateService.MainSourceName, Uri = AutoUpdateService.MainGithubRepo });
                 _updateSvc.SetNewVersionCallback(OnNewVersionAvailable, true); // callback should return to actor context
                 _updateSvc.EnableAutoCheck();
                 _updateSvc.SetUpdateStateChangedCallback(OnUpdateStateChanged, true); // callback should return to actor context

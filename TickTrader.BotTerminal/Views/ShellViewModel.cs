@@ -52,6 +52,7 @@ namespace TickTrader.BotTerminal
             InitAutoUpdateSources();
             _autoUpdateSvc.SetNewVersionCallback(OnNewVersionAvailable, false);
             _autoUpdateSvc.EnableAutoCheck();
+            _autoUpdateSvc.SetExitCallback(Exit, false);
 
             ConnectionLock = new UiLock();
             _wndManager = new WindowManager(this);
@@ -264,7 +265,7 @@ namespace TickTrader.BotTerminal
 
         public void Update()
         {
-            AutoUpdateViewModel vm = new AutoUpdateViewModel(_autoUpdateSvc, () => Exit());
+            AutoUpdateViewModel vm = new AutoUpdateViewModel(_autoUpdateSvc);
             _ = _wndManager.ShowDialog(vm, this);
         }
 
@@ -352,6 +353,8 @@ namespace TickTrader.BotTerminal
         public void OnLoaded()
         {
             _botAgentManager.RestoreConnections();
+            if (_autoUpdateSvc.HasPendingUpdate)
+                Update(); // show update result first, if available
             Connect(null); // show connect window
         }
 
@@ -471,22 +474,9 @@ namespace TickTrader.BotTerminal
 
         private void InitAutoUpdateSources()
         {
-            AddUpdateSourceSafe(new UpdateDownloadSource { Name = AutoUpdateService.MainSourceName, Uri = AutoUpdateService.MainGithubRepo });
             foreach (var src in _storage.PreferencesStorage.StorageModel.AppUpdateSources)
             {
-                AddUpdateSourceSafe(new UpdateDownloadSource { Name = src.Name, Uri = src.Uri });
-            }
-
-            void AddUpdateSourceSafe(UpdateDownloadSource src)
-            {
-                try
-                {
-                    _autoUpdateSvc.AddSource(src);
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex, $"Failed to add app update source '{src.Name}'");
-                }
+                _autoUpdateSvc.AddSource(new UpdateDownloadSource(src.Name, src.Uri));
             }
         }
 

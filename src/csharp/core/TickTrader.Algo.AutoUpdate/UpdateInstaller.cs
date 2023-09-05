@@ -34,6 +34,8 @@ namespace TickTrader.Algo.AutoUpdate
 
         public Action StateChangedCallback { get; set; }
 
+        public Action ExitCallback { get; set; }
+
 
         public UpdateInstaller(UpdateAppTypes appType, UpdateRepository repo, string workDir)
         {
@@ -126,6 +128,17 @@ namespace TickTrader.Algo.AutoUpdate
                 _logger.Error(ex, "Failed to discard update result");
             }
 
+            try
+            {
+                var updateFilesPath = _state.Params.UpdatePath;
+                if (Directory.Exists(updateFilesPath))
+                    Directory.Delete(updateFilesPath, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to cleanup update files");
+            }
+
             HasPendingUpdate = false;
             StatusDetails = null;
             UpdateLog = null;
@@ -204,6 +217,7 @@ namespace TickTrader.Algo.AutoUpdate
             if (startSuccess)
             {
                 _ = WatchPendingUpdateLoop();
+                ExitCallback?.Invoke();
             }
             else
             {

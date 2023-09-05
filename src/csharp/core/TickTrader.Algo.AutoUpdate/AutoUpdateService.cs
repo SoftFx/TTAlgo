@@ -8,12 +8,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.AutoUpdate
 {
-    public class UpdateDownloadSource
-    {
-        public string Name { get; set; }
-
-        public string Uri { get; set; }
-    }
+    public record UpdateDownloadSource(string Name, string Uri);
 
 
     public class AutoUpdateService
@@ -29,8 +24,8 @@ namespace TickTrader.Algo.AutoUpdate
         private readonly UpdateChecker _checker;
         private readonly UpdateInstaller _installer;
 
-        private Action _newVersionCallback, _stateChangedCallback;
-        private SynchronizationContext _newVersionCallbackContext, _stateChangedCallbackContext;
+        private Action _newVersionCallback, _stateChangedCallback, _exitCallback;
+        private SynchronizationContext _newVersionCallbackContext, _stateChangedCallbackContext, _exitCallbackContext;
 
 
         public bool HasNewVersion => _checker.HasNewVersion;
@@ -54,11 +49,28 @@ namespace TickTrader.Algo.AutoUpdate
         {
             _repo = new UpdateRepository(Path.Combine(workDir, "Downloads"));
             _checker = new UpdateChecker(_repo) { NewVersionCallback = OnNewVersionAvailable };
-            _installer = new UpdateInstaller(appType, _repo, workDir) { StateChangedCallback = OnUpdateStateChanged };
+            _installer = new UpdateInstaller(appType, _repo, workDir)
+            {
+                StateChangedCallback = OnUpdateStateChanged,
+                ExitCallback = OnExitCallback,
+            };
+
+            // register default source
+            AddSource(new UpdateDownloadSource(MainSourceName, MainGithubRepo));
         }
 
 
-        public void AddSource(UpdateDownloadSource src) => _repo.AddSource(src);
+        public void AddSource(UpdateDownloadSource src)
+        {
+            try
+            {
+                _repo.AddSource(src);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Failed to add app update source '{src.Name}'");
+            }
+        }
 
         public async Task<List<AppUpdateEntry>> GetUpdates(bool forced)
         {
@@ -78,7 +90,7 @@ namespace TickTrader.Algo.AutoUpdate
         public void SetNewVersionCallback(Action callback, bool captureContext)
         {
             _newVersionCallback = callback;
-            _newVersionCallbackContext = (callback != null && captureContext) ? SynchronizationContext.Current : null;
+            _newVersionCallbackContext = GetCapturedContext(callback, captureContext);
         }
 
         public async Task InstallUpdate(string srcId, string versionId) => await _installer.InstallUpdate(srcId, versionId);
@@ -90,9 +102,18 @@ namespace TickTrader.Algo.AutoUpdate
         public void SetUpdateStateChangedCallback(Action callback, bool captureContext)
         {
             _stateChangedCallback = callback;
-            _stateChangedCallbackContext = (callback != null && captureContext) ? SynchronizationContext.Current : null;
+            _stateChangedCallbackContext = GetCapturedContext(callback, captureContext);
         }
 
+        public void SetExitCallback(Action callback, bool captureContext)
+        {
+            _exitCallback = callback;
+            _exitCallbackContext = GetCapturedContext(callback, captureContext);
+        }
+
+
+        private SynchronizationContext GetCapturedContext(Action callback, bool captureContext)
+            => (callback != null && captureContext) ? SynchronizationContext.Current : null;
 
         private void OnNewVersionAvailable()
         {
@@ -127,6 +148,24 @@ namespace TickTrader.Algo.AutoUpdate
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to execute state changed callback");
+            }
+        }
+
+        private void OnExitCallback()
+        {
+            try
+            {
+                if (_exitCallback == null)
+                    return;
+
+                if (_exitCallbackContext == null)
+                    _exitCallback();
+                else
+                    _exitCallbackContext.Post(_ => _exitCallback(), null);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to execute exit callback");
             }
         }
     }
