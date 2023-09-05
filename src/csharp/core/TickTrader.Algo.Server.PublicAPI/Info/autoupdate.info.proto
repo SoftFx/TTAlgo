@@ -37,7 +37,7 @@ message ServerUpdateList {
 message UpdateServiceInfo {
     AutoUpdateEnums.ServiceStatus status = 1;
     google.protobuf.StringValue status_details = 2;
-    ServerVersionInfo update_version = 3;
+    // ServerVersionInfo update_version = 3; // never used, keep index for compatibility
     google.protobuf.StringValue update_log = 4;
     bool has_new_version = 5;
     google.protobuf.StringValue new_version = 6;

@@ -1139,7 +1139,6 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
             {
                 Status = info.Status.ToServer(),
                 StatusDetails = info.StatusDetails,
-                UpdateVersion = info.UpdateVersion?.ToServer(),
                 UpdateLog = info.UpdateLog,
                 HasNewVersion = info.HasNewVersion,
                 NewVersion = info.NewVersion,
