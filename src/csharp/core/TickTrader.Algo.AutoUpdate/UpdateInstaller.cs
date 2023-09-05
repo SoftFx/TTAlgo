@@ -244,7 +244,7 @@ namespace TickTrader.Algo.AutoUpdate
             }
             var cancelToken = cancelTokenSrc.Token;
 
-            var loopTimeout = TimeSpan.FromSeconds(10);
+            var loopTimeout = TimeSpan.FromSeconds(5);
 
             var startTime = DateTime.UtcNow;
             while (!cancelToken.IsCancellationRequested && _state.Status == UpdateStatusCodes.Pending)
