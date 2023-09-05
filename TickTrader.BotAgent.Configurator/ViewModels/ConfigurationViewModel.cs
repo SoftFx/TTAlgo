@@ -19,7 +19,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private Window _mainWindow;
         private ConfigurationModel _model;
-        private AppInstanceRestrictor _appRestrictor = new AppInstanceRestrictor(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "applock"));
+        private AppInstanceRestrictor _appRestrictor = new AppInstanceRestrictor(Path.Combine(App.DataPath, "applock"));
 
         private bool _runnignApplication;
         private string _title;
