@@ -326,11 +326,14 @@ namespace TickTrader.BotTerminal
         {
             var agent = _remoteAgent;
             ServerUpdateList serverUpdates = null;
+            string currentVersion = null;
             if (agent.Model.VersionSpec.SupportsAutoUpdate)
+            {
                 serverUpdates = await agent.Model.GetServerUpdateList(forced);
+                currentVersion = agent.Model.CurrentVersion.Version;
+            }
 
             var updates = await _updateSvc.GetUpdates(forced);
-            var currentVersion = _remoteAgent.Model.CurrentVersion.Version;
             AvailableUpdates.Clear();
 
             if (serverUpdates != null)
