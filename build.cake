@@ -1,5 +1,4 @@
 #tool nuget:?package=vswhere&version=2.8.4
-#addin nuget:?package=Cake.Json&version=7.0.1
 #addin nuget:?package=Newtonsoft.Json&version=13.0.1
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7,8 +6,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 var target = ConsoleOrBuildSystemArgument("Target", "CreateAllArtifacts");
-var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
-var version = ConsoleOrBuildSystemArgument("Version", "1.19");
+var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", "1");
+var version = ConsoleOrBuildSystemArgument("Version", ""); // override only. Actual version stored in Directory.Build.props
 var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
 var sourcesDir = ConsoleOrBuildSystemArgument("SourcesDir", "./");
 var artifactsDirName = ConsoleOrBuildSystemArgument("ArtifactsDirName", "artifacts.build");
@@ -19,7 +18,7 @@ var msBuildDirPath = ConsoleOrBuildSystemArgument("MSBuildPath", "");
 var useGithubBuild = ConsoleOrBuildSystemArgument("UseGithubBuild", false);
 
 var sourcesDirPath = DirectoryPath.FromString(sourcesDir);
-var buildId = $"{version}.{buildNumber}.0";
+var buildId = "1.0.0.0"; // stub
 var artifactsPath = sourcesDirPath.Combine(artifactsDirName);
 var mainSolutionPath = sourcesDirPath.CombineWithFilePath("Algo.sln");
 var sdkSolutionPath = sourcesDirPath.CombineWithFilePath("src/csharp/TickTrader.Algo.Sdk.sln");
@@ -81,6 +80,22 @@ Setup(ctx =>
    }
 });
 
+TaskSetup(ctx =>
+{
+   if (BuildSystem.IsRunningOnGitHubActions)
+      GitHubActions.Commands.StartGroup(ctx.Task.Name);
+   else if (BuildSystem.IsRunningOnTeamCity)
+      TeamCity.WriteStartBlock(ctx.Task.Name);
+});
+
+TaskTeardown(ctx =>
+{
+   if (BuildSystem.IsRunningOnGitHubActions)
+      GitHubActions.Commands.EndGroup();
+   else if (BuildSystem.IsRunningOnTeamCity)
+      TeamCity.WriteEndBlock(ctx.Task.Name);
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,89 +103,61 @@ Setup(ctx =>
 Task("Clean")
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Clean") : null;
-
-   try
-   {
-      DotNetClean(mainSolutionPath.ToString(), new DotNetCleanSettings {
-         Configuration = configuration,
-         Verbosity = details,
-      });
-      CleanDirectory(outputPath);
-      CleanDirectory(artifactsPath);
-   }
-   finally
-   {
-      block?.Dispose();
-   }
+   DotNetClean(mainSolutionPath.ToString(), new DotNetCleanSettings {
+      Configuration = configuration,
+      Verbosity = details,
+   });
+   CleanDirectory(outputPath);
+   CleanDirectory(artifactsPath);
 });
 
 Task("BuildMainProject")
    .IsDependentOn("Clean")
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("BuildMainProject") : null;
+   var msBuildSettings = GetMSBuildSettingsWithVersionProps()
+      .WithProperty("AlgoPackage_OutputPath", artifactsPath.MakeAbsolute(Context.Environment).ToString());
 
-   try
-   {
-      var msBuildSettings = GetMSBuildSettingsWithVersionProps()
-         .WithProperty("AlgoPackage_OutputPath", artifactsPath.MakeAbsolute(Context.Environment).ToString());
-
-      DotNetBuild(mainSolutionPath.ToString(), new DotNetBuildSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         MSBuildSettings = msBuildSettings,
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
+   DotNetBuild(mainSolutionPath.ToString(), new DotNetBuildSettings {
+      Configuration = configuration,
+      Verbosity = details,
+      MSBuildSettings = msBuildSettings,
+   });
 });
 
 Task("BuildSdk")
    .IsDependentOn("Clean")
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("BuildSdk") : null;
+   DotNetRestore(sdkSolutionPath.ToString());
 
-   try
+   var msBuildPath = DirectoryPath.FromString(msBuildDirPath).CombineWithFilePath("MSBuild.exe").ToString();
+   if (!System.IO.File.Exists(msBuildPath))
    {
-      DotNetRestore(sdkSolutionPath.ToString());
+      Information("Looking for MSBuild with VS extension SDK. File '{0}' doesn't exists", msBuildPath);
 
-      var msBuildPath = DirectoryPath.FromString(msBuildDirPath).CombineWithFilePath("MSBuild.exe").ToString();
-      if (!System.IO.File.Exists(msBuildPath))
-      {
-         Information("Looking for MSBuild with VS extension SDK. File '{0}' doesn't exists", msBuildPath);
+      var vsInstallPath = VSWhereLatest(new VSWhereLatestSettings{ Requires = "Microsoft.VisualStudio.Workload.VisualStudioExtension" });
+      msBuildPath = GetFiles(vsInstallPath.CombineWithFilePath("MSBuild/**/Bin/MSBuild.exe").ToString()).FirstOrDefault()?.ToString();
+      if (string.IsNullOrEmpty(msBuildPath))
+         throw new Exception("Failed to resolve MSBuild with VS extension sdk");
 
-         var vsInstallPath = VSWhereLatest(new VSWhereLatestSettings{ Requires = "Microsoft.VisualStudio.Workload.VisualStudioExtension" });
-         msBuildPath = GetFiles(vsInstallPath.CombineWithFilePath("MSBuild/**/Bin/MSBuild.exe").ToString()).FirstOrDefault()?.ToString();
-         if (string.IsNullOrEmpty(msBuildPath))
-            throw new Exception("Failed to resolve MSBuild with VS extension sdk");
-
-         Information("Found MSBuild at '{0}'", msBuildPath);
-      }
-
-      var msBuildSettings = new MSBuildSettings {
-         ToolPath = msBuildPath,
-         Configuration = configuration,
-         Verbosity = Verbosity.Normal,
-      };
-
-      MSBuild(sdkSolutionPath, msBuildSettings);
+      Information("Found MSBuild at '{0}'", msBuildPath);
    }
-   finally
-   {
-      block?.Dispose();
-   }
+
+   var msBuildSettings = new MSBuildSettings {
+      ToolPath = msBuildPath,
+      Configuration = configuration,
+      Verbosity = Verbosity.Normal,
+   };
+
+   MSBuild(sdkSolutionPath, msBuildSettings);
+
+   if (!isGithubBuild)
+      CopyFiles(vsExtensionPath.FullPath, artifactsPath);
 });
 
-Task("BuildAll")
-   .IsDependentOn("BuildMainProject")
-   .IsDependentOn("BuildSdk");
-
 Task("Test")
-   .IsDependentOn("BuildAll")
+   .IsDependentOn("BuildMainProject")
    .Does(() =>
 {
    if (skipTests)
@@ -179,415 +166,209 @@ Task("Test")
       return;
    }
 
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Test") : null;
+   var testProjects = GetFiles(sourcesDirPath.Combine("src/csharp/tests/**/*.csproj").ToString());
+   foreach(var testProj in testProjects)
+   {
+      if (isGithubBuild && testProj.ToString().Contains("FeedStorage.Api.Tests"))
+         continue;
 
-   try
-   {
-      var testProjects = GetFiles(sourcesDirPath.Combine("src/csharp/tests/**/*.csproj").ToString());
-      foreach(var testProj in testProjects)
-      {
-         DotNetTest(testProj.ToString(), new DotNetTestSettings {
-            Configuration = configuration,
-            Verbosity = details,
-            NoBuild = true,
-         });
-      }
-   }
-   finally
-   {
-      block?.Dispose();
+      DotNetTest(testProj.ToString(), new DotNetTestSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+      });
    }
 });
 
+Task("BuildAndTest")
+   .IsDependentOn("BuildMainProject")
+   .IsDependentOn("BuildSdk")
+   .IsDependentOn("Test");
+
 Task("PublishTerminal")
-   .IsDependentOn("Test")
+   .IsDependentOn("BuildAndTest")
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishTerminal") : null;
+   // we need to change post-build tasks to work with publish
+   DotNetBuild(terminalProjectPath.FullPath, new DotNetBuildSettings {
+      Configuration = configuration,
+      Verbosity = details,
+      NoRestore = true,
+      OutputDirectory = terminalBinPath,
+      MSBuildSettings = GetMSBuildSettingsWithVersionProps(),
+   });
 
-   try
+   var redistPath = terminalBinPath.Combine("Redist");
+   CreateDirectory(redistPath);
+   CopyFiles(vsExtensionPath.FullPath, redistPath);
+
+   if (!isGithubBuild)
    {
-      // we need to change post-build tasks to work with publish
-      DotNetBuild(terminalProjectPath.FullPath, new DotNetBuildSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoRestore = true,
-         OutputDirectory = terminalBinPath,
-         MSBuildSettings = GetMSBuildSettingsWithVersionProps(),
-      });
-   }
-   finally
-   {
-      block?.Dispose();
+      // NewsIndicator is not working now
+      // var repoPath = terminalBinPath.Combine("AlgoRepository");
+      // CreateDirectory(repoPath);
+      // CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").FullPath, repoPath);
    }
 });
 
 Task("PublishConfigurator")
-   .IsDependentOn("Test")
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishConfigurator") : null;
-
-   try
-   {
-      DotNetPublish(configuratorProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = configuratorBinPath,
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+   .IsDependentOn("BuildAndTest")
+   .Does(() => DotNetPublish(configuratorProjectPath.FullPath, GetPublishSettings(configuratorBinPath)));
 
 Task("PublishServer")
-   .IsDependentOn("Test")
+   .IsDependentOn("BuildAndTest")
+   .IsDependentOn("PublishConfigurator")
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishServer") : null;
+   DotNetPublish(serverProjectPath.FullPath, new DotNetPublishSettings {
+      Configuration = configuration,
+      Verbosity = details,
+      OutputDirectory = serverBinPath,
+      MSBuildSettings = GetMSBuildSettingsWithVersionProps(),
+   });
 
-   try
-   {
-      DotNetPublish(serverProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         OutputDirectory = serverBinPath,
-         MSBuildSettings = GetMSBuildSettingsWithVersionProps(),
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
+   var configuratorInstallPath = serverBinPath.Combine("Configurator");
+   CopyDirectory(configuratorBinPath, configuratorInstallPath);
 });
 
 Task("PublishUpdater")
-   .IsDependentOn("Test")
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishUpdater") : null;
-
-   try
-   {
-      DotNetPublish(updaterProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = updaterBinPath,
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+   .IsDependentOn("BuildAndTest")
+   .Does(() => DotNetPublish(updaterProjectPath.FullPath, GetPublishSettings(updaterBinPath)));
 
 Task("PublishMainProjects")
-   .IsDependentOn("Test")
    .IsDependentOn("PublishTerminal")
    .IsDependentOn("PublishConfigurator")
    .IsDependentOn("PublishServer")
-   .IsDependentOn("PublishUpdater");
+   .IsDependentOn("PublishUpdater")
+   .Does(() =>
+{
+   var serverDllPath = serverBinPath.CombineWithFilePath("TickTrader.Algo.Server.dll").FullPath;
+   var fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(serverDllPath).FileVersion;
+   Information($"Loaded version '{fileVersion}' from '{serverDllPath}'");
+   if (fileVersion == null || fileVersion.EndsWith(".0.0") || fileVersion.EndsWith(".0.0.0"))
+      throw new Exception($"Bad file version: '{fileVersion}'");
+   buildId = fileVersion;
+
+   if (isGithubBuild)
+      GitHubActions.Commands.SetOutputParameter("version", buildId);
+});
 
 Task("PublishPublicApi")
    .IsDependentOn("PublishMainProjects")
    .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPublicApi") : null;
+   DotNetPublish(publicApiProjectPath.FullPath, GetPublishSettings(publicApiBinPath.Combine("net472"), "net472"));
 
-   try
-   {
-      DotNetPublish(publicApiProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = publicApiBinPath.Combine("net472"),
-         Framework = "net472"
-      });
+   DeleteFiles(publicApiBinPath.Combine("net472").CombineWithFilePath("libgrpc_csharp_ext*").ToString());
 
-      DeleteFiles(publicApiBinPath.Combine("net472").CombineWithFilePath("libgrpc_csharp_ext*").ToString());
-
-      DotNetPublish(publicApiProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = publicApiBinPath.Combine("net6.0"),
-         Framework = "net6.0"
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
+   DotNetPublish(publicApiProjectPath.FullPath, GetPublishSettings(publicApiBinPath.Combine("net6.0"), "net6.0"));
 });
 
 Task("PublishSymbolStorage")
    .IsDependentOn("PublishMainProjects")
    .WithCriteria(!isGithubBuild)
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishSymbolStorage") : null;
-
-   try
-   {
-      DotNetPublish(symbolStorageProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = symbolStorageBinPath,
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+   .Does(() => DotNetPublish(symbolStorageProjectPath.FullPath, GetPublishSettings(symbolStorageBinPath)));
 
 Task("PublishBacktesterApi")
    .IsDependentOn("PublishMainProjects")
    .WithCriteria(!isGithubBuild)
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterApi") : null;
-
-   try
-   {
-      DotNetPublish(backtesterApiProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = backtesterApiBinPath
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+   .Does(() => DotNetPublish(backtesterApiProjectPath.FullPath, GetPublishSettings(backtesterApiBinPath)));
 
 Task("PublishBacktesterHost")
    .IsDependentOn("PublishMainProjects")
    .WithCriteria(!isGithubBuild)
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterHost") : null;
-
-   try
-   {
-      DotNetPublish(backtesterHostProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = backtesterHostBinPath
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+   .Does(() => DotNetPublish(backtesterHostProjectPath.FullPath, GetPublishSettings(backtesterHostBinPath)));
 
 Task("PublishRuntimeHost")
    .IsDependentOn("PublishMainProjects")
    .WithCriteria(!isGithubBuild)
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishRuntimeHost") : null;
-
-   try
-   {
-      DotNetPublish(runtimeHostProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = runtimeHostBinPath,
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+   .Does(() => DotNetPublish(runtimeHostProjectPath.FullPath, GetPublishSettings(runtimeHostBinPath)));
 
 Task("PublishPkgLoader")
    .IsDependentOn("PublishMainProjects")
    .WithCriteria(!isGithubBuild)
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPkgLoader") : null;
-
-   try
-   {
-      DotNetPublish(pkgLoaderProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = pkgLoaderBinPath,
-         Framework = "net6.0",
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+   .Does(() => DotNetPublish(pkgLoaderProjectPath.FullPath, GetPublishSettings(pkgLoaderBinPath, "net6.0")));
 
 Task("PublishIndicatorHost")
    .IsDependentOn("PublishMainProjects")
+   .IsDependentOn("PublishPkgLoader")
+   .IsDependentOn("PublishRuntimeHost")
    .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishIndicatorHost") : null;
+   DotNetPublish(indicatorHostProjectPath.FullPath, GetPublishSettings(indicatorHostBinPath));
 
-   try
-   {
-      DotNetPublish(indicatorHostProjectPath.FullPath, new DotNetPublishSettings {
-         Configuration = configuration,
-         Verbosity = details,
-         NoBuild = true,
-         OutputDirectory = indicatorHostBinPath,
-      });
-   }
-   finally
-   {
-      block?.Dispose();
-   }
+   CopyDirectory(pkgLoaderBinPath.FullPath, indicatorHostBinPath);
+
+   var indicatorHostRuntimePath = indicatorHostBinPath.Combine("bin").Combine("runtime");
+   CopyDirectory(runtimeHostBinPath, indicatorHostRuntimePath);
 });
 
-Task("PublishAllProjects")
-   .IsDependentOn("PublishTerminal")
-   .IsDependentOn("PublishConfigurator")
-   .IsDependentOn("PublishServer")
+Task("PublishDevProjects")
    .IsDependentOn("PublishPublicApi")
    .IsDependentOn("PublishSymbolStorage")
    .IsDependentOn("PublishBacktesterApi")
    .IsDependentOn("PublishBacktesterHost")
-   .IsDependentOn("PublishRuntimeHost")
-   .IsDependentOn("PublishPkgLoader")
-   .IsDependentOn("PublishIndicatorHost");
+   .IsDependentOn("PublishIndicatorHost")
+   .WithCriteria(!isGithubBuild);
 
-Task("PrepareArtifacts")
-   .IsDependentOn("PublishAllProjects")
-   .Does(() =>
-{
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PrepareArtifacts") : null;
-
-   try
-   {
-      var redistPath = terminalBinPath.Combine("Redist");
-
-      CreateDirectory(redistPath);
-      CopyFiles(vsExtensionPath.FullPath, redistPath);
-      CopyFiles(vsExtensionPath.FullPath, artifactsPath);
-
-      var configuratorInstallPath = serverBinPath.Combine("Configurator");
-      CopyDirectory(configuratorBinPath, configuratorInstallPath);
-
-      if (!isGithubBuild)
-      {
-         var repoPath = terminalBinPath.Combine("AlgoRepository");
-
-         CreateDirectory(repoPath);         
-         CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").FullPath, repoPath);
-
-         CopyDirectory(pkgLoaderBinPath.FullPath, indicatorHostBinPath);
-
-         var indicatorHostRuntimePath = indicatorHostBinPath.Combine("bin").Combine("runtime");
-         CopyDirectory(runtimeHostBinPath, indicatorHostRuntimePath);
-      }
-   }
-   finally
-   {
-      block?.Dispose();
-   }
-});
+Task("PublishAllProjects")
+   .IsDependentOn("PublishMainProjects")
+   .IsDependentOn("PublishDevProjects");
 
 Task("CreateUpdate")
-   .IsDependentOn("PrepareArtifacts")
+   .IsDependentOn("PublishMainProjects")
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("CreateUpdate") : null;
+   CreateUpdateInfo();
+   CopyFileToDirectory(updateInfoOutputPath, artifactsPath);
 
-   try
-   {
-      CreateUpdateInfo();
-      CopyFileToDirectory(updateInfoOutputPath, artifactsPath);
+   CopyDirectory(updaterBinPath, terminalUpdateBinPath);
+   CopyDirectory(terminalBinPath, terminalUpdateBinPath.Combine("update"));
+   CopyFileToDirectory(updateInfoOutputPath, terminalUpdateBinPath);
+   Zip(terminalUpdateBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.Update.zip"));
 
-      CopyDirectory(updaterBinPath, terminalUpdateBinPath);
-      CopyDirectory(terminalBinPath, terminalUpdateBinPath.Combine("update"));
-      CopyFileToDirectory(updateInfoOutputPath, terminalUpdateBinPath);
-      Zip(terminalUpdateBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.Update.zip"));
-
-      CopyDirectory(updaterBinPath, serverUpdateBinPath);
-      CopyDirectory(serverBinPath, serverUpdateBinPath.Combine("update"));
-      CopyFileToDirectory(updateInfoOutputPath, serverUpdateBinPath);
-      Zip(serverUpdateBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.Update.zip"));
-   }
-   finally
-   {
-      block?.Dispose();
-   }
+   CopyDirectory(updaterBinPath, serverUpdateBinPath);
+   CopyDirectory(serverBinPath, serverUpdateBinPath.Combine("update"));
+   CopyFileToDirectory(updateInfoOutputPath, serverUpdateBinPath);
+   Zip(serverUpdateBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.Update.zip"));
 });
 
 Task("ZipArtifacts")
-   .IsDependentOn("PrepareArtifacts")
+   .IsDependentOn("PublishAllProjects")
+   .WithCriteria(!isGithubBuild)
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("ZipArtifacts") : null;
-
-   try
-   {
-      Zip(terminalBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.zip"));
-      Zip(serverBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
-
-      if (!isGithubBuild)
-      {
-         Zip(configuratorBinPath, artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
-         Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.zip"));
-         Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
-         Zip(backtesterApiBinPath, artifactsPath.CombineWithFilePath($"BacktesterApi {buildId}.zip"));
-         Zip(backtesterHostBinPath, artifactsPath.CombineWithFilePath($"BacktesterV1Host {buildId}.x64.zip"));
-         Zip(indicatorHostBinPath, artifactsPath.CombineWithFilePath($"IndicatorHost {buildId}.zip"));
-      }
-   }
-   finally
-   {
-      block?.Dispose();
-   }
+   Zip(terminalBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.zip"));
+   Zip(serverBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
+   Zip(configuratorBinPath, artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
+   Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.zip"));
+   Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
+   Zip(backtesterApiBinPath, artifactsPath.CombineWithFilePath($"BacktesterApi {buildId}.zip"));
+   Zip(backtesterHostBinPath, artifactsPath.CombineWithFilePath($"BacktesterV1Host {buildId}.x64.zip"));
+   Zip(indicatorHostBinPath, artifactsPath.CombineWithFilePath($"IndicatorHost {buildId}.zip"));
 });
 
 Task("CreateInstaller")
-   .IsDependentOn("PrepareArtifacts")
+   .IsDependentOn("PublishMainProjects")
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("CreateInstaller") : null;
-
-   try
+   if (!System.IO.File.Exists(nsisPath.MakeAbsolute(Context.Environment).ToString()))
    {
-      if (!System.IO.File.Exists(nsisPath.MakeAbsolute(Context.Environment).ToString()))
-      {
-         if (BuildSystem.IsLocalBuild)
-            Error("Failed to create installer: NSIS not found!");
-         else
-            throw new Exception("Failed to create installer: NSIS not found!");
-      }
-
-      CreateUninstallScript(terminalBinPath, setupDirPath.CombineWithFilePath("Terminal.Uninstall.nsi"));
-      CreateUninstallScript(serverBinPath, setupDirPath.CombineWithFilePath("AlgoServer.Uninstall.nsi"));
-      CreateUninstallScript(configuratorBinPath, setupDirPath.CombineWithFilePath("Configurator.Uninstall.nsi"));
-
-      StartProcess(nsisPath, new ProcessSettings {
-         Arguments = $"/DPRODUCT_BUILD={buildId} /DOUTPUT_DIR=../{artifactsDirName} {setupDirPath.CombineWithFilePath("Algo.Setup.nsi").FullPath}",
-      });
+      if (BuildSystem.IsLocalBuild)
+         Error("Failed to create installer: NSIS not found!");
+      else
+         throw new Exception("Failed to create installer: NSIS not found!");
    }
-   finally
-   {
-      block?.Dispose();
-   }
+
+   CreateUninstallScript(terminalBinPath, setupDirPath.CombineWithFilePath("Terminal.Uninstall.nsi"));
+   CreateUninstallScript(serverBinPath, setupDirPath.CombineWithFilePath("AlgoServer.Uninstall.nsi"));
+   CreateUninstallScript(configuratorBinPath, setupDirPath.CombineWithFilePath("Configurator.Uninstall.nsi"));
+
+   StartProcess(nsisPath, new ProcessSettings {
+      Arguments = $"/DPRODUCT_BUILD={buildId} /DOUTPUT_DIR=../{artifactsDirName} {setupDirPath.CombineWithFilePath("Algo.Setup.nsi").FullPath}",
+   });
 });
 
 Task("CreateAllArtifacts")
@@ -656,9 +437,35 @@ private void CleanUpInstallDir(DirectoryInfo appDirectory, StringBuilder nsisScr
 }
 
 private DotNetMSBuildSettings GetMSBuildSettingsWithVersionProps()
-   => new DotNetMSBuildSettings()
-      .WithProperty("BuildVersion", version.ToString())
-      .WithProperty("BuildNumber", buildNumber.ToString());
+{
+   var settings = new DotNetMSBuildSettings();
+   if (!string.IsNullOrEmpty(version))
+      settings.WithProperty("BuildVersion", version.ToString());
+   if (!string.IsNullOrEmpty(buildNumber))
+      settings.WithProperty("BuildNumber", buildNumber.ToString());
+   return settings;
+}
+
+private DotNetPublishSettings GetPublishSettings(DirectoryPath outputDir)
+{  
+   return new DotNetPublishSettings {
+      Configuration = configuration,
+      Verbosity = details,
+      NoBuild = true,
+      OutputDirectory = outputDir,
+   };
+}
+
+private DotNetPublishSettings GetPublishSettings(DirectoryPath outputDir, string framework)
+{
+   return new DotNetPublishSettings {
+      Configuration = configuration,
+      Verbosity = details,
+      NoBuild = true,
+      OutputDirectory = outputDir,
+      Framework = framework,
+   };
+}
 
 private void CreateUpdateInfo()
 {
@@ -671,6 +478,12 @@ private void CreateUpdateInfo()
       Changelog = changelogText,
    };
    SerializeJsonToPrettyFile(updateInfoOutputPath, updateInfo);
+}
+
+private void SerializeJsonToPrettyFile<T>(FilePath filePath, T dataObj)
+{
+   var json = Newtonsoft.Json.JsonConvert.SerializeObject(dataObj, Newtonsoft.Json.Formatting.Indented);
+   System.IO.File.WriteAllText(filePath.MakeAbsolute(Context.Environment).ToString(), json);
 }
 
 private class UpdateInfo

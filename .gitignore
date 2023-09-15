@@ -257,7 +257,6 @@ algo.metadata
 /build.ouput
 /TickTrader.BotAgent/WebAdmin/appsettings.json
 
-package-lock.json
 *Uninstall.nsi
 
 FDK2.Build.props
