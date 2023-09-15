@@ -125,6 +125,8 @@ jobs:
         with:
           name: ${{ needs.build.outputs.VERSION }}
           tag: ${{ steps.build-tag.outputs.tag }}
+          # sets target_commitish field, doesn't change tag that already exists
+          commit: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: ${{ env.BUILD_OUTPUT_FOLDER }}/*.zip, ${{ env.BUILD_OUTPUT_FOLDER }}/*.exe, ${{ env.BUILD_OUTPUT_FOLDER }}/*.json
           bodyFile: ${{ env.ReleaseNote }}
