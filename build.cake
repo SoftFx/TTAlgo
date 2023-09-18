@@ -169,9 +169,6 @@ Task("Test")
    var testProjects = GetFiles(sourcesDirPath.Combine("src/csharp/tests/**/*.csproj").ToString());
    foreach(var testProj in testProjects)
    {
-      if (isGithubBuild && testProj.ToString().Contains("FeedStorage.Api.Tests"))
-         continue;
-
       DotNetTest(testProj.ToString(), new DotNetTestSettings {
          Configuration = configuration,
          Verbosity = details,
