@@ -11,9 +11,9 @@ namespace TickTrader.FeedStorage.Api.Tests
         internal override ISymbolCollection Collection => _catalog.CustomCollection;
 
 
-        public CustomCollectionTests() : base()
+        public override async Task InitializeAsync()
         {
-            _catalog.OpenCustomStorage(_settings).Wait();
+            await _catalog.OpenCustomStorage(_settings);
         }
 
 

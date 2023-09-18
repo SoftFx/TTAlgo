@@ -84,9 +84,9 @@ namespace TickTrader.FeedStorage.Api.Tests
         }
 
 
-        public DownloadDataTests() : base()
+        public override async Task InitializeAsync()
         {
-            _catalog.ConnectClient(_settings).Wait();
+            await _catalog.ConnectClient(_settings);
         }
 
 

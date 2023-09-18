@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage.Lmdb;
+using Xunit;
 
 namespace TickTrader.FeedStorage.Api.Tests
 {
@@ -13,7 +15,7 @@ namespace TickTrader.FeedStorage.Api.Tests
     }
 
 
-    public abstract class TestsBase<TSettings> : IDisposable where TSettings : StorageSettings, new()
+    public abstract class TestsBase<TSettings> : IAsyncLifetime where TSettings : StorageSettings, new()
     {
         private protected readonly TSettings _settings;
         private protected readonly FeedEmulator _feed;
@@ -38,11 +40,13 @@ namespace TickTrader.FeedStorage.Api.Tests
         protected List<ISymbolData> GetCatalogSymbols(List<ISymbolInfo> smb) => smb.Select(u => _catalog[GetKey(u.Name)]).ToList();
 
 
-        public async void Dispose()
+        public async Task DisposeAsync()
         {
             await _catalog.CloseCatalog();
 
             Directory.Delete(_settings.FolderPath, true);
         }
+
+        public abstract Task InitializeAsync();
     }
 }
