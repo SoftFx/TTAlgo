@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup Label="NuGet assets">
-    <None Include="icon.png" Pack="true" PackagePath="images\" />
+    <None Include="icon.png" Pack="true" PackagePath="images" />
     <None Pack="true" PackagePath="build\" Include="build\**\*.props; build\**\*.targets;" />
   </ItemGroup>
 

@@ -12,6 +12,8 @@ var versionSuffix = ConsoleOrBuildSystemArgument("VersionSuffix", "");
 var nugetKey = ConsoleOrBuildSystemArgument("NugetApiKey", "never push real key to git");
 var details = ConsoleOrBuildSystemArgument<DotNetVerbosity>("Details", DotNetVerbosity.Detailed);
 
+var isGithubBuild = BuildSystem.IsRunningOnGitHubActions;
+
 var solutionPath = DirectoryPath.FromString(solutionDir);
 var projects = new Dictionary<string, string> { 
     { "api", solutionPath.Combine("src/csharp/api/TickTrader.Algo.Api/TickTrader.Algo.Api.csproj").ToString() },
@@ -35,11 +37,19 @@ Setup(ctx =>
     if (exitCode != 0)
         throw new Exception($"Failed to get .NET SDK info: {exitCode}");
 
+    // simplifies GHA workflow
+    if (isGithubBuild && versionSuffix == "none")
+        versionSuffix = string.Empty;
+
     // this is expected to throw if VersionPrefix is not in correct format
     var versionPrefix = new Version(XmlPeek(projectPath, "//VersionPrefix"));
 
-    versionSuffix = string.IsNullOrEmpty(versionSuffix) ? versionSuffix : $"{versionSuffix}.{buildNumber}";
-    var pkgVersion = string.IsNullOrEmpty(versionSuffix) ? $"{versionPrefix}" : $"{versionPrefix}-{versionSuffix}";
+    var pkgVersion = versionPrefix.ToString();
+    if (!string.IsNullOrEmpty(versionSuffix))
+    {
+        versionSuffix = $"{versionSuffix}.{buildNumber}";
+        pkgVersion = $"{versionPrefix}-{versionSuffix}";
+    }
     Information("Calculated package version: {0}", pkgVersion);
 
     if (BuildSystem.IsRunningOnTeamCity)
@@ -50,6 +60,22 @@ Setup(ctx =>
 // {
 // });
 
+TaskSetup(ctx =>
+{
+   if (BuildSystem.IsRunningOnGitHubActions)
+      GitHubActions.Commands.StartGroup(ctx.Task.Name);
+   else if (BuildSystem.IsRunningOnTeamCity)
+      TeamCity.WriteStartBlock(ctx.Task.Name);
+});
+
+TaskTeardown(ctx =>
+{
+   if (BuildSystem.IsRunningOnGitHubActions)
+      GitHubActions.Commands.EndGroup();
+   else if (BuildSystem.IsRunningOnTeamCity)
+      TeamCity.WriteEndBlock(ctx.Task.Name);
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,64 +83,42 @@ Setup(ctx =>
 Task("Clean")
     .Does(() =>
 {
-    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Clean") : null;
-
-    try
-    {
-        DotNetClean(projectPath.ToString(), new DotNetCleanSettings {
-            Configuration = configuration,
-            Verbosity = details,
-        });
-        CleanDirectory(artifactsPath);
-    }
-    finally 
-    {
-        block?.Dispose();
-    }
+    DotNetClean(projectPath.ToString(), new DotNetCleanSettings {
+        Configuration = configuration,
+        Verbosity = details,
+    });
+    CleanDirectory(artifactsPath);
 });
 
 Task("Pack")
     .IsDependentOn("Clean")
     .Does(() =>
 {
-    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Pack") : null;
-
-    try
-    {
-        DotNetPack(projectPath.ToString(), new DotNetPackSettings {
-            Configuration = configuration,
-            Verbosity = details,
-            VersionSuffix = versionSuffix,
-            OutputDirectory = artifactsPath,
-        });
-    }
-    finally
-    {
-        block?.Dispose();
-    }
+    DotNetPack(projectPath.ToString(), new DotNetPackSettings {
+        Configuration = configuration,
+        Verbosity = details,
+        VersionSuffix = versionSuffix,
+        OutputDirectory = artifactsPath,
+    });
 });
 
 Task("Push")
     .IsDependentOn("Pack")
-    .Does(() =>
-{
-    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Push") : null;
+    .Does(() => PushToNugetOrg());
 
-    try
+Task("PushStandalone")
+    .Does(() => PushToNugetOrg());
+
+private void PushToNugetOrg()
+{
+    foreach(var pkg in GetFiles($"{artifactsPath}/*.nupkg"))
     {
-        foreach(var pkg in GetFiles($"{artifactsPath}/*.nupkg"))
-        {
-            DotNetNuGetPush(pkg, new DotNetNuGetPushSettings {
-                Source = "https://api.nuget.org/v3/index.json",
-                ApiKey = nugetKey,
-            });
-        }
+        DotNetNuGetPush(pkg, new DotNetNuGetPushSettings {
+            Source = "https://api.nuget.org/v3/index.json",
+            ApiKey = nugetKey,
+        });
     }
-    finally
-    {
-        block?.Dispose();
-    }
-});
+}
 
 PrintArguments();
 RunTarget(target);
@@ -127,9 +131,10 @@ public void PrintArguments()
     Information("SolutionDir: {0}", solutionDir);
     Information("ArtifactsDirName: {0}", artifactsDirName);
     Information("TargetProject: {0}", targetProject);
-    Information("VersionSuffix: {0}", versionSuffix);
+    Information("VersionSuffix: '{0}'", versionSuffix);
     Information("Details: {0}", details);
-    Information("NugetKey: {0}", HidePartially(nugetKey));
+    if (!isGithubBuild)
+        Information("NugetKey: {0}", HidePartially(nugetKey));
 }
 
 public string ConsoleOrBuildSystemArgument(string name, string defautValue) => ConsoleOrBuildSystemArgument<string>(name, defautValue);

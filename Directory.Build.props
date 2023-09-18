@@ -5,8 +5,8 @@
         <Product>TickTrader Algo</Product>
         <Copyright>Copyright © Soft-FX 2017-2023</Copyright>
 
-        <BuildVersion Condition="'$(BuildVersion)' == ''">1.12</BuildVersion>
-        <BuildNumber Condition="'$(BuildNumber)' == ''">34</BuildNumber>
+        <BuildVersion Condition="'$(BuildVersion)' == ''">1.24</BuildVersion>
+        <BuildNumber Condition="'$(BuildNumber)' == ''">0</BuildNumber>
         <FileVersion>$(BuildVersion).$(BuildNumber).0</FileVersion>
     </PropertyGroup>
 </Project>
