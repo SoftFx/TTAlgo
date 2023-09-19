@@ -38,6 +38,8 @@ jobs:
         run: echo "NugetVersionSuffix=beta" >> $GITHUB_ENV
 
       - name: Pack Nuget (Cake bootstrapper)
+        id: pack
+        # Cake script sets output 'version'
         shell: pwsh
         run: >
           ${{ env.BootstrapperPath }}
@@ -63,3 +65,11 @@ jobs:
           --Target=PushStandalone
           --ArtifactsDirName=${{ env.BUILD_OUTPUT_FOLDER }}
           --NugetApiKey=${{ secrets.ALGO_NUGET_KEY }}
+
+      - name: Push tag
+        uses: rickstaa/action-create-tag@v1
+        if: inputs.DoPublish
+        with:
+          tag: nuget/${{ inputs.TargetProject }}/v${{ steps.pack.outputs.version }}
+          message: "Publish Nuget ${{ inputs.TargetProject }} v${{ steps.pack.outputs.version }}"
+          force_push_tag: true

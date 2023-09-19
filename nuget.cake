@@ -51,6 +51,8 @@ Setup(ctx =>
         pkgVersion = $"{versionPrefix}-{versionSuffix}";
     }
     Information("Calculated package version: {0}", pkgVersion);
+    if (isGithubBuild)
+        GitHubActions.Commands.SetOutputParameter("version", pkgVersion);
 
     if (BuildSystem.IsRunningOnTeamCity)
         TeamCity.SetBuildNumber(pkgVersion);
