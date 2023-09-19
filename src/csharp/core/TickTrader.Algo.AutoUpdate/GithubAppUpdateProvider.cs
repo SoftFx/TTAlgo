@@ -14,7 +14,7 @@ namespace TickTrader.Algo.AutoUpdate
 {
     public class GithubAppUpdateProvider : IAppUpdateProvider
     {
-        private const int DefaultPageSize = 5;
+        private const int DefaultPageSize = 30;
         private const string DefaultClientName = "AlgoTerminal";
 
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<GithubAppUpdateProvider>();
@@ -67,6 +67,11 @@ namespace TickTrader.Algo.AutoUpdate
             {
                 await LoadReleases();
             }
+            catch (RateLimitExceededException rateEx)
+            {
+                var retryAfter = rateEx.GetRetryAfterTimeSpan().ToString(@"hh\:mm\:ss");
+                _logger.Error($"Github Rate Limit exceeded: RetryAfter={retryAfter}; Repo='{_repoOwner}/{_repoName}'; Max={rateEx.Limit}");
+            }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to get updates from github repo '{_url}'");
@@ -84,7 +89,7 @@ namespace TickTrader.Algo.AutoUpdate
             var page = 1;
             while (true)
             {
-                var releases = await _client.Repository.Release.GetAll(_repoOwner, _repoName, new ApiOptions { StartPage = page, PageSize = DefaultPageSize });
+                var releases = await _client.Repository.Release.GetAll(_repoOwner, _repoName, new ApiOptions { StartPage = page, PageSize = DefaultPageSize, PageCount = 1 });
                 foreach (var release in releases)
                 {
                     if (_releaseCache.ContainsKey(release.Id.ToString()))
