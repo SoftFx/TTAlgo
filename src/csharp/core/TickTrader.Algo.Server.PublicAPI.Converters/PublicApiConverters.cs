@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using ServerApi = TickTrader.Algo.Domain.ServerControl;
 
@@ -1054,6 +1055,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
         {
             var res = new ServerUpdateList();
             res.Updates.AddRange(request.Updates.Select(u => u.ToApi()));
+            res.Errors.Add(request.Errors);
             return res;
         }
 

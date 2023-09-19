@@ -32,6 +32,7 @@ message ServerUpdateInfo {
 
 message ServerUpdateList {
     repeated ServerUpdateInfo updates = 1;
+    repeated google.protobuf.StringValue errors = 2;
 }
 
 message UpdateServiceInfo {

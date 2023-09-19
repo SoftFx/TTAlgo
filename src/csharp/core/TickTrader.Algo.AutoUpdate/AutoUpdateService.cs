@@ -10,6 +10,8 @@ namespace TickTrader.Algo.AutoUpdate
 {
     public record UpdateDownloadSource(string Name, string Uri);
 
+    public record UpdateList(List<AppUpdateEntry> Updates, List<string> Errors);
+
 
     public class AutoUpdateService
     {
@@ -72,12 +74,12 @@ namespace TickTrader.Algo.AutoUpdate
             }
         }
 
-        public async Task<List<AppUpdateEntry>> GetUpdates(bool forced)
+        public async Task<UpdateList> GetUpdates(bool forced)
         {
             var cacheUpdated = await _repo.LoadUpdates(forced);
             if (cacheUpdated)
                 _checker.CheckForNewVersion();
-            return _repo.UpdatesCache;
+            return new UpdateList(_repo.UpdatesCache, _repo.LoadUpdatesErrors);
         }
 
         public async Task<string> DownloadUpdate(string srcId, string versionId, UpdateAssetTypes assetType)

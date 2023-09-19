@@ -29,6 +29,8 @@ namespace TickTrader.Algo.AutoUpdate
 
         public IEnumerable<AppUpdateEntry> Updates => _releaseCache.Values.Select(r => r.UpdateData);
 
+        public string LoadUpdatesError { get; private set; }
+
 
         public GithubAppUpdateProvider(UpdateDownloadSource updateSrc)
         {
@@ -65,16 +67,21 @@ namespace TickTrader.Algo.AutoUpdate
         {
             try
             {
+                LoadUpdatesError = null;
                 await LoadReleases();
             }
             catch (RateLimitExceededException rateEx)
             {
                 var retryAfter = rateEx.GetRetryAfterTimeSpan().ToString(@"hh\:mm\:ss");
-                _logger.Error($"Github Rate Limit exceeded: RetryAfter={retryAfter}; Repo='{_repoOwner}/{_repoName}'; Max={rateEx.Limit}");
+                var errMsg = $"Github RateLimit exceeded: Repo='{_repoOwner}/{_repoName}'; Max={rateEx.Limit}; RetryAfter={retryAfter}";
+                LoadUpdatesError = errMsg;
+                _logger.Error(errMsg);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to get updates from github repo '{_url}'");
+                var errMsg = $"Failed to get updates from github repo '{_url}'";
+                LoadUpdatesError = errMsg;
+                _logger.Error(ex, errMsg);
             }
         }
 

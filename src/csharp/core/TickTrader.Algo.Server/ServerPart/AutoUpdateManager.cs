@@ -81,8 +81,9 @@ namespace TickTrader.Algo.Server
             var res = new ServerUpdateList();
             try
             {
-                var updates = await _updateSvc.GetUpdates(request.Forced);
-                foreach (var update in updates)
+                var updateList = await _updateSvc.GetUpdates(request.Forced);
+                res.Errors.AddRange(updateList.Errors);
+                foreach (var update in updateList.Updates)
                 {
                     if (update.AvailableAssets.Contains(UpdateAssetTypes.ServerUpdate))
                     {

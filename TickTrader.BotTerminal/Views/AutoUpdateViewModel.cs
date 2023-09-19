@@ -291,6 +291,8 @@ namespace TickTrader.BotTerminal
         {
             UpdateListGuiEnabled.Value = false;
             UpdatesLoaded.Value = false;
+            Status.Value = string.Empty;
+            StatusHasError.Value = false;
 
             try
             {
@@ -313,50 +315,63 @@ namespace TickTrader.BotTerminal
 
         private async Task LoadLocalUpdatesInternal(bool forced)
         {
-            var updates = await _updateSvc.GetUpdates(forced);
+            var updateList = await _updateSvc.GetUpdates(forced);
 
             var currentVersion = AppVersionInfo.Current.Version;
             AvailableUpdates.Clear();
-            foreach (var update in updates)
+            foreach (var update in updateList.Updates)
                 if (update.AvailableAssets.Any(a => _terminalAssets.Contains(a)))
                     AvailableUpdates.Add(new AppUpdateViewModel(update, currentVersion));
+
+            if (updateList.Errors.Count > 0)
+            {
+                Status.Value = string.Join(Environment.NewLine, updateList.Errors);
+                StatusHasError.Value = true;
+            }
         }
 
         private async Task LoadRemoteUpdatesInternal(bool forced)
         {
             var agent = _remoteAgent;
-            ServerUpdateList serverUpdates = null;
+            ServerUpdateList serverUpdList = null;
             string currentVersion = null;
             if (agent.Model.VersionSpec.SupportsAutoUpdate)
             {
-                serverUpdates = await agent.Model.GetServerUpdateList(forced);
+                serverUpdList = await agent.Model.GetServerUpdateList(forced);
                 currentVersion = agent.Model.CurrentVersion.Version;
             }
 
-            var updates = await _updateSvc.GetUpdates(forced);
+            var localUpdList = await _updateSvc.GetUpdates(forced);
             AvailableUpdates.Clear();
 
-            if (serverUpdates != null)
+            if (serverUpdList != null)
             {
                 // display updates available on server side
-                foreach (var serverUpd in serverUpdates.Updates)
+                foreach (var serverUpd in serverUpdList.Updates)
                 {
                     // Match releases from main repo to use server-side update download and allow downloading setup
-                    var update = updates.FirstOrDefault(u => u.SrcId == AutoUpdateService.MainSourceName && u.VersionId == serverUpd.ReleaseId);
+                    var update = localUpdList.Updates.FirstOrDefault(u => u.SrcId == AutoUpdateService.MainSourceName && u.VersionId == serverUpd.ReleaseId);
                     AvailableUpdates.Add(new AppUpdateViewModel(update, serverUpd, currentVersion));
                 }
             }
 
-            foreach (var update in updates)
+            foreach (var update in localUpdList.Updates)
                 if (update.AvailableAssets.Any(a => _serverAssets.Contains(a)))
                 {
-                    var hasServerUpd = serverUpdates != null && update.SrcId == AutoUpdateService.MainSourceName
-                        && serverUpdates.Updates.Any(u => u.ReleaseId == update.VersionId);
+                    var hasServerUpd = serverUpdList != null && update.SrcId == AutoUpdateService.MainSourceName
+                        && serverUpdList.Updates.Any(u => u.ReleaseId == update.VersionId);
 
                     // Skip duplicate updates
                     if (!hasServerUpd)
                         AvailableUpdates.Add(new AppUpdateViewModel(update, null, currentVersion));
                 }
+
+            var errors = serverUpdList != null ? Enumerable.Concat(localUpdList.Errors, serverUpdList.Errors) : localUpdList.Errors;
+            if (errors.Any())
+            {
+                Status.Value = string.Join(Environment.NewLine, errors.Distinct(LoadUpdatesErrorEquailityComparer.Instance));
+                StatusHasError.Value = true;
+            }
         }
 
         private async Task InstallUpdateAsync()
@@ -599,6 +614,31 @@ namespace TickTrader.BotTerminal
                 HasUpdate = availableAssets.Contains(updateType);
                 HasSetup = availableAssets.Contains(UpdateAssetTypes.Setup);
                 AppType = string.Join(", ", availableAssets);
+            }
+        }
+
+        private class LoadUpdatesErrorEquailityComparer : IEqualityComparer<string>
+        {
+            public static LoadUpdatesErrorEquailityComparer Instance { get; } = new LoadUpdatesErrorEquailityComparer();
+
+
+            public bool Equals(string a, string b)
+            {
+                var indexA = a.IndexOf("RetryAfter=");
+                var indexB = b.IndexOf("RetryAfter=");
+                if (indexA != -1 && indexB != -1)
+                {
+                    var subA = a[..indexA];
+                    var subB = b[..indexB];
+                    return subA == subB;
+                }
+
+                return indexA == indexB;
+            }
+
+            public int GetHashCode(string obj)
+            {
+                return obj.GetHashCode();
             }
         }
     }

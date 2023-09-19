@@ -30,6 +30,8 @@ namespace TickTrader.Algo.AutoUpdate
     {
         IEnumerable<AppUpdateEntry> Updates { get; }
 
+        string LoadUpdatesError { get; }
+
 
         Task LoadUpdates();
 

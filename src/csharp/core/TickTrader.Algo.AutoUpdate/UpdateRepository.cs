@@ -20,6 +20,8 @@ namespace TickTrader.Algo.AutoUpdate
 
         public List<AppUpdateEntry> UpdatesCache { get; private set; } = new();
 
+        public List<string> LoadUpdatesErrors { get; private set; } = new();
+
 
         public UpdateRepository(string downloadFolder)
         {
@@ -57,10 +59,12 @@ namespace TickTrader.Algo.AutoUpdate
                         tasks.Add(provider.LoadUpdates());
                 }
                 await Task.WhenAll(tasks);
-                var newUpdateList = _providers.Values.SelectMany(p => p.Updates).ToList();
                 lock (_syncObj)
                 {
+                    var newUpdateList = _providers.Values.SelectMany(p => p.Updates).ToList();
+                    var newErrorsList = _providers.Values.Select(p => p.LoadUpdatesError).Where(e => !string.IsNullOrEmpty(e)).ToList();
                     UpdatesCache = newUpdateList;
+                    LoadUpdatesErrors = newErrorsList;
                     _updatesCacheTimeUtc = DateTime.UtcNow;
                 }
 

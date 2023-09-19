@@ -21,6 +21,8 @@ namespace TickTrader.Algo.AutoUpdate
 
         public IEnumerable<AppUpdateEntry> Updates => _lastUpdates;
 
+        public string LoadUpdatesError { get; private set; }
+
 
         public DirectoryAppUpdateProvider(UpdateDownloadSource updateSrc)
         {
@@ -43,6 +45,7 @@ namespace TickTrader.Algo.AutoUpdate
 
         private void LoadUpdatesInternal()
         {
+            LoadUpdatesError = null;
             var res = new List<AppUpdateEntry>(2 * _lastUpdates.Count);
             try
             {
@@ -74,7 +77,9 @@ namespace TickTrader.Algo.AutoUpdate
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to get updates from local folder '{_path}'");
+                var errMsg = $"Failed to get updates from local folder '{_path}'";
+                LoadUpdatesError = errMsg;
+                _logger.Error(ex, errMsg);
             }
             _lastUpdates = res;
         }

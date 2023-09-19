@@ -1130,6 +1130,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
         {
             var res = new ServerApi.ServerUpdateList();
             res.Updates.AddRange(list.Updates.Select(u => u.ToServer()));
+            res.Errors.Add(list.Errors);
             return res;
         }
 
