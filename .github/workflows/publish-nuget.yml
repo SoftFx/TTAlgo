@@ -1,5 +1,5 @@
 name: TTAlgo Nuget publish
-run-name: Publish nuget '${{ inputs.TargetProject }}'
+run-name: Publish nuget '${{ inputs.TargetProject }}', pre='${{ inputs.IsPreRelease }}', pub='${{ inputs.DoPublish }}'
 on:
   workflow_dispatch:
     inputs:
