@@ -17,6 +17,8 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
     <PackageIcon>images\icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/SoftFx/TTAlgo</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/SoftFx/TTAlgo</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
