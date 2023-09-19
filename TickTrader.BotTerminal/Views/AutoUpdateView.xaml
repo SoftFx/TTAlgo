@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal"
                     xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
                     xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp">
 
     <Style x:Key="SpinnerStyle" TargetType="fa:IconBlock">
@@ -160,7 +161,19 @@
             <Border Grid.Row="2" BorderThickness="1" CornerRadius="2"
                     BorderBrush="{DynamicResource Shell_SecondaryForeground}">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                    <TextBlock Margin="5" Text="{Binding UpdateLog.Value, Mode=OneWay}" TextWrapping="Wrap" />
+                    <TextBox Margin="5" Text="{Binding UpdateLog.Value, Mode=OneWay}" TextWrapping="NoWrap"
+                             IsReadOnly="True" BorderThickness="0" Height="Auto" Padding="0">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="ApplicationCommands.Copy" />
+                                <MenuItem Header="Copy All">
+                                    <i:Interaction.Behaviors>
+                                        <l:MenuItemCopyTextBehavior Text="{Binding UpdateLog.Value, Mode=OneWay}" />
+                                    </i:Interaction.Behaviors>
+                                </MenuItem>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
                 </ScrollViewer>
             </Border>
             <l:FlatButton Grid.Row="3" BorderThickness="1" Margin="0 5" MaxWidth="150"
