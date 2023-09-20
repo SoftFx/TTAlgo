@@ -18,8 +18,8 @@ namespace TickTrader.Algo.AutoUpdate
         public const string MainGithubRepo = "https://github.com/SoftFx/TTAlgo";
         public const string MainSourceName = "main";
 
-        internal static readonly TimeSpan CheckUpdatesTimeout = TimeSpan.FromMinutes(15);
-        internal static readonly TimeSpan UpdatesCacheLifespan = TimeSpan.FromMinutes(1);
+        internal static readonly TimeSpan CheckUpdatesTimeout = TimeSpan.FromMinutes(60);
+        internal static readonly TimeSpan UpdatesCacheLifespan = TimeSpan.FromMinutes(5);
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AutoUpdateService>();
 
         private readonly UpdateRepository _repo;
