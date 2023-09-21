@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.AutoUpdate
@@ -61,7 +62,8 @@ namespace TickTrader.Algo.AutoUpdate
                 await Task.WhenAll(tasks);
                 lock (_syncObj)
                 {
-                    var newUpdateList = _providers.Values.SelectMany(p => p.Updates).ToList();
+                    var newUpdateList = _providers.Values.SelectMany(p => p.Updates
+                        .OrderByDescending(u => u.Info.ReleaseVersion, Comparer<string>.Create(AppVersionInfo.CompareVersions))).ToList();
                     var newErrorsList = _providers.Values.Select(p => p.LoadUpdatesError).Where(e => !string.IsNullOrEmpty(e)).ToList();
                     UpdatesCache = newUpdateList;
                     LoadUpdatesErrors = newErrorsList;
