@@ -164,6 +164,21 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return this;
         }
 
+        internal void OnFinalEvent(string orderId, Type eventType)
+        {
+            var ex = new Exception($"Order #{orderId} recieved final event {eventType.Name}");
+
+            Opened.TrySetException(ex);
+            OpenedGrossPosition.TrySetException(ex);
+            RejectOpened.TrySetException(ex);
+            OnTimeTriggerReceived.TrySetException(ex);
+            Filled.TrySetException(ex);
+            Canceled.TrySetException(ex);
+            Modified.TrySetException(ex);
+            Expired.TrySetException(ex);
+            Closed.TrySetException(ex);
+        }
+
         internal OrderStateTemplate ForPending(int coef = 3)
         {
             Price = CalculatePrice(coef);

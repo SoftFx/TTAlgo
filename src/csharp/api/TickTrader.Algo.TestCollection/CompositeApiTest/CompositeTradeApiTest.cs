@@ -6,7 +6,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    [TradeBot(DisplayName = "Composite Trade API Test", Version = "2.0", Category = "Auto Tests", SetupMainSymbol = true)]
+    [TradeBot(DisplayName = "Composite Trade API Test", Version = "2.1", Category = "Auto Tests", SetupMainSymbol = true)]
     public class CompositeTradeApiTest : TradeBot
     {
         private readonly List<HistoryOrderTemplate> _historyStorage = new List<HistoryOrderTemplate>();
