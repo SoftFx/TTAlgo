@@ -1,8 +1,7 @@
 <Project>
   <PropertyGroup>
-    <!--<TickTraderAlgoToolsAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\build\netstandard2.0\TickTrader.Algo.Tools.dll</TickTraderAlgoToolsAssemblyFile>
-    <TickTraderAlgoToolsAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\build\net6.0\TickTrader.Algo.Tools.dll</TickTraderAlgoToolsAssemblyFile>-->
-    <TickTraderAlgoToolsAssemblyFile>$(MSBuildThisFileDirectory)..\build\netstandard2.0\TickTrader.Algo.Tools.dll</TickTraderAlgoToolsAssemblyFile>
+    <TickTraderAlgoToolsAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\build\netstandard2.0\TickTrader.Algo.Tools.dll</TickTraderAlgoToolsAssemblyFile>
+    <TickTraderAlgoToolsAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\build\net6.0\TickTrader.Algo.Tools.dll</TickTraderAlgoToolsAssemblyFile>
 
     <AlgoPackage_Create Condition="'$(AlgoPackage_Create)' == ''">true</AlgoPackage_Create>
     <AlgoPackage_Name Condition="'$(AlgoPackage_Name)' == ''">$(MSBuildProjectName)</AlgoPackage_Name>
