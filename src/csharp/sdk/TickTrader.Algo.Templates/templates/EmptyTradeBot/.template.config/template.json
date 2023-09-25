@@ -11,5 +11,6 @@
         "type": "project"
     },
     "sourceName": "EmptyTradeBot",
+    "defaultName": "TradeBot1",
     "preferNameDirectory":  true
 }
