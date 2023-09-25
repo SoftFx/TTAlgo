@@ -11,6 +11,6 @@
         "type": "project"
     },
     "sourceName": "SampleTradeBot",
-    "defaultName": "Indicator1",
+    "defaultName": "TradeBot1",
     "preferNameDirectory":  true
 }
