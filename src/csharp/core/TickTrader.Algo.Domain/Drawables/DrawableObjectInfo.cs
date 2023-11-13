@@ -60,6 +60,9 @@
                 case Drawable.Types.ObjectType.FiboFan:
                 case Drawable.Types.ObjectType.FiboArcs:
                 case Drawable.Types.ObjectType.FiboChannel:
+                case Drawable.Types.ObjectType.FiboRetracement:
+                case Drawable.Types.ObjectType.FiboTimeZones:
+                case Drawable.Types.ObjectType.FiboExpansion:
                 case Drawable.Types.ObjectType.AndrewsPitchfork:
                     return true;
                 default: return false;
