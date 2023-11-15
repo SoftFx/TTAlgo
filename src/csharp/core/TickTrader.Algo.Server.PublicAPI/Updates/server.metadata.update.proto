@@ -10,6 +10,7 @@ import "info/package.info.proto";
 import "info/plugin.info.proto";
 import "info/account.info.proto";
 import "info/server.metadata.info.proto";
+import "info/autoupdate.info.proto";
 
 
 message AlgoServerMetadataUpdate {
@@ -20,6 +21,9 @@ message AlgoServerMetadataUpdate {
     repeated PackageInfo packages = 4;
     repeated AccountModelInfo accounts = 5;
     repeated PluginModelInfo plugins = 6;
+
+    ServerVersionInfo current_version = 7;
+    UpdateServiceInfo update_svc = 8;
 
     RequestResult exec_result = 101;
 }

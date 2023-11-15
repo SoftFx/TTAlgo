@@ -4,7 +4,7 @@
     {
         public static int MajorVersion => 2;
 
-        public static int MinorVersion => 1;
+        public static int MinorVersion => 2;
 
         public static string LatestVersion => $"{MajorVersion}.{MinorVersion}";
 
@@ -48,5 +48,7 @@
 
 
         public bool SupportsBlackjack => CurrentVersion == MinorVersion;
+
+        public bool SupportsAutoUpdate => CurrentVersion >= 2;
     }
 }

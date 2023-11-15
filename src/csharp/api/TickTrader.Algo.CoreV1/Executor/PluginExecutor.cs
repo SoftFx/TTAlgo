@@ -618,7 +618,7 @@ namespace TickTrader.Algo.CoreV1
                 InitTimeSpanBuffering(timeSpanConfig.From.ToDateTime(), timeSpanConfig.To.ToDateTime());
 
             if (config.InvokeStrategyConfig.TryUnpack<PriorityInvokeStrategyConfig>(out var priorityStrategyConfig))
-                InvokeStrategy = new PriorityInvokeStartegy();
+                InvokeStrategy = new PriorityInvokeStartegy(_metadata.Descriptor.IsIndicator);
 
             AccInfoProvider = account.AccInfoProvider;
             Metadata = account.Metadata;

@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Account.Fdk2
             _feedProxy.SubscribeBarsErrorEvent += (c, d, ex) => { SfxTaskAdapter.SetFailed<BarUpdateSummary[]>(d, ex); };
 
             _feedProxy.UnsubscribeBarsResultEvent += (c, d, s) => { SfxTaskAdapter.SetCompleted(d, BarUpdateSummary.FromRemovedSymbols(s)); };
-            _feedProxy.UnsubscribeBarsErrorEvent += (c, d, ex) => { SfxTaskAdapter.SetFailed<bool>(d, ex); };
+            _feedProxy.UnsubscribeBarsErrorEvent += (c, d, ex) => { SfxTaskAdapter.SetFailed<BarUpdateSummary[]>(d, ex); };
 
             _feedProxy.BarsUpdateEvent += (c, b) => _barSubAdapter.AddUpdate(SfxInterop.Convert(b));
         }

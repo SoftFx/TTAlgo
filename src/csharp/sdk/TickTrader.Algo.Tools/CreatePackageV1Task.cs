@@ -36,8 +36,6 @@ namespace TickTrader.Algo.Tools
 
         public string Author { get; set; }
 
-        public string RuntimeType { get; set; }
-
 
         public override bool Execute()
         {
@@ -80,10 +78,9 @@ namespace TickTrader.Algo.Tools
 
                     var info = builder.BuildBaseInformation(packagePath);
 
-                    Print($"{nameof(RuntimeType)}={RuntimeType}");
-
-                    if (RuntimeType == "Core")
-                        info = builder.FillReflectionInfo(info);
+                    var filled = builder.FillReflectionInfo(info);
+                    if (!filled)
+                        Log.LogWarning("Reflection metadata skipped. Not supported on this MSBuild");
 
                     builder.SaveMetadata(info);
                 }

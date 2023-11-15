@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "management/base.request.proto";
+import "info/autoupdate.info.proto";
+import "info/file.transfer.info.proto";
+
+
+message ServerVersionRequest { }
+
+message ServerVersionResponse {
+    ServerVersionInfo info = 1;
+    RequestResult exec_result = 101;
+}
+
+message ServerUpdateListRequest {
+    bool forced = 1;
+}
+
+message ServerUpdateListResponse {
+    ServerUpdateList list = 1;
+    RequestResult exec_result = 101;
+}
+
+message StartServerUpdateRequest {
+    string release_id = 1;
+}
+
+message StartUpdateResult {
+    bool started = 1;
+    google.protobuf.StringValue error_msg = 2;
+}
+
+message StartServerUpdateResponse {
+    StartUpdateResult result = 1;
+    RequestResult exec_result = 101;
+}
+
+message StartCustomServerUpdateRequest {
+    google.protobuf.StringValue version = 1;
+    FileTransferSettings transfer_settings = 2;
+}
+
+message StartCustomServerUpdateResponse {
+    StartUpdateResult result = 1;
+    RequestResult exec_result = 101;
+}
+
+message DiscardServerUpdateResultRequest { }
+
+message DiscardServerUpdateResultResponse {
+    RequestResult exec_result = 101;
+}

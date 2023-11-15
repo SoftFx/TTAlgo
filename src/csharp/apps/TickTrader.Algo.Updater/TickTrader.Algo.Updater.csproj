@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+    <StartupObject>TickTrader.Algo.Updater.Program</StartupObject>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>algo.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TickTrader.Algo.AppCommon\TickTrader.Algo.AppCommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="algo.ico" />
+  </ItemGroup>
+
+</Project>

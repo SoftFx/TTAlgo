@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
@@ -18,7 +19,7 @@ namespace TickTrader.BotAgent.BA.Models
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<ServerModel>();
 
-        private static readonly EnvService envService = new(AppDomain.CurrentDomain.BaseDirectory);
+        private static readonly EnvService envService = new(AppInfoProvider.DataPath);
         private static readonly string cfgFilePath = Path.Combine(envService.AppFolder, "server.config.xml");
 
         [DataMember(Name = "accounts")]
@@ -40,8 +41,9 @@ namespace TickTrader.BotAgent.BA.Models
             var settings = new AlgoServerSettings();
             var monitoringSettings = config.GetMonitoringSettings();
 
-            settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
+            settings.DataFolder = AppInfoProvider.DataPath;
             settings.EnableAccountLogs = config.GetFdkSettings().EnableLogs;
+            settings.EnableAutoUpdate = true;
 
             settings.HostSettings.RuntimeSettings.RuntimeExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "runtime", "TickTrader.Algo.RuntimeV1Host.exe");
             settings.HostSettings.RuntimeSettings.EnableDevMode = config.GetAlgoSettings().EnableDevMode;

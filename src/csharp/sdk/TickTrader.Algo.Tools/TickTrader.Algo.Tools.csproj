@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- <TargetFrameworks>net472;netstandard2.0</TargetFrameworks> -->
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <VersionPrefix>1.0.1</VersionPrefix>
   </PropertyGroup>
 
@@ -15,6 +14,8 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
     <PackageIcon>images\icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/SoftFx/TTAlgo</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/SoftFx/TTAlgo</PackageProjectUrl>
 
     <BuildOutputTargetFolder>build</BuildOutputTargetFolder>
     <DevelopmentDependency>true</DevelopmentDependency>
@@ -22,14 +23,13 @@
   </PropertyGroup>
 
   <ItemGroup Label="NuGet assets">
-    <None Include="icon.png" Pack="true" PackagePath="images\" />
+    <None Include="icon.png" Pack="true" PackagePath="images" />
     <None Pack="true" PackagePath="build\" Include="build\**\*.props; build\**\*.targets;" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.548" PrivateAssets="all" />
-    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

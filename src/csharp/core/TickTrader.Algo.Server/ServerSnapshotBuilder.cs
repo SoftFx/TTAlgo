@@ -2,6 +2,7 @@
 using System.Linq;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.Server
 {
@@ -21,6 +22,7 @@ namespace TickTrader.Algo.Server
         private PackageListSnapshot _packageSnapshot = new PackageListSnapshot();
         private AccountListSnapshot _accountSnapshot = new AccountListSnapshot();
         private PluginListSnapshot _pluginSnapshot = new PluginListSnapshot();
+        private UpdateServiceInfo _updateServiceSnapshot = new UpdateServiceInfo(AutoUpdateEnums.Types.ServiceStatus.Idle, null);
 
 
         #region Snapshots
@@ -192,5 +194,13 @@ namespace TickTrader.Algo.Server
         }
 
         #endregion Snapshots
+
+        public bool OnUpdateServiceStateChanged(UpdateServiceStateUpdate update)
+        {
+            _updateServiceSnapshot = update.Snapshot;
+            return true;
+        }
+
+        public UpdateServiceInfo GetUpdateServiceSnapshot() => _updateServiceSnapshot;
     }
 }

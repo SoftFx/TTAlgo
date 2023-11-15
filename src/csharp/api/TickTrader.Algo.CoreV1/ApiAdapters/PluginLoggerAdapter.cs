@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using static TickTrader.Algo.Domain.OrderExecReport.Types;
@@ -112,7 +112,7 @@ namespace TickTrader.Algo.CoreV1
                     break;
                 case OrderAction.Close:
                     prefix = $"Position {order?.Symbol} #{order?.Id} ";
-                    if (order?.RemainingAmount.IsZero() == false)
+                    if (order?.RemainingAmount.E0() == false)
                         suffix = $", remaining volume={result.ResultingOrder.RemainingVolume}";
                     break;
                 default:
@@ -216,12 +216,12 @@ namespace TickTrader.Algo.CoreV1
 
             builder.Append(extraParams);
 
-            if (info.Price.HasValue && !info.Price.Value.IsZero())
+            if (info.Price.HasValue && !info.Price.Value.E0())
                 builder.Append(" at price ").AppendNumber(info.Price ?? 0, DefaultPriceFormat);
 
-            if (info.StopPrice.HasValue && !info.StopPrice.Value.IsZero())
+            if (info.StopPrice.HasValue && !info.StopPrice.Value.E0())
             {
-                if (info.Price.HasValue && !info.Price.Value.IsZero())
+                if (info.Price.HasValue && !info.Price.Value.E0())
                     builder.Append(", stop price ").AppendNumber(info.StopPrice.Value, DefaultPriceFormat);
                 else
                     builder.Append(" at stop price ").AppendNumber(info.StopPrice.Value, DefaultPriceFormat);
@@ -232,7 +232,7 @@ namespace TickTrader.Algo.CoreV1
 
         private static void AppendExstraParams(StringBuilder str, double? value, string name, NumberFormatInfo format = null)
         {
-            if (value == null || double.IsNaN(value.Value) || value.Value.IsZero())
+            if (value == null || double.IsNaN(value.Value) || value.Value.E0())
                 return;
 
             str.Append(str.Length == 0 ? " (" : ", ").Append($"{name}:");

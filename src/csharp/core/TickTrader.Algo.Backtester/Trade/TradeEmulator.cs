@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
-using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -84,10 +83,11 @@ namespace TickTrader.Algo.Backtester
 
             if (_acc.IsMarginType)
             {
-                _acc.Balance = _settings.CommonSettings.InitialBalance;
+                var balanceDigits = _acc.BalanceCurrencyInfo?.Digits ?? 2;
+                _acc.Balance = RoundMoney(_settings.CommonSettings.InitialBalance, balanceDigits);
                 _acc.Leverage = _settings.CommonSettings.Leverage;
                 _acc.UpdateCurrency(_settings.CommonSettings.Currencies.GetOrDefault(_settings.CommonSettings.BalanceCurrency));
-                _opSummary.BalanceCurrencyFormat = new System.Globalization.NumberFormatInfo { NumberDecimalDigits = _acc.BalanceCurrencyInfo?.Digits ?? 2 };
+                _opSummary.BalanceCurrencyFormat = new System.Globalization.NumberFormatInfo { NumberDecimalDigits = balanceDigits };
             }
             else if (_acc.IsCashType)
             {
@@ -1661,7 +1661,8 @@ namespace TickTrader.Algo.Backtester
             //SendExecutionReport(execReport, acc);
             //SendPositionReport(acc, CreatePositionReport(acc, PositionReportType.CreatePosition, position.SymbolRef, balanceMovement));
 
-            _acc.Balance += balanceMovement;
+            var newBalance = _acc.Balance + balanceMovement;
+            _acc.Balance = RoundMoney(newBalance, _calcFixture.RoundingDigits);
 
             _collector.OnCommisionCharged(commission);
 
@@ -1947,7 +1948,8 @@ namespace TickTrader.Algo.Backtester
 
             // change balance
             var totalProfit = charges.Total + profit;
-            _acc.Balance += totalProfit;
+            var newBalance = _acc.Balance + totalProfit;
+            _acc.Balance = RoundMoney(newBalance, _calcFixture.RoundingDigits);
 
             // Update modify timestamp.
             position.Info.Modified = _scheduler.UnsafeVirtualTimestamp;
@@ -2653,7 +2655,7 @@ namespace TickTrader.Algo.Backtester
             var decVal = volumeInLots;
             var decStep = smbMetadata.TradeVolumeStep;
 
-            return decVal.Floor(decStep);
+            return decVal.FloorBy(decStep);
         }
 
         private double? RoundVolume(double? volumeInLots, SymbolInfo smbMetadata)
@@ -2666,12 +2668,12 @@ namespace TickTrader.Algo.Backtester
 
         private static double RoundPrice(double price, SymbolInfo smbMetadata, OrderInfo.Types.Side side)
         {
-            return side == OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+            return side == OrderInfo.Types.Side.Buy ? price.CeilBy(smbMetadata.Digits) : price.FloorBy(smbMetadata.Digits);
         }
 
         private static double? RoundPrice(double? price, SymbolInfo smbMetadata, OrderInfo.Types.Side side)
         {
-            return side == OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+            return side == OrderInfo.Types.Side.Buy ? price.CeilBy(smbMetadata.Digits) : price.FloorBy(smbMetadata.Digits);
         }
 
         private double? ToUnits(double? volumeInLots, SymbolInfo smbMetadata)

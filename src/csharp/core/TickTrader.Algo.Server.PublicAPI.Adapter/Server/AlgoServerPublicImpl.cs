@@ -10,6 +10,7 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 
 namespace TickTrader.Algo.Server.PublicAPI.Adapter
 {
@@ -231,6 +232,26 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         public override Task<UploadPluginFileResponse> UploadPluginFile(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context)
         {
             return ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, requestStream, context);
+        }
+
+        public override Task<ServerUpdateListResponse> GetServerUpdateList(ServerUpdateListRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(GetServerUpdateListInternal, request, context);
+        }
+
+        public override Task<StartServerUpdateResponse> StartServerUpdate(StartServerUpdateRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(StartServerUpdateInternal, request, context);
+        }
+
+        public override Task<StartCustomServerUpdateResponse> StartCustomServerUpdate(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context)
+        {
+            return ExecuteClientStreamingRequestAuthorized(StartCustomServerUpdateInternal, requestStream, context);
+        }
+
+        public override Task<DiscardServerUpdateResultResponse> DiscardServerUpdateResult(DiscardServerUpdateResultRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(DiscardServerUpdateResultInternal, request, context);
         }
 
         #endregion Grpc request handlers overrides
@@ -1188,6 +1209,157 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to upload bot file");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return res;
+        }
+
+        private async Task<ServerUpdateListResponse> GetServerUpdateListInternal(ServerUpdateListRequest request, ServerCallContext context, SessionInfo session, RequestResult execResult)
+        {
+            var res = new ServerUpdateListResponse { ExecResult = execResult };
+            if (session == null)
+                return res;
+            if (!session.AccessManager.CanGetServerUpdateInfo())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return res;
+            }
+
+            try
+            {
+                res.List = (await _algoServer.GetServerUpdates(request.ToServer())).ToApi();
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to get server updates list");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return res;
+        }
+
+        private async Task<StartServerUpdateResponse> StartServerUpdateInternal(StartServerUpdateRequest request, ServerCallContext context, SessionInfo session, RequestResult execResult)
+        {
+            var res = new StartServerUpdateResponse { ExecResult = execResult };
+            if (session == null)
+                return res;
+            if (!session.AccessManager.CanControlServerUpdate())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return res;
+            }
+
+            try
+            {
+                var serverRes = await _algoServer.StartServerUpdate(request.ToServer());
+                res.Result = serverRes.ToApi();
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to start server update");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return res;
+        }
+
+        private async Task<StartCustomServerUpdateResponse> StartCustomServerUpdateInternal(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context, SessionInfo session, RequestResult execResult)
+        {
+            var res = new StartCustomServerUpdateResponse { ExecResult = execResult };
+            if (session == null)
+                return res;
+            if (!session.AccessManager.CanUploadBotFile())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, typeof(StartCustomServerUpdateRequest).Name);
+                return res;
+            }
+
+            if (!await requestStream.MoveNext())
+            {
+                res.ExecResult = CreateErrorResult("Empty upload stream");
+                return res;
+            }
+
+            var transferMsg = GetClientStreamRequest(requestStream, session);
+            if (transferMsg == null || !transferMsg.Header.Is(StartCustomServerUpdateRequest.Descriptor))
+            {
+                res.ExecResult = CreateRejectResult($"Expected {nameof(StartCustomServerUpdateRequest)} header, but received '{transferMsg.Header.TypeUrl}'");
+                return res;
+            }
+            var request = transferMsg.Header.Unpack<StartCustomServerUpdateRequest>();
+            _messageFormatter.LogMsgToClient(session?.Logger, request);
+
+            var filePath = Path.GetTempFileName();
+            try
+            {
+                var chunkOffset = request.TransferSettings.ChunkOffset;
+                var chunkSize = request.TransferSettings.ChunkSize;
+
+                if (chunkOffset > 0)
+                    throw new ArgumentException("Can't upload partial file");
+
+                var buffer = new byte[chunkSize];
+                using (var stream = File.Open(filePath, FileMode.Create, FileAccess.ReadWrite))
+                {
+                    while (await requestStream.MoveNext())
+                    {
+                        transferMsg = GetClientStreamRequest(requestStream, session);
+
+                        var data = transferMsg.Data;
+                        if (!data.Binary.IsEmpty)
+                        {
+                            data.Binary.CopyTo(buffer, 0);
+                            stream.Write(buffer, 0, data.Binary.Length);
+                        }
+                        if (data.IsFinal)
+                            break;
+                        if (stream.Length > 1 << 30) // 1Gib
+                            throw new Exception("Update size too large");
+                    }
+                }
+
+                var serverRes = await _algoServer.StartServerUpdate(new Domain.ServerControl.StartServerUpdateRequest { LocalPath = filePath });
+                res.Result = serverRes.ToApi();
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to start custom server update");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            finally
+            {
+                if (File.Exists(filePath))
+                {
+                    try
+                    {
+                        File.Delete(filePath);
+                    }
+                    catch(Exception ex)
+                    {
+                        // non-fatal
+                        _logger.Error(ex, $"Failed to delete temp server update file '{filePath}'");
+                    }
+                }
+            }
+            return res;
+        }
+
+        private async Task<DiscardServerUpdateResultResponse> DiscardServerUpdateResultInternal(DiscardServerUpdateResultRequest request, ServerCallContext context, SessionInfo session, RequestResult execResult)
+        {
+            var res = new DiscardServerUpdateResultResponse { ExecResult = execResult };
+            if (session == null)
+                return res;
+            if (!session.AccessManager.CanControlServerUpdate())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return res;
+            }
+
+            try
+            {
+                await _algoServer.DiscardServerUpdateResult(Domain.ServerControl.DiscardServerUpdateResultRequest.Instance);
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to discard server update result");
                 res.ExecResult = CreateErrorResult(ex);
             }
             return res;

@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+
+
+message AutoUpdateEnums {
+    enum ServiceStatus {
+        IDLE = 0;
+        UPDATING = 1;
+        UPDATE_SUCCESS = 2;
+        UPDATE_FAILED = 3;
+    }
+}
+
+message ServerVersionInfo {
+    google.protobuf.StringValue version = 1;
+    google.protobuf.StringValue release_date = 2;
+}
+
+message ServerUpdateInfo {
+    string release_id = 1;
+    google.protobuf.StringValue version = 2;
+    google.protobuf.StringValue release_date = 3;
+    google.protobuf.StringValue changelog = 4;
+    google.protobuf.StringValue min_version = 5;
+    bool is_stable = 6;
+}
+
+message ServerUpdateList {
+    repeated ServerUpdateInfo updates = 1;
+    repeated google.protobuf.StringValue errors = 2;
+}
+
+message UpdateServiceInfo {
+    AutoUpdateEnums.ServiceStatus status = 1;
+    google.protobuf.StringValue status_details = 2;
+    // ServerVersionInfo update_version = 3; // never used, keep index for compatibility
+    google.protobuf.StringValue update_log = 4;
+    bool has_new_version = 5;
+    google.protobuf.StringValue new_version = 6;
+}
+
+message UpdateServiceStateUpdate {
+    UpdateServiceInfo snapshot = 1;
+}

@@ -40,6 +40,28 @@ namespace TickTrader.Algo.Core.Lib
             }
         }
 
+        public static void CopyDirectory(string srcDir, string dstDir, bool recursive, bool overwrite)
+        {
+            if (!Directory.Exists(srcDir))
+                throw new DirectoryNotFoundException($"Src dir not found: '{srcDir}'");
+
+            // if we copy into a sub dir of srcDir we need all directories before we make smth
+            var subDirs = recursive ? Directory.GetDirectories(srcDir) : Array.Empty<string>();
+            Directory.CreateDirectory(dstDir);
+
+            foreach(var srcFilePath in Directory.GetFiles(srcDir))
+            {
+                var dstFilePath = Path.Combine(dstDir, Path.GetFileName(srcFilePath));
+                File.Copy(srcFilePath, dstFilePath, overwrite);
+            }
+
+            foreach(var srcSubDir in subDirs)
+            {
+                var dstSubDir = Path.Combine(dstDir, Path.GetFileName(srcSubDir));
+                CopyDirectory(srcSubDir, dstSubDir, recursive, overwrite);
+            }
+        }
+
 
         public static bool IsPathAbsolute(string path)
         {

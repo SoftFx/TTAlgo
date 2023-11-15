@@ -1,5 +1,6 @@
 ﻿using Machinarium.Qnil;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
@@ -68,7 +69,13 @@ namespace TickTrader.BotTerminal
 
         AlgoServerPublicApi.IAccessManager AccessManager { get; }
 
+        AlgoServerPublicApi.IVersionSpec VersionSpec { get; }
+
         AlertManagerModel AlertModel { get; }
+
+        ServerVersionInfo CurrentVersion { get; }
+
+        UpdateServiceInfo UpdateSvcInfo { get; }
 
 
         event Action<PackageInfo> PackageStateChanged;
@@ -76,6 +83,8 @@ namespace TickTrader.BotTerminal
         event Action<ITradeBot> BotStateChanged;
         event Action<ITradeBot> BotUpdated;
         event Action AccessLevelChanged;
+        event Action UpdateServiceStateChanged;
+        event Action SnapshotLoaded;
 
 
         Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext);
@@ -115,5 +124,13 @@ namespace TickTrader.BotTerminal
         Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, AlgoServerPublicApi.IFileProgressListener progressListener);
 
         Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerPublicApi.IFileProgressListener progressListener);
+
+        Task<ServerUpdateList> GetServerUpdateList(bool forced);
+
+        Task<StartServerUpdateResponse> StartServerUpdate(string releaseId);
+
+        Task<StartServerUpdateResponse> StartServerUpdateFromFile(string version, string srcPath);
+
+        Task DiscardServerUpdateResult();
     }
 }

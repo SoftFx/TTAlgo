@@ -21,7 +21,7 @@ namespace System.Threading.Tasks.Schedulers
         /// <summary>The list of tasks to be executed.</summary>
         private readonly LinkedList<Task> _tasks = new LinkedList<Task>(); // protected by lock(_tasks)
         /// <summary>The maximum concurrency level allowed by this scheduler.</summary>
-        private readonly int _maxDegreeOfParallelism;
+        private int _maxDegreeOfParallelism;
         /// <summary>Whether the scheduler is currently processing work items.</summary>
         private int _delegatesQueuedOrRunning = 0; // protected by lock(_tasks)
 
@@ -132,6 +132,16 @@ namespace System.Threading.Tasks.Schedulers
             {
                 if (lockTaken) Monitor.Exit(_tasks);
             }
+        }
+
+        /// <summary>
+        /// Changes maximum concurrency level allowed by scheduler.
+        /// Doesn't change immediately. Currently running threads will execute until task queue is not empty
+        /// </summary>
+        /// <param name="maxDegreeOfParallelism">The maximum concurrency level allowed by this scheduler.</param>
+        public void SetMaxDegreeOfParallelism(int maxDegreeOfParallelism)
+        {
+            _maxDegreeOfParallelism = maxDegreeOfParallelism;
         }
     }
 }

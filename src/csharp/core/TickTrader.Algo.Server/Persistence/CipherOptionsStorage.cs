@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Server.Persistence
 
         private sealed class CipherV1Options : CipherV1Helper.ICipherOptions
         {
-            private static readonly object _syncObj = new object();
+            private static readonly object _syncObj = new();
             private static readonly string _secretKeyDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ".ttalgo");
             private static readonly string _secretKeyPath = Path.Combine(_secretKeyDir, "cipher-v1.data");
 
@@ -32,9 +32,9 @@ namespace TickTrader.Algo.Server.Persistence
                     }
                     else
                     {
-                        using (var rng = new RNGCryptoServiceProvider())
+                        using (var rng = RandomNumberGenerator.Create())
                         {
-                            rng.GetNonZeroBytes(buffer);
+                            rng.GetBytes(buffer);
                         }
                         File.WriteAllBytes(_secretKeyPath, buffer);
                     }

@@ -7,5 +7,7 @@
         int MinorVersion { get; }
 
         int CurrentVersion { get; }
+
+        bool SupportsAutoUpdate { get; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET6_0_OR_GREATER
+using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
@@ -12,54 +13,49 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
 
         private readonly ConcurrentDictionary<string, Assembly> _cache = new ConcurrentDictionary<string, Assembly>();
         private readonly Action<string> _print;
-        private readonly string _source;
+        private readonly AssemblyDependencyResolver _resolver;
 
 
         internal string ApiVersion { get; private set; }
 
 
-        internal DynamicAssemblyLoadContext(string sorceFolder, Action<string> print)
+        internal DynamicAssemblyLoadContext(string mainDllPath, Action<string> print) : base(true)
         {
-            _source = sorceFolder;
+            _resolver = new AssemblyDependencyResolver(mainDllPath);
             _print = print;
-
-            Resolving += DynamicResolving;
         }
 
-        public void Dispose() => Resolving -= DynamicResolving;
-
-
-        protected override Assembly Load(AssemblyName assemblyName) => null; //must return null
-
-
-        private Assembly DynamicResolving(AssemblyLoadContext context, AssemblyName assemblyName)
+        public void Dispose()
         {
-            _print($"\tResolving {assemblyName}");
+            _cache.Clear();
+            Unload();
+        }
 
-            if (_cache.TryGetValue(assemblyName.FullName, out var assembly))
-                return assembly;
+        internal Assembly LoadAssemblyFileNotLocked(string path)
+        {
+            using (var file = File.OpenRead(path))
+                return LoadFromStream(file);
+        }
 
-            var expectedDllName = Path.Combine(Environment.CurrentDirectory, _source, $"{assemblyName.Name}.dll");
+        protected override Assembly Load(AssemblyName assemblyName)
+        {
+            //_print($"\tResolving {assemblyName}");
 
-            if (File.Exists(expectedDllName))
+            var assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
+            if (!File.Exists(assemblyPath))
             {
-                var dllAssemblyName = GetAssemblyName(expectedDllName);
-                var dllFullName = dllAssemblyName.FullName;
-
-                if (assemblyName.FullName == dllFullName)
-                {
-                    _print($"\tLoading {dllFullName}");
-
-                    if (Path.GetFileName(expectedDllName) == ApiFileName)
-                        ApiVersion = dllAssemblyName.Version.ToString();
-
-                    return RegisterNewAssembly(context.LoadFromAssemblyPath(expectedDllName));
-                }
+                //_print($"\tAssembly {assemblyName} not found");
+                return null;
             }
 
-            _print($"\tAssembly {assemblyName} not found");
+            _print($"\tLoading '{assemblyName}' from '{assemblyPath}'");
 
-            return null;
+            var assembly = LoadAssemblyFileNotLocked(assemblyPath);
+            if (Path.GetFileName(assemblyPath) == ApiFileName)
+                // get version of assembly that was actually loaded
+                ApiVersion = assembly.GetName().Version.ToString();
+
+            return RegisterNewAssembly(assembly);
         }
 
 
@@ -75,3 +71,4 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
         }
     }
 }
+#endif

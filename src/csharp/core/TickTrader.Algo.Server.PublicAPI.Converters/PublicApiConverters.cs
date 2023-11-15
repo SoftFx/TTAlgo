@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using ServerApi = TickTrader.Algo.Domain.ServerControl;
 
@@ -1012,6 +1013,108 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 Message = info.Message,
                 PluginId = info.PluginId,
                 TimeUtc = info.TimeUtc,
+                Type = info.Type.ToApi(),
+            };
+        }
+
+        public static AlertRecordInfo.Types.AlertType ToApi(this Domain.AlertRecordInfo.Types.AlertType type)
+        {
+            switch (type)
+            {
+                case Domain.AlertRecordInfo.Types.AlertType.Plugin:
+                    return AlertRecordInfo.Types.AlertType.Plugin;
+                case Domain.AlertRecordInfo.Types.AlertType.Server:
+                    return AlertRecordInfo.Types.AlertType.Server;
+                case Domain.AlertRecordInfo.Types.AlertType.Monitoring:
+                    return AlertRecordInfo.Types.AlertType.Monitoring;
+                default:
+                    throw new ArgumentException($"Unsupported alert type {type}");
+            }
+        }
+
+        public static ServerVersionRequest ToApi(this ServerApi.ServerVersionRequest request)
+        {
+            return new ServerVersionRequest();
+        }
+
+        public static ServerVersionInfo ToApi(this ServerApi.ServerVersionInfo info)
+        {
+            return new ServerVersionInfo
+            {
+                Version = info.Version,
+                ReleaseDate = info.ReleaseDate,
+            };
+        }
+
+        public static ServerUpdateListRequest ToApi(this ServerApi.ServerUpdateListRequest request)
+        {
+            return new ServerUpdateListRequest { Forced = request.Forced };
+        }
+
+        public static ServerUpdateList ToApi(this ServerApi.ServerUpdateList request)
+        {
+            var res = new ServerUpdateList();
+            res.Updates.AddRange(request.Updates.Select(u => u.ToApi()));
+            res.Errors.Add(request.Errors);
+            return res;
+        }
+
+        public static ServerUpdateInfo ToApi(this ServerApi.ServerUpdateInfo info)
+        {
+            return new ServerUpdateInfo
+            {
+                ReleaseId = info.ReleaseId,
+                Version = info.Version,
+                ReleaseDate = info.ReleaseDate,
+                MinVersion = info.MinVersion,
+                Changelog = info.Changelog,
+                IsStable = info.IsStable,
+            };
+        }
+
+        public static AutoUpdateEnums.Types.ServiceStatus ToApi(this ServerApi.AutoUpdateEnums.Types.ServiceStatus status)
+        {
+            switch (status)
+            {
+                case ServerApi.AutoUpdateEnums.Types.ServiceStatus.Idle:
+                    return AutoUpdateEnums.Types.ServiceStatus.Idle;
+                case ServerApi.AutoUpdateEnums.Types.ServiceStatus.Updating:
+                    return AutoUpdateEnums.Types.ServiceStatus.Updating;
+                case ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess:
+                    return AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess;
+                case ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateFailed:
+                    return AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
+                default:
+                    throw new ArgumentException($"Unsupported service status {status}");
+            }
+        }
+
+        public static UpdateServiceInfo ToApi(this ServerApi.UpdateServiceInfo info)
+        {
+            return new UpdateServiceInfo
+            {
+                Status = info.Status.ToApi(),
+                StatusDetails = info.StatusDetails,
+                UpdateLog = info.UpdateLog,
+                HasNewVersion = info.HasNewVersion,
+                NewVersion = info.NewVersion,
+            };
+        }
+
+        public static StartUpdateResult ToApi(this ServerApi.StartServerUpdateResponse response)
+        {
+            return new StartUpdateResult
+            {
+                Started = response.Started,
+                ErrorMsg = response.ErrorMsg,
+            };
+        }
+
+        public static UpdateServiceStateUpdate ToApi(this ServerApi.UpdateServiceStateUpdate update)
+        {
+            return new UpdateServiceStateUpdate
+            {
+                Snapshot = update.Snapshot.ToApi(),
             };
         }
     }

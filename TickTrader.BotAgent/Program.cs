@@ -7,9 +7,9 @@ using NLog.Extensions.Logging;
 using NLog.Web;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Logging;
@@ -38,6 +38,8 @@ namespace TickTrader.BotAgent
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
+            ResolveAppInfo();
+
             NonBlockingFileCompressor.Setup();
 
             AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
@@ -46,10 +48,13 @@ namespace TickTrader.BotAgent
             PkgLoader.InitDefaults();
 
             var logger = LogManager.GetLogger(nameof(Program));
-
-            SetupGlobalExceptionLogging(logger);
-
             LogManager.AutoShutdown = false; // autoshutdown triggers too early on windows restart
+            SetupGlobalExceptionLogging(logger);
+            logger.Info(AppInfoProvider.GetStatus());
+            var err = AppAccessInfo.AddAccessRecord(AppInfoProvider.DataPath);
+            if (err != null)
+                logger.Error(err, "Failed to add access record");
+
             try
             {
                 CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());
@@ -80,14 +85,15 @@ namespace TickTrader.BotAgent
         {
             Console.WriteLine(launchSettings);
 
-            var pathToContentRoot = Directory.GetCurrentDirectory();
-
-            if (launchSettings.Mode == LaunchMode.WindowsService)
-                pathToContentRoot = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-
+            var pathToContentRoot = AppInfoProvider.DataPath;
             var pathToWebAdmin = Path.Combine(pathToContentRoot, "WebAdmin");
-            var pathToWebRoot = Path.Combine(pathToWebAdmin, "wwwroot");
+            PathHelper.EnsureDirectoryCreated(pathToWebAdmin);
             var pathToAppSettings = Path.Combine(pathToWebAdmin, "appsettings.json");
+
+            var binDir = AppDomain.CurrentDomain.BaseDirectory;
+            var pathToWebRoot = AppInfoProvider.Data.IsDevDir
+                ? Path.Combine(binDir, "..", "..", "..", "WebAdmin", "wwwroot")
+                : Path.Combine(binDir, "WebAdmin", "wwwroot");
 
             AppSettings.EnsureValidConfiguration(pathToAppSettings);
 
@@ -172,6 +178,22 @@ namespace TickTrader.BotAgent
 
             ActorSystem.ActorErrors.Subscribe(ex => log.Error(ex));
             ActorSystem.ActorFailed.Subscribe(ex => log.Fatal(ex));
+        }
+
+        private static void ResolveAppInfo()
+        {
+            AppInfoProvider.Init(new ResolveAppInfoRequest { IgnorePortableFlag = true });
+            if (AppInfoProvider.HasError)
+            {
+                Environment.FailFast("Failed to resolve app folder", AppInfoProvider.Error);
+            }
+            else if (string.IsNullOrEmpty(AppInfoProvider.DataPath))
+            {
+                const string err = "Unexpected error: app folder resolved to empty string";
+                Environment.FailFast(err);
+            }
+
+            Directory.SetCurrentDirectory(AppInfoProvider.DataPath); // used in nlog.config
         }
     }
 }

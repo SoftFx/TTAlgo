@@ -10,6 +10,7 @@ using System.Windows;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Fdk2;
 using TickTrader.Algo.Account.Settings;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Logging;
@@ -25,33 +26,40 @@ namespace TickTrader.BotTerminal
     public class AppBootstrapper : BootstrapperBase
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        private static readonly AutoViewManager autoViewLocator = new AutoViewManager();
 
-        private readonly AppInstanceRestrictor _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
         private readonly SimpleContainer _container = new();
-
+        private readonly AppInstanceRestrictor _instanceRestrictor;
         private readonly bool _hasWriteAccess;
 
         private ShellViewModel _shell;
 
 
-        public static CultureInfo CultureCache { get; private set; }
+        public static CultureInfo CultureCache { get; } = CultureInfo.CurrentCulture;
+
+        public static AutoViewManager AutoViewLocator { get; } = new();
 
 
         public AppBootstrapper()
         {
-            CultureCache = CultureInfo.CurrentCulture;
-
             LocaleSelector.Instance.ActivateDefault();
-
             Initialize();
 
+            ResolveAppInfo();
+
+            _instanceRestrictor = new(EnvService.Instance.AppLockFilePath);
             _hasWriteAccess = HasWriteAccess();
             if (_hasWriteAccess)
             {
                 ConfigureCaliburn();
+                if (Execute.InDesignMode)
+                    return;
+
                 ConfigurateLogger();
                 ConfigureGlobalExceptionHandling();
+                logger.Info(AppInfoProvider.GetStatus());
+                var err = AppAccessInfo.AddAccessRecord(AppInfoProvider.DataPath);
+                if (err != null)
+                    logger.Error(err, "Failed to add access record");
 
                 PkgLoader.InitDefaults();
                 BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
@@ -59,7 +67,27 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public static AutoViewManager AutoViewLocator => autoViewLocator;
+
+        private static void ResolveAppInfo()
+        {
+            AppInfoProvider.Init();
+
+            if (Execute.InDesignMode)
+                return;
+
+            if (AppInfoProvider.HasError)
+            {
+                MessageBox.Show($"Failed to resolve app folder. Check windows logs for details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.FailFast("Failed to resolve app folder", AppInfoProvider.Error);
+            }
+            else if (string.IsNullOrEmpty(AppInfoProvider.DataPath))
+            {
+                const string err = "Unexpected error: app folder resolved to empty string";
+                MessageBox.Show(err, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.FailFast(err);
+            }
+            Directory.SetCurrentDirectory(AppInfoProvider.DataPath);
+        }
 
         private static void ConfigureCaliburn()
         {
@@ -71,7 +99,7 @@ namespace TickTrader.BotTerminal
                 var viewType = ViewLocator.LocateTypeForModelType(modelType, displayLocation, context);
 
                 if (viewType == null)
-                    return autoViewLocator.CreateView(modelType, context);
+                    return AutoViewLocator.CreateView(modelType, context);
 
                 return ViewLocator.GetOrCreateViewType(viewType);
             };
@@ -257,7 +285,7 @@ namespace TickTrader.BotTerminal
                 switch (res)
                 {
                     case AccessElevationStatus.AlreadyThere:
-                        MessageBox.Show($"Don't have access to write in directory {Directory.GetCurrentDirectory()}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"Don't have access to write in directory {EnvService.Instance.AppFolder}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         return false;
                     case AccessElevationStatus.Launched:
                     case AccessElevationStatus.UserCancelled:

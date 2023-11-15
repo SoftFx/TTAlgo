@@ -10,6 +10,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private readonly TimeSpan DelayBetweenServerRequests = TimeSpan.FromSeconds(5);
         private readonly TimeSpan WaitAllFailedTestEvents = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan SingleTestTimeout = TimeSpan.FromSeconds(15);
 
         private readonly GroupStatManager _statsManager;
         private readonly EventsQueueManager _eventManager;
@@ -35,6 +36,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
 
         protected async Task RunTest(Func<OrderStateTemplate, Task> test, OrderBaseSet set, OrderStateTemplate template = null,
+            string testInfo = null)
+        {
+            var runTestTask = RunTestInternal(test, set, template, testInfo);
+            var firstCompleted = await Task.WhenAny(runTestTask, Bot.Delay(SingleTestTimeout));
+
+            if (firstCompleted != runTestTask)
+                _statsManager.TestError("FATAL: RunTest() timeout");
+        }
+
+        protected async Task RunTestInternal(Func<OrderStateTemplate, Task> test, OrderBaseSet set, OrderStateTemplate template = null,
             string testInfo = null)
         {
             try

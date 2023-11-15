@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Server.PublicAPI.Adapter;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Settings;
@@ -104,7 +105,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             if (protocolConfig.InsecurePort > 65535)
                 throw new ArgumentException("Invalid InsecurePort number");
 
-            var logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, protocolConfig.LogDirectoryName);
+            var logDirectory = Path.Combine(AppInfoProvider.DataPath, protocolConfig.LogDirectoryName);
 
             var serverSettings = new ServerSettings(logDirectory, protocolConfig.LogMessages);
 

@@ -11,10 +11,6 @@ namespace TickTrader.BotTerminal
 
     internal interface IShell : IViewAware, IWindowModel
     {
-        void OpenChart(string smb);
-        void ShowChart(string smb, Feed.Types.Timeframe period);
-        DialogResult ShowDialog(DialogButton buttons, DialogMode mode, string title = null, string message = null, string error = null);
-        void Connect(AccountAuthEntry creds);
         UiLock ConnectionLock { get; }
         WindowManager ToolWndManager { get; }
         IProfileLoader ProfileLoader { get; }
@@ -23,5 +19,11 @@ namespace TickTrader.BotTerminal
         ConnectionManager ConnectionManager { get; }
         AlertViewModel AlertsManager { get; }
         EventJournal EventJournal { get; }
+
+        void OpenChart(string smb);
+        void ShowChart(string smb, Feed.Types.Timeframe period);
+        DialogResult ShowDialog(DialogButton buttons, DialogMode mode, string title = null, string message = null, string error = null);
+        void Connect(AccountAuthEntry creds);
+        void OpenUpdate(BotAgentViewModel agent);
     }
 }

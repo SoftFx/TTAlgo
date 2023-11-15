@@ -1,6 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 
@@ -87,7 +87,7 @@ namespace TickTrader.Algo.CoreV1
 
         double Order.Margin => ProcessResponse(Info.Calculator?.Margin?.Calculate(Info));
 
-        double Order.Profit => ProcessResponse(Info.Calculator?.Profit.Calculate(Info));
+        double Order.Profit => ProcessResponse(Info.Calculator?.Profit?.Calculate(Info));
 
         Api.OrderOptions Order.Options => Info.Options.ToApiEnum();
 

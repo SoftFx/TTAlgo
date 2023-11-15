@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Core.Lib
     {
         public static DateTime GetLinkerTime(this Assembly assembly, TimeZoneInfo target = null)
         {
-            return GetLinkerTime(assembly.Location);
+            return GetLinkerTime(assembly.Location, target);
         }
 
         public static DateTime GetLinkerTime(string filePath, TimeZoneInfo target = null)
@@ -29,10 +29,7 @@ namespace TickTrader.Algo.Core.Lib
 
             var linkTimeUtc = epoch.AddSeconds(secondsSince1970);
 
-            var tz = target ?? TimeZoneInfo.Local;
-            var localTime = TimeZoneInfo.ConvertTimeFromUtc(linkTimeUtc, tz);
-
-            return localTime;
+            return target == null ? linkTimeUtc : TimeZoneInfo.ConvertTimeFromUtc(linkTimeUtc, target);
         }
     }
 }

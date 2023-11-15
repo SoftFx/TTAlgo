@@ -11,5 +11,6 @@
         "type": "project"
     },
     "sourceName": "SampleIndicator",
+    "defaultName": "Indicator1",
     "preferNameDirectory":  true
 }

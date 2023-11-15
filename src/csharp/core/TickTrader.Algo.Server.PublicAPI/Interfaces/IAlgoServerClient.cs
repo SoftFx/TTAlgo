@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Server.PublicAPI
@@ -103,5 +104,17 @@ namespace TickTrader.Algo.Server.PublicAPI
         Task UploadPluginFile(UploadPluginFileRequest request, string srcPath, IFileProgressListener progressListener);
 
         #endregion Plugin Files Management
+
+        #region AutoUpdate management
+
+        Task<ServerUpdateList> GetServerUpdateList(ServerUpdateListRequest request);
+
+        Task<StartUpdateResult> StartServerUpdate(StartServerUpdateRequest request);
+
+        Task<StartUpdateResult> StartCustomUpdate(StartCustomServerUpdateRequest request, string srcPath);
+
+        Task DiscardServerUpdateResult();
+
+        #endregion AutoUpdate management
     }
 }

@@ -3,6 +3,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -236,6 +237,11 @@ namespace TickTrader.Algo.Server.PublicAPI
                 _serverHandler.InitPackageList(snapshot.Packages.ToList());
                 _serverHandler.InitAccountModelList(snapshot.Accounts.ToList());
                 _serverHandler.InitPluginModelList(snapshot.Plugins.ToList());
+
+                _serverHandler.InitCurrentVersion(snapshot.CurrentVersion);
+                _serverHandler.InitUpdateSvcInfo(snapshot.UpdateSvc);
+
+                _serverHandler.InitCompleted();
             }
             catch (UnauthorizedException uex)
             {
@@ -316,6 +322,8 @@ namespace TickTrader.Algo.Server.PublicAPI
                     case PackageStateUpdate packageStateUpdate: _serverHandler.OnPackageStateUpdate(packageStateUpdate); break;
                     case AccountStateUpdate accountStateUpdate: _serverHandler.OnAccountStateUpdate(accountStateUpdate); break;
                     case PluginStateUpdate pluginStateUpdate: _serverHandler.OnPluginStateUpdate(pluginStateUpdate); break;
+
+                    case UpdateServiceStateUpdate updateSvcStateUpdate: _serverHandler.OnUpdateSvcStateUpdate(updateSvcStateUpdate); break;
 
                     case AlgoServerMetadataUpdate serverMetadata: ApplyAlgoServerMetadata(serverMetadata); break;
 
@@ -708,6 +716,67 @@ namespace TickTrader.Algo.Server.PublicAPI
                 var response = await call.ResponseAsync;
                 FailForNonSuccess(response.ExecResult);
             }
+        }
+
+        public async Task<ServerUpdateList> GetServerUpdateList(ServerUpdateListRequest request)
+        {
+            var response = await _client.GetServerUpdateListAsync(request);
+            FailForNonSuccess(response.ExecResult);
+            return response.List;
+        }
+
+        public async Task<StartUpdateResult> StartServerUpdate(StartServerUpdateRequest request)
+        {
+            var response = await _client.StartServerUpdateAsync(request);
+            FailForNonSuccess(response.ExecResult);
+            return response.Result;
+        }
+
+        public async Task<StartUpdateResult> StartCustomUpdate(StartCustomServerUpdateRequest request, string srcPath)
+        {
+            var chunkOffset = request.TransferSettings.ChunkOffset;
+            var chunkSize = request.TransferSettings.ChunkSize;
+
+            //progressListener.Init((long)chunkOffset * chunkSize);
+
+            var transferMsg = new FileTransferMsg { Header = Any.Pack(request) };
+            using (var call = _client.StartCustomServerUpdate())
+            {
+                await call.RequestStream.WriteAsync(transferMsg);
+
+                transferMsg.Header = null;
+                transferMsg.Data = new FileChunk(chunkOffset);
+                var buffer = new byte[chunkSize];
+                try
+                {
+                    using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
+                        for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
+                        {
+                            transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
+                            await call.RequestStream.WriteAsync(transferMsg);
+                            //progressListener.IncrementProgress(cnt);
+                            transferMsg.Data.Id++;
+                        }
+                    }
+                }
+                finally
+                {
+                    transferMsg.Data = FileChunk.FinalChunk;
+                    await call.RequestStream.WriteAsync(transferMsg);
+                }
+
+                var response = await call.ResponseAsync;
+                FailForNonSuccess(response.ExecResult);
+                return response.Result;
+            }
+        }
+
+        public async Task DiscardServerUpdateResult()
+        {
+            var response = await _client.DiscardServerUpdateResultAsync(new DiscardServerUpdateResultRequest());
+            FailForNonSuccess(response.ExecResult);
         }
 
         #endregion Requests

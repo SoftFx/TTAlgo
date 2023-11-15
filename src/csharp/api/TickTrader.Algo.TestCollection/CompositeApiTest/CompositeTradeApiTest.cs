@@ -6,7 +6,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    [TradeBot(DisplayName = "Composite Trade API Test", Version = "2.0", Category = "Auto Tests", SetupMainSymbol = true)]
+    [TradeBot(DisplayName = "Composite Trade API Test", Version = "2.1", Category = "Auto Tests", SetupMainSymbol = true)]
     public class CompositeTradeApiTest : TradeBot
     {
         private readonly List<HistoryOrderTemplate> _historyStorage = new List<HistoryOrderTemplate>();
@@ -64,10 +64,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             await PrepareWorkspace();
 
-            foreach (OrderType orderType in Enum.GetValues(typeof(OrderType)))
-                foreach (OrderSide orderSide in Enum.GetValues(typeof(OrderSide)))
-                    if (orderType != OrderType.Position)
-                        await RunAllTestGroups(new OrderBaseSet(orderType, orderSide));
+            await RunAllTestGroups();
 
             //Print("Waiting for trade reports to load...");
             //await Delay(PauseBeforeAndAfterTests);
@@ -107,11 +104,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await Delay(2000); // wait while all orders have been canceled
         }
 
-        private async Task RunAllTestGroups(OrderBaseSet set)
+        private async Task RunAllTestGroups()
         {
-            foreach (var group in _testGroups)
-                if (group.Condition(set))
-                    await group.Tests.Run(set);
+            foreach (var (Condition, Tests) in _testGroups)
+                foreach (OrderType orderType in Enum.GetValues(typeof(OrderType)))
+                    foreach (OrderSide orderSide in Enum.GetValues(typeof(OrderSide)))
+                        if (orderType != OrderType.Position)
+                        {
+                            var set = new OrderBaseSet(orderType, orderSide);
+                            if (Condition(set))
+                                await Tests.Run(set);
+                        }
         }
 
         private void CleanUpWorkspace()

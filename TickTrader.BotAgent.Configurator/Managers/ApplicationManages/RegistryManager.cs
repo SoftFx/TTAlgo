@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.BotAgent.Configurator.Properties;
 
@@ -99,15 +100,25 @@ namespace TickTrader.BotAgent.Configurator
                 Version = key.GetValue(nameof(Version)).ToString();
 
                 AppSettingPath = Path.Combine(FolderPath, appSetting);
-                ExePath = Path.Combine(FolderPath, $"TickTrader.{NodeName}.exe");
+                var binFolder = Path.Combine(FolderPath, "bin", "current");
+                if (!Directory.Exists(binFolder))
+                    binFolder = FolderPath; // before 1.24
+                ExePath = Path.Combine(binFolder, $"TickTrader.{NodeName}.exe");
 
-                var assemblyPath = Path.Combine(FolderPath, $"TickTrader.{NodeName}.dll");
+                var assemblyPath = Path.Combine(binFolder, $"TickTrader.{NodeName}.dll");
                 if (!File.Exists(assemblyPath))
-                    assemblyPath = ExePath;
+                    assemblyPath = ExePath; // .Net Framework, before 1.19
 
-                var assemblyName = AssemblyName.GetAssemblyName(assemblyPath);
-                Version = assemblyName.Version.ToString();
-                BuildDate = Algo.Core.Lib.AssemblyExtensions.GetLinkerTime(assemblyPath).ToString("yyyy.MM.dd");
+                if (!File.Exists(assemblyPath))
+                {
+                    _logger.Error($"Resolved main module path doesn't exists: '{assemblyPath}'");
+                }
+                else
+                {
+                    var versionInfo = AppVersionInfo.GetFromDllPath(assemblyPath);
+                    Version = versionInfo.Version;
+                    BuildDate = versionInfo.BuildDate;
+                }
             }
             catch (Exception ex)
             {

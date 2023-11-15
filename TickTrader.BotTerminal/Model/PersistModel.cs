@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
     internal class PersistModel
     {
+        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<PersistModel>();
+
         private List<IPersistController> _controllers = new List<IPersistController>();
 
 
@@ -24,11 +27,13 @@ namespace TickTrader.BotTerminal
         {
             var loginController = CreateStorageController<AuthStorageModel>("UserAuthSettings", EnvService.Instance.ProtectedUserDataStorage);
             AuthSettingsStorage = loginController.Value;
-            var preferencesController = CreateStorageController<PreferencesStorageModel>("Preferences", EnvService.Instance.UserDataStorage);
+            var preferencesController = CreateStorageController<PreferencesStorageModel>("preferences.json", EnvService.Instance.UserDataStorage);
             PreferencesStorage = new SettingsStorage<PreferencesStorageModel>(preferencesController.Value);
             ProfileManager = new ProfileManager(CreateStorageController<ProfileStorageModel>("stub.profile", EnvService.Instance.ProfilesCacheStorage));
             var botAgentsLoginController = CreateStorageController<BotAgentStorageModel>("BotAgentsAuth", EnvService.Instance.ProtectedUserDataStorage);
             BotAgentStorage = botAgentsLoginController.Value;
+
+            MigrateOldPreferences();
         }
 
 
@@ -49,6 +54,34 @@ namespace TickTrader.BotTerminal
         {
             _controllers.Remove(storageController);
             return storageController.Close();
+        }
+
+
+        private void MigrateOldPreferences()
+        {
+            try
+            {
+                const string oldFilename = "Preferences";
+                var oldPreferencesPath = Path.Combine(EnvService.Instance.AppDataFolder, oldFilename);
+                if (File.Exists(oldPreferencesPath))
+                {
+                    var xmlStorage = new XmlObjectStorage(new FolderBinStorage(EnvService.Instance.AppDataFolder));
+                    var oldSettigns = xmlStorage.Load<PreferencesStorageModel>(oldFilename);
+
+                    var settings = PreferencesStorage.StorageModel;
+                    settings.EnableSounds = oldSettigns.EnableSounds;
+                    settings.RestartBotsOnStartup = oldSettigns.RestartBotsOnStartup;
+                    settings.EnableNotifications = oldSettigns.EnableNotifications;
+                    settings.Theme =oldSettigns.Theme;
+                    settings.Save();
+
+                    File.Delete(oldPreferencesPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to migrate old preferences");
+            }
         }
     }
 }

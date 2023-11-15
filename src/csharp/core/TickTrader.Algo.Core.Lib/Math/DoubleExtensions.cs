@@ -1,4 +1,4 @@
-﻿namespace TickTrader.Algo.Core.Lib.Math
+﻿namespace TickTrader.Algo.Core.Lib
 {
     public static class DoubleExtensions
     {

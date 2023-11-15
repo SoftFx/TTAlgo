@@ -29,6 +29,8 @@ namespace TickTrader.BotTerminal
         private ApiMetadataInfo _apiMetadata;
         private MappingCollectionInfo _mappings;
         private SetupContextInfo _setupContext;
+        private ServerVersionInfo _currentVersion;
+        private UpdateServiceInfo _updateSvcInfo;
 
 
         public string Name { get; }
@@ -51,7 +53,13 @@ namespace TickTrader.BotTerminal
 
         public AlgoServerApi.IAccessManager AccessManager => _protocolClient.AccessManager;
 
+        public AlgoServerApi.IVersionSpec VersionSpec => _protocolClient.VersionSpec;
+
         public AlertManagerModel AlertModel { get; }
+
+        public ServerVersionInfo CurrentVersion => _currentVersion;
+
+        public UpdateServiceInfo UpdateSvcInfo => _updateSvcInfo;
 
 
         public event Action<PackageInfo> PackageStateChanged = delegate { };
@@ -63,6 +71,10 @@ namespace TickTrader.BotTerminal
         public event Action<ITradeBot> BotUpdated = delegate { };
 
         public event Action AccessLevelChanged = delegate { };
+
+        public event Action UpdateServiceStateChanged = delegate { };
+
+        public event Action SnapshotLoaded = delegate { };
 
 
         public RemoteAlgoAgent(BotAgentStorageEntry creds, Func<string, Task<string>> get2FAHandler)
@@ -97,6 +109,8 @@ namespace TickTrader.BotTerminal
                 _apiMetadata = null;
                 _mappings = null;
                 _setupContext = null;
+                _currentVersion = null;
+                _updateSvcInfo = null;
             });
         }
 
@@ -224,6 +238,27 @@ namespace TickTrader.BotTerminal
             await Task.Run(() => _protocolClient.UploadPluginFile(new AlgoServerApi.UploadPluginFileRequest(botId, folderId.ToApi(), fileName), srcPath, progressListener));
         }
 
+        public async Task<ServerUpdateList> GetServerUpdateList(bool forced)
+        {
+            return (await _protocolClient.GetServerUpdateList(ServerUpdateListRequest.Get(forced).ToApi())).ToServer();
+        }
+
+        public async Task<StartServerUpdateResponse> StartServerUpdate(string releaseId)
+        {
+            return (await _protocolClient.StartServerUpdate(new AlgoServerApi.StartServerUpdateRequest { ReleaseId = releaseId })).ToServer();
+        }
+
+        public async Task<StartServerUpdateResponse> StartServerUpdateFromFile(string version, string srcPath)
+        {
+            return (await Task.Run(() => _protocolClient.StartCustomUpdate(
+                new AlgoServerApi.StartCustomServerUpdateRequest { Version = version, TransferSettings = AlgoServerApi.FileTransferSettings.Default }, srcPath))).ToServer();
+        }
+
+        public Task DiscardServerUpdateResult()
+        {
+            return _protocolClient.DiscardServerUpdateResult();
+        }
+
         #endregion
 
 
@@ -298,6 +333,24 @@ namespace TickTrader.BotTerminal
         void AlgoServerApi.IAlgoServerEventHandler.SetSetupContext(AlgoServerApi.SetupContextInfo setupContext)
         {
             _setupContext = setupContext.ToServer();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.InitCurrentVersion(AlgoServerApi.ServerVersionInfo currentVersion)
+        {
+            _currentVersion = currentVersion?.ToServer();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.InitUpdateSvcInfo(AlgoServerApi.UpdateServiceInfo updateSvcInfo)
+        {
+            _updateSvcInfo = updateSvcInfo?.ToServer();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.InitCompleted()
+        {
+            _syncContext.Invoke(() =>
+            {
+                SnapshotLoaded();
+            });
         }
 
         void AlgoServerApi.IAlgoServerEventHandler.OnPackageUpdate(AlgoServerApi.PackageUpdate update)
@@ -431,6 +484,15 @@ namespace TickTrader.BotTerminal
             _syncContext.Invoke(() =>
             {
                 AlertModel.UpdateRemoteAlert(update.Alerts.Select(u => u.ToServer()).ToList());
+            });
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnUpdateSvcStateUpdate(AlgoServerApi.UpdateServiceStateUpdate update)
+        {
+            _syncContext.Invoke(() =>
+            {
+                _updateSvcInfo = update.Snapshot.ToServer();
+                UpdateServiceStateChanged();
             });
         }
 

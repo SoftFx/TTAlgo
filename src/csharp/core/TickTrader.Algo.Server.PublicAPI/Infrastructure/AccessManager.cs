@@ -100,5 +100,9 @@
                     return HasAdminAccess;
             }
         }
+
+        public bool CanGetServerUpdateInfo() => HasViewerAccess;
+
+        public bool CanControlServerUpdate() => HasAdminAccess;
     }
 }

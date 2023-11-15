@@ -15,13 +15,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="5.0.2" />
+    <PackageReference Include="System.Text.Json" Version="6.0.8" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
+    <ProjectReference Include="..\..\apps\TickTrader.Algo.AppCommon\TickTrader.Algo.AppCommon.csproj" />
     <ProjectReference Include="..\..\lib\TickTrader.Algo.Async\TickTrader.Algo.Async.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.AutoUpdate\TickTrader.Algo.AutoUpdate.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj" />

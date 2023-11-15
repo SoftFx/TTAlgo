@@ -6,6 +6,8 @@
 
         public bool EnableAccountLogs { get; set; }
 
+        public bool EnableAutoUpdate { get; set; }
+
         public AlgoHostSettings HostSettings { get; set; } = new AlgoHostSettings();
 
         public MonitoringSettings MonitoringSettings { get; } = new MonitoringSettings();

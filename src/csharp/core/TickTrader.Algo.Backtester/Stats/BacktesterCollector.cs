@@ -96,6 +96,8 @@ namespace TickTrader.Algo.Backtester
                 _journalCsvWriter.Dispose();
                 _journalWriter.Dispose();
             }
+
+            RoundEquityMargin(acc.BalanceCurrencyInfo?.Digits ?? 2);
         }
 
         public void Dispose()
@@ -236,6 +238,24 @@ namespace TickTrader.Algo.Backtester
                 return Enumerable.Empty<BarData>();
 
             return TransformBars(collector.Snapshot, targetTimeframe);
+        }
+
+        private void RoundEquityMargin(int digits)
+        {
+            foreach (var bar in _equityCollector.Snapshot)
+            {
+                bar.Close = bar.Close.FloorBy(digits);
+                bar.Open = bar.Open.FloorBy(digits);
+                bar.High = bar.High.FloorBy(digits);
+                bar.Low = bar.Low.FloorBy(digits);
+            }
+            foreach (var bar in _marginCollector.Snapshot)
+            {
+                bar.Close = bar.Close.CeilBy(digits);
+                bar.Open = bar.Open.CeilBy(digits);
+                bar.High = bar.High.CeilBy(digits);
+                bar.Low = bar.Low.CeilBy(digits);
+            }
         }
 
         #region Output collection

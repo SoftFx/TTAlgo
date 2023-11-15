@@ -208,7 +208,7 @@ namespace TickTrader.Algo.CoreV1
 
         IEnumerable<Bar> CustomFeedProvider.GetBars(string symbol, TimeFrames timeframe, DateTime from, DateTime to, BarPriceType side, bool backwardOrder)
         {
-            const int pageSize = 500;
+            const int pageSize = 512;
             List<BarData> page;
 
             int i = 0;
@@ -259,7 +259,7 @@ namespace TickTrader.Algo.CoreV1
 
         IEnumerable<Bar> CustomFeedProvider.GetBars(string symbol, TimeFrames timeFrame, DateTime from, int count, BarPriceType side)
         {
-            const int pageSize = 500;
+            const int pageSize = 512;
             List<BarData> page;
             int pageIndex;
 
@@ -269,12 +269,13 @@ namespace TickTrader.Algo.CoreV1
 
             while (count > 0)
             {
+                var requestCount = Math.Min(count, pageSize);
                 if (backwardOrder)
                 {
-                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime, pageSize);
+                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime, -requestCount);
                     pageIndex = page.Count - 1;
 
-                    while (pageIndex > 0)
+                    while (pageIndex >= 0)
                     {
                         var item = page[pageIndex];
                         pageIndex--;
@@ -284,13 +285,13 @@ namespace TickTrader.Algo.CoreV1
                             break;
                     }
 
-                    if (page.Count < pageSize)
+                    if (page.Count < requestCount)
                         break; //last page
                     fromTime = page.First().OpenTime.AddMs(-1);
                 }
                 else
                 {
-                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime, -pageSize);
+                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime, requestCount);
                     pageIndex = 0;
 
                     while (pageIndex < page.Count)
@@ -303,7 +304,7 @@ namespace TickTrader.Algo.CoreV1
                             break;
                     }
 
-                    if (page.Count < pageSize)
+                    if (page.Count < requestCount)
                         break; //last page
                     fromTime = page.Last().CloseTime.AddMs(1);
                 }
@@ -312,7 +313,7 @@ namespace TickTrader.Algo.CoreV1
 
         IEnumerable<Quote> CustomFeedProvider.GetQuotes(string symbol, DateTime from, DateTime to, bool level2, bool backwardOrder)
         {
-            const int pageSize = 500;
+            const int pageSize = 512;
             List<QuoteInfo> page;
             int pageIndex;
 
@@ -373,7 +374,7 @@ namespace TickTrader.Algo.CoreV1
 
         IEnumerable<Quote> CustomFeedProvider.GetQuotes(string symbol, DateTime from, int count, bool level2)
         {
-            const int pageSize = 500;
+            const int pageSize = 512;
             List<QuoteInfo> page;
             int pageIndex;
 
@@ -383,12 +384,13 @@ namespace TickTrader.Algo.CoreV1
 
             while (count > 0)
             {
+                var requestCount = Math.Min(count, pageSize);
                 if (backwardOrder)
                 {
-                    page = FeedHistory.QueryQuotes(symbol, fromTime, -pageSize, level2);
+                    page = FeedHistory.QueryQuotes(symbol, fromTime, -requestCount, level2);
                     pageIndex = page.Count - 1;
 
-                    while (pageIndex > 0)
+                    while (pageIndex >= 0)
                     {
                         var item = page[pageIndex];
                         pageIndex--;
@@ -398,13 +400,13 @@ namespace TickTrader.Algo.CoreV1
                             break;
                     }
 
-                    if (page.Count < pageSize)
+                    if (page.Count < requestCount)
                         break; //last page
                     fromTime = page.First().Time.AddMs(-1);
                 }
                 else
                 {
-                    page = FeedHistory.QueryQuotes(symbol, fromTime, pageSize, level2);
+                    page = FeedHistory.QueryQuotes(symbol, fromTime, requestCount, level2);
                     pageIndex = 0;
 
                     while (pageIndex < page.Count)
@@ -417,7 +419,7 @@ namespace TickTrader.Algo.CoreV1
                             break;
                     }
 
-                    if (page.Count < pageSize)
+                    if (page.Count < requestCount)
                         break; //last page
                     fromTime = page.Last().Time.AddMs(1);
                 }

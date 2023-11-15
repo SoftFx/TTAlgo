@@ -81,6 +81,7 @@ namespace TickTrader.Algo.Server
                 case AccountStateUpdate accStateUpdate: _accStateEventSrc.Send(accStateUpdate); break;
                 case PluginModelUpdate pluginUpdate: _pluginUpdateEventSrc.Send(pluginUpdate); break;
                 case PluginStateUpdate pluginStateUpdate: _pluginStateEventSrc.Send(pluginStateUpdate); break;
+                case Domain.ServerControl.UpdateServiceStateUpdate updateSvcStateUpdate: break; // not required there for now
 
                 default: _logger.Error($"Unexpected update of type '{update.Descriptor.FullName}'"); break;
             }

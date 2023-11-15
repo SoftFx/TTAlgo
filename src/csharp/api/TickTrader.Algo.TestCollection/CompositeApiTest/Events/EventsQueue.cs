@@ -111,6 +111,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 _currentTemplates.Remove(orderId);
 
                 template.ToCancel();
+                template.OnFinalEvent(orderId, @event);
             }
 
             if (@event == Events.Close)
@@ -119,6 +120,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 _currentTemplates.Remove(orderId);
 
                 template.ToClose();
+                template.OnFinalEvent(orderId, @event);
             }
 
             if (@event == Events.Expire)
@@ -127,6 +129,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 _currentTemplates.Remove(orderId);
 
                 template.ToExpire();
+                template.OnFinalEvent(orderId, @event);
             }
         }
 
@@ -142,7 +145,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 var filledPart = baseTemplate.ToFilled(filledVolume);
 
                 if (baseTemplate == filledPart)
+                {
                     _currentTemplates.Remove(oldOrderId);
+                    if (!baseTemplate.IsGrossAcc)
+                        baseTemplate.OnFinalEvent(oldOrderId, @event);
+                }
 
                 if (baseTemplate.IsGrossAcc)
                     _expectedToOpenTemplates.AddFirst(filledPart);

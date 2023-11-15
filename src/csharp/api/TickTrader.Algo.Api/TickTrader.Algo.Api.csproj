@@ -5,6 +5,7 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>algo.snk</AssemblyOriginatorKeyFile>
     <VersionPrefix>1.5.3</VersionPrefix>
+    <FileVersion>$(VersionPrefix).0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet package definition">
@@ -16,6 +17,8 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
     <PackageIcon>images\icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/SoftFx/TTAlgo</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/SoftFx/TTAlgo</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

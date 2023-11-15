@@ -37,6 +37,7 @@ var Configurator_CoreSelected
 var Configurator_DesktopSelected
 var Configurator_StartMenuSelected
 var Configurator_InstDir
+var Configurator_WorkDir
 var Configurator_ShortcutName
 var Configurator_Installed
 
@@ -64,7 +65,7 @@ var Configurator_Installed
     StrCpy $AlgoServer_ServiceFailed ${FALSE}
     StrCpy $AlgoServer_ServiceError ${NO_ERR_MSG}
 
-    StrCpy $Configurator_InstDir "$AlgoServer_InstDir\${CONFIGURATOR_NAME}"
+    ${AlgoServer_UpdateConfiguratorProps}
     StrCpy $Configurator_ShortcutName "${CONFIGURATOR_DISPLAY_NAME}"
 
     StrCpy $Configurator_CoreSelected ${FALSE}
@@ -75,8 +76,16 @@ var Configurator_Installed
 
 !macroend
 
+!macro _UpdateConfiguratorProps
+
+    StrCpy $Configurator_InstDir "$AlgoServer_InstDir\bin\current\${CONFIGURATOR_NAME}"
+    StrCpy $Configurator_WorkDir "$AlgoServer_InstDir\${CONFIGURATOR_NAME}"
+
+!macroend
+
 
 !define AlgoServer_Init '!insertmacro _InitAlgoServer'
+!define AlgoServer_UpdateConfiguratorProps '!insertmacro _UpdateConfiguratorProps'
 
 
 ;--------------------------
@@ -85,14 +94,18 @@ var Configurator_Installed
 !macro _UnpackAlgoServer
 
     ${Log} "Unpacking AlgoServer files to $AlgoServer_InstDir"
-    SetOutPath $AlgoServer_InstDir
+    SetOutPath "$AlgoServer_InstDir\bin\current"
 !ifdef DEBUG
     Sleep 5000
     File "${ALGOSERVER_BINDIR}\${ALGOSERVER_EXE}"
 !else
     File /r "${ALGOSERVER_BINDIR}\*.*"
 !endif
+
+    SetOutPath "$AlgoServer_InstDir"
+    ; Icon is required there for installed programs list
     File "${ICONS_DIR}\agent.ico"
+    ${GenerateAppInfo} $AlgoServer_InstDir $AlgoServer_Id
 
 !macroend
 
@@ -100,12 +113,7 @@ var Configurator_Installed
 
     ${Log} "Removing AlgoServer files from $AlgoServer_InstDir"
     StrCpy $INSTDIR $AlgoServer_InstDir
-!ifdef DEBUG
-    Delete "$INSTDIR\${ALGOSERVER_EXE}"
-!else
-    ; Remove installed files, but leave generated
-    !include AlgoServer.Uninstall.nsi
-!endif
+    RMDir /r "$AlgoServer_InstDir\bin\"
     Delete "$INSTDIR\agent.ico"
 
 !macroend
@@ -121,7 +129,7 @@ var Configurator_Installed
 !macro _CreateConfiguratorShortcuts
 
     Push $OUTDIR
-    StrCpy $OUTDIR $Configurator_InstDir ; Working directory for CreateShortcut is taken from $OUTDIR
+    StrCpy $OUTDIR "$Configurator_WorkDir" ; Working directory for CreateShortcut is taken from $OUTDIR
 
     ${Log} "Shortcut name: $Configurator_ShortcutName"
     ${If} $Configurator_DesktopSelected == ${TRUE}
@@ -260,7 +268,7 @@ var Configurator_Installed
 
     DetailPrint "Creating AlgoServer service"
     ${Log} "Creating AlgoServer service $AlgoServer_ServiceId"
-    ${InstallService} $AlgoServer_ServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$AlgoServer_InstDir\${ALGOSERVER_EXE}" 80 $AlgoServer_ServiceError
+    ${InstallService} $AlgoServer_ServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$AlgoServer_InstDir\bin\current\${ALGOSERVER_EXE}" 80 $AlgoServer_ServiceError
     ${If} $AlgoServer_ServiceError == ${NO_ERR_MSG}
         ${ConfigureService} $AlgoServer_ServiceId "${ALGOSERVER_DISPLAY_NAME} ${PRODUCT_BUILD} $AlgoServer_InstDir" $AlgoServer_ServiceError
         ${If} $AlgoServer_ServiceError == ${NO_ERR_MSG}
@@ -341,7 +349,7 @@ var Configurator_Installed
 !macro _CheckConfiguratorLock Msg Retry Cancel
 
     ${If} ${FileExists} "$Configurator_InstDir\*"
-        ${GetFileLock} $3 "$Configurator_InstDir\${CONFIGURATOR_LOCK_FILE}"
+        ${GetFileLock} $3 "$Configurator_WorkDir\${CONFIGURATOR_LOCK_FILE}"
         ${IF} $3 == ${FILE_LOCKED}
             ${Log} "Configurator is running ($Configurator_InstDir)"
             MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}

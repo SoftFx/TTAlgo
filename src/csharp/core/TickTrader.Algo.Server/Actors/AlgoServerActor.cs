@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
@@ -24,6 +25,7 @@ namespace TickTrader.Algo.Server
         private AccountManager _accounts;
         private PluginManager _plugins;
         private PluginFileManager _pluginFiles;
+        private AutoUpdateManager _updateSvc;
 
 
         private AlgoServerActor(IActorRef algoHost, AlgoServerSettings settings)
@@ -78,6 +80,11 @@ namespace TickTrader.Algo.Server
             Receive<PluginAlertsRequest, AlertRecordInfo[]>(r => _alerts.GetAlerts(r));
             Receive<LocalAlgoServer.SubscribeToAlertsCmd>(cmd => _alerts.AttachAlertChannel(cmd.AlertSink));
             Receive<PluginOwner.ExecPluginCmd>(cmd => _plugins.ExecCmd(cmd.PluginId, cmd.Command));
+
+            Receive<ServerVersionRequest, ServerVersionInfo>(r => _updateSvc.GetCurrentVersion());
+            Receive<ServerUpdateListRequest, ServerUpdateList>(r => _updateSvc.GetUpdateList(r));
+            Receive<StartServerUpdateRequest, StartServerUpdateResponse>(r => _updateSvc.StartUpdate(r));
+            Receive<DiscardServerUpdateResultRequest>(r => _updateSvc.DiscardUpdateResult(r));
         }
 
 
@@ -103,6 +110,7 @@ namespace TickTrader.Algo.Server
             _accounts = new AccountManager(_serverPrivate);
             _plugins = new PluginManager(_serverPrivate);
             _pluginFiles = new PluginFileManager(_serverPrivate);
+            _updateSvc = new AutoUpdateManager(_serverPrivate);
         }
 
 
@@ -116,6 +124,9 @@ namespace TickTrader.Algo.Server
 
             _plugins.Restore(stateSnapshot);
 
+            if (_settings.EnableAutoUpdate)
+                _updateSvc.Start();
+
             _logger.Debug("Started");
         }
 
@@ -128,6 +139,8 @@ namespace TickTrader.Algo.Server
             await _plugins.Shutdown();
 
             await _accounts.Shutdown();
+
+            _updateSvc.Stop();
 
             _logger.Debug("Stopped");
         }

@@ -24,6 +24,12 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         void SetSetupContext(SetupContextInfo setupContext);
 
+        void InitCurrentVersion(ServerVersionInfo currentVersion);
+
+        void InitUpdateSvcInfo(UpdateServiceInfo updateSvc);
+
+        void InitCompleted();
+
         #endregion Connection init
 
 
@@ -48,6 +54,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         void OnPluginLogUpdate(PluginLogUpdate update);
 
         void OnAlertListUpdate(AlertListUpdate update);
+
+
+        void OnUpdateSvcStateUpdate(UpdateServiceStateUpdate update);
 
         #endregion Updates
     }

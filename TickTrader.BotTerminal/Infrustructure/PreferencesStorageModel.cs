@@ -1,4 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace TickTrader.BotTerminal
 {
@@ -17,6 +19,9 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public bool RestartBotsOnStartup { get; set; }
 
+        [DataMember]
+        public List<DownloadSourceSettings> AppUpdateSources { get; set; } = new List<DownloadSourceSettings>();
+
 
         public PreferencesStorageModel()
         {
@@ -32,6 +37,28 @@ namespace TickTrader.BotTerminal
                 EnableSounds = EnableSounds,
                 EnableNotifications = EnableNotifications,
                 RestartBotsOnStartup = RestartBotsOnStartup,
+                AppUpdateSources = AppUpdateSources.Select(s => s.Clone()).ToList(),
+            };
+        }
+    }
+
+
+    [DataContract]
+    internal class DownloadSourceSettings
+    {
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Uri { get; set; }
+
+
+        public DownloadSourceSettings Clone()
+        {
+            return new DownloadSourceSettings
+            {
+                Name = Name,
+                Uri = Uri,
             };
         }
     }

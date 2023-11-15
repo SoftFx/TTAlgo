@@ -69,6 +69,8 @@ namespace TickTrader.BotTerminal
 
             public virtual bool CanDisconnectBotAgent => false;
 
+            public virtual bool CanOpenUpdate => false;
+
 
             public void Drop(object o)
             {
@@ -108,6 +110,8 @@ namespace TickTrader.BotTerminal
             public void ConnectBotAgent() => throw new System.NotImplementedException();
 
             public void DisconnectBotAgent() => throw new System.NotImplementedException();
+
+            public void OpenUpdate() => throw new System.NotImplementedException();
 
             #endregion
         }

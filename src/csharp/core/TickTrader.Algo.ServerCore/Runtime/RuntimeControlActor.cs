@@ -276,6 +276,12 @@ namespace TickTrader.Algo.Server
                 WorkingDirectory = _owner.WorkingDirectory,
                 CreateNoWindow = true,
             };
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                var dllPath = startInfo.FileName[..^4] + ".dll";
+                startInfo.FileName = "dotnet";
+                startInfo.Arguments = dllPath;
+            }
             rpcParams.SaveAsEnvVars(startInfo.Environment);
 
             _process = Process.Start(startInfo);

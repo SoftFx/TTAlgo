@@ -14,8 +14,7 @@
         BuildMetadata="$(AlgoPackage_BuildMetadata)"
         MetadataFileName="$(AlgoPackage_MetadataFileName)"
         Repository="$(AlgoPackage_Repository)"
-        Author="$(AlgoPackage_Author)"
-        RuntimeType="$(MSBuildRuntimeType)"/>
+        Author="$(AlgoPackage_Author)"/>
   </Target>
 
 </Project>

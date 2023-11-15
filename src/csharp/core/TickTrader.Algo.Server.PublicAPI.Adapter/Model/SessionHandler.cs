@@ -39,6 +39,9 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         {
             if (_writer == null)
                 return true;
+            if (info.Type == UpdateInfo.Types.PayloadType.UpdateSvcStateUpdate
+                && !Info.VersionSpec.SupportsAutoUpdate)
+                return true; // channel is still valid, but update is skipped
 
             var res = _writer.TryWrite(info);
             if (logMsg != null)

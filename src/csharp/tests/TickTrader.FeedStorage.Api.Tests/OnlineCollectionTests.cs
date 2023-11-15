@@ -12,9 +12,9 @@ namespace TickTrader.FeedStorage.Api.Tests
         internal override ISymbolCollection Collection => _catalog.OnlineCollection;
 
 
-        public OnlineCollectionTests() : base()
+        public override async Task InitializeAsync()
         {
-            _catalog.ConnectClient(_settings).Wait();
+            await _catalog.ConnectClient(_settings);
         }
 
 

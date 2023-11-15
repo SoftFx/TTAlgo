@@ -59,7 +59,13 @@ namespace TickTrader.BotTerminal
 
         public AlgoServerPublicApi.IAccessManager AccessManager { get; }
 
+        public AlgoServerPublicApi.IVersionSpec VersionSpec { get; }
+
         public AlertManagerModel AlertModel { get; }
+
+        public ServerVersionInfo CurrentVersion => throw new NotSupportedException();
+
+        public UpdateServiceInfo UpdateSvcInfo => throw new NotSupportedException();
 
         public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !b.State.IsStopped());
 
@@ -82,6 +88,10 @@ namespace TickTrader.BotTerminal
 
         public event Action AccessLevelChanged = delegate { };
 
+        public event Action UpdateServiceStateChanged = delegate { };
+
+        public event Action SnapshotLoaded = delegate { };
+
 
         public LocalAlgoAgent2(PersistModel storage, EventJournal journal)
         {
@@ -100,6 +110,7 @@ namespace TickTrader.BotTerminal
             Catalog = new PluginCatalog(this);
             AlertModel = new AlertManagerModel(Name);
             AccessManager = new AlgoServerPublicApi.ApiAccessManager(AlgoServerPublicApi.ClientClaims.Types.AccessLevel.Admin);
+            VersionSpec = new AlgoServerPublicApi.ApiVersionSpec();
 
             _ = Init(storage);
         }
@@ -140,14 +151,14 @@ namespace TickTrader.BotTerminal
 
         private async Task Init(PersistModel storage)
         {
-            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var dataFolder = EnvService.Instance.AppFolder;
             var hostSettings = LocalAlgoAgent.GetHostSettings();
-            hostSettings.RuntimeSettings.WorkingDirectory = baseDir;
+            hostSettings.RuntimeSettings.WorkingDirectory = dataFolder;
             _algoHost = AlgoHostActor.Create(hostSettings);
 
             var indicatorHostSettings = new IndicatorHostSettings
             {
-                DataFolder = baseDir,
+                DataFolder = dataFolder,
                 HostSettings = hostSettings,
             };
 
@@ -156,8 +167,9 @@ namespace TickTrader.BotTerminal
 
             var serverSettings = new AlgoServerSettings
             {
-                DataFolder = baseDir,
+                DataFolder = dataFolder,
                 EnableAccountLogs = Properties.Settings.Default.EnableConnectionLogs,
+                EnableAutoUpdate = false,
                 HostSettings = hostSettings,
             };
 
@@ -300,6 +312,14 @@ namespace TickTrader.BotTerminal
             progressListener.IncrementProgress(1);
         }
 
+        public Task<ServerUpdateList> GetServerUpdateList(bool forced) => throw new NotSupportedException();
+
+        public Task<StartServerUpdateResponse> StartServerUpdate(string releaseId) => throw new NotSupportedException();
+
+        public Task<StartServerUpdateResponse> StartServerUpdateFromFile(string version, string srcPath) => throw new NotSupportedException();
+
+        public Task DiscardServerUpdateResult() => throw new NotSupportedException();
+
         #endregion
 
 
@@ -338,6 +358,12 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+                if (update == null)
+                {
+                    _logger.Error($"{nameof(ProcessServerUpdates)}: Null update recieved");
+                    return;
+                }
+
                 switch (update)
                 {
                     case PackageListSnapshot pkgSnapshot: InitPackageList(pkgSnapshot); break;
@@ -349,6 +375,8 @@ namespace TickTrader.BotTerminal
                     case PackageStateUpdate pkgStateUpdate: OnPackageStateUpdate(pkgStateUpdate); break;
                     case AccountStateUpdate accStateUpdate: OnAccountStateUpdate(accStateUpdate); break;
                     case PluginStateUpdate pluginStateUpdate: OnPluginStateUpdate(pluginStateUpdate); break;
+                    case UpdateServiceInfo updateSvcInfo: break; // ignore
+                    case UpdateServiceStateUpdate updateSvcStateUpdate: break; // ignore
                     default: _logger.Error($"Failed to proccess update of type '{update.GetType().FullName}'"); break;
                 }
             }

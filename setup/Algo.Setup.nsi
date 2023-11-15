@@ -1,4 +1,5 @@
 ;!define DEBUG
+unicode false
 
 !include "Algo.Setup.nsh"
 

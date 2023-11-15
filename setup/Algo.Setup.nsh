@@ -40,10 +40,13 @@
     !define SETUP_FILENAME "Algo Studio ${PRODUCT_BUILD}.Setup.exe"
 !endif
 
+!ifndef OUTPUT_DIR
+    !define OUTPUT_DIR "..\artifacts.build"
+!endif
+
 !define BASE_NAME "TickTrader"
 !define BASE_INSTDIR "$PROGRAMFILES64\${BASE_NAME}"
 
-!define OUTPUT_DIR "..\artifacts.build"
 !define ICONS_DIR "..\icons"
 !define BANNER_PATH "banner.bmp"
 !define BANNER_TMP_PATH "$PLUGINSDIR\banner.bmp"
@@ -172,7 +175,7 @@ Function DirectoryPageLeave
 
         ${NSD_GetText} $AlgoServer_DirText $AlgoServer_InstDir
         ${AlgoServer_InitId} "Install"
-        StrCpy $Configurator_InstDir "$AlgoServer_InstDir\${CONFIGURATOR_NAME}"
+        ${AlgoServer_UpdateConfiguratorProps}
 
     ${EndIf}
 
@@ -387,7 +390,7 @@ Function FinishPageLeave
         ${NSD_GetState} $Terminal_RunCheckBox $Void
         ${If} $Void == ${BST_CHECKED}
             StrCpy $OUTDIR $Terminal_InstDir ; Exec command working dir is set to $OUTDIR
-            Exec "$Terminal_InstDir\${TERMINAL_EXE}"
+            Exec "$Terminal_InstDir\bin\current\${TERMINAL_EXE}"
         ${EndIf}
 
     ${EndIf}
@@ -396,7 +399,7 @@ Function FinishPageLeave
 
         ${NSD_GetState} $Configurator_RunCheckBox $Void
         ${If} $Void == ${BST_CHECKED}
-            StrCpy $OUTDIR $Configurator_InstDir ; Exec command working dir is set to $OUTDIR
+            StrCpy $OUTDIR $Configurator_WorkDir ; Exec command working dir is set to $OUTDIR
             Exec "$Configurator_InstDir\${CONFIGURATOR_EXE}"
         ${EndIf}
 

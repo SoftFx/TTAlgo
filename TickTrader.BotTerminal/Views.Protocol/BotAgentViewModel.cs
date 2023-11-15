@@ -14,6 +14,7 @@ namespace TickTrader.BotTerminal
         bool CanUploadPackage { get; }
         bool CanDownloadPackage { get; }
         bool CanManageFiles { get; }
+        bool CanOpenUpdate { get; }
 
         void ChangeBotAgent();
         void RemoveBotAgent();
@@ -24,6 +25,7 @@ namespace TickTrader.BotTerminal
         void UploadPackage();
         void DownloadPackage();
         void ManageFiles();
+        void OpenUpdate();
     }
 
 
@@ -62,6 +64,12 @@ namespace TickTrader.BotTerminal
         public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(Algo.Server.PublicAPI.PluginFolderInfo.Types.PluginFolderId.AlgoData)
                 || Agent.Model.AccessManager.CanGetBotFolderInfo(Algo.Server.PublicAPI.PluginFolderInfo.Types.PluginFolderId.BotLogs);
 
+        public bool CanOpenUpdate => Agent.Model.AccessManager.CanControlServerUpdate();
+
+        public bool HasNewVersion => Agent.Model.UpdateSvcInfo?.HasNewVersion ?? false;
+
+        public string NewVersionInfo => HasNewVersion ? $"New version available '{Agent.Model.UpdateSvcInfo.NewVersion}'" : null;
+
 
         public BotAgentViewModel(BotAgentConnectionManager connection, AlgoEnvironment algoEnv)
         {
@@ -72,6 +80,8 @@ namespace TickTrader.BotTerminal
 
             Connection.StateChanged += ConnectionOnStateChanged;
             Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
+            Agent.Model.SnapshotLoaded += OnAgentSnapshotLoaded;
+            Agent.Model.UpdateServiceStateChanged += OnUpdateSvcStateChanged;
         }
 
 
@@ -79,6 +89,8 @@ namespace TickTrader.BotTerminal
         {
             Connection.StateChanged -= ConnectionOnStateChanged;
             Agent.Model.AccessLevelChanged -= OnAccessLevelChanged;
+            Agent.Model.SnapshotLoaded -= OnAgentSnapshotLoaded;
+            Agent.Model.UpdateServiceStateChanged -= OnUpdateSvcStateChanged;
         }
 
 
@@ -153,6 +165,11 @@ namespace TickTrader.BotTerminal
             Agent.OpenManageBotFilesDialog();
         }
 
+        public void OpenUpdate()
+        {
+            _algoEnv.Shell.OpenUpdate(this);
+        }
+
 
         private void ConnectionOnStateChanged()
         {
@@ -172,6 +189,17 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanAddAccount));
             NotifyOfPropertyChange(nameof(CanUploadPackage));
             NotifyOfPropertyChange(nameof(CanDownloadPackage));
+            NotifyOfPropertyChange(nameof(CanOpenUpdate));
+        }
+
+        private void OnAgentSnapshotLoaded() => UpdateHasNewVersion();
+
+        private void OnUpdateSvcStateChanged() => UpdateHasNewVersion();
+
+        private void UpdateHasNewVersion()
+        {
+            NotifyOfPropertyChange(nameof(HasNewVersion));
+            NotifyOfPropertyChange(nameof(NewVersionInfo));
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Server.PublicAPI.Converters;
 
 namespace TickTrader.Algo.Server.PublicAPI.Adapter
 {
@@ -38,6 +39,8 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
         private Dictionary<string, PackageInfo> _packages;
         private Dictionary<string, AccountModelInfo> _accounts;
         private Dictionary<string, PluginModelInfo> _plugins;
+        private ServerVersionInfo _currentVersion;
+        private UpdateServiceInfo _updateSvcInfo;
 
 
         public ServerUpdateDistributor(AlgoServerAdapter server, ILogger logger, MessageFormatter msgFormatter)
@@ -83,6 +86,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 _apiMetadata = (await server.GetApiMetadata()).ToApi();
                 _setupContext = (await server.GetSetupContext()).ToApi();
                 _mappings = (await server.GetMappingsInfo()).ToApi();
+                _currentVersion = (await server.GetServerVersion()).ToApi();
 
                 if (_stopTokenSrc.IsCancellationRequested)
                     return false;
@@ -92,13 +96,13 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
 
                 var reader = _updateChannel.Reader;
                 var cancelToken = _stopTokenSrc.Token;
-                for (var i = 0; i < 3; i++)
+                for (var i = 0; i < 4; i++)
                 {
                     ProcessInitMsg(await _updateChannel.Reader.ReadAsync(_stopTokenSrc.Token));
                 }
-                if (_packages == null || _accounts == null || _plugins == null)
+                if (_packages == null || _accounts == null || _plugins == null || _updateSvcInfo == null)
                 {
-                    _logger.Error($"Init sequence failed: pkg={_packages != null}, acc={_accounts != null}, plugin={_plugins != null}");
+                    _logger.Error($"Init sequence failed: pkg={_packages != null}, acc={_accounts != null}, plugin={_plugins != null}, updateSvc={_updateSvcInfo != null}");
                     _updateChannel.Writer?.TryComplete();
                     return false;
                 }
@@ -123,6 +127,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 case Domain.PackageListSnapshot pkgList: _packages = pkgList.Packages.ToDictionary(p => p.PackageId, p => p.ToApi()); break;
                 case Domain.AccountListSnapshot accList: _accounts = accList.Accounts.ToDictionary(a => a.AccountId, a => a.ToApi()); break;
                 case Domain.PluginListSnapshot pluginList: _plugins = pluginList.Plugins.ToDictionary(p => p.InstanceId, p => p.ToApi()); break;
+                case Domain.ServerControl.UpdateServiceInfo updateSvcState: _updateSvcInfo = updateSvcState.ToApi(); break;
                 default:
                     _logger.Error($"Unexpected msg of type {update.GetType().FullName}");
                     break;
@@ -140,6 +145,8 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                 ApiMetadata = _apiMetadata,
                 SetupContext = _setupContext,
                 MappingsCollection = _mappings,
+                CurrentVersion = _currentVersion,
+                UpdateSvc = _updateSvcInfo,
             };
 
             update.Packages.AddRange(_packages.Values);
@@ -171,6 +178,7 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
                     case Domain.PackageStateUpdate pkgStateUpdate: (handled, apiUpdate) = OnPackageStateUpdate(pkgStateUpdate.ToApi()); break;
                     case Domain.AccountStateUpdate accStateUpdate: (handled, apiUpdate) = OnAccountStateUpdate(accStateUpdate.ToApi()); break;
                     case Domain.PluginStateUpdate pluginStateUpdate: (handled, apiUpdate) = OnPluginStateUpdate(pluginStateUpdate.ToApi()); break;
+                    case Domain.ServerControl.UpdateServiceStateUpdate updateSvcUpdate: (handled, apiUpdate) = OnUpdateSvcStateUpdate(updateSvcUpdate.ToApi()); break;
                 }
 
                 if (!handled)
@@ -278,6 +286,12 @@ namespace TickTrader.Algo.Server.PublicAPI.Adapter
             if (faultMsg != null)
                 plugin.FaultMessage = faultMsg;
 
+            return (true, update);
+        }
+
+        private (bool, IMessage) OnUpdateSvcStateUpdate(UpdateServiceStateUpdate update)
+        {
+            _updateSvcInfo = update.Snapshot;
             return (true, update);
         }
 

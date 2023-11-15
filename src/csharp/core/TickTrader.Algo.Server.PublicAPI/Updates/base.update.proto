@@ -20,6 +20,7 @@ message UpdateInfo {
     enum PayloadType {
         Heartbeat = 0;
         ServerMetadataUpdate = 10;
+        UpdateSvcStateUpdate = 11;
         PackageUpdate = 20;
         PackageStateUpdate = 21;
         AccountModelUpdate = 30;

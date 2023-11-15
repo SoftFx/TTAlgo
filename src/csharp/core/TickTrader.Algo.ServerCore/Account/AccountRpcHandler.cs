@@ -1,8 +1,11 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Subscriptions;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
@@ -13,24 +16,39 @@ namespace TickTrader.Algo.Server
     {
         private readonly IAccountProxy _account;
         private readonly RpcSession _session;
-        private readonly ConcurrentDictionary<string, object> _pendingRequestHandlers = new ConcurrentDictionary<string, object>();
+        private readonly string _accId;
+        private readonly IAlgoLogger _logger;
+        private readonly ConcurrentDictionary<string, object> _pendingRequestHandlers = new();
+        private readonly QuoteSubTracker _quoteSubTracker = new();
+        private readonly Dictionary<string, FullQuoteInfo> _delayedQuotes = new();
 
         private IQuoteSub _quoteSub;
         private IBarSub _barSub;
+        private bool _disposed;
 
 
-        public AccountRpcHandler(IAccountProxy account, RpcSession session)
+        public string SessionId => _session.Id;
+
+        public RpcSessionState SessionState => _session.State;
+
+
+        public AccountRpcHandler(IAccountProxy account, RpcSession session, string accId)
         {
             _account = account;
             _session = session;
+            _accId = accId;
+            _logger = AlgoLoggerFactory.GetLogger<AccountRpcHandler>(accId);
 
             _quoteSub = account.Feed.GetQuoteSub();
             _barSub = account.Feed.GetBarSub();
+
+            _ = DispatchDelayedQuotesLoop();
         }
 
 
         public void Dispose()
         {
+            _disposed = true;
             _quoteSub.Dispose();
             _quoteSub = null;
             _barSub.Dispose();
@@ -86,6 +104,17 @@ namespace TickTrader.Algo.Server
                 return QuoteListRequestHandler(payload);
 
             return Task.FromResult(default(Any));
+        }
+
+        public void DispatchNotification(AccountRpcNotification msg)
+        {
+            if (msg.Payload is FullQuoteInfo quote)
+            {
+                if (ThrottleQuote(quote))
+                    return;
+            }
+
+            _session.Tell(msg.Message);
         }
 
 
@@ -286,8 +315,15 @@ namespace TickTrader.Algo.Server
             var request = payload.Unpack<ModifyQuoteSubRequest>();
             var response = new QuotePage();
             if (request.Updates.Count == 1)
+            {
                 _quoteSub.Modify(request.Updates[0]);
-            else _quoteSub.Modify(request.Updates.ToList());
+                _quoteSubTracker.ApplyUpdate(request.Updates[0]);
+            }
+            else
+            {
+                _quoteSub.Modify(request.Updates.ToList());
+                _quoteSubTracker.ApplyUpdates(request.Updates);
+            }
             return Task.FromResult(Any.Pack(response));
         }
 
@@ -334,6 +370,48 @@ namespace TickTrader.Algo.Server
             response.Quotes.AddRange(quoteList.Select(q => q.GetData()));
 
             return Any.Pack(response);
+        }
+
+        private bool ThrottleQuote(FullQuoteInfo quote)
+        {
+            const bool EnableQuoteThrottling = true;
+            if (EnableQuoteThrottling && !_quoteSubTracker.HasSymbolSubs(quote.Symbol))
+            {
+                lock (_delayedQuotes)
+                {
+                    _delayedQuotes[quote.Symbol] = quote;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private async Task DispatchDelayedQuotesLoop()
+        {
+            var quotePage = new QuotePage();
+            var quotesList = quotePage.Quotes; // keep buffer preallocated to share between flushes
+            while (!_disposed)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+
+                try
+                {
+                    quotesList.Clear(); // just in case of exception on last call
+                    lock (_delayedQuotes)
+                    {
+                        quotesList.AddRange(_delayedQuotes.Values);
+                        _delayedQuotes.Clear();
+                    }
+
+                    _session.Tell(RpcMessage.Notification(_accId, quotePage));
+
+                    quotesList.Clear();
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, $"Failed to delayed quote page to session {SessionId}");
+                }
+            }
         }
     }
 }

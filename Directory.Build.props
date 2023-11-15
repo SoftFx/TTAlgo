@@ -3,6 +3,10 @@
     <PropertyGroup>
         <Company>Soft-FX</Company>
         <Product>TickTrader Algo</Product>
-        <Copyright>Copyright © Soft-FX 2017-2022</Copyright>
+        <Copyright>Copyright © Soft-FX 2017-2023</Copyright>
+
+        <BuildVersion Condition="'$(BuildVersion)' == ''">1.24</BuildVersion>
+        <BuildNumber Condition="'$(BuildNumber)' == ''">0</BuildNumber>
+        <FileVersion>$(BuildVersion).$(BuildNumber).0</FileVersion>
     </PropertyGroup>
 </Project>

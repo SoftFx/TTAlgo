@@ -66,6 +66,7 @@
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Help}">
             <MenuItem Header="{l:Resx Menu_About}" cal:Message.Attach="About"/>
+            <MenuItem Header="Update Terminal..." cal:Message.Attach="Update"/>
         </MenuItem>
     </Menu>
 
@@ -293,6 +294,11 @@
 
         <StatusBar Grid.Row="2" Background="Transparent">
             <StatusBarItem DockPanel.Dock="Right" Width="100"/>
+            <StatusBarItem DockPanel.Dock="Right">
+                <l:FlatButton Margin="5 0" Style="{DynamicResource UpdateAppButtonStyle}"
+                    Visibility="{l:BoolToVisBind HasNewVersion, Mode=OneWay}" ToolTip="{Binding NewVersionInfo, Mode=OneWay}"
+                    cal:Message.Attach="Update" />
+            </StatusBarItem>
             <Separator DockPanel.Dock="Right"/>
             <StatusBarItem DockPanel.Dock="Right">
                 <TextBlock Text="{Binding ProtocolName}"/>

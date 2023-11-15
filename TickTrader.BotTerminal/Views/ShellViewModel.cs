@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.AppCommon.Update;
+using TickTrader.Algo.AutoUpdate;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.SymbolManager;
@@ -30,6 +32,7 @@ namespace TickTrader.BotTerminal
         private readonly WindowManager _wndManager;
         private readonly AlgoEnvironment _algoEnv;
         private readonly PersistModel _storage;
+        private readonly AutoUpdateService _autoUpdateSvc;
 
         private BotsRepositoryViewModel _botsRepository;
         private SymbolManagerViewModel _smbManager;
@@ -44,6 +47,12 @@ namespace TickTrader.BotTerminal
             _eventJournal = new EventJournal(1000);
             _storage = new PersistModel();
             ThemeSelector.Instance.InitializeSettings(_storage);
+
+            _autoUpdateSvc = new AutoUpdateService(EnvService.Instance.UpdatesFolder, UpdateAppTypes.Terminal);
+            InitAutoUpdateSources();
+            _autoUpdateSvc.SetNewVersionCallback(OnNewVersionAvailable, false);
+            _autoUpdateSvc.EnableAutoCheck();
+            _autoUpdateSvc.SetExitCallback(Exit, false);
 
             ConnectionLock = new UiLock();
             _wndManager = new WindowManager(this);
@@ -254,6 +263,18 @@ namespace TickTrader.BotTerminal
             TryCloseAsync();
         }
 
+        public void Update()
+        {
+            AutoUpdateViewModel vm = new AutoUpdateViewModel(_autoUpdateSvc);
+            _ = _wndManager.ShowDialog(vm, this);
+        }
+
+        public void OpenUpdate(BotAgentViewModel agent)
+        {
+            AutoUpdateViewModel vm = new AutoUpdateViewModel(_autoUpdateSvc, agent);
+            _ = _wndManager.ShowDialog(vm, this);
+        }
+
         public void OpenChart(string smb)
         {
             Charts.Open(smb);
@@ -299,6 +320,11 @@ namespace TickTrader.BotTerminal
 
         public AlertViewModel AlertsManager { get; }
 
+        public bool HasNewVersion => _autoUpdateSvc.HasNewVersion;
+
+        public string NewVersionInfo => HasNewVersion ? $"New version available '{_autoUpdateSvc.NewVersion}'" : null;
+
+
         public async Task Shutdown()
         {
             isClosed = true;
@@ -327,6 +353,8 @@ namespace TickTrader.BotTerminal
         public void OnLoaded()
         {
             _botAgentManager.RestoreConnections();
+            if (_autoUpdateSvc.HasPendingUpdate)
+                Update(); // show update result first, if available
             Connect(null); // show connect window
         }
 
@@ -442,6 +470,20 @@ namespace TickTrader.BotTerminal
             {
                 logger.Error(ex, "Failed to save profile snapshot");
             }
+        }
+
+        private void InitAutoUpdateSources()
+        {
+            foreach (var src in _storage.PreferencesStorage.StorageModel.AppUpdateSources)
+            {
+                _autoUpdateSvc.AddSource(new UpdateDownloadSource(src.Name, src.Uri));
+            }
+        }
+
+        private void OnNewVersionAvailable()
+        {
+            NotifyOfPropertyChange(nameof(HasNewVersion));
+            NotifyOfPropertyChange(nameof(NewVersionInfo));
         }
 
         #region IProfileLoader implementation

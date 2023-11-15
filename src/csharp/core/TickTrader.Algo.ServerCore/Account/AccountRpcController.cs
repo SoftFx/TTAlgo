@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Channels;
@@ -10,16 +11,35 @@ using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Server
 {
+    public class AccountRpcNotification
+    {
+        private RpcMessage _msg;
+
+
+        public string Id { get; }
+
+        public IMessage Payload { get; }
+
+        public RpcMessage Message => _msg ??= RpcMessage.Notification(Id, Payload);
+
+
+        public AccountRpcNotification(string id, IMessage payload)
+        {
+            Id = id;
+            Payload = payload;
+        }
+    }
+
+
     // Not thread safe. Requires actor context
     public class AccountRpcController
     {
-        private readonly Dictionary<string, RpcSession> _sessions = new();
         private readonly Dictionary<string, AccountRpcHandler> _sessionHandlers = new();
         private readonly IAlgoLogger _logger;
         private readonly string _id;
 
         private IAccountProxy _accProxy;
-        private Channel<RpcMessage> _notificationBus;
+        private Channel<AccountRpcNotification> _notificationBus;
 
         public int RefCnt { get; private set; }
 
@@ -39,7 +59,7 @@ namespace TickTrader.Algo.Server
             _accProxy = accProxy;
         }
 
-        public void OnConnectionStateUpdate(ConnectionStateUpdate update) => PushNotification(RpcMessage.Notification(_id, update));
+        public void OnConnectionStateUpdate(ConnectionStateUpdate update) => PushNotification(new AccountRpcNotification(_id, update));
 
         public AccountRpcHandler AttachSession(RpcSession session, Domain.Account.Types.ConnectionState currentState)
         {
@@ -47,18 +67,16 @@ namespace TickTrader.Algo.Server
 
             _logger.Debug($"Attaching session {sessionId}...");
 
-            _sessions[sessionId] = session;
-
-            var sessionHandler = new AccountRpcHandler(_accProxy, session);
+            var sessionHandler = new AccountRpcHandler(_accProxy, session, _id);
             _sessionHandlers[sessionId] = sessionHandler;
 
             var update = new ConnectionStateUpdate(_id, currentState, currentState);
-            session.Tell(RpcMessage.Notification(_id, update));
+            sessionHandler.DispatchNotification(new AccountRpcNotification(_id, update));
 
             RefCnt++;
             if (RefCnt == 1)
             {
-                _notificationBus = DefaultChannelFactory.CreateForManyToOne<RpcMessage>();
+                _notificationBus = DefaultChannelFactory.CreateForManyToOne<AccountRpcNotification>();
                 _ = _notificationBus.Consume(DispatchNotification, 8);
 
                 var acc = _accProxy;
@@ -79,8 +97,6 @@ namespace TickTrader.Algo.Server
         {
             _logger.Debug($"Detaching session {sessionId}...");
 
-            _sessions.Remove(sessionId);
-
             var sessionHandler = _sessionHandlers[sessionId];
             sessionHandler.Dispose();
             _sessionHandlers.Remove(sessionId);
@@ -97,38 +113,38 @@ namespace TickTrader.Algo.Server
                 acc.AccInfoProvider.BalanceUpdated -= OnBalanceUpdated;
 
                 acc.Feed.QuoteUpdated -= OnQuoteUpdated;
-                acc.Feed.BarUpdated += OnBarUpdated;
+                acc.Feed.BarUpdated -= OnBarUpdated;
             }
 
             _logger.Debug($"Detached session {sessionId}. Have {RefCnt} active refs");
         }
 
 
-        private void OnOrderUpdated(OrderExecReport r) => PushNotification(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
+        private void OnOrderUpdated(OrderExecReport r) => PushNotification(new AccountRpcNotification(_id, r)); // not actor thread. _id is safe since it is readonly
 
-        private void OnPositionUpdated(PositionExecReport r) => PushNotification(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
+        private void OnPositionUpdated(PositionExecReport r) => PushNotification(new AccountRpcNotification(_id, r)); // not actor thread. _id is safe since it is readonly
 
-        private void OnBalanceUpdated(BalanceOperation r) => PushNotification(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
+        private void OnBalanceUpdated(BalanceOperation r) => PushNotification(new AccountRpcNotification(_id, r)); // not actor thread. _id is safe since it is readonly
 
-        private void OnQuoteUpdated(QuoteInfo r) => PushNotification(RpcMessage.Notification(_id, r.GetFullQuote())); // not actor thread. _id is safe since it is readonly
+        private void OnQuoteUpdated(QuoteInfo r) => PushNotification(new AccountRpcNotification(_id, r.GetFullQuote())); // not actor thread. _id is safe since it is readonly
 
-        private void OnBarUpdated(BarUpdate b) => PushNotification(RpcMessage.Notification(_id, b)); // not actor thread. _id is safe since it is readonly
+        private void OnBarUpdated(BarUpdate b) => PushNotification(new AccountRpcNotification(_id, b)); // not actor thread. _id is safe since it is readonly
 
-        private void PushNotification(RpcMessage msg) => _notificationBus?.Writer.TryWrite(msg);
+        private void PushNotification(AccountRpcNotification msg) => _notificationBus?.Writer.TryWrite(msg);
 
-        private void DispatchNotification(RpcMessage msg)
+        private void DispatchNotification(AccountRpcNotification msg)
         {
-            if (_sessions.Count == 0)
+            if (_sessionHandlers.Count == 0)
                 return;
 
             var cleanupSessions = false;
-            foreach (var session in _sessions.Values)
+            foreach (var handler in _sessionHandlers.Values)
             {
                 try
                 {
-                    if (session.State == RpcSessionState.Connected)
+                    if (handler.SessionState == RpcSessionState.Connected)
                     {
-                        session.Tell(msg);
+                        handler.DispatchNotification(msg);
                     }
                     else
                     {
@@ -137,7 +153,7 @@ namespace TickTrader.Algo.Server
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, $"Failed to send message to session {session.Id}");
+                    _logger.Error(ex, $"Failed to send message to session {handler.SessionId}");
                 }
             }
 
@@ -145,7 +161,7 @@ namespace TickTrader.Algo.Server
             {
                 try
                 {
-                    var sessionsIdToRemove = _sessions.Where(s => s.Value.State != RpcSessionState.Connected).Select(s => s.Key).ToList();
+                    var sessionsIdToRemove = _sessionHandlers.Where(s => s.Value.SessionState != RpcSessionState.Connected).Select(s => s.Key).ToList();
                     foreach (var sessionId in sessionsIdToRemove)
                     {
                         DetachSession(sessionId);

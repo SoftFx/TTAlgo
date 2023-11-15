@@ -58,72 +58,30 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
             };
         }
 
-        public MetadataInfo FillReflectionInfo(MetadataInfo packageInfo)
+        public bool FillReflectionInfo(MetadataInfo packageInfo)
         {
+#if NET6_0_OR_GREATER
             _print("\tStarting reflection...");
 
             _print($"\tMain file: {_mainDllPath}");
 
-            using (var context = new DynamicAssemblyLoadContext(_sourceFolder, _print))
+            using (var context = new DynamicAssemblyLoadContext(_mainDllPath, _print))
             {
-                var assembly = context.LoadFromAssemblyPath(_mainDllPath);
+                var assembly = context.LoadAssemblyFileNotLocked(_mainDllPath);
 
-                foreach (var assemblyType in assembly.GetTypes())
-                {
-                    foreach (var rawType in assemblyType.GetCustomAttributes())
-                    {
-                        var castType = rawType.TypeId as Type;
+                ParseReflectionInfo(packageInfo, assembly);
 
-                        if (castType.FullName == TradeBotAttributeFullName)
-                        {
-                            var info = new PluginsInfo();
+                _print("\tGetting api version...");
 
-                            foreach (var prop in castType.GetProperties())
-                            {
-                                string ReadValue()
-                                {
-                                    var value = $"{prop.GetValue(rawType)}";
+                packageInfo.ApiVersion = context.ApiVersion;
 
-                                    _print($"\t\t{prop.Name}={value}");
-
-                                    return value;
-                                }
-
-                                switch (prop.Name)
-                                {
-                                    case nameof(PluginsInfo.DisplayName):
-                                        info.DisplayName = ReadValue();
-                                        break;
-
-                                    case nameof(PluginsInfo.Copyright):
-                                        info.Copyright = ReadValue();
-                                        break;
-
-                                    case nameof(PluginsInfo.Description):
-                                        info.Description = ReadValue();
-                                        break;
-
-                                    case nameof(PluginsInfo.Category):
-                                        info.Category = ReadValue();
-                                        break;
-
-                                    case nameof(PluginsInfo.Version):
-                                        info.Version = ReadValue();
-                                        break;
-                                }
-                            }
-
-                            _print(Environment.NewLine);
-
-                            packageInfo.Plugins.Add(info);
-                        }
-                    }
-                }
-
-                packageInfo.ApiVersion = GetApiVersion(context);
+                _print($"\t{nameof(MetadataInfo.ApiVersion)}={packageInfo.ApiVersion}");
             }
 
-            return packageInfo;
+            return true;
+#else
+            return false;
+#endif
         }
 
         public void SaveMetadata(MetadataInfo info)
@@ -154,17 +112,6 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
             _print("Done.");
         }
 
-
-        private string GetApiVersion(DynamicAssemblyLoadContext context)
-        {
-            _print("\tGetting api version...");
-
-            var value = context.ApiVersion;
-
-            _print($"\t{nameof(MetadataInfo.ApiVersion)}={value}");
-
-            return value;
-        }
 
         private string GetBuildDate()
         {
@@ -197,6 +144,61 @@ namespace TickTrader.Algo.Tools.MetadataBuilder
                 throw new Exception($"Cannot find file {filePath}");
 
             return filePath;
+        }
+
+        private void ParseReflectionInfo(MetadataInfo packageInfo, Assembly assembly)
+        {
+            foreach (var assemblyType in assembly.GetTypes())
+            {
+                foreach (var rawType in assemblyType.GetCustomAttributes())
+                {
+                    var castType = rawType.TypeId as Type;
+
+                    if (castType.FullName == TradeBotAttributeFullName)
+                    {
+                        var info = new PluginsInfo();
+
+                        foreach (var prop in castType.GetProperties())
+                        {
+                            string ReadValue()
+                            {
+                                var value = $"{prop.GetValue(rawType)}";
+
+                                _print($"\t\t{prop.Name}={value}");
+
+                                return value;
+                            }
+
+                            switch (prop.Name)
+                            {
+                                case nameof(PluginsInfo.DisplayName):
+                                    info.DisplayName = ReadValue();
+                                    break;
+
+                                case nameof(PluginsInfo.Copyright):
+                                    info.Copyright = ReadValue();
+                                    break;
+
+                                case nameof(PluginsInfo.Description):
+                                    info.Description = ReadValue();
+                                    break;
+
+                                case nameof(PluginsInfo.Category):
+                                    info.Category = ReadValue();
+                                    break;
+
+                                case nameof(PluginsInfo.Version):
+                                    info.Version = ReadValue();
+                                    break;
+                            }
+                        }
+
+                        _print(Environment.NewLine);
+
+                        packageInfo.Plugins.Add(info);
+                    }
+                }
+            }
         }
     }
 }

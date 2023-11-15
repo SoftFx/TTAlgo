@@ -1072,6 +1072,103 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 Message = info.Message,
                 PluginId = info.PluginId,
                 TimeUtc = info.TimeUtc,
+                Type = info.Type.ToServer(),
+            };
+        }
+
+        public static Domain.AlertRecordInfo.Types.AlertType ToServer(this AlertRecordInfo.Types.AlertType type)
+        {
+            switch (type)
+            {
+                case AlertRecordInfo.Types.AlertType.Plugin:
+                    return Domain.AlertRecordInfo.Types.AlertType.Plugin;
+                case AlertRecordInfo.Types.AlertType.Server:
+                    return Domain.AlertRecordInfo.Types.AlertType.Server;
+                case AlertRecordInfo.Types.AlertType.Monitoring:
+                    return Domain.AlertRecordInfo.Types.AlertType.Monitoring;
+                default:
+                    throw new ArgumentException($"Unsupported alert type {type}");
+            }
+        }
+
+        public static ServerApi.ServerUpdateInfo ToServer(this ServerUpdateInfo info)
+        {
+            return new ServerApi.ServerUpdateInfo
+            {
+                ReleaseId = info.ReleaseId,
+                Version = info.Version,
+                ReleaseDate = info.ReleaseDate,
+                MinVersion = info.MinVersion,
+                Changelog = info.Changelog,
+                IsStable = info.IsStable,
+            };
+        }
+
+        public static ServerApi.ServerUpdateListRequest ToServer(this ServerUpdateListRequest request)
+        {
+            return ServerApi.ServerUpdateListRequest.Get(request.Forced);
+        }
+
+        public static ServerApi.StartServerUpdateRequest ToServer(this StartServerUpdateRequest request)
+        {
+            return new ServerApi.StartServerUpdateRequest
+            {
+                ReleaseId = request.ReleaseId,
+            };
+        }
+
+        public static ServerApi.ServerVersionInfo ToServer(this ServerVersionInfo info)
+        {
+            return new ServerApi.ServerVersionInfo
+            {
+                Version = info.Version,
+                ReleaseDate = info.ReleaseDate,
+            };
+        }
+
+        public static ServerApi.ServerUpdateList ToServer(this ServerUpdateList list)
+        {
+            var res = new ServerApi.ServerUpdateList();
+            res.Updates.AddRange(list.Updates.Select(u => u.ToServer()));
+            res.Errors.Add(list.Errors);
+            return res;
+        }
+
+        public static ServerApi.UpdateServiceInfo ToServer(this UpdateServiceInfo info)
+        {
+            return new ServerApi.UpdateServiceInfo
+            {
+                Status = info.Status.ToServer(),
+                StatusDetails = info.StatusDetails,
+                UpdateLog = info.UpdateLog,
+                HasNewVersion = info.HasNewVersion,
+                NewVersion = info.NewVersion,
+            };
+        }
+
+        public static ServerApi.AutoUpdateEnums.Types.ServiceStatus ToServer(this AutoUpdateEnums.Types.ServiceStatus status)
+        {
+            switch (status)
+            {
+                case AutoUpdateEnums.Types.ServiceStatus.Idle:
+                    return ServerApi.AutoUpdateEnums.Types.ServiceStatus.Idle;
+                case AutoUpdateEnums.Types.ServiceStatus.Updating:
+                    return ServerApi.AutoUpdateEnums.Types.ServiceStatus.Updating;
+                case AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess:
+                    return ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateSuccess;
+                case AutoUpdateEnums.Types.ServiceStatus.UpdateFailed:
+                    return ServerApi.AutoUpdateEnums.Types.ServiceStatus.UpdateFailed;
+                default:
+                    throw new ArgumentException($"Unsupported update service status {status}");
+            }
+        }
+
+        public static ServerApi.StartServerUpdateResponse ToServer(this StartUpdateResult result)
+        {
+            return new ServerApi.StartServerUpdateResponse
+            {
+                Started = result.Started,
+                ErrorMsg = result.ErrorMsg,
             };
         }
     }
