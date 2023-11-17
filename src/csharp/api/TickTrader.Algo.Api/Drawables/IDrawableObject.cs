@@ -52,8 +52,8 @@ namespace TickTrader.Algo.Api
     {
         public const ushort Buy = 1;
         public const ushort Sell = 2;
-        public const ushort LeftPriceLabel = 3;
-        public const ushort RightPriceLabel = 4;
+        public const ushort LeftPriceLabel = 5;
+        public const ushort RightPriceLabel = 6;
         public const ushort ThumbsUp = 67;
         public const ushort ThumbsDown= 68;
         public const ushort ArrowUp = 241;
