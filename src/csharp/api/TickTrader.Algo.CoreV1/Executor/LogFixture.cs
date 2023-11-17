@@ -99,17 +99,20 @@ namespace TickTrader.Algo.CoreV1
 
         public void OnPrintTrade(string entry)
         {
-            AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Trade, entry);
+            if (_isTradeBot)
+                AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Trade, entry);
         }
 
         public void OnPrintTradeSuccess(string entry)
         {
-            AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.TradeSuccess, entry);
+            if (_isTradeBot)
+                AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.TradeSuccess, entry);
         }
 
         public void OnPrintTradeFail(string entry)
         {
-            AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.TradeFail, entry);
+            if (_isTradeBot)
+                AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.TradeFail, entry);
         }
 
         public void OnPrintAlert(string entry)
