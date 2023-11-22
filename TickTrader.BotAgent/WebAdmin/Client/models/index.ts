@@ -4,4 +4,4 @@ export * from './auth-credentials';
 export * from './ba-models';
 export * from './core';
 export * from './ba-feed';
-export * from './utils';
+export * from './Utils';

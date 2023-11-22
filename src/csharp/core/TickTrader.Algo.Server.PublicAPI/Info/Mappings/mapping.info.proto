@@ -5,7 +5,7 @@ package ticktrader.algo.server.publicApi;
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
-import "info/mappings/reduction.info.proto";
+import "Info/Mappings/reduction.info.proto";
 
 
 message MappingInfo {

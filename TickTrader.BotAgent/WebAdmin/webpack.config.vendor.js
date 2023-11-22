@@ -50,7 +50,7 @@ module.exports = {
             'rxjs',
             'rxjs-compat',
             'font-awesome/css/font-awesome.css',
-            './WebAdmin/assets/css/light-bootstrap.css',
+            './WebAdmin/Assets/css/light-bootstrap.css',
             'string-format',
         ]
     },

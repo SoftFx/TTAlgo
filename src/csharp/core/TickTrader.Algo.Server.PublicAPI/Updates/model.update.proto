@@ -4,10 +4,10 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-import "updates/base.update.proto";
-import "info/package.info.proto";
-import "info/plugin.info.proto";
-import "info/account.info.proto";
+import "Updates/base.update.proto";
+import "Info/package.info.proto";
+import "Info/plugin.info.proto";
+import "Info/account.info.proto";
 
 
 message PackageUpdate {

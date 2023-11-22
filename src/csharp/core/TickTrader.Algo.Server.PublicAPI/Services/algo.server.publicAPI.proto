@@ -4,22 +4,22 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-import "management/account.management.proto";
-import "management/server.management.proto";
-import "management/connection.management.proto";
-import "management/package.management.proto";
-import "management/plugin.management.proto";
-import "management/plugin.files.management.proto";
-import "management/subscriptions.management.proto";
-import "management/autoupdate.management.proto";
+import "Management/account.management.proto";
+import "Management/server.management.proto";
+import "Management/connection.management.proto";
+import "Management/package.management.proto";
+import "Management/plugin.management.proto";
+import "Management/plugin.files.management.proto";
+import "Management/subscriptions.management.proto";
+import "Management/autoupdate.management.proto";
 
-import "updates/base.update.proto";
-import "info/file.transfer.info.proto";
+import "Updates/base.update.proto";
+import "Info/file.transfer.info.proto";
 
 //for logging via reflection
-import "info/parameterconfigs/input.parameter.config.proto";
-import "info/parameterconfigs/output.parameter.config.proto";
-import "info/parameterconfigs/parameter.config.proto";
+import "Info/ParameterConfigs/input.parameter.config.proto";
+import "Info/ParameterConfigs/output.parameter.config.proto";
+import "Info/ParameterConfigs/parameter.config.proto";
 
 
 service AlgoServerPublic

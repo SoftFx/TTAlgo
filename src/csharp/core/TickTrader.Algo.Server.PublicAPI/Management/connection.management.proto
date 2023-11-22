@@ -5,8 +5,8 @@ package ticktrader.algo.server.publicApi;
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
-import "management/base.request.proto";
-import "info/account.info.proto";
+import "Management/base.request.proto";
+import "Info/account.info.proto";
 
 
 message LoginRequest {

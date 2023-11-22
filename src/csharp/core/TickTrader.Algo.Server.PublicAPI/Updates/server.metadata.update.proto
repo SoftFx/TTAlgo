@@ -4,13 +4,13 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-import "management/base.request.proto";
+import "Management/base.request.proto";
 
-import "info/package.info.proto";
-import "info/plugin.info.proto";
-import "info/account.info.proto";
-import "info/server.metadata.info.proto";
-import "info/autoupdate.info.proto";
+import "Info/package.info.proto";
+import "Info/plugin.info.proto";
+import "Info/account.info.proto";
+import "Info/server.metadata.info.proto";
+import "Info/autoupdate.info.proto";
 
 
 message AlgoServerMetadataUpdate {

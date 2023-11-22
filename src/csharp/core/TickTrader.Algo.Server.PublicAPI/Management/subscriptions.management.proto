@@ -5,7 +5,7 @@ package ticktrader.algo.server.publicApi;
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
-import "management/base.request.proto";
+import "Management/base.request.proto";
 
 
 message SubscribeToUpdatesRequest { }

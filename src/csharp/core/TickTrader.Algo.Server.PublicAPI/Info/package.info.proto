@@ -7,8 +7,8 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-import "info/mappings/reduction.info.proto";
-import "info/plugin.info.proto";
+import "Info/Mappings/reduction.info.proto";
+import "Info/plugin.info.proto";
 
 
 message PackageInfo {

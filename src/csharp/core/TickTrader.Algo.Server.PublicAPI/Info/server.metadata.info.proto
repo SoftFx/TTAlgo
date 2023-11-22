@@ -4,7 +4,7 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-import "info/mappings/mapping.info.proto";
+import "Info/Mappings/mapping.info.proto";
 
 
 message Metadata {

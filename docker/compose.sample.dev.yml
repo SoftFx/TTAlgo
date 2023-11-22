@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  server:
+    extends:
+      file: docker/compose.server.yml
+      service: release
+      # service: debug
+    ports:
+      - 51115:15443
+      # - 52225:15443
+    volumes:
+      - "data:/app/data"
+      # - "./bin/dbg:/app/data"
+      # - "d:/projects/dbg:/app/data"
+
+volumes:
+  data:

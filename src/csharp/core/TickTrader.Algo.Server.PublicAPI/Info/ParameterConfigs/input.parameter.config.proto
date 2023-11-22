@@ -4,8 +4,8 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-import "info/mappings/mapping.info.proto";
-import "info/server.metadata.info.proto";
+import "Info/Mappings/mapping.info.proto";
+import "Info/server.metadata.info.proto";
 
 
 message BarToBarInputConfig {

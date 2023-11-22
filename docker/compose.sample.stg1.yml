@@ -1,0 +1,23 @@
+version: '3'
+
+# WSL 2 compatible
+services:
+  server:
+    restart: always
+    mem_reservation: 512m
+    mem_limit: 1024m
+    memswap_limit: 1024m
+    cpus: 2
+    environment:
+      - DOTNET_PROCESSOR_COUNT=4
+
+    image: algo-server:1.24
+    ports:
+      - 44401:15443
+    volumes:
+      - "data:/app/data"
+      # - "./srv01:/app/data"
+      # - "d:/projects/srv01:/app/data"
+
+volumes:
+  data:

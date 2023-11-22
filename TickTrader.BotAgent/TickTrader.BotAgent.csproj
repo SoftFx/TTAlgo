@@ -6,20 +6,11 @@
     <AssemblyName>TickTrader.AlgoServer</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>TickTrader.BotAgent</PackageId>
-    <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <PostBuildEvent></PostBuildEvent>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <Deterministic>false</Deterministic>
     <ApplicationIcon>algoStudioLogo64.ico</ApplicationIcon>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -72,16 +63,13 @@
     <PackageReference Include="Telegram.Bot" Version="18.0.0" />
   </ItemGroup>
 
-  <Target Name="NpmInstall" BeforeTargets="PreComputeCompileTypeScriptWithTSConfig">
-    <Exec Command="npm install --legacy-peer-deps" />
-  </Target>
-
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
     <Exec Command="npm install --legacy-peer-deps" />
     <Exec Command="npm run build_prod" />
   </Target>
 
   <Target Name="NpmDevBuild" AfterTargets="Build" Condition="'$(Configuration)'=='Debug'">
+    <Exec Command="npm install --legacy-peer-deps" Condition="!Exists('node_modules')" />
     <Exec Command="npm run build_dev" />
   </Target>
 

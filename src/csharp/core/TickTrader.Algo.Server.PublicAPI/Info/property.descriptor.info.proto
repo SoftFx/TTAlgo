@@ -5,7 +5,7 @@ package ticktrader.algo.server.publicApi;
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
-import "info/server.metadata.info.proto";
+import "Info/server.metadata.info.proto";
 
 
 message ParameterDescriptor {

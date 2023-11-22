@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  release:
+    build:
+      context: ..
+      dockerfile: docker/server.Dockerfile
+      args:
+        cfg: Release
+
+  debug:
+    build:
+      context: ..
+      dockerfile: docker/server.Dockerfile
+      args:
+        cfg: Debug
