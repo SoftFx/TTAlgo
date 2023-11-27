@@ -16,6 +16,9 @@
 
         public bool IsOk => Code == Types.ErrorCode.NoConnectionError;
 
+        public string ErrMsg => Code == Types.ErrorCode.UnknownConnectionError
+            ? $"{Code} ({TextMessage})" : Code.ToString();
+
 
         public ConnectionErrorInfo(Types.ErrorCode code, string message = null)
         {

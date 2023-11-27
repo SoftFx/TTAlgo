@@ -137,8 +137,9 @@ namespace TickTrader.Algo.Account.Fdk2
                 if (flatEx is LoginException loginEx)
                 {
                     var code = loginEx.LogoutReason;
-                    logger.Info("Can't login: " + code);
-                    return new ConnectionErrorInfo(Convert(code), flatEx.Message);
+                    var msg = loginEx.Message;
+                    logger.Info($"Can't login ({code}): {msg}");
+                    return new ConnectionErrorInfo(Convert(code), msg);
                 }
                 else if (flatEx is ConnectException)
                 {

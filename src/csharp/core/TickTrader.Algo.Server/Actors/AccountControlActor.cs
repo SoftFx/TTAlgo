@@ -128,7 +128,7 @@ namespace TickTrader.Algo.Server
             using (await _requestGate.Enter())
             {
                 if (!_lastError.IsOk)
-                    throw new AlgoException($"Connection error! Code: {_lastError.Code}");
+                    throw new AlgoException($"Connection error! Code: {_lastError.ErrMsg}");
 
                 var symbols = await _core.GetSymbols();
                 var defaultSymbol = await _core.GetDefaultSymbol();
@@ -385,9 +385,9 @@ namespace TickTrader.Algo.Server
             else if (!HasError() && IsUsualDisconnect(oldState, newState))
                 _logger.Info($"{userId}: logout from {server}");
             else if (HasError() && IsFailedConnection(oldState, newState))
-                _logger.Info($"{userId}: connect to {server} failed [{_lastError?.Code}]");
+                _logger.Info($"{userId}: connect to {server} failed [{_lastError?.ErrMsg}]");
             else if (HasError() && IsUnexpectedDisconnect(oldState, newState))
-                _logger.Info($"{userId}: connection to {server} lost [{_lastError?.Code}]");
+                _logger.Info($"{userId}: connection to {server} lost [{_lastError?.ErrMsg}]");
         }
 
 
