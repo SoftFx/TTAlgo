@@ -4,7 +4,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
-    [Indicator(Category = "Trend", DisplayName = "Moving Average", Version = "1.1")]
+    [Indicator(Category = "Trend", DisplayName = "Moving Average", Version = "1.2")]
     public class MovingAverage : Indicator, IMovingAverage
     {
         private IMovAvgAlgo _maInstance;
@@ -39,15 +39,15 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             Period = period;
             Shift = shift;
             TargetMethod = method;
-            SmoothFactor = method == MovingAverageMethod.Exponential ? 2.0 / (period + 1) :
-                (method == MovingAverageMethod.CustomExponential ? smoothFactor : double.NaN);
+            SmoothFactor = smoothFactor;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _maInstance = MovAvg.Create(Period, TargetMethod, SmoothFactor);
+            var smoothFactor = TargetMethod == MovingAverageMethod.Exponential ? 2.0 / (Period + 1) : SmoothFactor;
+            _maInstance = MovAvg.Create(Period, TargetMethod, smoothFactor);
             _shifter = new SimpleShifter(Shift);
             _shifter.Init();
         }

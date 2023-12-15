@@ -1,5 +1,9 @@
 ﻿namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
+    /// <summary>
+    /// Regular EMA does not reset when MA window moves forward.
+    /// This MA algo recalculates EMA formula from zero every time MA window moves forward
+    /// </summary>
     internal class CustomEMA2 : IMovAvgAlgo
     {
         private readonly MovAvgCache _cache;
