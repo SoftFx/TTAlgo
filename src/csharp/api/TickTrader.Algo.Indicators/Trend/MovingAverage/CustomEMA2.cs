@@ -4,6 +4,7 @@
     /// Regular EMA does not reset when MA window moves forward.
     /// This MA algo recalculates EMA formula from zero every time MA window moves forward
     /// </summary>
+    /// This implementation is unused after design change. Will leave it for now
     internal class CustomEMA2 : IMovAvgAlgo
     {
         private readonly MovAvgCache _cache;

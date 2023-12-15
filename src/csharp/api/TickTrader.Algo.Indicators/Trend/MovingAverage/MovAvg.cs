@@ -53,7 +53,8 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
                 case MovingAverageMethod.Exponential: algo = new EMA2(args); break;
                 case MovingAverageMethod.Smoothed: algo = new SMMA2(args); break;
                 case MovingAverageMethod.LinearWeighted: algo = new LWMA2(args); break;
-                case MovingAverageMethod.CustomExponential: algo = new CustomEMA2(args); break;
+                // Design decision: Should behave like EMA with a user-defined SmoothFactor
+                case MovingAverageMethod.CustomExponential: algo = new EMA2(args); break;
                 case MovingAverageMethod.Triangular: algo = new TriMA2(args); break;
                 default: throw new ArgumentException("Unknown Moving Average method.");
             }
