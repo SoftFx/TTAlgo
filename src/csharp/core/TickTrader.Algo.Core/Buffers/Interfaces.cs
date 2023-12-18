@@ -46,7 +46,8 @@ namespace TickTrader.Algo.Core
 
     public interface IFixedEntry<T>
     {
-        Action<T> Changed { set; }
+        Action<int, T> Changed { set; }
         void CopyFrom(T val);
+        void UpdateIndex(int byVal);
     }
 }

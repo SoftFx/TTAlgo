@@ -46,14 +46,8 @@ namespace TickTrader.Algo.CoreV1
             _nullValueFactory = nullValueFactory;
         }
 
-        public T GetNullValue()
-        {
-            return _newValueFactory();
-        }
+        public T GetNullValue() => _nullValueFactory();
 
-        public T GetNewValue()
-        {
-            return _nullValueFactory();
-        }
+        public T GetNewValue() => _newValueFactory();
     }
 }

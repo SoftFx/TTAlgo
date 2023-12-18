@@ -37,6 +37,8 @@ namespace TickTrader.Algo.CoreV1
             Updated?.Invoke(index, val);
         }
 
+        protected virtual void OnBeforeTruncate(int size) { }
+
         public virtual T this[int index]
         {
             get { return _data[index]; }
@@ -80,6 +82,7 @@ namespace TickTrader.Algo.CoreV1
         void IBuffer.Truncate(int size)
         {
             Truncating?.Invoke(size);
+            OnBeforeTruncate(size);
             _data.TruncateStart(size);
             Truncated?.Invoke(size);
         }
@@ -111,8 +114,27 @@ namespace TickTrader.Algo.CoreV1
             protected override T InitValue(int index)
             {
                 var newVal = base.InitValue(index);
-                ((IFixedEntry<T>)newVal).Changed = v => OnUpdated(index, v);
+                var entry = (IFixedEntry<T>)newVal;
+                entry.UpdateIndex(index); // set initial value
+                entry.Changed = OnChanged;
                 return newVal;
+            }
+
+            protected override void OnBeforeTruncate(int size)
+            {
+                foreach (var entry in _data)
+                {
+                    var fixedEntry = (IFixedEntry<T>)entry;
+                    fixedEntry.UpdateIndex(-size);
+                }
+            }
+
+            private void OnChanged(int index, T val)
+            {
+                if (index < 0)
+                    return; // if user hold entity reference too long he can have out of view marker
+
+                OnUpdated(index, val);
             }
 
             public override T this[int index]

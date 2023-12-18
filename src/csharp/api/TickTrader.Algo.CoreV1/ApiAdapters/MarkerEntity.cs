@@ -7,14 +7,16 @@ namespace TickTrader.Algo.CoreV1
 {
     public class MarkerEntity : Marker, IFixedEntry<Marker>
     {
-        private static Action<Marker> EmptyHandler = e => { };
+        private static Action<int, Marker> EmptyHandler = (p1, p2) => { };
 
         private double _y = double.NaN;
         private Colors _color = Colors.Auto;
         private string _text;
         private MarkerIcons _icon;
         private ushort _iconCode;
-        private Action<Marker> _changed = EmptyHandler;
+
+        private Action<int, Marker> _changed = EmptyHandler;
+        private int _changedEventIndex;
 
 
         public Colors Color
@@ -23,7 +25,7 @@ namespace TickTrader.Algo.CoreV1
             set
             {
                 _color = value;
-                Changed(this);
+                OnChanged();
             }
         }
 
@@ -33,7 +35,7 @@ namespace TickTrader.Algo.CoreV1
             set
             {
                 _text = Normalize(value);
-                Changed(this);
+                OnChanged();
             }
         }
 
@@ -43,7 +45,7 @@ namespace TickTrader.Algo.CoreV1
             set
             {
                 _icon = value;
-                Changed(this);
+                OnChanged();
             }
         }
 
@@ -53,7 +55,7 @@ namespace TickTrader.Algo.CoreV1
             set
             {
                 _y = value;
-                Changed(this);
+                OnChanged();
             }
         }
 
@@ -63,11 +65,11 @@ namespace TickTrader.Algo.CoreV1
             set
             {
                 _iconCode = value;
-                Changed(this);
+                OnChanged();
             }
         }
 
-        public Action<Marker> Changed
+        public Action<int, Marker> Changed
         {
             get => _changed;
             set
@@ -82,7 +84,7 @@ namespace TickTrader.Algo.CoreV1
         public void Clear()
         {
             Reset();
-            Changed(this);
+            OnChanged();
         }
 
         public void CopyFrom(Marker val)
@@ -96,7 +98,7 @@ namespace TickTrader.Algo.CoreV1
                 _text = Normalize(val.DisplayText);
                 _icon = val.Icon;
             }
-            Changed(this);
+            OnChanged();
         }
 
         public MarkerInfo GetInfo()
@@ -137,5 +139,9 @@ namespace TickTrader.Algo.CoreV1
             _icon = MarkerIcons.Circle;
             _iconCode = 0;
         }
+
+        private void OnChanged() => _changed?.Invoke(_changedEventIndex, this);
+
+        void IFixedEntry<Marker>.UpdateIndex(int byVal) => _changedEventIndex += byVal;
     }
 }
