@@ -198,7 +198,7 @@
                 case Drawable.Types.ObjectType.Ellipse: // Fill
                 //case Drawable.Types.ObjectType.Symbol:
                 case Drawable.Types.ObjectType.Text: // Angle, AnchorPosition
-                //case Drawable.Types.ObjectType.Bitmap: // ?Angle?, ?AnchorPosition?
+                case Drawable.Types.ObjectType.Bitmap: // AnchorPosition, ?Angle?
                 //case Drawable.Types.ObjectType.Levels:
                 //case Drawable.Types.ObjectType.Cycles:
                 case Drawable.Types.ObjectType.LinRegChannel: // RayMode, Fill
