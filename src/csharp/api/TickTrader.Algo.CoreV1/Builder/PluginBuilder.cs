@@ -485,11 +485,13 @@ namespace TickTrader.Algo.CoreV1
         internal void StartBatch()
         {
             PluginProxy.Coordinator.BeginBatch();
+            _drawableApi.BeginBatch();
         }
 
         internal void StopBatch()
         {
             PluginProxy.Coordinator.EndBatch();
+            _drawableApi.EndBatch();
         }
 
         internal void IncreaseVirtualPosition()

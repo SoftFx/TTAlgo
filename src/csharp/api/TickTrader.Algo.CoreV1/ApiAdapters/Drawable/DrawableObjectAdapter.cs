@@ -131,6 +131,8 @@ namespace TickTrader.Algo.CoreV1
         {
             if (IsRemoved || (!IsNew && !IsChanged))
                 return;
+            if (_updateSink.IsBatchBuild)
+                return;
 
             var infoCopy = _info.Clone();
 
@@ -144,6 +146,19 @@ namespace TickTrader.Algo.CoreV1
             {
                 upd = DrawableCollectionUpdate.Updated(infoCopy);
             }
+
+            IsNew = false;
+            IsChanged = false;
+
+            _updateSink.Send(upd);
+        }
+
+        internal void PushChangesAfterBatchBuild()
+        {
+            if (IsRemoved)
+                return;
+
+            var upd = DrawableCollectionUpdate.Added(_info.Clone());
 
             IsNew = false;
             IsChanged = false;

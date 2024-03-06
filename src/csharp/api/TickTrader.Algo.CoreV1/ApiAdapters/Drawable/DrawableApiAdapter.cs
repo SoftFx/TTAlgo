@@ -6,6 +6,10 @@ namespace TickTrader.Algo.CoreV1
 {
     internal interface IDrawableUpdateSink
     {
+        // Calling code can check this flag to skip creating DrawableCollectionUpdate
+        bool IsBatchBuild { get; }
+
+
         void Send(DrawableCollectionUpdate upd);
     }
 
@@ -13,6 +17,8 @@ namespace TickTrader.Algo.CoreV1
     internal class DrawableApiAdapter : IDrawableApi, IDrawableUpdateSink
     {
         private readonly DrawableCollectionAdapter _collection;
+
+        private bool _isBatch = false;
 
 
         public IDrawableCollection LocalCollection => _collection;
@@ -26,12 +32,22 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        void IDrawableUpdateSink.Send(DrawableCollectionUpdate upd) => Updated?.Invoke(upd);
+        bool IDrawableUpdateSink.IsBatchBuild => _isBatch;
 
-
-        internal void FlushAll()
+        void IDrawableUpdateSink.Send(DrawableCollectionUpdate upd)
         {
-            _collection.FlushAll();
+            if (!_isBatch)
+                Updated?.Invoke(upd);
+        }
+
+        internal void FlushAll() => _collection.FlushAll();
+
+        internal void BeginBatch() => _isBatch = true;
+
+        internal void EndBatch()
+        {
+            _isBatch = false;
+            _collection.FlushAfterBatchBuild();
         }
     }
 }

@@ -224,7 +224,7 @@ namespace TickTrader.Algo.Core.Tests.Drawables
             Assert.AreEqual(0, collection.Count);
             for (var i = 0; i < cnt; i++)
             {
-                Assert.AreEqual(objNames[cnt - i -1], ctx.Updates[i].ObjName);
+                Assert.AreEqual(objNames[cnt - i - 1], ctx.Updates[i].ObjName);
                 Assert.AreEqual(CollectionUpdate.Types.Action.Removed, ctx.Updates[i].Action);
             }
         }
@@ -314,6 +314,189 @@ namespace TickTrader.Algo.Core.Tests.Drawables
 
             Assert.AreEqual(0, collection.Count);
             Assert.AreEqual(0, ctx.Updates.Count);
+        }
+
+        [TestMethod]
+        public void TestBatchBuild_SimpleAdd()
+        {
+            (var ctx, var collection) = DrawableTestContext.Create();
+
+            const int cnt = 5;
+            var objNames = DrawableTestContext.GetObjectNames(cnt, "TestObj");
+
+            ctx.BeginBatch();
+            CreateNumberOfObjects(collection, cnt, objNames, Api.DrawableObjectType.TextBlockControl);
+            ctx.FlushUpdates();
+            Assert.AreEqual(cnt, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            ctx.EndBatch();
+            Assert.AreEqual(cnt + 1, ctx.Updates.Count);
+            Assert.AreEqual(CollectionUpdate.Types.Action.Cleared, ctx.Updates[0].Action);
+            for (var i = 1; i < cnt + 1; i++)
+            {
+                Assert.AreEqual(objNames[i - 1], ctx.Updates[i].ObjInfo.Name);
+                Assert.AreEqual(CollectionUpdate.Types.Action.Added, ctx.Updates[i].Action);
+            }
+
+            collection.Clear();
+            ctx.FlushAndResetUpdates();
+
+            ctx.BeginBatch();
+            CreateNumberOfObjects(collection, cnt, objNames, Api.DrawableObjectType.TextBlockControl);
+            ctx.FlushUpdates();
+            Assert.AreEqual(cnt, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            for (var i = 0; i < cnt; i++)
+            {
+                var obj = collection[i];
+                obj.Tooltip = "test";
+                ctx.FlushUpdates();
+            }
+            Assert.AreEqual(cnt, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            ctx.EndBatch();
+            Assert.AreEqual(cnt + 1, ctx.Updates.Count);
+            Assert.AreEqual(CollectionUpdate.Types.Action.Cleared, ctx.Updates[0].Action);
+            for (var i = 1; i < cnt + 1; i++)
+            {
+                Assert.AreEqual(objNames[i - 1], ctx.Updates[i].ObjInfo.Name);
+                Assert.AreEqual(CollectionUpdate.Types.Action.Added, ctx.Updates[i].Action);
+            }
+        }
+
+        [TestMethod]
+        public void TestBatchBuild_AddUpdate()
+        {
+            (var ctx, var collection) = DrawableTestContext.Create();
+
+            const int cnt = 5;
+            var objNames = DrawableTestContext.GetObjectNames(cnt, "TestObj");
+
+            ctx.BeginBatch();
+            CreateNumberOfObjects(collection, cnt, objNames, Api.DrawableObjectType.TextBlockControl);
+            ctx.FlushUpdates();
+            Assert.AreEqual(cnt, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            for (var j = 0; j < cnt; j++)
+            {
+                for (var i = 0; i < cnt; i++)
+                {
+                    var obj = collection[i];
+                    obj.Tooltip = "test" + j;
+                }
+                ctx.FlushUpdates();
+                Assert.AreEqual(cnt, collection.Count);
+                Assert.AreEqual(0, ctx.Updates.Count);
+            }
+            ctx.EndBatch();
+            Assert.AreEqual(cnt + 1, ctx.Updates.Count);
+            Assert.AreEqual(CollectionUpdate.Types.Action.Cleared, ctx.Updates[0].Action);
+            for (var i = 1; i < cnt + 1; i++)
+            {
+                Assert.AreEqual(objNames[i - 1], ctx.Updates[i].ObjInfo.Name);
+                Assert.AreEqual(CollectionUpdate.Types.Action.Added, ctx.Updates[i].Action);
+            }
+        }
+
+        [TestMethod]
+        public void TestBatchBuild_AddRemove()
+        {
+            (var ctx, var collection) = DrawableTestContext.Create();
+
+            const int cnt = 5;
+            var objNames = DrawableTestContext.GetObjectNames(cnt, "TestObj");
+
+            ctx.BeginBatch();
+            CreateNumberOfObjects(collection, cnt, objNames, Api.DrawableObjectType.TextBlockControl);
+            ctx.FlushUpdates();
+            Assert.AreEqual(cnt, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            for (var i = 0; i < cnt; i++)
+            {
+                collection.Remove(objNames[i]);
+            }
+            ctx.FlushUpdates();
+            Assert.AreEqual(0, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            ctx.EndBatch();
+            Assert.AreEqual(1, ctx.Updates.Count);
+            Assert.AreEqual(CollectionUpdate.Types.Action.Cleared, ctx.Updates[0].Action);
+
+            collection.Clear();
+            ctx.FlushAndResetUpdates();
+
+            ctx.BeginBatch();
+            CreateNumberOfObjects(collection, cnt, objNames, Api.DrawableObjectType.TextBlockControl);
+            ctx.FlushUpdates();
+            Assert.AreEqual(cnt, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            for (var i = 0; i < cnt; i++)
+            {
+                collection.RemoveAt(0);
+            }
+            ctx.FlushUpdates();
+            Assert.AreEqual(0, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            ctx.EndBatch();
+            Assert.AreEqual(1, ctx.Updates.Count);
+            Assert.AreEqual(CollectionUpdate.Types.Action.Cleared, ctx.Updates[0].Action);
+
+            collection.Clear();
+            ctx.FlushAndResetUpdates();
+
+            ctx.BeginBatch();
+            CreateNumberOfObjects(collection, cnt, objNames, Api.DrawableObjectType.TextBlockControl);
+            ctx.FlushUpdates();
+            Assert.AreEqual(cnt, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            collection.Clear();
+            ctx.FlushUpdates();
+            Assert.AreEqual(0, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            ctx.EndBatch();
+            Assert.AreEqual(1, ctx.Updates.Count);
+            Assert.AreEqual(CollectionUpdate.Types.Action.Cleared, ctx.Updates[0].Action);
+        }
+
+        [TestMethod]
+        public void TestBatchBuild_Special()
+        {
+            (var ctx, var collection) = DrawableTestContext.Create();
+
+            const int cnt = 5;
+
+            // always receive clear even if nothing added
+            ctx.BeginBatch();
+            ctx.EndBatch();
+            ctx.FlushUpdates();
+            Assert.AreEqual(0, collection.Count);
+            Assert.AreEqual(1, ctx.Updates.Count);
+            Assert.AreEqual(CollectionUpdate.Types.Action.Cleared, ctx.Updates[0].Action);
+
+            var objNames = DrawableTestContext.GetObjectNames(cnt, "TestObj");
+            var objNames2 = DrawableTestContext.GetObjectNames(cnt, "TestObjj");
+
+            // if there was any objects before batch build send them after end of batch build
+            CreateNumberOfObjects(collection, cnt, objNames, Api.DrawableObjectType.TextBlockControl);
+            ctx.FlushAndResetUpdates();
+            Assert.AreEqual(cnt, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            ctx.BeginBatch();
+            CreateNumberOfObjects(collection, cnt, objNames2, Api.DrawableObjectType.TextBlockControl);
+            ctx.FlushUpdates();
+            Assert.AreEqual(2 * cnt, collection.Count);
+            Assert.AreEqual(0, ctx.Updates.Count);
+            ctx.EndBatch();
+            Assert.AreEqual(2 * cnt + 1, ctx.Updates.Count);
+            Assert.AreEqual(CollectionUpdate.Types.Action.Cleared, ctx.Updates[0].Action);
+            for (var i = 1; i < 2 * cnt + 1; i++)
+            {
+                if (i < cnt + 1)
+                    Assert.AreEqual(objNames[i - 1], ctx.Updates[i].ObjInfo.Name);
+                else
+                    Assert.AreEqual(objNames2[i - cnt - 1], ctx.Updates[i].ObjInfo.Name);
+                Assert.AreEqual(CollectionUpdate.Types.Action.Added, ctx.Updates[i].Action);
+            }
         }
 
 

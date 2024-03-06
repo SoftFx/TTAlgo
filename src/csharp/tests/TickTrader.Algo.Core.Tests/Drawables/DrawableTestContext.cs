@@ -38,8 +38,18 @@ namespace TickTrader.Algo.Core.Tests.Drawables
 
         public void FlushAndResetUpdates()
         {
+            if (_updateSrc.IsBatchBuild)
+                EndBatch();
             _adapter.FlushAll();
             _updateSrc.Reset();
+        }
+
+        public void BeginBatch() => _updateSrc.IsBatchBuild = true;
+
+        public void EndBatch()
+        {
+            _updateSrc.IsBatchBuild = false;
+            _adapter.FlushAfterBatchBuild();
         }
 
 
@@ -47,10 +57,16 @@ namespace TickTrader.Algo.Core.Tests.Drawables
         {
             public List<DrawableCollectionUpdate> Updates { get; set; } = new List<DrawableCollectionUpdate>();
 
+            public bool IsBatchBuild { get; set; } = false;
+
 
             public void Send(DrawableCollectionUpdate upd) => Updates.Add(upd);
 
-            public void Reset() => Updates.Clear();
+            public void Reset()
+            {
+                IsBatchBuild = false;
+                Updates.Clear();
+            }
         }
     }
 }

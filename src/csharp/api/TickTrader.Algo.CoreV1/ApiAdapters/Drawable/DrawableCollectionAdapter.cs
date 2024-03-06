@@ -76,7 +76,7 @@ namespace TickTrader.Algo.CoreV1
                 _objects.Remove(obj);
                 obj.OnRemoved();
 
-                if (obj != null && !obj.IsNew)
+                if (obj != null && !obj.IsNew && !_updateSink.IsBatchBuild)
                     _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
             }
         }
@@ -90,7 +90,7 @@ namespace TickTrader.Algo.CoreV1
                 _byNameCache.Remove(obj.Name);
                 obj.OnRemoved();
 
-                if (obj != null && !obj.IsNew)
+                if (obj != null && !obj.IsNew && !_updateSink.IsBatchBuild)
                     _updateSink.Send(DrawableCollectionUpdate.Removed(obj.Name));
             }
         }
@@ -105,7 +105,8 @@ namespace TickTrader.Algo.CoreV1
                 _objects.Clear();
                 _byNameCache.Clear();
 
-                _updateSink.Send(DrawableCollectionUpdate.Cleared());
+                if (!_updateSink.IsBatchBuild)
+                    _updateSink.Send(DrawableCollectionUpdate.Cleared());
             }
         }
 
@@ -114,10 +115,22 @@ namespace TickTrader.Algo.CoreV1
         {
             lock (_syncObj)
             {
+                if (_updateSink.IsBatchBuild)
+                    return;
+
                 foreach (var obj in _objects)
-                {
                     obj.PushChangesInternal();
-                }
+            }
+        }
+
+        internal void FlushAfterBatchBuild()
+        {
+            lock (_syncObj)
+            {
+                // Similar to Output buffers Reset update, Clear is expected on UI to reset collection after restart of plugin
+                _updateSink.Send(DrawableCollectionUpdate.Cleared());
+                foreach (var obj in _objects)
+                    obj.PushChangesAfterBatchBuild();
             }
         }
     }
