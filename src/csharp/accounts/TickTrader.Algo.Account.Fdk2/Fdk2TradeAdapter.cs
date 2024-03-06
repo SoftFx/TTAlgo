@@ -13,6 +13,8 @@ namespace TickTrader.Algo.Account.Fdk2
         private readonly FDK.Client.OrderEntry _tradeProxy;
         private readonly Action<FDK2.ExecutionReport> _execReportHandler;
 
+        private TaskCompletionSource<object> _loginTaskSrc;
+
 
         public Fdk2TradeAdapter(FDK.Client.OrderEntry tradeProxy, Action<FDK2.ExecutionReport> execReportHandler)
         {
@@ -22,8 +24,9 @@ namespace TickTrader.Algo.Account.Fdk2
             _tradeProxy.ConnectResultEvent += (c, d) => SfxTaskAdapter.SetCompleted(d);
             _tradeProxy.ConnectErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed(d, ex);
 
-            _tradeProxy.LoginResultEvent += (c, d) => SfxTaskAdapter.SetCompleted(d);
-            _tradeProxy.LoginErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed(d, ex);
+            _tradeProxy.LoginResultEvent += (c, d) => SfxTaskAdapter.TrySetCompleted(d);
+            _tradeProxy.LoginErrorEvent += (c, d, ex) => SfxTaskAdapter.TrySetFailed(d, ex);
+            _tradeProxy.TwoFactorLoginRequestEvent += (c, m) => SfxTaskAdapter.TrySetFailed(_loginTaskSrc, SfxInterop.TwoFactorException);
 
             _tradeProxy.LogoutResultEvent += (c, d, i) => SfxTaskAdapter.SetCompleted(d, i);
             _tradeProxy.LogoutErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed<LogoutInfo>(d, ex);
@@ -74,12 +77,16 @@ namespace TickTrader.Algo.Account.Fdk2
         public Task LoginAsync(string username, string password, string deviceId, string appId, string sessionId)
         {
             var taskSrc = new TaskCompletionSource<object>();
+            _loginTaskSrc = taskSrc;
             _tradeProxy.LoginAsync(taskSrc, username, password, deviceId, appId, sessionId);
             return taskSrc.Task;
         }
 
         public Task LogoutAsync(string message)
         {
+            if (_loginTaskSrc != null && _loginTaskSrc.Task.IsFaulted)
+                return Task.CompletedTask;
+
             var taskSrc = new TaskCompletionSource<LogoutInfo>();
             _tradeProxy.LogoutAsync(taskSrc, message);
             return taskSrc.Task;

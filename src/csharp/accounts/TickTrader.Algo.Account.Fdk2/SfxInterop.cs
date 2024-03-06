@@ -24,6 +24,8 @@ namespace TickTrader.Algo.Account.Fdk2
 
         private static readonly object _clientSessionCtorLock = new object();
 
+        internal static readonly InteropException TwoFactorException = new ("2FA not supported", ConnectionErrorInfo.Types.ErrorCode.TwoFactorNotSupported);
+
         private IAlgoLogger logger;
 
         public IFeedServerApi FeedApi => this;

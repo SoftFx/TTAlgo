@@ -61,6 +61,8 @@ message ConnectionErrorInfo {
         SERVER_LOGOUT = 10;
         CANCELED = 11;
         REJECTED_BY_SERVER = 12;
+
+        TWO_FACTOR_NOT_SUPPORTED = 101;
     }
 
     ErrorCode code = 1;

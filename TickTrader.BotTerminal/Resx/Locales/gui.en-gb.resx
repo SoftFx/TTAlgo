@@ -177,6 +177,9 @@
   <data name="ConnectionErrorCode_Timeout" xml:space="preserve">
     <value>Cannot connect server due to connection timeout, please check your network connection</value>
   </data>
+  <data name="ConnectionErrorCode_TwoFactorNotSupported" xml:space="preserve">
+    <value>Authentication error. Account requires 2FA</value>
+  </data>
   <data name="ConnectionErrorCode_Unknown" xml:space="preserve">
     <value>Unexpected error, please contact the support service. You may see logs for further details</value>
   </data>

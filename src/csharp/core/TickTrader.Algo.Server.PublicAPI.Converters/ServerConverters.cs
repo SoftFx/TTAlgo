@@ -520,6 +520,9 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 case ConnectionErrorInfo.Types.ErrorCode.RejectedByServer:
                     return Domain.ConnectionErrorInfo.Types.ErrorCode.RejectedByServer;
 
+                case ConnectionErrorInfo.Types.ErrorCode.TwoFactorNotSupported:
+                    return Domain.ConnectionErrorInfo.Types.ErrorCode.TwoFactorNotSupported;
+
                 default:
                     return Domain.ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError;
             }

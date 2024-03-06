@@ -50,6 +50,30 @@ namespace TickTrader.Algo.Account.Fdk2
             }
         }
 
+        internal static void TrySetCompleted(object state) => TrySetCompleted<object>(state, null);
+
+        internal static bool TrySetCompleted<T>(object state, T result)
+        {
+            if (state is RequestResultSource<T> requestResSrc)
+                return requestResSrc.TrySetCompleted(result);
+            if (state is TaskCompletionSource<T> taskSrc)
+                return taskSrc.TrySetResult(result);
+
+            return false;
+        }
+
+        internal static bool TrySetFailed(object state, Exception ex) => TrySetFailed<object>(state, ex);
+
+        internal static bool TrySetFailed<T>(object state, Exception ex)
+        {
+            if (state is RequestResultSource<T> requestResSrc)
+                return requestResSrc.TrySetFailed(Convert(ex));
+            else if (state is TaskCompletionSource<T> taskSrc)
+                return taskSrc.TrySetException(Convert(ex));
+
+            return false;
+        }
+
         internal static Exception Convert(Exception ex)
         {
             if (ex is RejectException)
@@ -110,6 +134,18 @@ namespace TickTrader.Algo.Account.Fdk2
             {
                 _reportTime = DateTime.Now.Ticks;
                 SetException(ex);
+            }
+
+            public bool TrySetCompleted(T result)
+            {
+                Interlocked.CompareExchange(ref _reportTime, DateTime.UtcNow.Ticks, 0);
+                return TrySetResult(result);
+            }
+
+            public bool TrySetFailed(Exception ex)
+            {
+                Interlocked.CompareExchange(ref _reportTime, DateTime.UtcNow.Ticks, 0);
+                return TrySetException(ex);
             }
 
             public string MeasureRequestTime()

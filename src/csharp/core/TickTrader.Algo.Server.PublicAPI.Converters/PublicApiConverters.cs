@@ -49,6 +49,9 @@ namespace TickTrader.Algo.Server.PublicAPI.Converters
                 case Domain.ConnectionErrorInfo.Types.ErrorCode.RejectedByServer:
                     return ConnectionErrorInfo.Types.ErrorCode.RejectedByServer;
 
+                case Domain.ConnectionErrorInfo.Types.ErrorCode.TwoFactorNotSupported:
+                    return ConnectionErrorInfo.Types.ErrorCode.TwoFactorNotSupported;
+
                 default:
                     return ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError;
             }
