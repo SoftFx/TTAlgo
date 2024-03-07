@@ -107,6 +107,7 @@ namespace TickTrader.Algo.Backtester
             _executorCore.Permissions = new PluginPermissions() { TradeAllowed = true };
 
             _executorCore.OnInternalError += err => _control.Collector.AddEvent(PluginLogRecord.Types.LogSeverity.Error, $"Internal executor error: {err.Exception.Message}");
+            _executorCore.OnNotification = _ => { };
 
             bool isRealtime = MarginDataMode.HasFlag(TestDataSeriesFlags.Realtime)
                 || EquityDataMode.HasFlag(TestDataSeriesFlags.Realtime)

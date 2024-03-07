@@ -292,6 +292,7 @@ namespace TickTrader.Algo.Backtester
                 var executor = Factory.CreateExecutor("Optimizing-" + Interlocked.Increment(ref _idSeed).ToString());
                 executor.Metadata = this;
                 executor.OnUpdate = o => { };
+                executor.OnNotification = _ => { };
 
                 var emFixture = InitEmulation(executor, feedClone, fStrategyClone);
 
