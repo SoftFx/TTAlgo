@@ -139,6 +139,7 @@ namespace TickTrader.Algo.BacktesterApi
                     AsZipEntry.TryReadCsv<BarData, CsvMapping.ForBarData>(zip, EquityFileName, res.Equity, res);
                     AsZipEntry.TryReadCsv<BarData, CsvMapping.ForBarData>(zip, MarginFileName, res.Margin, res);
                     AsZipEntry.TryReadCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, TradeHistoryFileName, res.TradeHistory, res);
+                    res.FixTradeReports(zip);
                 }
             }
             return res;
@@ -192,6 +193,31 @@ namespace TickTrader.Algo.BacktesterApi
                 sb.AppendLine();
             }
             return sb.ToString().TrimEnd();
+        }
+
+
+        private void FixTradeReports(ZipArchive zip)
+        {
+            if (!ExecStatus.ResultsNotCorrupted)
+                return;
+
+            var entry = zip.GetEntry(ConfigFileName);
+            if (entry == null)
+                return;
+
+            var configRes = BacktesterConfig.TryLoad(entry.Open());
+            if (configRes.HasError)
+                return;
+
+            var symbolsMap = configRes.ResultValue.TradeServer.Symbols;
+            foreach (var report in TradeHistory)
+            {
+                if (symbolsMap.TryGetValue(report.Symbol, out var symbol))
+                {
+                    report.MarginCurrency = symbol.MarginCurrency;
+                    report.ProfitCurrency = symbol.ProfitCurrency;
+                }
+            }
         }
 
 
