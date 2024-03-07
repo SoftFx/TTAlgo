@@ -230,6 +230,8 @@ namespace TickTrader.Algo.BacktesterApi
                 Map(t => t.Tag).Index(46).Name("Tag");
 
                 Map(t => t.OcoRelatedOrderId).Index(47).Name("OcoRelatedOrderId").Optional();
+
+                Map(t => t.MarginToBalanceConversionRate).Index(48).Name("MarginToBalanceConversionRate").Optional();
             }
         }
 

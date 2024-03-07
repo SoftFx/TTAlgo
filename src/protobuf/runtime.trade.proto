@@ -395,6 +395,8 @@ message TradeReportInfo {
 
     google.protobuf.StringValue oco_related_order_id = 60;
     google.protobuf.StringValue instance_id = 61;
+
+    google.protobuf.DoubleValue margin_to_balance_conversion_rate = 62;
 }
 
 message TradeHistoryRequest {

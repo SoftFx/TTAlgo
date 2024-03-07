@@ -334,6 +334,7 @@ namespace TickTrader.Algo.CoreV1
             if (symbol == null)
                 return this;
 
+            var calc = acc.GetCalculator(symbol);
             if (symbol.BaseCurrency != null)
             {
                 if (acc.Acc.Type != Domain.AccountInfo.Types.Type.Cash)
@@ -356,6 +357,7 @@ namespace TickTrader.Algo.CoreV1
                 }
 
                 Info.MarginCurrency = symbol.BaseCurrency;
+                Info.MarginToBalanceConversionRate = calc.Margin.GetConversionRate();
             }
 
             if (symbol.CounterCurrency != null)

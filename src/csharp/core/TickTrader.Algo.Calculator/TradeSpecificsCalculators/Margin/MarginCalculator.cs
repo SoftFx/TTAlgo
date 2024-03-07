@@ -42,6 +42,13 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
             return ResponseFactory.Build(margin, _convertionRate.Error);
         }
 
+        public double? GetConversionRate()
+        {
+            var convertionRate = _convertionRate;
+            return convertionRate.Error == CalculationError.None ? convertionRate.Value : default(double?);
+        }
+
+
         private double MarginFactor(IMarginCalculateRequest request)
         {
             if (request.Type.IsStop())

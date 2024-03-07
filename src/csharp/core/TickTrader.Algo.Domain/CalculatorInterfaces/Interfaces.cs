@@ -27,6 +27,8 @@ namespace TickTrader.Algo.Domain.CalculatorInterfaces
     public interface IMarginCalculator
     {
         ICalculateResponse<double> Calculate(IMarginCalculateRequest request);
+
+        double? GetConversionRate();
     }
 
     public interface IProfitCalculator
