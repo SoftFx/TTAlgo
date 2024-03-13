@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using TickTrader.Algo.AppCommon;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -103,7 +103,7 @@ namespace TickTrader.Algo.Server
             _savedState = new ServerStateModel(_stateManager);
             _serverPrivate = new AlgoServerPrivate(Self, _env, _eventBus, _savedState, _alerts)
             {
-                AccountOptions = Account.ConnectionOptions.CreateForServer(_settings.EnableAccountLogs, _env.LogFolder),
+                AccountOptions = Account.ConnectionOptions.CreateForServer(_settings.EnableAccountLogs, _env.LogFolder, AppVersionInfo.Current.Version),
                 MonitoringSettings = _settings.MonitoringSettings,
             };
 

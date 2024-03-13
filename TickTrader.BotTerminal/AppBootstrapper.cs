@@ -231,8 +231,7 @@ namespace TickTrader.BotTerminal
                 CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());
 
                 var enableLogs = Properties.Settings.Default.EnableConnectionLogs;
-
-                var connectionOptions = ConnectionOptions.CreateForTerminal(enableLogs, EnvService.Instance.LogFolder);
+                var connectionOptions = ConnectionOptions.CreateForTerminal(enableLogs, EnvService.Instance.LogFolder, AppVersionInfo.Current.Version);
 
                 var accountSettings = new AccountModelSettings("0")
                 {
