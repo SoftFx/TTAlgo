@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Server.Common;
@@ -13,6 +14,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 {
     internal class GrpcChannelProxy : IGrpcChannelProxy
     {
+        private readonly NLog.ILogger _logger;
         private readonly GrpcChannel _channel;
         private readonly X509Certificate2 _algoRootCert;
 
@@ -23,6 +25,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         public GrpcChannelProxy(IClientSessionSettings settings, NLog.ILogger logger)
         {
             _algoRootCert = X509Certificate2.CreateFromPem(CertificateProvider.RootCertificate);
+            _logger = logger;
 
             var handler = new SocketsHttpHandler();
             handler.SslOptions.RemoteCertificateValidationCallback = ServerCertValidationCallback;
@@ -69,15 +72,35 @@ namespace TickTrader.Algo.Server.PublicAPI
             if (errors == SslPolicyErrors.None)
                 return true;
 
-            if (_algoRootCert != null && errors.HasFlag(SslPolicyErrors.RemoteCertificateChainErrors))
+            var hasChainErrors = errors.HasFlag(SslPolicyErrors.RemoteCertificateChainErrors);
+            // SslPolicyErrors.RemoteCertificateChainErrors is not set when running under Wine
+            var hasChainStatusErrors = chain.ChainStatus.Length > 0;
+            if (_algoRootCert != null && (hasChainErrors || hasChainStatusErrors))
             {
                 chain.ChainPolicy.CustomTrustStore.Clear();
                 chain.ChainPolicy.CustomTrustStore.Add(_algoRootCert);
                 chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
-                return chain.Build((X509Certificate2)serverCert);
+                var res = chain.Build((X509Certificate2)serverCert);
+                if (!res)
+                    LogCertValidationErrors("CustomRootTrust", errors, chain);
+                return res;
             }
 
+            LogCertValidationErrors("Fallback", errors, chain);
             return false;
+        }
+
+        private void LogCertValidationErrors(string marker, SslPolicyErrors errors, X509Chain chain)
+        {
+            var sb = new StringBuilder();
+            sb.Append($"X509 validation failed({marker}): errors={errors}");
+            for (var i = 0; i < chain.ChainStatus.Length; i++)
+            {
+                var status = chain.ChainStatus[i];
+                sb.AppendLine();
+                sb.Append($"ChainStatus[{i}]={status.Status}: {status.StatusInformation}");
+            }
+            _logger.Debug(sb.ToString());
         }
     }
 }
